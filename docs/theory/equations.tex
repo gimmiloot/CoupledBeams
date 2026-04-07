@@ -1,0 +1,263 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amsthm,amssymb}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{siunitx}
+\usepackage{geometry}
+\usepackage{mathtools}
+ \geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=20mm,
+ top=20mm,
+ }
+
+
+\title{Сопряженные балки}
+
+\begin{document}
+
+%\maketitle
+
+\section{Вид решения}
+\subsection{Вид решения}
+
+\begin{figure}[h!]
+\centering % центрируем изображение
+\includegraphics[scale=0.5]{Балки.eps}
+\caption{\small Направление перемещений.}
+\label{ris:imageD1}
+\end{figure}
+
+Уравнения изгибных колебаний имеют решение: $w_i=A_i \cos(\alpha x_i)+B_i \sin(\alpha x_i)+C_i \cosh(\alpha x_i)+D_i \sinh(\alpha x_i)$.
+
+\begin{align*}
+    &w'=-A \alpha \sin{(\alpha x)} + B \alpha \cos{(\alpha x)} + C \alpha \sinh{(\alpha x)} + D \alpha \cosh{(\alpha x)}\\
+    &w''=-A \alpha^2 \cos{(\alpha x)} - B \alpha^2  \sin{(\alpha x)} + C \alpha^2  \cosh{(\alpha x)} + D \alpha^2  \sinh{(\alpha x)}\\
+    &w'''=A \alpha^3 \sin{(\alpha x)} - B \alpha^3 \cos{(\alpha x)} + C \alpha^3 \sinh{(\alpha x)} + D \alpha^3 \cosh{(\alpha x)}
+\end{align*}
+
+Уравнения продольных колебаний имеют решение: $u_i=O_i \cos{\gamma x_i}+P_i \sin{\gamma x_i}$.
+
+\section{Проверка статьи M. Ouisse}
+
+Начнем с проверки определителя "T" на странице 15, представленного в статье "Vibration sensative behaviour...".
+
+\noindent При прямом сравнении с формулой (39) из `2003JSVb.pdf` знаки в первых двух кинематических строках нужно вручную сверять с условиями непрерывности (10)--(11): в настоящем файле эти члены записаны через аргументы \(-\alpha L\), поэтому часть знаков уже поглощена нечётностью \(\sin\) и \(\sinh\).
+
+\subsection{Граничные условия}
+
+Граничные условия в точках $x_i = 0$ -- подвижный шарнир. В этом случае $w_i (0)=0$ и $w''_i (0) = 0$ т.е. $A_i + C_i = 0$ и $-A_i + C_i = 0$. Откуда следует, что $A_i = C_i =0$. Для продольных колебаний $u'_i=0$ получаем аналогично, что $P_i=0$.
+
+\subsection{Условия сопряжения}
+
+Условия сопряжения в месте соединения имеют следующий вид:
+
+\begin{align*}
+& w_1(L)  = w_2(-L)\cos{(\beta)} + u_2(-L)\sin{(\beta)}\\
+& u_1 (L) = -w_2(-L)\sin{(\beta)} + u_2 (-L) \cos{(\beta)}\\
+& w_1'(L) =w_2' (-L)\\
+& w_1''(L) = w_2'' (-L)\\
+& -EJw_1'''(L) = -EJw_2'''(-L)\cos{(\beta)} + ESu'_2 (-L) \sin{(\beta)}\\
+& ESu'_1(L) = EJw'''_2(-L)\sin{(\beta)} + ESu'_2(-L)\cos{(\beta)}
+\end{align*}
+
+Подставив в эти выражения вид нашего решения, получим:
+
+\begin{align*}
+B_1 \sin(\alpha L)+D_1 \sinh(\alpha L) &= (B_2 \sin(-\alpha L)+D_2 \sinh(-\alpha L))\cos{(\beta)} + O_2 \cos{(-\gamma L)}\sin{(\beta)}\\
+O_1 \cos{(\gamma L)} &= -(B_2 \sin(-\alpha L)+D_2 \sinh(-\alpha L))\sin{(\beta)} + O_2 \cos{(-\gamma L)} \cos{(\beta)}\\
+B_1 \cos(\alpha L)+D_1 \cosh(\alpha L)&= B_2 \cos(-\alpha L)+D_2 \cosh(-\alpha L) \\
+-B_1 \sin(\alpha L)+D_1 \sinh(\alpha L)&= -B_2 \sin(-\alpha L)+D_2 \sinh(-\alpha L)\\
+-\frac{J \alpha^3}{S \gamma} (-B_1 \cos(\alpha L)+D_1 \cosh(\alpha L)) &= -\frac{J \alpha^3}{S \gamma}(-B_2 \cos(-\alpha L)+D_2 \cosh(-\alpha L))\cos{(\beta)} - O_2 \sin{(-\gamma L)} \sin{(\beta)}\\
+-O_1 \sin{(\gamma L)} &= \frac{J \alpha^3}{S \gamma} (-B_2 \cos(-\alpha L)+D_2 \cosh(-\alpha L))\sin{(\beta)} - O_2 \sin{(-\gamma L)}\cos{(\beta)}
+\end{align*}
+
+\subsection{Частоты колебаний}
+
+\noindent После приравнивания частот продольных и поперечных колебаний получаем, что: 
+$$\frac{\alpha^4 E J}{\rho S}=\frac{\gamma^2 E}{\rho}$$
+$$\gamma=\sqrt{\frac{J}{S}} \alpha^2$$
+
+\noindent Обозначим $\sqrt{\frac{J}{S}} = k$ и запишем определитель для нахождения $\alpha$. Порядок столбцов -- $B_1,D_1,B_2,D_2,O_1,O_2$.\\
+
+\begin{vmatrix}
+\sin{(\alpha L)} & \sinh{(\alpha L)} & \sin{(\alpha L)}\cos{(\beta)} & \sinh{(\alpha L)}\cos{(\beta)} & 0 & -\cos{(k\alpha^2 L)}\sin{(\beta)}\\
+0 & 0 & -\sin{(\alpha L)}\sin{(\beta)} & -\sinh{(\alpha L)}\sin{(\beta)} & \cos{(k\alpha^2 L)} & -\cos{(k\alpha^2 L)} \cos{(\beta)}\\
+\cos{(\alpha L)} & \cosh{(\alpha L)} & -\cos{(\alpha L)} & -\cosh{(\alpha L)} & 0 & 0 \\
+-\sin{(\alpha L)} & \sinh{(\alpha L)} & -\sin{(\alpha L)} & \sinh{(\alpha L)} & 0 & 0 \\
+k \alpha \cos{(\alpha L)} & -k \alpha \cosh{(\alpha L)} & -k \alpha \cos{(\alpha L)} \cos{(\beta)} & k \alpha \cosh{(\alpha L)} \cos{(\beta)}& 0 & -\sin{(k\alpha^2 L)}\sin{(\beta)}\\
+0 & 0 & k \alpha \cos{(\alpha L)} \sin{(\beta)} & -k \alpha \cosh{(\alpha L)} \sin{(\beta)} & -\sin{(k\alpha^2 L)} & -\sin{(k\alpha^2 L)}\cos{(\beta)}
+\end{vmatrix}
+
+\section{Задача с равными длинами}
+
+\subsection{Безразмерный вид}
+
+Пусть $l_1=l_2=L$, тогда введем новые переменные $x_1^*=\frac{x_1}{L}$ и $x_2^*=\frac{x_2}{L}$ и опустим знак $*$. В новых переменных:
+$$\frac{\alpha^4 E J}{\rho S L^4}=\frac{\gamma^2 E}{\rho L^2}$$
+$$\gamma=\sqrt{\frac{J}{S L^2}} \alpha^2$$
+
+\noindent В статье `Статья-Дорофеев-2025.pdf` тот же безразмерный частотный параметр обозначен через \(\Lambda\); ниже здесь сохранено локальное \(\alpha\), чтобы не делать массовое переименование в черновом выводе.
+
+\subsection{Граничные условия}
+
+Граничные условия в точках $x_i = 0$ -- заделка. В этом случае $w_i (0)=0$ и $w'_i (0) = 0$ т.е. $A_i + C_i = 0$ и $B_i + D_i = 0$. Откуда следует, что $C_i = -A_i$ и $D_i = -B_i$. Для продольных колебаний $u_i=0$ получаем аналогично, что $O_i=0$
+
+\subsection{Условия сопряжения}
+
+Условия сопряжения в месте соединения имеют следующий вид:
+
+\begin{align*}
+& w_1(1)  = w_2(-1)\cos{(\beta)} + u_2(-1)\sin{(\beta)}\\
+& u_1 (1) = -w_2(-1)\sin{(\beta)} + u_2 (-1) \cos{(\beta)}\\
+& w_1'(1) =w_2' (-1)\\
+& w_1''(1) = w_2'' (-1)\\
+& -EJw_1'''(1) = -EJw_2'''(-1)\cos{(\beta)} + ESu'_2 (-1) \sin{(\beta)}\\
+& ESu'_1(1) = EJw'''_2(-1)\sin{(\beta)} + ESu'_2(-1)\cos{(\beta)}
+\end{align*}
+
+После подстановки значений производных система примет вид:
+
+\begin{align*}
+A_1(\cos(\alpha)-\cosh(\alpha)) + B_1(\sin(\alpha) - \sinh(\alpha)) = (A_2(\cos(-\alpha)&-\cosh(-\alpha))\\ + B_2(\sin(-\alpha) - \sinh(-\alpha)))\cos{(\beta)} &+ P_2 \sin{(-\gamma)}\sin{(\beta)}\\
+P_1 \sin{(\gamma)} = -(A_2(\cos(-\alpha)-\cosh(-\alpha))+ B_2(\sin(-\alpha) &- \sinh(-\alpha)))\sin{(\beta)}+ P_2 \sin{(-\gamma)} \cos{(\beta)}\\
+A_1(-\sin(\alpha)-\sinh(\alpha)) + B_1(\cos(\alpha) - \cosh(\alpha))= A_2(-\sin(-\alpha)&-\sinh(-\alpha)) + B_2(\cos(-\alpha) - \cosh(-\alpha)) \\
+A_1(-\cos(\alpha)-\cosh(\alpha)) + B_1(-\sin(\alpha) - \sinh(\alpha))= A_2(-\cos(-\alpha)&-\cosh(-\alpha)) + B_2(-\sin(-\alpha) - \sinh(-\alpha)) \\
+-\frac{J \alpha^3}{S \gamma L^2} (A_1(\sin(\alpha)-\sinh(\alpha)) + B_1(-\cos(\alpha) - \cosh(\alpha))) &= -\frac{J \alpha^3}{S \gamma L^2}(A_2(\sin(-\alpha)-\sinh(-\alpha))\\ + B_2(-\cos(-\alpha) &- \cosh(-\alpha)))\cos{(\beta)} + P_2 \cos{(-\gamma)} \sin{(\beta)}\\
+P_1 \cos{(\gamma)} = \frac{J \alpha^3}{S \gamma L^2} (A_2(\sin(-\alpha)-\sinh(-\alpha)) + B_2(-\cos(-\alpha) &- \cosh(-\alpha)))\sin{(\beta)} + P_2 \cos{(-\gamma)}\cos{(\beta)}
+\end{align*}
+
+\subsection{Частоты колебаний}
+
+\noindent После приравнивания частот продольных и поперечных колебаний получаем, что: 
+
+\noindent Обозначим $\sqrt{\frac{J}{S L^2}} = \varepsilon$ и запишем определитель для нахождения $\alpha$. Порядок столбцов -- $A_1,B_1,A_2,B_2,P_1,P_2$.\\
+
+$\begin{vsmallmatrix}
+\cos(\alpha)-\cosh(\alpha) & \sin(\alpha) - \sinh(\alpha) & (-\cos(\alpha)+\cosh(\alpha))\cos{(\beta)} & (\sin(\alpha) - \sinh(\alpha))\cos{(\beta)} & 0 & \sin{(\varepsilon \alpha^2)}\sin{(\beta)}\\
+0 & 0 & (\cos(\alpha)-\cosh(\alpha))\sin{(\beta)} & (-\sin(\alpha) + \sinh(\alpha))\sin{(\beta)} & \sin{(\varepsilon \alpha^2)} & \sin{(\varepsilon \alpha^2)} \cos{(\beta)}\\
+-\sin(\alpha)-\sinh(\alpha) & \cos(\alpha) - \cosh(\alpha) & -\sin(\alpha)-\sinh(\alpha) & -\cos(\alpha) + \cosh(\alpha) & 0 & 0 \\
+-\cos(\alpha)-\cosh(\alpha) & -\sin(\alpha) - \sinh(\alpha) & \cos(\alpha)+\cosh(\alpha) & -\sin(\alpha) - \sinh(\alpha) & 0 & 0 \\
+\varepsilon \alpha (-\sin(\alpha)+\sinh(\alpha)) & \varepsilon \alpha (\cos(\alpha) + \cosh(\alpha)) & \varepsilon \alpha (-\sin(\alpha)+\sinh(\alpha)) \cos{(\beta)} & -\varepsilon \alpha (\cos(\alpha) + \cosh(\alpha)) \cos{(\beta)}& 0 & -\cos{(\varepsilon \alpha^2)}\sin{(\beta)}\\
+0 & 0 & \varepsilon \alpha (\sin(\alpha)-\sinh(\alpha)) \sin{(\beta)} & \varepsilon \alpha (\cos(\alpha) + \cosh(\alpha)) \sin{(\beta)} & \cos{(\varepsilon \alpha^2)} & -\cos{(\varepsilon \alpha^2)}\cos{(\beta)}
+\end{vsmallmatrix}$
+
+\subsection{Асимптотика}
+
+Асимптотически разложим элементы предыдущего определителя.
+
+$\begin{vsmallmatrix}
+\cos(z)-\cosh(z) & \sin(z) - \sinh(z) & (-\cos(z)+\cosh(z))\cos{(\beta)} & (\sin(z) - \sinh(z))\cos{(\beta)} & 0 & (z^2 \varepsilon -\frac{z^6 \varepsilon^3}{6})\sin{(\beta)}\\
+0 & 0 & (\cos(z)-\cosh(z))\sin{(\beta)} & (-\sin(z) + \sinh(z))\sin{(\beta)} & (z^2 \varepsilon -\frac{z^6 \varepsilon^3}{6}) & (z^2 \varepsilon -\frac{z^6 \varepsilon^3}{6}) \cos{(\beta)}\\
+-\sin(z)-\sinh(z) & \cos(z) - \cosh(z) & -\sin(z)-\sinh(z) & -\cos(z) + \cosh(z) & 0 & 0 \\
+-\cos(z)-\cosh(z) & -\sin(z) - \sinh(z) & \cos(z)+\cosh(z) & -\sin(z) - \sinh(z) & 0 & 0 \\
+z \varepsilon(-\sin(z)+\sinh(z)) & z \varepsilon (\cos(z) + \cosh(z)) & z \varepsilon (-\sin(z)+\sinh(z)) \cos{(\beta)} & -z \varepsilon (\cos(z) + \cosh(z)) \cos{(\beta)}& 0 & -(1-\frac{z^4 \varepsilon^2}{2})\sin{(\beta)}\\
+0 & 0 & z \varepsilon (\sin(z)-\sinh(z)) \sin{(\beta)} & z \varepsilon (\cos(z) + \cosh(z)) \sin{(\beta)} & (1-\frac{z^4 \varepsilon^2}{2}) & -(1-\frac{z^4 \varepsilon^2}{2})\cos{(\beta)}
+\end{vsmallmatrix}$
+
+\section{Разные длины}
+Перейдем к задаче с разными длинами стержней. Пусть $x_1^*=\frac{x_1}{L(1-\mu)}$ и $x_2^*=\frac{x_2}{L(1+\mu)}$ и опустим знак $*$. В новых переменных: $\lambda_i=\Lambda_i^2 \varepsilon_i$, $\varepsilon_i = \sqrt{J/(SL^2(1+(-1)^i \mu)^2)} = \varepsilon / (1+(-1)^i \mu) $, $\lambda_i^2=\omega^2L^2 \rho (1+(-1)^i\mu)^2/E$. Также $\Lambda_i=\Lambda(1+(-1)^i\mu)$.
+
+\subsection{Граничные условия}
+
+Граничные условия в точках $x_i = 0$ -- заделка. В этом случае $w_i (0)=0$ и $w'_i (0) = 0$ т.е. $A_i + C_i = 0$ и $B_i + D_i = 0$. Откуда следует, что $C_i = -A_i$ и $D_i = -B_i$. Для продольных колебаний $u_i=0$ получаем аналогично, что $O_i=0$
+
+\subsection{Условия сопряжения}
+
+Условия сопряжения в месте соединения имеют следующий вид:
+
+\begin{align*}
+& w_1(1)  = w_2(-1)\cos{(\beta)} + u_2(-1)\sin{(\beta)}\\
+& u_1 (1) = -w_2(-1)\sin{(\beta)} + u_2 (-1) \cos{(\beta)}\\
+& w_1'(1) =w_2' (-1)\\
+& w_1''(1) = w_2'' (-1)\\
+& -\varepsilon^2 \frac{(1+\mu)}{(1-\mu)^3} w_1'''(1) = -\varepsilon^2 \frac{1}{(1+\mu)^2}w_2'''(-1)\cos{(\beta)} + u'_2 (-1) \sin{(\beta)}\\
+& \frac{(1+\mu)}{(1-\mu)} u'_1(1) = \varepsilon^2 \frac{1}{(1+\mu)^2} w'''_2(-1)\sin{(\beta)} + u'_2(-1)\cos{(\beta)}
+\end{align*}
+
+После подстановки значений производных система примет вид:
+
+\begin{align*}
+A_1(\cos(\Lambda (1-\mu))-\cosh(\Lambda (1-\mu))) + B_1(\sin(\Lambda (1-\mu)) - \sinh(\Lambda (1-\mu))) &= (A_2(\cos(-\Lambda (1+\mu))-\cosh(-\Lambda (1+\mu)))\\ + B_2(\sin(-\Lambda (1+\mu)) - \sinh(-\Lambda (1+\mu))))\cos{(\beta)} &+ P_2 \sin{(-\varepsilon\Lambda^2 (1+\mu))}\sin{(\beta)}\\
+P_1 \sin{(\varepsilon\Lambda^2 (1-\mu))} = -(A_2(\cos(-\Lambda (1+\mu))-\cosh(-\Lambda (1+\mu)))+& B_2(\sin(-\Lambda (1+\mu)) \\ - \sinh(-\Lambda (1+\mu))))\sin{(\beta)}+& P_2 \sin{(-\varepsilon\Lambda^2 (1+\mu))} \cos{(\beta)}\\
+A_1(-\sin(\Lambda (1-\mu))-\sinh(\Lambda (1-\mu))) + B_1(\cos(\Lambda (1-\mu)) -& \cosh(\Lambda (1-\mu)))= A_2(-\sin(-\Lambda (1+\mu)) \\ -\sinh(-\Lambda (1+\mu))) + B_2(\cos(-\Lambda (1+\mu)) -& \cosh(-\Lambda (1+\mu))) \\
+A_1(-\cos(\Lambda (1-\mu))-\cosh(\Lambda (1-\mu))) + B_1(-\sin(\Lambda (1-\mu)) -& \sinh(\Lambda (1-\mu)))= A_2(-\cos(-\Lambda (1+\mu)) \\ -\cosh(-\Lambda (1+\mu))) + B_2(-\sin(-\Lambda (1+\mu)) -& \sinh(-\Lambda (1+\mu))) \\
+-\varepsilon \Lambda (A_1(\sin(\Lambda (1-\mu))-\sinh(\Lambda (1-\mu))) + B_1(-\cos(\Lambda (1-\mu)) -& \cosh(\Lambda (1-\mu)))) = -\varepsilon \Lambda (A_2(\sin(-\Lambda (1+\mu))\\-\sinh(-\Lambda (1+\mu))) + B_2(-\cos(-\Lambda (1+\mu)) - \cosh(-\Lambda (1+&\mu))))\cos{(\beta)} + P_2 \cos{(-\varepsilon\Lambda^2 (1+\mu))} \sin{(\beta)}\\
+P_1 \cos{(\varepsilon\Lambda^2 (1-\mu))} = \varepsilon \Lambda (A_2(\sin(-\Lambda (1+\mu))-\sinh(-\Lambda (1+\mu))) +& B_2(-\cos(-\Lambda (1+\mu))\\ - \cosh(-\Lambda (1+\mu))))\sin{(\beta)} +& P_2 \cos{(-\varepsilon\Lambda^2 (1+\mu))}\cos{(\beta)}
+\end{align*}
+\newpage
+
+\section{Задача M. Ouisse в безразмерном виде}
+Пусть $x_1^*=\frac{x_1}{L(1-\mu)}$ и $x_2^*=\frac{x_2}{L(1+\mu)}$ и опустим знак $*$. В новых переменных: $\lambda_i=\Lambda_i^2 \varepsilon_i$, $\varepsilon_i = \sqrt{J/(SL^2(1+(-1)^i \mu)^2)} = \varepsilon / (1+(-1)^i \mu) $, $\lambda_i^2=\omega^2L^2 \rho (1+(-1)^i\mu)^2/E$. Также $\Lambda_i=\Lambda(1+(-1)^i\mu)$.
+
+\subsection{Граничные условия}
+
+Граничные условия в точках $x_i = 0$ -- подвижный шарнир. В этом случае $w_i (0)=0$ и $w''_i (0) = 0$ т.е. $A_i + C_i = 0$ и $-A_i + C_i = 0$. Откуда следует, что $A_i = C_i =0$. Для продольных колебаний $u'_i=0$ получаем аналогично, что $P_i=0$
+
+\subsection{Условия сопряжения}
+
+Условия сопряжения в месте соединения имеют следующий вид:
+
+\begin{align*}
+& w_1(1)  = w_2(-1)\cos{(\beta)} + u_2(-1)\sin{(\beta)}\\
+& u_1 (1) = -w_2(-1)\sin{(\beta)} + u_2 (-1) \cos{(\beta)}\\
+& \frac{1+\mu}{1-\mu}w_1'(1) =w_2' (-1)\\
+& (\frac{1+\mu}{1-\mu})^2w_1''(1) = w_2'' (-1)\\
+& -\varepsilon^2 \frac{(1+\mu)}{(1-\mu)^3} w_1'''(1) = -\varepsilon^2 \frac{1}{(1+\mu)^2}w_2'''(-1)\cos{(\beta)} + u'_2 (-1) \sin{(\beta)}\\
+& \frac{(1+\mu)}{(1-\mu)} u'_1(1) = \varepsilon^2 \frac{1}{(1+\mu)^2} w'''_2(-1)\sin{(\beta)} + u'_2(-1)\cos{(\beta)}
+\end{align*}
+
+После подстановки значений производных система примет вид:
+
+\begin{align*}
+B_1\sin(\Lambda (1-\mu)) + D_1 \sinh(\Lambda (1-\mu)) = (B_2\sin(-\Lambda (1+\mu)) + D_2 \sinh(-\Lambda (1+\mu)))\cos{(\beta)}\\
+&+ O_2 \cos{(-\varepsilon\Lambda^2 (1+\mu))}\sin{(\beta)}\\
+O_1 \cos{(\varepsilon\Lambda^2 (1-\mu))} = -(B_2\sin(-\Lambda (1+\mu)) + D_2 \sinh(-\Lambda (1+\mu)))\sin{(\beta)}\\
+&+ O_2 \cos{(-\varepsilon\Lambda^2 (1+\mu))} \cos{(\beta)}\\
+B_1\cos(\Lambda (1-\mu)) + D_1 \cosh(\Lambda (1-\mu)) = B_2\cos(-\Lambda (1+\mu)) + D_2 \cosh(-\Lambda (1+\mu)) \\
+-B_1\sin(\Lambda (1-\mu)) + D_1 \sinh(\Lambda (1-\mu)) = -B_2\sin(-\Lambda (1+\mu)) + D_2 \sinh(-\Lambda (1+\mu)) \\
+-\varepsilon \Lambda (-B_1\cos(\Lambda (1-\mu)) + D_1 \cosh(\Lambda (1-\mu))) = -\varepsilon \Lambda (-B_2\cos(-\Lambda (1+\mu)) + D_2 \cosh(-\Lambda (1+\mu)))\cos{(\beta)}\\
+&- O_2 \sin{(-\varepsilon\Lambda^2 (1+\mu))} \sin{(\beta)}\\
+-O_1 \sin{(\varepsilon\Lambda^2 (1-\mu))} = \varepsilon \Lambda (-B_2\cos(-\Lambda (1+\mu)) + D_2 \cosh(-\Lambda (1+\mu)))\sin{(\beta)} \\
+&- O_2 \sin{(-\varepsilon\Lambda^2 (1+\mu))}\cos{(\beta)}
+\end{align*}
+
+
+\section{Проверка для нуля градусов}
+
+Пусть $l_1=l_2=L$, тогда введем новые переменные $x_1^*=\frac{x_1}{L}$ и $x_2^*=\frac{x_2}{L}$ и опустим знак $*$. В новых переменных:
+$$\frac{\Lambda^4 J}{S L^2}=\frac{\omega^2 L^2 \rho}{E}$$
+$$\omega=\sqrt{\frac{J}{S L^2}} \frac{\Lambda^2}{L} \sqrt{\frac{E}{\rho}}= \frac{\Lambda^2 \varepsilon}{L} \sqrt{\frac{E}{\rho}}$$
+
+Пусть $L=1$, а сечение стержней круглое, радиуса $r=0.01$м, тогда $\varepsilon=\sqrt{\frac{J}{S L^2}}=\sqrt{\frac{\pi r^4}{4\pi r^2 1^2}}=\frac{r}{2}=0.005$. Чтобы получить частоту в герцах, делим $\omega$ на $2\pi$, то есть
+$$\omega= \frac{\Lambda^2 \varepsilon}{L} \sqrt{\frac{E}{\rho}}\frac{1}{2\pi}=4.067\Lambda^2$$
+ .
+
+При жесткой заделке при угле равном $0$ мы решаем уравнение $cos(2\Lambda)*cosh(2\Lambda)-1=0$. Корни в этом случае
+\begin{enumerate}
+    \item 2.36502037
+    \item 3.92660231
+    \item 5.49780392
+    \item 7.06858275
+    \item 8.63937983
+    \item 10.2101761
+    \item 11.7809725
+    \item 13.3517688
+\end{enumerate}
+
+При шарнирном опирании при угле равном $0$ мы решаем уравнение $sin(2\Lambda)*sh(2\Lambda)=0$. Корни в этом случае 
+\begin{enumerate}
+    \item 1.57079633
+    \item 3.14159265
+    \item 4.71238898
+    \item 6.28318531
+    \item 7.85398163
+    \item 9.42477796
+    \item 10.9955743
+    \item 12.5663706
+\end{enumerate}
+\end{document}
