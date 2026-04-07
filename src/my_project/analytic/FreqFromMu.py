@@ -1,4 +1,4 @@
-﻿from pathlib import Path
+from pathlib import Path
 import sys
 
 import matplotlib.pyplot as plt
@@ -15,6 +15,7 @@ if __package__ in {None, ""}:
         refine_tracked_pair,
         root_by_min_abs_det,
         track_branches,
+        tracked_lambdas_vs_mu,
     )
 else:
     from .formulas import BeamParams, det_clamped_coupled, frequency_scale, lambdas_to_frequencies
@@ -26,6 +27,7 @@ else:
         refine_tracked_pair,
         root_by_min_abs_det,
         track_branches,
+        tracked_lambdas_vs_mu,
     )
 
 
@@ -89,23 +91,19 @@ def build_mu_sweep_data(
     Lmax0: float,
     scan_step: float,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    beta = np.deg2rad(beta_deg)
     mu_grid = np.arange(mu_min, mu_max + 1e-12, mu_step)
-
-    lambdas_raw = np.full((n_modes, len(mu_grid)), np.nan)
-    for j, mu in enumerate(mu_grid):
-        roots = find_first_n_roots(
-            beta=beta,
-            mu=mu,
-            eps=params.eps,
-            n_roots=n_modes,
-            Lmax0=Lmax0,
-            scan_step=scan_step,
-        )
-        lambdas_raw[:, j] = roots
-
-    lambdas_sorted = np.sort(lambdas_raw, axis=0)
-    lambdas_tr = track_branches(lambdas_sorted)
+    lambdas_tr = tracked_lambdas_vs_mu(
+        params=params,
+        beta_deg=beta_deg,
+        mu_values=mu_grid,
+        n_modes=n_modes,
+        Lmin=0.2,
+        Lmax0=Lmax0,
+        scan_step=scan_step,
+        grow_factor=1.35,
+        max_tries=8,
+        tracking_method="auto",
+    )
     f_tr = lambdas_to_frequencies(lambdas_tr, params)
     return mu_grid, lambdas_tr, f_tr
 

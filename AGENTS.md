@@ -121,11 +121,16 @@ For FEM code:
 Update documentation when relevant:
 - `docs/theory/assumptions.md` for new assumptions
 - `docs/literature/source_index.md` for source-specific warnings or corrections
-- `README.md` when structure or run instructions change
-- `CHANGELOG.md` for meaningful project changes
+- `CHANGELOG.md` after every meaningful project change, including theory consistency audits, assumption or notation policy changes, code refactors, added baseline scripts, changed run instructions, and added tests
+- `README.md` whenever it becomes relevant to user-visible changes, especially project structure, run commands, dependencies, baseline analytic or FEM workflows, source-of-truth policy, or important literature warnings
 
-Do not add vague notes.
-Keep documentation concrete and tied to actual changes.
+Do not update `README.md` mechanically if nothing user-visible changed.
+Keep changelog entries factual, concise, and tied to actual edits.
+
+At the end of any substantial Codex task, before finishing:
+- check whether `CHANGELOG.md` needs an entry
+- check whether `README.md` has become stale
+- report explicitly whether `README.md` and `CHANGELOG.md` were updated or intentionally left unchanged
 
 ## Change discipline
 

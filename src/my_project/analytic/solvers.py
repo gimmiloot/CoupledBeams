@@ -1,4 +1,4 @@
-﻿import mpmath as mp
+import mpmath as mp
 import numpy as np
 
 try:
@@ -80,17 +80,55 @@ def find_first_n_roots(
     return out
 
 
-def track_branches(values_sorted: np.ndarray) -> np.ndarray:
+def _greedy_track_assignment(C: np.ndarray, prev_idx: np.ndarray, cur_idx: np.ndarray) -> dict[int, int]:
+    assign = {}
+    used_r, used_c = set(), set()
+    while True:
+        min_val = np.inf
+        min_pair = None
+        for rr in range(C.shape[0]):
+            if rr in used_r:
+                continue
+            for cc in range(C.shape[1]):
+                if cc in used_c:
+                    continue
+                if C[rr, cc] < min_val:
+                    min_val = C[rr, cc]
+                    min_pair = (rr, cc)
+        if min_pair is None:
+            break
+        rr, cc = min_pair
+        used_r.add(rr)
+        used_c.add(cc)
+        assign[prev_idx[rr]] = cur_idx[cc]
+        if len(used_r) == C.shape[0] or len(used_c) == C.shape[1]:
+            break
+    return assign
+
+
+def track_branches(values_sorted: np.ndarray, method: str = "auto") -> np.ndarray:
+    if method not in {"auto", "hungarian", "greedy"}:
+        raise ValueError(f"Unknown tracking method: {method}")
+
     N, M = values_sorted.shape
     tracked = np.full_like(values_sorted, np.nan)
     tracked[:, 0] = values_sorted[:, 0]
 
-    try:
-        from scipy.optimize import linear_sum_assignment
+    linear_sum_assignment = None
+    use_hungarian = False
+    if method == "auto":
+        try:
+            from scipy.optimize import linear_sum_assignment as _linear_sum_assignment
 
+            linear_sum_assignment = _linear_sum_assignment
+            use_hungarian = True
+        except Exception:
+            use_hungarian = False
+    elif method == "hungarian":
+        from scipy.optimize import linear_sum_assignment as _linear_sum_assignment
+
+        linear_sum_assignment = _linear_sum_assignment
         use_hungarian = True
-    except Exception:
-        use_hungarian = False
 
     for j in range(1, M):
         prev = tracked[:, j - 1]
@@ -103,38 +141,52 @@ def track_branches(values_sorted: np.ndarray) -> np.ndarray:
 
         C = np.abs(prev[prev_idx][:, None] - cur[cur_idx][None, :])
 
-        assign = {}
         if use_hungarian:
+            assign = {}
             r, c = linear_sum_assignment(C)
             for rr, cc in zip(r, c):
                 assign[prev_idx[rr]] = cur_idx[cc]
         else:
-            used_r, used_c = set(), set()
-            while True:
-                min_val = np.inf
-                min_pair = None
-                for rr in range(C.shape[0]):
-                    if rr in used_r:
-                        continue
-                    for cc in range(C.shape[1]):
-                        if cc in used_c:
-                            continue
-                        if C[rr, cc] < min_val:
-                            min_val = C[rr, cc]
-                            min_pair = (rr, cc)
-                if min_pair is None:
-                    break
-                rr, cc = min_pair
-                used_r.add(rr)
-                used_c.add(cc)
-                assign[prev_idx[rr]] = cur_idx[cc]
-                if len(used_r) == C.shape[0] or len(used_c) == C.shape[1]:
-                    break
+            assign = _greedy_track_assignment(C, prev_idx, cur_idx)
 
         for i in range(N):
             tracked[i, j] = cur[assign[i]] if i in assign else np.nan
 
     return tracked
+
+
+def tracked_lambdas_vs_mu(
+    params,
+    beta_deg: float,
+    mu_values: np.ndarray,
+    n_modes: int,
+    Lmin: float = 0.2,
+    Lmax0: float = 35.0,
+    scan_step: float = 0.03,
+    grow_factor: float = 1.35,
+    max_tries: int = 7,
+    tracking_method: str = "auto",
+) -> np.ndarray:
+    beta = np.deg2rad(beta_deg)
+    mu_values = np.asarray(mu_values, dtype=float)
+
+    lambdas_raw = np.full((n_modes, len(mu_values)), np.nan, dtype=float)
+    for j, mu in enumerate(mu_values):
+        roots = find_first_n_roots(
+            beta,
+            mu,
+            params.eps,
+            n_modes,
+            Lmin=Lmin,
+            Lmax0=Lmax0,
+            scan_step=scan_step,
+            grow_factor=grow_factor,
+            max_tries=max_tries,
+        )
+        lambdas_raw[:, j] = roots
+
+    lambdas_sorted = np.sort(lambdas_raw, axis=0)
+    return track_branches(lambdas_sorted, method=tracking_method)
 
 
 def fixed_fixed_lambdas(n: int) -> np.ndarray:
@@ -378,6 +430,7 @@ __all__ = [
     "find_roots_scan_bisect",
     "find_first_n_roots",
     "track_branches",
+    "tracked_lambdas_vs_mu",
     "fixed_fixed_lambdas",
     "golden_minimize",
     "root_by_min_abs_det",

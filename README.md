@@ -1,54 +1,59 @@
 # CoupledBeams
 
-CoupledBeams — исследовательский репозиторий по задаче о собственных колебаниях двух упругих стержней, сопряжённых под углом. В репозитории собраны теория, литература, аналитические программы и вычислительные результаты.
+CoupledBeams is a research repository for frequency models and computations for coupled beams. The repository combines analytic frequency calculations, a baseline FEM implementation of the same problem, and the local theory, literature notes, and consistency checks used to support them.
 
-Базовые обозначения для theory-facing формул согласованы с `docs/literature/pdf/Статья-Дорофеев-2025.pdf`: `\Lambda` — безразмерная частота, `\beta` — угол сопряжения, `\varepsilon` — параметр толщины. Локальный параметр `\mu` используется как параметр несимметрии длины в постановках с разными длинами стержней.
+## Project Layout
 
-При сравнении с `docs/literature/pdf/2003JSVb.pdf` нужно учитывать известную проблему со знаками в determinant-like записи матрицы `T` формулы `(39)`: печатный sign pattern нельзя переносить в теорию или код без ручной сверки с условиями непрерывности. В локальной теории часть знаков уже поглощена аргументами вида `-\Lambda(...)`.
+- `docs/theory/` — verified local theory, equations, assumptions, and theory notes.
+- `docs/literature/` — literature PDFs, source notes, and bibliography material.
+- `src/my_project/analytic/` — analytic Python programs for the coupled-beam frequency problem.
+- `src/my_project/fem/` — baseline FEM implementation.
+- `tests/` — smoke tests and local verification helpers.
+- `results/` — generated computational outputs and tables.
 
-## Структура проекта
+## Analytic Layer
 
-- Теория: `docs/theory/`
-- Литература и заметки по источникам: `docs/literature/`
-- Журнал проекта: `docs/project_log/journal.md`
-- Аналитический код: `src/my_project/analytic/`
-- FEM-код: `src/my_project/fem/`
-- Запускные скрипты: `scripts/`
-- Вычислительные результаты: `results/`
+- `src/my_project/analytic/FreqFromAngle.py` — analytic scenario sweeping the coupling angle `beta`.
+- `src/my_project/analytic/FreqFromMu.py` — analytic scenario sweeping the length-asymmetry parameter `mu` in frequency units, with tracked branches and optional close-pair diagnostics.
+- `src/my_project/analytic/FreqMuNet.py` — baseline `mu`-sweep plot in dimensionless `Lambda`, with additional single-beam CS reference curves over the coupled-beam branches.
+- `src/my_project/analytic/formulas.py` — shared matrix and determinant assembly extracted during refactoring.
+- `src/my_project/analytic/solvers.py` — shared numerical solver logic extracted during refactoring.
 
-## Аналитический код
+The analytic refactoring did not change the formulas, determinant structure, unknown ordering, signs, or coefficients. It only extracted the common layer for reuse. `FreqFromMu.py` and `FreqMuNet.py` now share the same common mathematical layer and differ only in plotting/output behavior and in their preserved branch-tracking mode.
 
-После структурного рефакторинга общий математический слой аналитических программ вынесен в:
-
-- `src/my_project/analytic/formulas.py` — сборка общих параметров, матрицы и determinant без изменения формул.
-- `src/my_project/analytic/solvers.py` — общая solver-логика: поиск корней, трекинг ветвей, уточнение близких пар и служебные численные функции.
-
-Сценарии верхнего уровня по-прежнему запускаются отдельно:
-
-- `src/my_project/analytic/FreqFromAngle.py` — сценарий по углу `\beta`.
-- `src/my_project/analytic/FreqFromMu.py` — сценарий по параметру несимметрии `\mu`.
-
-## Запуск
-
-Из корня репозитория:
+Run from the repository root:
 
 ```bash
 python src/my_project/analytic/FreqFromAngle.py
 python src/my_project/analytic/FreqFromMu.py
+python src/my_project/analytic/FreqMuNet.py
 ```
 
-Baseline FEM-сценарий запускается отдельно:
+## FEM Baseline
+
+- Baseline file: `src/my_project/fem/python_fem.py`
+- Dependencies: `numpy`, `scipy`
+- Input files: none
+- Output CSV: `results/fem_spectrum.csv`
+
+Run from the repository root:
 
 ```bash
 python src/my_project/fem/python_fem.py
 ```
 
-Для FEM-скрипта нужны `numpy` и `scipy`. Скрипт не требует входных файлов и сохраняет таблицу спектра в `results/fem_spectrum.csv`.
+## Theory And References
 
-Для быстрой проверки аналитического слоя есть smoke test:
+Base notation in the theory-facing materials is oriented to `docs/literature/pdf/Статья-Дорофеев-2025.pdf`.
+
+When comparing against `docs/literature/pdf/2003JSVb.pdf`, account for the known sign issue in its determinant-like matrix record. The printed sign pattern from that source must not be copied blindly. For the current local implementation, the verified local theory and the corresponding local code are treated as the source of truth.
+
+## Tests
+
+The analytic smoke test is `tests/test_analytic_smoke.py`.
+
+Run from the repository root:
 
 ```bash
 python -m unittest discover -s tests -p "test_analytic_smoke.py"
 ```
-
-Smoke test находится в `tests/test_analytic_smoke.py` и проверяет, что после рефакторинга determinant, контрольные корни и базовые численные значения не изменились.
