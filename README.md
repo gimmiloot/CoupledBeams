@@ -18,6 +18,7 @@ CoupledBeams is a research repository for frequency models and computations for 
 - `src/my_project/analytic/FreqMuNet.py` — baseline `mu`-sweep plot in dimensionless `Lambda`, with additional single-beam CS reference curves over the coupled-beam branches.
 - `src/my_project/analytic/formulas.py` — shared matrix and determinant assembly extracted during refactoring.
 - `src/my_project/analytic/solvers.py` — shared numerical solver logic extracted during refactoring.
+- `scripts/plot_freq_mu_vs_fem.py` — comparison plot overlaying analytic `mu`-branches with FEM frequencies from `results/fem_spectrum.csv`.
 
 The analytic refactoring did not change the formulas, determinant structure, unknown ordering, signs, or coefficients. It only extracted the common layer for reuse. `FreqFromMu.py` and `FreqMuNet.py` now share the same common mathematical layer and differ only in plotting/output behavior and in their preserved branch-tracking mode.
 
@@ -27,6 +28,7 @@ Run from the repository root:
 python src/my_project/analytic/FreqFromAngle.py
 python src/my_project/analytic/FreqFromMu.py
 python src/my_project/analytic/FreqMuNet.py
+python scripts/plot_freq_mu_vs_fem.py
 ```
 
 ## FEM Baseline
