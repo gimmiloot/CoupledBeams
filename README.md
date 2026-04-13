@@ -19,6 +19,12 @@ CoupledBeams is a research repository for frequency models and computations for 
 - `src/my_project/analytic/formulas.py` — shared matrix and determinant assembly extracted during refactoring.
 - `src/my_project/analytic/solvers.py` — shared numerical solver logic extracted during refactoring.
 - `scripts/plot_freq_mu_vs_fem.py` — comparison plot overlaying analytic `mu`-branches with FEM frequencies from `results/fem_spectrum.csv`.
+- `scripts/compare_beta0_analytic_vs_fem.py` — focused `beta=0` audit with explicit `bending`/`axial` mode labeling, type-aware analytic/FEM matching, separate bending and axial plots, and saved comparison tables without changing the baseline formulas or FEM model.
+- `scripts/compare_beta_positive_type_aware.py` — extends the type-aware audit to several `beta > 0` values using continuation from the validated `beta=0` branches, saves multibeta comparison tables, and plots bending descendants, the first axial descendant, and FEM axial-fraction mixing diagnostics versus `mu`.
+- `scripts/analyze_branchwise_fem_spectrum.py` — FEM branch-continuation audit over a 2D `(beta, mu)` grid, seeded from the pure `beta=0` spectrum and saved as branch-wise tables, extrema summaries, gap maps, and branch-colored spectrum plots for axial-descendant and bending-descendant evolution.
+- `scripts/plot_beta_sweep_mu0_compare.py` — presentation-oriented comparison of analytic and FEM beta-sweeps at `mu = 0` for selected radii, plotted in the dimensionless frequency parameter `Λ` with solid analytic branches, same-color FEM markers, and saved smoothed PNG/CSV outputs in `results/`; the script uses local beta-grid densification plus finer analytic root acquisition and local continuation in diagnosed high-branch spike windows without changing the shared formulas or FEM baseline.
+- `scripts/plot_beta_sweep_mu0_four_radii_compare.py` — builds one shared `2x2` presentation figure for `mu = 0` and radii `r = 0.005, 0.01, 0.015, 0.02`, reusing the smoothed beta-sweep comparison style, saving one common PNG plus a combined CSV and per-radius CSV outputs for newly computed radii.
+- `scripts/plot_mu_sweep_beta0_four_radii_compare.py` — builds one shared `2x2` presentation figure for the `beta = 0` mu-sweep at radii `r = 0.005, 0.01, 0.015, 0.02`, reusing the type-aware bending matching from `scripts/compare_beta0_analytic_vs_fem.py` and the muted CS single-rod dashed reference curves from `src/my_project/analytic/FreqMuNet.py`, and saving one common PNG plus per-radius and combined CSV outputs in `results/`.
 
 The analytic refactoring did not change the formulas, determinant structure, unknown ordering, signs, or coefficients. It only extracted the common layer for reuse. `FreqFromMu.py` and `FreqMuNet.py` now share the same common mathematical layer and differ only in plotting/output behavior and in their preserved branch-tracking mode.
 
@@ -29,6 +35,12 @@ python src/my_project/analytic/FreqFromAngle.py
 python src/my_project/analytic/FreqFromMu.py
 python src/my_project/analytic/FreqMuNet.py
 python scripts/plot_freq_mu_vs_fem.py
+python scripts/compare_beta0_analytic_vs_fem.py
+python scripts/compare_beta_positive_type_aware.py
+python scripts/analyze_branchwise_fem_spectrum.py
+python scripts/plot_beta_sweep_mu0_compare.py
+python scripts/plot_beta_sweep_mu0_four_radii_compare.py
+python scripts/plot_mu_sweep_beta0_four_radii_compare.py
 ```
 
 ## FEM Baseline
