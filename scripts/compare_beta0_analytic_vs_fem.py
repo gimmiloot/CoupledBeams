@@ -16,6 +16,8 @@ from matplotlib.lines import Line2D
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SRC_ROOT = REPO_ROOT / "src"
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
@@ -23,6 +25,7 @@ from my_project.analytic.FreqFromMu import BeamParams  # noqa: E402
 from my_project.analytic.formulas import lambdas_to_frequencies  # noqa: E402
 from my_project.analytic.solvers import find_first_n_roots, tracked_lambdas_vs_mu  # noqa: E402
 from my_project.fem import python_fem as fem  # noqa: E402
+from scripts.sweep_grid_policy import ANALYSIS_MU_STEP, analysis_mu_grid  # noqa: E402
 
 
 BASE_PARAMS = BeamParams(E=2.1e11, rho=7800.0, r=0.005, L_total=2.0)
@@ -251,22 +254,24 @@ def compute_baseline_fem_sweep(mu_values: np.ndarray, n_modes: int) -> np.ndarra
 
 
 def load_or_compute_fem_sweep(mu_values: np.ndarray | None, n_modes: int) -> tuple[np.ndarray, np.ndarray, str]:
+    requested_mu = np.asarray(analysis_mu_grid(), dtype=float) if mu_values is None else np.asarray(mu_values, dtype=float)
+
     if FEM_CSV_PATH.exists():
         try:
             csv_mu, fem_freqs = load_fem_frequency_table(FEM_CSV_PATH, n_modes=n_modes)
             fem_mu0, _ = solve_fem_modes(BASE_PARAMS, mu=0.0, n_modes=n_modes)
             if abs(csv_mu[0]) > 1e-12:
                 raise ValueError("existing FEM CSV does not start at mu=0")
+            if len(csv_mu) != len(requested_mu) or not np.allclose(csv_mu, requested_mu, atol=1e-10, rtol=0.0):
+                raise ValueError("existing FEM CSV uses a different mu grid than the current analysis policy")
             if not np.allclose(fem_freqs[:, 0], fem_mu0, rtol=1e-4, atol=1e-3):
                 raise ValueError("existing FEM CSV does not match the current baseline FEM at mu=0")
             return csv_mu, fem_freqs, str(FEM_CSV_PATH.relative_to(REPO_ROOT))
         except Exception as exc:
             print(f"[info] Existing FEM CSV is unsuitable for beta=0 comparison: {exc}")
 
-    if mu_values is None:
-        mu_values = np.linspace(0.0, 0.9, 200)
-    fem_freqs = compute_baseline_fem_sweep(mu_values, n_modes=n_modes)
-    return np.asarray(mu_values, dtype=float), fem_freqs, "recomputed in-memory from src/my_project/fem/python_fem.py"
+    fem_freqs = compute_baseline_fem_sweep(requested_mu, n_modes=n_modes)
+    return requested_mu, fem_freqs, "recomputed in-memory from src/my_project/fem/python_fem.py"
 
 
 def build_mu0_rows() -> list[dict[str, float | int | str]]:
@@ -679,6 +684,8 @@ def main() -> None:
 
     print(f"FEM source for beta=0 low-mode sweep: {fem_source}")
     print(f"mu grid: {mu_values[0]:.6f} .. {mu_values[-1]:.6f} ({len(mu_values)} points)")
+    print(f"analysis mu base step: {ANALYSIS_MU_STEP:.4f}")
+    print("local mu refinement windows: none")
     print(
         "type-aware matching: bending rows use the first six modes classified as bending; "
         "axial rows use the first mode classified as axial."

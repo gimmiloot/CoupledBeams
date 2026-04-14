@@ -28,10 +28,15 @@ from scripts.compare_beta0_analytic_vs_fem import (  # noqa: E402
     fem_parameter_override,
 )
 from my_project.fem import python_fem as fem  # noqa: E402
+from scripts.sweep_grid_policy import (  # noqa: E402
+    ANALYSIS_BETA_STEP,
+    ANALYSIS_MU_STEP,
+    analysis_beta_grid,
+    analysis_mu_grid,
+)
 
-
-BETA_VALUES = np.arange(0.0, 15.0 + 0.25, 0.5)
-MU_VALUES = np.linspace(0.0, 0.9, 61)
+BETA_VALUES = analysis_beta_grid()
+MU_VALUES = analysis_mu_grid()
 N_TRACK = 30
 N_SOLVE = 50
 FREQ_WEIGHT = 0.03
@@ -865,6 +870,9 @@ def main() -> None:
     print(f"tracked branches: {len(metadata)}")
     print(f"beta grid: {BETA_VALUES[0]:.1f} .. {BETA_VALUES[-1]:.1f} ({len(BETA_VALUES)} points)")
     print(f"mu grid: {MU_VALUES[0]:.3f} .. {MU_VALUES[-1]:.3f} ({len(MU_VALUES)} points)")
+    print(f"analysis beta base step: {ANALYSIS_BETA_STEP:.1f} deg")
+    print(f"analysis mu base step: {ANALYSIS_MU_STEP:.4f}")
+    print("local refinement windows: none")
     print(f"saved table: {BRANCH_GRID_PATH}")
     print(f"saved table: {BRANCH_SUMMARY_PATH}")
     print(f"saved table: {EXTREMA_PATH}")

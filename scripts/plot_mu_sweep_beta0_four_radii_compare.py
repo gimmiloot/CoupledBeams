@@ -32,10 +32,11 @@ from scripts.compare_beta0_analytic_vs_fem import (  # noqa: E402
 )
 from my_project.analytic.FreqMuNet import roots_clamped_supported, single_lambda  # noqa: E402
 from my_project.analytic.formulas import BeamParams, frequency_scale  # noqa: E402
+from scripts.sweep_grid_policy import PRESENTATION_MU_STEP, presentation_mu_grid  # noqa: E402
 
 
 RADIUS_VALUES = (0.005, 0.01, 0.015, 0.02)
-MU_VALUES = np.linspace(0.0, 0.9, 200)
+MU_VALUES = presentation_mu_grid()
 N_PLOTTED_BRANCHES = N_BENDING
 N_REFERENCE_LPLUS = 6
 N_REFERENCE_LMINUS = 3
@@ -306,6 +307,8 @@ def main() -> None:
 
     print(f"saved figure: {FIGURE_PATH}")
     print(f"saved combined csv: {COMBINED_CSV_PATH}")
+    print(f"presentation mu base step: {PRESENTATION_MU_STEP:.3f}")
+    print("local mu refinement windows: none")
     for case in cases:
         print(f"radius={float(case['radius']):.3f} m")
         print(f"  source csv: {case['source_csv']}")

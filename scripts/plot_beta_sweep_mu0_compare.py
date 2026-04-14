@@ -25,11 +25,16 @@ if str(SRC_ROOT) not in sys.path:
 from my_project.analytic.formulas import BeamParams, lambdas_to_frequencies  # noqa: E402
 from my_project.analytic.solvers import find_first_n_roots, find_roots_scan_bisect  # noqa: E402
 from my_project.fem import python_fem as fem  # noqa: E402
+from scripts.sweep_grid_policy import (  # noqa: E402
+    LOCAL_BETA_REFINEMENT_STEP,
+    PRESENTATION_BETA_STEP,
+    nominal_step,
+    presentation_beta_grid as build_presentation_beta_grid,
+)
 
 
 MU_VALUE = 0.0
 RADIUS_VALUES = (0.005, 0.01)
-BETA_VALUES_DEFAULT = np.arange(0.0, 91.0, 1.0)
 N_BRANCHES = 10
 N_ANALYTIC_CANDIDATES = 16
 N_FEM_SOLVE = 16
@@ -40,7 +45,6 @@ ANALYTIC_FINE_SCAN_STEP = 0.0015
 ANALYTIC_CONTINUATION_SCAN_STEP = 0.0002
 ANALYTIC_GROW_FACTOR = 1.35
 ANALYTIC_MAX_TRIES = 8
-LOCAL_BETA_STEP = 0.1
 LOCAL_CONTINUATION_WINDOW = 0.08
 
 PROBLEM_WINDOWS_BY_RADIUS = {
@@ -120,10 +124,7 @@ def beta_in_problem_window(radius: float, beta_deg: float) -> bool:
 
 
 def presentation_beta_grid(radius: float) -> np.ndarray:
-    dense_chunks = [BETA_VALUES_DEFAULT]
-    for left, right in problem_windows(radius):
-        dense_chunks.append(np.arange(left, right + 0.5 * LOCAL_BETA_STEP, LOCAL_BETA_STEP))
-    return np.unique(np.round(np.concatenate(dense_chunks), 10))
+    return build_presentation_beta_grid(local_windows=problem_windows(radius))
 
 
 def analytic_scan_step(radius: float, beta_deg: float) -> float:
@@ -429,8 +430,11 @@ def main() -> None:
         print(f"radius={summary['radius']:.3f} m")
         print(f"  beta endpoint used: {summary['beta_endpoint_used']:.1f} deg")
         print(f"  beta points: {summary['beta_count']}")
+        print(f"  presentation beta base step: {PRESENTATION_BETA_STEP:.1f} deg")
+        print(f"  effective min beta step: {nominal_step(summary['beta_values']):.3f} deg")
         print(f"  problem windows: {summary['problem_windows']}")
         print(f"  analytic candidates: {summary['analytic_candidates']}")
+        print(f"  local beta refinement step: {LOCAL_BETA_REFINEMENT_STEP:.1f} deg")
         print(f"  local fine scan_step: {summary['fine_scan_step']}")
         print(f"  local continuation scan_step: {summary['continuation_scan_step']}")
         print(f"  shown branches: {', '.join(summary['shown_branches'])}")

@@ -34,10 +34,11 @@ from scripts.compare_beta0_analytic_vs_fem import (  # noqa: E402
 from my_project.analytic.formulas import lambdas_to_frequencies  # noqa: E402
 from my_project.analytic.solvers import find_first_n_roots, find_roots_scan_bisect  # noqa: E402
 from my_project.fem import python_fem as fem  # noqa: E402
+from scripts.sweep_grid_policy import ANALYSIS_MU_STEP, analysis_mu_grid  # noqa: E402
 
 
 BETA_VALUES = (2.0, 5.0, 10.0, 15.0)
-MU_VALUES = np.linspace(0.0, 0.9, 101)
+MU_VALUES = analysis_mu_grid()
 BETA_CONTINUATION_STEP = 0.5
 N_ANALYTIC_TRACK = 24
 ANALYTIC_BENDING_CANDIDATES = 12
@@ -524,6 +525,9 @@ def main() -> None:
 
     print(f"betas analysed: {BETA_VALUES}")
     print(f"mu grid: {MU_VALUES[0]:.6f} .. {MU_VALUES[-1]:.6f} ({len(MU_VALUES)} points)")
+    print(f"analysis beta continuation step: {BETA_CONTINUATION_STEP:.1f} deg")
+    print(f"analysis mu base step: {ANALYSIS_MU_STEP:.4f}")
+    print("local refinement windows: none")
     print(f"saved table: {MATCH_TABLE_PATH}")
     print(f"saved summary: {SUMMARY_TABLE_PATH}")
     print(f"saved plot: {BENDING_PLOT_PATH}")
