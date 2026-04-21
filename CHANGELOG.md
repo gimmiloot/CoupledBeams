@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## 2026-04-21
+
+- Синхронизирована проектная теория с текущим текстом статьи в `paper_dorofeev_style/`: в `docs/theory/main_note.md` и `docs/theory/assumptions.md` зафиксированы смысл параметра `\mu`, нормировка `\Lambda`, эталонная роль `\mu=0`, пунктирные CS reference-линии и необходимость интерпретировать `\Lambda(\mu)` вместе с формами колебаний без изменения формул, determinant, solver logic, FEM baseline или текста статьи.
+
+## 2026-04-20
+
+- Переписано введение статьи в `paper_dorofeev_style/sections/introduction.tex`: убраны неподтверждённые обобщения, встроены реальные ссылки по месту, а работы `perkins1986`, `pierre1988` и `liu2002` теперь используются как источники по общим спектральным механизмам `veering`/`mode localization`, а не как прямые аналоги текущей геометрии.
+- Обновлена локальная библиография статьи в `paper_dorofeev_style/bib/references.bib`: добавлены записи `liu2002derivatives` и `bauer2025coupledrods`, причём ссылка на предыдущую нашу статью теперь привязана к DOI `10.24412/0136-4545-2025-3-73-81`.
+
+## 2026-04-19
+
+- Rebuilt article Figure 2 in `paper_dorofeev_style/generate_article_spectral_figures.py` around branch identity instead of the smoothed sorted-spectrum CSV: the figure now seeds working branch numbers from the `beta = 0` bending descendants, tracks FEM descendants across `0 <= beta <= 90 deg` by MAC+frequency continuity, matches analytic roots to those tracked descendants at each `beta`, and therefore preserves branch colors/numbers through real crossings without changing the determinant, shared solver logic, or baseline FEM.
+- Updated `paper_dorofeev_style/sections/baseline_spectral_picture_mu0.tex` so the Figure 2 caption explicitly states that the right-edge numbers denote the working branch numbering and that color/number stay attached to a branch even when its current place in the spectrum changes.
+- Reworked the article mode-shape presentation layer for Figures 4 and 5: `paper_dorofeev_style/generate_targeted_analysis_figures.py` now saves silent per-panel PNGs with only the undeformed geometry and the two deformed arm curves, while `paper_dorofeev_style/manuscript.tex` and `paper_dorofeev_style/sections/mode_shapes_and_frequency_shift.tex` assemble those panels through `subfigure` blocks and move the panel labels `а)`–`е)` / `а)`–`в)` into LaTeX without changing the tracked states, branch logic, or data.
+
+- Fixed the article mode-shape sign presentation in `paper_dorofeev_style/generate_targeted_analysis_figures.py`: within each figure, each branch family now uses a reference panel plus scalar-product sign alignment, with the reference orientation anchored by the short-arm deflection direction, so panel-to-panel sign flips no longer create artificial visual "rearrangements" of the same tracked mode.
+
+## 2026-04-18
+
+- Added `scripts/analyze_target_descendants_beta15_r5.py` for targeted analysis-only tracking of `bending_desc_01`, `bending_desc_02`, and `bending_desc_04` at `beta = 15 deg`, `r = 0.005`, and `0 <= mu <= 0.9`: the script reuses the established FEM continuation and MAC-based descendant tracking, counts local half-wave order on the left and right arms from reconstructed beam-shape profiles, compares each tracked state against single-rod CS reference families, and saves compact CSV/PNG outputs in `results/` without changing the determinant, shared solver logic, or baseline FEM.
+- Updated `paper_dorofeev_style/sections/analytic_model.tex` and the `Lambda(mu)` figure caption to document the compact coupled-system characteristic determinant and to identify the dashed reference curves as single-rod clamped-supported families with $l_1=l(1-\mu)$ and $l_2=l(1+\mu)$, without changing the verified mathematics or determinant code.
+
+## 2026-04-15
+
+- Added `scripts/plot_flat_mu_bending_desc_01_mu0_0p1_0p2_ru.py` to generate the clean Russian `2x3` mode-shape figure for the `beta = 15 deg` descendant branch `bending_desc_01` at `r = 0.005, 0.02` and `mu = 0, 0.1, 0.2`, reusing the established FEM MAC-tracking plotting workflow without changing the determinant, shared solver logic, or baseline FEM.
+- Added `scripts/plot_flat_mu_bending_desc_02_mu0_0p1_0p2_ru.py` to generate the clean Russian `2x3` mode-shape figure for the `beta = 15 deg` descendant branch `bending_desc_02` at `r = 0.005, 0.02` and `mu = 0, 0.1, 0.2`, reusing the established FEM MAC-tracking plotting workflow without changing the determinant, shared solver logic, or baseline FEM.
+
 ## 2026-04-13
 
 - Added `scripts/plot_mu_sweep_beta_fixed_four_radii_compare.py` to generate shared `2x2` fixed-`beta` mu-sweep figures in `Lambda` for `beta = 7.5 deg` and `beta = 15 deg` across radii `r = 0.005, 0.01, 0.015, 0.02`, reusing the established positive-`beta` low-branch comparison workflow together with the same presentation style and muted CS reference lines as the existing `beta = 0` four-radii figure.
