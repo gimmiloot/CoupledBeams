@@ -1,0 +1,4 @@
+﻿"target_branch_id","paired_branch_id","mu_left","mu_right","mac_AA","mac_BB","mac_AB","mac_BA","notes"
+"bending_desc_01","bending_desc_04","0.20","0.35","NA","NA","NA","NA","pairwise_MAC_not_available_from_existing_data; only along-track assignment_mac is present in existing CSVs"
+"bending_desc_04","bending_desc_01","0.20","0.35","NA","NA","NA","NA","pairwise_MAC_not_available_from_existing_data; only along-track assignment_mac is present in existing CSVs"
+"bending_desc_02","bending_desc_01","0.00","0.90","NA","NA","NA","NA","pairwise_MAC_not_available_from_existing_data; only along-track assignment_mac is present in existing CSVs"
