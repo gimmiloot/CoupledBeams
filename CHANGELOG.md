@@ -2,6 +2,12 @@
 
 ## 2026-04-21
 
+- Added `nair_1973_quasi_degeneracies` to the project literature system and
+  recorded its use as a mechanism-level source for quasi-degeneracy / rapid
+  modal-reorganization vocabulary; updated veering notes with a conservative
+  `bending_desc_04` tracked-pair search from existing `beta = 15 deg`,
+  `r = 5 mm` data only, without new solves, code changes, or manuscript edits.
+
 - Синхронизирована проектная теория с текущим текстом статьи в `paper_dorofeev_style/`: в `docs/theory/main_note.md` и `docs/theory/assumptions.md` зафиксированы смысл параметра `\mu`, нормировка `\Lambda`, эталонная роль `\mu=0`, пунктирные CS reference-линии и необходимость интерпретировать `\Lambda(\mu)` вместе с формами колебаний без изменения формул, determinant, solver logic, FEM baseline или текста статьи.
 
 ## 2026-04-20

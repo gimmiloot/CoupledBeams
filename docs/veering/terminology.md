@@ -9,6 +9,18 @@ change rapidly in the interaction region.
 For the current project, a strict veering claim should be based on tracked
 branch identity, a close spectral gap, and mode-shape evidence.
 
+## Quasi-Degeneracy
+
+Working meaning: a cautious label for close or nearly close spectral situations
+with rapid modal reorganization where strict veering has not been established.
+
+For this project, use this term when the data show rapid changes of local
+modal order, nodal pattern, or localization, but do not yet provide a convincing
+competing tracked branch, small paired gap, and pairwise exchange evidence.
+
+The plate-specific symmetry-group rules from `nair_1973_quasi_degeneracies`
+should not be transferred directly to the coupled-rod geometry.
+
 ## Exchange Of Modal Character
 
 Working meaning: an identified branch keeps its continuation identity, but the

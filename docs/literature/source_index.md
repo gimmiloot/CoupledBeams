@@ -41,6 +41,16 @@ Citation keys синхронизированы с `docs/literature/bibliography.
 - Замечание по корректности: в printed finite-beam matrix `T` формулы `(39)` знаки у beam-2 bending block в первых двух кинематических строках не согласуются с конечномерным аналогом условий `(10)--(11)`. В manuscript напечатано `(+,+,-,-)` для членов `\sin k_2L_2 \cos\alpha`, `\sinh k_2L_2 \cos\alpha`, `\sin k_2L_2 \sin\alpha`, `\sinh k_2L_2 \sin\alpha`, тогда как после переноса кинематических условий в левую часть получается противоположный sign pattern `(-,-,+,+)`. При переписывании determinant эти четыре элемента нужно проверять вручную.
 - Метаданные: страница DOI и авторский архив подтверждают библиографию; локальный PDF не является издательским финальным layout.
 
+## `nair_1973_quasi_degeneracies`
+- PDF: `docs/literature/pdf/nair1973.pdf`
+- Тип: статья.
+- Роль: вспомогательный.
+- Что важно для CoupledBeams: источник по vocabulary and interpretation of quasi-degeneracy, true frequency crossing, and rapid modal/nodal-pattern changes in vibration spectra.
+- Обозначения: `frequency crossing`, `transition`, `quasi-degeneracy`, `symmetry group`, close eigenvalues/eigenfunctions, nodal patterns; exact operators and symmetry notation are plate-specific.
+- Критично смотреть: pp. 975--976 summary, terminology, and notation; analytical discussion of symmetry-group crossing rules; conclusion around pp. 985--986; rectangular/skew-plate examples and figures for rapid nodal-pattern changes.
+- Замечание по применимости: useful by mechanism and terminology, not by geometry. Do not transfer the plate symmetry-group criteria directly to the two-rod CoupledBeams system.
+- Метаданные: recovered from the local PDF title page.
+
 ## `quintana_2010_restrained_timoshenko_beams`
 - PDF: `docs/literature/pdf/1.pdf`
 - Тип: статья.
