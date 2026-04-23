@@ -71,6 +71,53 @@ For important formulas, check:
 Do not copy its sign pattern blindly into local theory.
 When comparing against that source, always account for the fact that some signs in local formulas may already be absorbed by arguments such as `-\Lambda(...)` or by moving terms to the left-hand side.
 
+## Veering bridge package maintenance
+This subsection applies to `docs/theory/veering_bridge/`.
+
+Canonical files for `docs/theory/veering_bridge/` are:
+- `README.md`
+- `foundations.md`
+- `theorem_map.md`
+- `lemma_statements.md`
+- `proof_notes.md`
+
+Do not create file proliferation in this package, including:
+- `*_status.md`
+- `*_registry.md`
+- `*_lemma.md`
+- `*_next_step.md`
+- local archives inside `docs/theory/veering_bridge/`
+
+Historical preservation must use git history, not a new markdown archive.
+The existing `migration_log.md` is a maintenance/history note, not part of the canonical theorem line.
+`migration_log.md` update only when the package structure changes materially; do not edit it for ordinary theorem-line progress.
+
+Canonical file roles:
+- `foundations.md`: definitions, conventions, notation, layer discipline.
+- `theorem_map.md`: what has been reached, status labels, dependencies, limits.
+- `lemma_statements.md`: clean statement-level theorem, lemma, and corollary text only.
+- `proof_notes.md`: proof attempts, cautions, failure modes, constructive remarks.
+- `README.md`: short reader-facing overview of the package and current global status.
+
+Every new result must be classified explicitly as one of:
+- exact algebra / exact local reformulation;
+- conditional theorem under explicit hypotheses;
+- controlled approximation;
+- accepted standard background.
+
+Do not mix exact root-capture statements with approximate frozen-model statements.
+
+Do not introduce premature symmetric-normal-form, `delta-kappa`, veering-criterion, or branch-application language before the package has actually reached that layer.
+
+Each genuine new theorem step must update, in this order:
+1. `foundations.md` only if new objects are needed.
+2. `lemma_statements.md` with the clean statement.
+3. `theorem_map.md` with status, dependencies, and exact limits.
+4. `proof_notes.md` with the proof line and failure modes.
+5. `README.md` only if the package-level overview genuinely changes.
+
+If a ready-to-use corollary follows from an already proved step and can be used directly later, state it explicitly in `lemma_statements.md` and reflect it in `theorem_map.md`; do not leave it only implicit in `proof_notes.md`.
+
 ## Edit Style
 - Prefer small, reviewable diffs.
 - Before a large theory edit, briefly explain the plan.

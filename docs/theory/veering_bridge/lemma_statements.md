@@ -792,3 +792,701 @@ This is a coefficient-level persistence lemma for frozen noncoalescence. It
 does not require the second frozen root branch as a primary input. It does
 not prove that the needed coefficient bounds hold on the actual CoupledBeams
 regime.
+
+## 17. Ready-to-use local first-order shift corollary
+
+Work on a local interval `I0` on which the exact normalized block, frozen
+model, matrix remainder, frozen root branch, and moving discs are already
+defined:
+
+```text
+F(Lambda,p), G(Lambda,p), E(Lambda,p)=F(Lambda,p)-G(Lambda,p),
+Lambda_fr(p), D_r(p).
+```
+
+Assume the previous branch-selection and closure steps have already supplied
+a local exact branch `Lambda_ex(p)` on `I0` such that
+
+```text
+f_p(Lambda_ex(p)) = 0,
+Lambda_ex(p) in D_r(p),
+|Lambda_ex(p)-Lambda_fr(p)| <= B_shift(p).
+```
+
+Here `B_shift(p)` is the constructive branch-shift bound supplied by the
+determinant-discrepancy and moving-disc closure steps.
+
+Assume also that the determinant-discrepancy and derivative-control
+quantities from the reduced-model objects are finite on the moving discs:
+
+```text
+M_G(p), M_E(p), M_{E,1}(p) < infinity.
+```
+
+Finally, assume the frozen discriminant persistence step has been verified on
+`I0`, either directly through the nonvanishing of
+
+```text
+Disc_fr(p) = T(p)^2 - 4 D0(p),
+T(p)=tr K0(p), D0(p)=det K0(p),
+```
+
+or through the coefficient-control criterion. Thus there is a constant
+`c0 > 0` such that, for all `p in I0`,
+
+```text
+|partial_Lambda g_p(Lambda_fr(p))| >= c0.
+```
+
+Then, for every `p in I0`, the local first-order shift formula can be used in
+the ready-to-use form
+
+```text
+Lambda_ex(p) - Lambda_fr(p)
+=
+- (f_p(Lambda_fr(p)) - g_p(Lambda_fr(p)))
+  / partial_Lambda g_p(Lambda_fr(p))
++ Rem_shift(p),
+```
+
+with the constructive remainder bound
+
+```text
+|Rem_shift(p)|
+<=
+[
+  (sqrt(2) M_E(p) + (M_G(p) + M_E(p)) M_{E,1}(p)) B_shift(p)
+  + B_shift(p)^2
+] / c0.
+```
+
+The coefficient `1` in front of `B_shift(p)^2` comes from the `FOSF`
+remainder term
+
+```text
+(1/2) H_g2(p) |delta_p|^2
+```
+
+after using the frozen local `2x2` identity `H_g2(p)=2` from derivative
+control.
+
+In this corollary, the denominator lower bound is supplied by frozen
+discriminant persistence through `Disc_fr(p)`, and the derivative-discrepancy
+control is supplied by the reduced-model matrix controls
+`M_G(p), M_E(p), M_{E,1}(p)`. No separate abstract denominator hypothesis or
+separate abstract derivative-discrepancy hypothesis is being added here.
+
+This is a local conditional corollary packaging the earlier steps. It does not
+prove a project-specific discriminant margin, a sharper asymptotic law,
+symmetric normal form, project-defined `delta-kappa`, a final veering
+criterion, or any branch-case application theorem.
+
+## 18. Parameterwise derivative comparison lemma
+
+Work on a local interval `I0` where the ready-to-use local first-order shift
+corollary applies. Write
+
+```text
+lambda(p) = Lambda_ex(p),
+alpha(p) = Lambda_fr(p),
+delta_p = lambda(p) - alpha(p).
+```
+
+Assume that `f(Lambda,p)=f_p(Lambda)` and `g(Lambda,p)=g_p(Lambda)` are
+regular enough in `(Lambda,p)` to differentiate the two branch equations
+
+```text
+f_p(lambda(p)) = 0,
+g_p(alpha(p)) = 0.
+```
+
+Assume also that the frozen denominator lower bound from frozen discriminant
+persistence is available:
+
+```text
+|partial_Lambda g_p(alpha(p))| >= c0 > 0.
+```
+
+Let the derivative-control bound from reduced-model objects be
+
+```text
+C_Lambda(p)
+=
+sqrt(2) M_E(p) + (M_G(p) + M_E(p)) M_{E,1}(p).
+```
+
+Assume the exact-branch denominator is kept nonzero by the local closure
+condition
+
+```text
+C_Lambda(p) + 2 B_shift(p) < c0.
+```
+
+Then
+
+```text
+|partial_Lambda f_p(lambda(p))|
+>=
+c0 - C_Lambda(p) - 2 B_shift(p)
+> 0.
+```
+
+Consequently the exact branch satisfies
+
+```text
+lambda'(p)
+=
+- partial_p f_p(lambda(p)) / partial_Lambda f_p(lambda(p)).
+```
+
+The frozen branch satisfies
+
+```text
+alpha'(p)
+=
+- partial_p g_p(alpha(p)) / partial_Lambda g_p(alpha(p)).
+```
+
+Since
+
+```text
+g_p(Lambda)
+=
+(Lambda-Lambda0)^2 - T(p) (Lambda-Lambda0) + D0(p),
+```
+
+this frozen derivative formula is equivalently
+
+```text
+alpha'(p)
+=
+[T'(p) (alpha(p)-Lambda0) - D0'(p)]
+/
+[2 (alpha(p)-Lambda0) - T(p)].
+```
+
+The branch-shift derivative satisfies the exact comparison identity
+
+```text
+lambda'(p) - alpha'(p)
+=
+- [partial_p f_p(lambda(p)) - partial_p g_p(alpha(p))]
+  / partial_Lambda f_p(lambda(p))
++
+partial_p g_p(alpha(p))
+  [partial_Lambda f_p(lambda(p)) - partial_Lambda g_p(alpha(p))]
+  /
+  [partial_Lambda f_p(lambda(p)) partial_Lambda g_p(alpha(p))].
+```
+
+If, in addition, the `p`-derivative determinant discrepancy is controlled on
+the moving discs by
+
+```text
+H_pDelta(p)
+=
+sup_{Lambda in D_r(p)} |partial_p(f_p-g_p)(Lambda)|
+< infinity,
+```
+
+then the derivative difference obeys the conditional bound
+
+```text
+|lambda'(p) - alpha'(p)|
+<=
+[H_pDelta(p) + |T'(p)| B_shift(p)]
+/
+[c0 - C_Lambda(p) - 2 B_shift(p)]
++
+|-T'(p) (alpha(p)-Lambda0) + D0'(p)|
+  [C_Lambda(p) + 2 B_shift(p)]
+/
+[
+  (c0 - C_Lambda(p) - 2 B_shift(p)) c0
+].
+```
+
+This is a local conditional derivative-comparison step. It proves the
+implicit-differentiation identities and the displayed comparison bound under
+explicit denominator and `p`-derivative discrepancy hypotheses. It does not
+prove that `H_pDelta(p)` or the coefficient derivatives are small in the
+actual CoupledBeams regime, and it does not yield an asymptotic branch-shift
+law, symmetric normal form, project-defined `delta-kappa`, a final veering
+criterion, or a branch-case application theorem.
+
+## 19. `p`-derivative determinant-discrepancy control lemma
+
+Work on a local interval where the exact normalized block, frozen model, and
+matrix remainder are already defined:
+
+```text
+F(Lambda,p) = G(Lambda,p) + E(Lambda,p),
+f_p(Lambda) = det F(Lambda,p),
+g_p(Lambda) = det G(Lambda,p).
+```
+
+Assume that `G` and `E` are differentiable in `p` on the moving discs
+`D_r(p)`. In the local `2x2` setting, differentiating the exact determinant
+discrepancy identity gives, at fixed `Lambda`,
+
+```text
+partial_p(f_p-g_p)(Lambda)
+=
+tr(adj(partial_p G(Lambda,p)) E(Lambda,p))
++ tr(adj(G(Lambda,p)) partial_p E(Lambda,p))
++ tr(adj(E(Lambda,p)) partial_p E(Lambda,p)).
+```
+
+Consequently, using the Frobenius norm,
+
+```text
+|partial_p(f_p-g_p)(Lambda)|
+<=
+||partial_p G(Lambda,p)||_F ||E(Lambda,p)||_F
++
+(||G(Lambda,p)||_F + ||E(Lambda,p)||_F)
+||partial_p E(Lambda,p)||_F.
+```
+
+Define the local `p`-derivative matrix controls on `D_r(p)` by
+
+```text
+M_{G,p}(p) = sup_{Lambda in D_r(p)} ||partial_p G(Lambda,p)||_F,
+M_{E,p}(p) = sup_{Lambda in D_r(p)} ||partial_p E(Lambda,p)||_F.
+```
+
+Then the `p`-derivative determinant discrepancy in `PDC` satisfies
+
+```text
+H_pDelta(p)
+=
+sup_{Lambda in D_r(p)} |partial_p(f_p-g_p)(Lambda)|
+<=
+M_{G,p}(p) M_E(p)
++ (M_G(p) + M_E(p)) M_{E,p}(p).
+```
+
+This is an exact local algebraic identity followed by a constructive
+Frobenius-norm bound. It is conditional on the stated `p`-differentiability
+and finiteness of the local matrix controls. It does not prove that those
+controls are small in the actual CoupledBeams regime.
+
+## 20. Ready-to-use parameterwise derivative-comparison corollary
+
+Assume the hypotheses of the parameterwise derivative comparison lemma on a
+local interval `I0`. Assume also that the `p`-derivative
+determinant-discrepancy control lemma applies on the same moving discs.
+
+With
+
+```text
+C_Lambda(p)
+=
+sqrt(2) M_E(p) + (M_G(p) + M_E(p)) M_{E,1}(p),
+```
+
+and the exact-denominator closure condition
+
+```text
+C_Lambda(p) + 2 B_shift(p) < c0,
+```
+
+the branch-shift derivative obeys the ready-to-use bound
+
+```text
+|lambda'(p) - alpha'(p)|
+<=
+[
+  M_{G,p}(p) M_E(p)
+  + (M_G(p) + M_E(p)) M_{E,p}(p)
+  + |T'(p)| B_shift(p)
+]
+/
+[c0 - C_Lambda(p) - 2 B_shift(p)]
++
+|-T'(p) (alpha(p)-Lambda0) + D0'(p)|
+  [C_Lambda(p) + 2 B_shift(p)]
+/
+[
+  (c0 - C_Lambda(p) - 2 B_shift(p)) c0
+].
+```
+
+Thus the abstract `H_pDelta(p)` input in `PDC` has been replaced by local
+matrix controls for `G`, `E`, `partial_p G`, and `partial_p E` on the moving
+discs.
+
+This remains a local conditional corollary. It does not prove project-specific
+smallness of `M_{G,p}(p)`, `M_{E,p}(p)`, `T'(p)`, or `D0'(p)`, and it does
+not yield an asymptotic branch-shift law, symmetric normal form,
+project-defined `delta-kappa`, a final veering criterion, or a branch-case
+application theorem.
+
+## 21. Frozen coefficient-derivative control lemma
+
+Work in the frozen local `2x2` setting
+
+```text
+G(Lambda,p) = ((Lambda-Lambda0) I - K0(p)),
+T(p) = tr K0(p),
+D0(p) = det K0(p),
+```
+
+and assume `K0(p)` is differentiable in `p`. Write
+
+```text
+K0(p) =
+[ a(p)  b(p)
+  c(p)  d(p) ].
+```
+
+Then the frozen matrix derivative is exact:
+
+```text
+partial_p G(Lambda,p) = -K0'(p).
+```
+
+Consequently, on every moving disc `D_r(p)`,
+
+```text
+M_{G,p}(p)
+=
+sup_{Lambda in D_r(p)} ||partial_p G(Lambda,p)||_F
+=
+||K0'(p)||_F.
+```
+
+The frozen coefficient derivatives are
+
+```text
+T'(p) = tr K0'(p) = a'(p) + d'(p),
+```
+
+and
+
+```text
+D0'(p)
+=
+tr(adj(K0(p)) K0'(p))
+=
+a'(p)d(p) + a(p)d'(p) - b'(p)c(p) - b(p)c'(p).
+```
+
+Using the Frobenius norm in the local `2x2` setting gives the coefficient
+bounds
+
+```text
+|T'(p)| <= sqrt(2) ||K0'(p)||_F,
+|D0'(p)| <= ||K0(p)||_F ||K0'(p)||_F.
+```
+
+For any frozen branch value `alpha(p)=Lambda_fr(p)`, the frozen numerator
+appearing in the derivative-comparison estimate therefore satisfies
+
+```text
+|-T'(p)(alpha(p)-Lambda0) + D0'(p)|
+<=
+(sqrt(2) |alpha(p)-Lambda0| + ||K0(p)||_F) ||K0'(p)||_F.
+```
+
+This is exact coefficient algebra followed by Frobenius-norm bounds. It
+removes `M_{G,p}(p)`, `T'(p)`, and `D0'(p)` as completely free inputs in the
+frozen part of the derivative comparison, but it still requires
+project-specific control of `K0'(p)` and of the exact-remainder derivative
+control `M_{E,p}(p)`.
+
+## 22. Frozen-coefficient ready-to-use derivative-comparison corollary
+
+Assume the hypotheses of the ready-to-use parameterwise
+derivative-comparison corollary. Assume also that the frozen
+coefficient-derivative control lemma applies at the same parameter value.
+
+Then, with
+
+```text
+C_Lambda(p)
+=
+sqrt(2) M_E(p) + (M_G(p) + M_E(p)) M_{E,1}(p),
+```
+
+and
+
+```text
+C_Lambda(p) + 2 B_shift(p) < c0,
+```
+
+the branch-shift derivative obeys the coefficient-level ready-to-use bound
+
+```text
+|lambda'(p) - alpha'(p)|
+<=
+[
+  ||K0'(p)||_F M_E(p)
+  + (M_G(p) + M_E(p)) M_{E,p}(p)
+  + sqrt(2) ||K0'(p)||_F B_shift(p)
+]
+/
+[c0 - C_Lambda(p) - 2 B_shift(p)]
++
+[
+  (sqrt(2) |alpha(p)-Lambda0| + ||K0(p)||_F) ||K0'(p)||_F
+]
+  [C_Lambda(p) + 2 B_shift(p)]
+/
+[
+  (c0 - C_Lambda(p) - 2 B_shift(p)) c0
+].
+```
+
+Thus the `RUPDC` inputs `M_{G,p}(p)`, `T'(p)`, and `D0'(p)` have been
+replaced by coefficient-level frozen-model quantities involving only
+`K0(p)` and `K0'(p)`, together with the already present exact-remainder
+control `M_{E,p}(p)`.
+
+This remains a local conditional corollary. The displayed estimate is not a
+project-specific asymptotic law: it still needs useful bounds for
+`||K0'(p)||_F`, `M_{E,p}(p)`, the existing matrix controls, and the frozen
+discriminant margin in the intended CoupledBeams regime.
+
+## 23. Exact-remainder `p`-derivative control lemma
+
+Work on a local interval where the exact normalized block and frozen model are
+defined:
+
+```text
+F(Lambda,p) = ((Lambda-Lambda0) I - K(Lambda,p)),
+G(Lambda,p) = ((Lambda-Lambda0) I - K0(p)),
+K0(p)=K(Lambda0,p),
+E(Lambda,p)=F(Lambda,p)-G(Lambda,p).
+```
+
+Then the exact-remainder identity is
+
+```text
+E(Lambda,p)
+=
+-(K(Lambda,p)-K0(p)).
+```
+
+Assume `K` is differentiable in `p` and `K0'(p)=partial_p K(Lambda0,p)`.
+Then, at fixed `Lambda`,
+
+```text
+partial_p E(Lambda,p)
+=
+- (partial_p K(Lambda,p) - partial_p K(Lambda0,p)).
+```
+
+Assume further that, for every `Lambda in D_r(p)`, the straight segment
+
+```text
+Lambda0 + t (Lambda - Lambda0), 0 <= t <= 1,
+```
+
+lies in the local normalization region, and that the mixed derivative
+`partial_{Lambda p} K` is continuous there. Define
+
+```text
+rho_0(p) = sup_{Lambda in D_r(p)} |Lambda - Lambda0|
+```
+
+and
+
+```text
+M_{K,Lambda p}(p)
+=
+sup_{Lambda in D_r(p), t in [0,1]}
+||partial_{Lambda p} K(Lambda0 + t (Lambda - Lambda0), p)||_F.
+```
+
+Then
+
+```text
+partial_p E(Lambda,p)
+=
+- (Lambda-Lambda0)
+  integral_0^1
+  partial_{Lambda p} K(Lambda0 + t (Lambda-Lambda0), p) dt,
+```
+
+and consequently
+
+```text
+M_{E,p}(p)
+=
+sup_{Lambda in D_r(p)} ||partial_p E(Lambda,p)||_F
+<=
+rho_0(p) M_{K,Lambda p}(p).
+```
+
+Since
+
+```text
+rho_0(p) <= |Lambda_fr(p)-Lambda0| + r,
+```
+
+one also has the explicit moving-disc bound
+
+```text
+M_{E,p}(p)
+<=
+(|Lambda_fr(p)-Lambda0| + r) M_{K,Lambda p}(p).
+```
+
+This is exact normalized-block algebra followed by a conditional local
+mixed-derivative bound. It reduces `M_{E,p}(p)` to a structural control of
+the exact normalized matrix `K(Lambda,p)`, but it still requires verifying
+the mixed derivative bound in the intended local region.
+
+## 24. Exact-remainder ready-to-use derivative-comparison corollary
+
+Assume the hypotheses of the frozen-coefficient ready-to-use
+derivative-comparison corollary. Assume also that the exact-remainder
+`p`-derivative control lemma applies at the same parameter value, so that
+
+```text
+M_{E,p}(p) <= rho_0(p) M_{K,Lambda p}(p).
+```
+
+Then, with
+
+```text
+C_Lambda(p)
+=
+sqrt(2) M_E(p) + (M_G(p) + M_E(p)) M_{E,1}(p),
+```
+
+and
+
+```text
+C_Lambda(p) + 2 B_shift(p) < c0,
+```
+
+the branch-shift derivative obeys the mixed-derivative ready-to-use bound
+
+```text
+|lambda'(p) - alpha'(p)|
+<=
+[
+  ||K0'(p)||_F M_E(p)
+  + (M_G(p) + M_E(p)) rho_0(p) M_{K,Lambda p}(p)
+  + sqrt(2) ||K0'(p)||_F B_shift(p)
+]
+/
+[c0 - C_Lambda(p) - 2 B_shift(p)]
++
+[
+  (sqrt(2) |alpha(p)-Lambda0| + ||K0(p)||_F) ||K0'(p)||_F
+]
+  [C_Lambda(p) + 2 B_shift(p)]
+/
+[
+  (c0 - C_Lambda(p) - 2 B_shift(p)) c0
+].
+```
+
+Equivalently, one may replace `rho_0(p)` by the explicit upper bound
+`|Lambda_fr(p)-Lambda0|+r`.
+
+Thus the `RUPDC-FC` input `M_{E,p}(p)` has been replaced by the structural
+mixed-derivative control `M_{K,Lambda p}(p)` for the exact normalized block.
+
+This remains a local conditional corollary. It does not prove that
+`M_{K,Lambda p}(p)`, `||K0'(p)||_F`, the existing matrix controls, or the
+frozen discriminant margin are small in the actual CoupledBeams regime.
+
+## 25. CoupledBeams quantitative-regime derivative-comparison corollary
+
+Assume a local CoupledBeams derivative-comparison quantitative regime
+`Q_der(I_Q)` holds on a small parameter interval `I_Q` in the sense of
+`foundations.md`. In particular, the canonical local construction through
+`RUPDC-ER` is in force and the regime constants satisfy
+
+```text
+|a_p(Lambda)| >= m0 on D_r(p),
+M_G(p) <= G_*,
+M_E(p) <= E_*,
+M_{E,1}(p) <= E_{1,*},
+||K0(p)||_F <= K_{0,*},
+||K0'(p)||_F <= K_{p,*},
+M_{K,Lambda p}(p) <= K_{Lambda p,*},
+|Lambda_fr(p)-Lambda0| <= A_*,
+```
+
+with frozen denominator margin
+
+```text
+|partial_Lambda g_p(Lambda_fr(p))| >= c0,
+```
+
+and with
+
+```text
+B_Q = [G_* E_* + (1/2) E_*^2] / m0,
+C_Q = sqrt(2) E_* + (G_* + E_*) E_{1,*},
+D_Q = c0 - C_Q - 2 B_Q > 0.
+```
+
+Then, writing
+
+```text
+lambda(p) = Lambda_ex(p),
+alpha(p) = Lambda_fr(p),
+```
+
+the derivative comparison supplied by `RUPDC-ER` is directly usable on
+`I_Q`: for every `p in I_Q`,
+
+```text
+|lambda'(p) - alpha'(p)|
+<=
+[
+  K_{p,*} E_*
+  + (G_* + E_*) (A_* + r) K_{Lambda p,*}
+  + sqrt(2) K_{p,*} B_Q
+]
+/
+D_Q
++
+[
+  (sqrt(2) A_* + K_{0,*}) K_{p,*}
+]
+  [C_Q + 2 B_Q]
+/
+[
+  D_Q c0
+].
+```
+
+This is only a conditional regime corollary. It packages the remaining
+project-specific inputs into a single checkable regime `Q_der(I_Q)` and then
+substitutes its uniform bounds into `RUPDC-ER`. It does not prove that the
+regime holds for any actual CoupledBeams branch, does not give an asymptotic
+law, and does not introduce symmetric normal form, project-defined
+`delta-kappa`, a veering criterion, or branch-case application language.
+
+## 26. Branch-ready `Q_der` verification protocol
+
+For a proposed concrete CoupledBeams local regime, prepare a branch-ready
+verification record with the fields specified in `foundations.md`:
+
+1. candidate selection data;
+2. local construction checks;
+3. frozen-model checks;
+4. matrix and derivative bounds;
+5. final decision.
+
+If the record supplies all data needed for `Q_der(I_Q)` and every listed
+check passes, then the local regime `Q_der(I_Q)` is verified for that concrete
+candidate and the CoupledBeams quantitative-regime derivative-comparison
+corollary applies on `I_Q`.
+
+If any required entry is absent, or if any construction, margin, derivative,
+or closure check fails, then the record is incomplete and no `QDR` conclusion
+may be drawn for that candidate.
+
+This protocol is branch-ready but still conditional. It does not verify any
+specific candidate by itself, does not construct a packet, does not prove the
+frozen-discriminant margin, and does not establish an asymptotic law,
+symmetric normal form, project-defined `delta-kappa`, a veering criterion, or
+any branch-case theorem.

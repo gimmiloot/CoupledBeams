@@ -393,12 +393,42 @@ package uses the Frobenius norm. On a moving disc `D_r(p)`, define
 ```text
 M_G(p) = sup_{Lambda in D_r(p)} ||G(Lambda,p)||_F,
 M_E(p) = sup_{Lambda in D_r(p)} ||E(Lambda,p)||_F,
-M_{E,1}(p) = sup_{Lambda in D_r(p)} ||partial_Lambda E(Lambda,p)||_F.
+M_{E,1}(p) = sup_{Lambda in D_r(p)} ||partial_Lambda E(Lambda,p)||_F,
+M_{G,p}(p) = sup_{Lambda in D_r(p)} ||partial_p G(Lambda,p)||_F,
+M_{E,p}(p) = sup_{Lambda in D_r(p)} ||partial_p E(Lambda,p)||_F.
 ```
 
 These are local matrix-level control quantities on the moving discs. They are
-used to bound `eta_loc(p)` and the derivative discrepancy
-`partial_Lambda(f_p-g_p)` through exact `2x2` determinant identities.
+used to bound `eta_loc(p)`, the `Lambda`-derivative discrepancy
+`partial_Lambda(f_p-g_p)`, and the `p`-derivative discrepancy
+`partial_p(f_p-g_p)` through exact `2x2` determinant identities.
+
+When controlling the exact-remainder `p`-derivative from the normalized block
+itself, also use the local distance from the normalization base point
+
+```text
+rho_0(p) = sup_{Lambda in D_r(p)} |Lambda - Lambda0|.
+```
+
+Thus
+
+```text
+rho_0(p) <= |Lambda_fr(p) - Lambda0| + r.
+```
+
+If the straight segments from `Lambda0` to the points of `D_r(p)` remain in
+the local normalization region and the mixed derivative exists there, define
+
+```text
+M_{K,Lambda p}(p)
+=
+sup_{Lambda in D_r(p), t in [0,1]}
+||partial_{Lambda p} K(Lambda0 + t (Lambda - Lambda0), p)||_F.
+```
+
+This is a structural normalized-block control for the exact-remainder
+quantity `M_{E,p}(p)`. It is not a new model and does not change the frozen
+`p`-only approximation.
 
 ## Local constructive branch-shift bound and closure condition
 
@@ -472,6 +502,102 @@ let `r > 0` be fixed. Uniform moving-disc boundary domination means:
 This is stronger than pointwise domination at one parameter value. It is the
 uniform hypothesis that lets the same moving-disc comparison argument be
 applied for every `p` in the interval.
+
+## Local CoupledBeams derivative-comparison quantitative regime
+
+After `RUPDC-ER`, the remaining project-specific derivative inputs can be
+packaged as a local quantitative regime. This is a regime template, not a
+claim that CoupledBeams already satisfies the bounds.
+
+A local CoupledBeams derivative-comparison quantitative regime on an interval
+`I_Q`, denoted here by `Q_der(I_Q)`, consists of the following data and
+checks.
+
+1. The canonical local construction through `RUPDC-ER` is in force on `I_Q`:
+   the exact normalized block, frozen branch `Lambda_fr(p)`, exact branch
+   `Lambda_ex(p)`, moving discs `D_r(p)`, and the segment set used in `ERPC`
+   are all inside the local normalization region.
+2. There are constants
+
+   ```text
+   m0, c0, r,
+   G_*, E_*, E_{1,*},
+   K_{0,*}, K_{p,*}, K_{Lambda p,*}, A_*
+   ```
+
+   with `m0,c0,r > 0`, such that for all `p in I_Q`,
+
+   ```text
+   |a_p(Lambda)| >= m0 on D_r(p),
+   M_G(p) <= G_*,
+   M_E(p) <= E_*,
+   M_{E,1}(p) <= E_{1,*},
+   ||K0(p)||_F <= K_{0,*},
+   ||K0'(p)||_F <= K_{p,*},
+   M_{K,Lambda p}(p) <= K_{Lambda p,*},
+   |Lambda_fr(p)-Lambda0| <= A_*.
+   ```
+
+3. The frozen branch has a denominator margin
+
+   ```text
+   |partial_Lambda g_p(Lambda_fr(p))| >= c0.
+   ```
+
+   Equivalently, after local labeling of the two frozen roots, one may verify
+   this through a frozen-discriminant margin such as
+   `|Disc_fr(p)| >= c0^2`.
+4. The regime constants satisfy the interval-smallness checks
+
+   ```text
+   B_Q = [G_* E_* + (1/2) E_*^2] / m0,
+   C_Q = sqrt(2) E_* + (G_* + E_*) E_{1,*},
+   B_Q < r,
+   C_Q + 2 B_Q < c0.
+   ```
+
+The strict inequalities are the local closure and denominator-protection
+checks used by the derivative-comparison line. They are the quantities to
+verify in a concrete CoupledBeams regime or numerical/symbolic branch audit.
+The package does not assert those checks for any actual branch.
+
+## Branch-ready `Q_der` verification record
+
+A branch-ready verification record is the project-facing checklist used to
+test `Q_der(I_Q)` on one concrete local CoupledBeams candidate. It is not a
+new theorem and it is not a claim that the regime has been verified.
+
+The record should contain the following fields.
+
+1. Candidate selection data:
+   - fixed project parameters, such as `beta` and the physical beam radius;
+   - the local parameter interval `I_Q`;
+   - the base parameter `p0`, base roots, and local spectral window;
+   - the retained branch pair or packet seed.
+2. Local construction checks:
+   - packet data or a stated packet-construction target;
+   - complement regularity on the local spectral window;
+   - exact normalized block and frozen model;
+   - moving discs `D_r(p)` and the segment set used for `ERPC`.
+3. Frozen-model checks:
+   - frozen root branch `Lambda_fr(p)`;
+   - frozen denominator margin `c0`, or a frozen-discriminant margin implying
+     it;
+   - frozen simple-root lower bound `m0`;
+   - moving-disc radius `r` and closure check.
+4. Matrix and derivative bounds:
+   - `M_G`, `M_E`, `M_{E,1}`;
+   - `||K0||_F`, `||K0'||_F`;
+   - `M_{K,Lambda p}`;
+   - the offset bound for `|Lambda_fr(p)-Lambda0|`.
+5. Final decision:
+   - compute `B_Q`, `C_Q`, and `D_Q`;
+   - mark `Q_der(I_Q)` as verified only if every construction, margin,
+     derivative, and closure check is present and passes;
+   - otherwise record the precise missing or failed item.
+
+The physical beam radius in candidate-selection data is distinct from the
+moving-disc radius `r` used in the theorem line.
 
 ## Multiplicity convention
 
@@ -561,7 +687,50 @@ The bridge line currently uses the following layer discipline.
     explicit bounds on `T(p)` and `D0(p)` can keep the frozen discriminant
     away from zero on an interval and thereby feed the local denominator
     lower bound after shrinking;
-17. not yet reached:
-    sharper asymptotic or derivative-level branch-shift laws, symmetric or
-    self-adjoint normal form, project-defined `delta-kappa`, final veering
-    criterion, and branch-case application theorems.
+17. ready-to-use first-order shift corollary:
+    the earlier closure, determinant-discrepancy, derivative-control, and
+    frozen-discriminant inputs can be packaged into one local conditional
+    first-order shift estimate;
+18. parameterwise derivative comparison:
+    after differentiating the exact and frozen branch equations, one obtains
+    local conditional branch-derivative formulas and a derivative-difference
+    bound, provided the denominator and `p`-derivative discrepancy controls
+    are explicitly carried;
+19. `p`-derivative discrepancy control:
+    in the local `2x2` setting, the `p`-derivative determinant discrepancy
+    can be bounded constructively through `G`, `E`, `partial_p G`, and
+    `partial_p E` on the moving discs;
+20. ready-to-use parameterwise derivative comparison:
+    the preceding bound can be substituted into the parameterwise derivative
+    comparison step to remove the abstract `H_pDelta` input, while still
+    retaining explicit local matrix-control and coefficient-derivative
+    hypotheses;
+21. frozen coefficient-derivative control:
+    in the frozen local `2x2` setting, the derivative inputs
+    `M_{G,p}(p)`, `T'(p)`, and `D0'(p)` can be expressed and bounded through
+    `K0(p)` and `K0'(p)`;
+22. frozen-coefficient ready-to-use derivative comparison:
+    the frozen coefficient bounds can be substituted into the ready-to-use
+    parameterwise derivative comparison, leaving `K0'(p)`, `M_{E,p}(p)`,
+    the existing matrix controls, and frozen-discriminant margins as explicit
+    local inputs;
+23. exact-remainder `p`-derivative control:
+    the remaining exact-remainder derivative input `M_{E,p}(p)` can be
+    bounded by the distance from `Lambda0` to the moving disc times a mixed
+    derivative control for the exact normalized matrix `K(Lambda,p)`;
+24. exact-remainder ready-to-use derivative comparison:
+    the mixed-derivative control can be substituted into the frozen-coefficient
+    derivative comparison, leaving `K0'(p)`, `M_{K,Lambda p}(p)`, existing
+    matrix controls, and frozen-discriminant margins as explicit local inputs;
+25. local CoupledBeams derivative-comparison quantitative regime:
+    the remaining derivative-comparison inputs can be collected into the
+    explicit regime template `Q_der(I_Q)`, under which `RUPDC-ER` can be cited
+    without restating each bound;
+26. branch-ready `Q_der` verification protocol:
+    one concrete candidate interval and retained pair can be audited by filling
+    the construction, frozen-margin, matrix-control, derivative-control, and
+    final-decision fields in the verification record;
+27. not yet reached:
+    project-specific or asymptotic derivative-level branch-shift laws,
+    symmetric or self-adjoint normal form, project-defined `delta-kappa`,
+    final veering criterion, and branch-case application theorems.
