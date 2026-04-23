@@ -383,3 +383,412 @@ This is a constructive local quantitative estimate derived from the matrix
 remainder of the frozen model. It is still conditional on the earlier moving-
 disc and frozen simple-root hypotheses, and it does not yet yield a
 derivative-level or asymptotic shift law.
+
+## 11. Moving-disc closure corollary
+
+Assume the hypotheses of the determinant-discrepancy bound from matrix
+remainder lemma and of the quantitative parameterwise branch-comparison lemma
+on a local interval `I_ex`. Define
+
+```text
+B_shift(p) = [M_G(p) M_E(p) + (1/2) M_E(p)^2] / m0.
+```
+
+Then, for every `p in I_ex`,
+
+```text
+|Lambda_ex(p) - Lambda_fr(p)| <= B_shift(p).
+```
+
+Consequently:
+
+1. if `B_shift(p) < r` for one fixed parameter value, then
+
+   ```text
+   Lambda_ex(p) in int D_r(p);
+   ```
+2. if
+
+   ```text
+   B_* = sup_{p in I_ex} B_shift(p) < r,
+   ```
+
+   then
+
+   ```text
+   Lambda_ex(p) in int D_r(p)
+   ```
+
+   for every `p in I_ex`.
+
+This is a closure/self-consistency corollary for the chosen moving discs. It
+does not add a new existence theorem; it shows that the current quantitative
+bound is itself compatible with the disc family.
+
+## 12. First-order root-shift formula lemma
+
+Assume the hypotheses and conclusion of the exact-root branch continuation
+lemma on a local interval `I_ex`, and assume the moving-disc closure
+condition holds there so that
+
+```text
+Lambda_ex(p) in D_r(p)
+```
+
+for `p in I_ex`.
+
+Fix one `p in I_ex`, and write
+
+```text
+delta_p = Lambda_ex(p) - Lambda_fr(p).
+```
+
+Assume further that:
+
+1. the frozen determinant derivative is nonzero at the frozen root,
+
+   ```text
+   partial_Lambda g_p(Lambda_fr(p)) != 0;
+   ```
+2. there is a lower bound
+
+   ```text
+   |partial_Lambda g_p(Lambda_fr(p))| >= m1(p) > 0;
+   ```
+3. on the moving disc `D_r(p)`,
+
+   ```text
+   H_Delta(p) = sup_{Lambda in D_r(p)} |partial_Lambda(f_p-g_p)(Lambda)|
+   ```
+
+   is finite;
+4. on the same disc,
+
+   ```text
+   H_g2(p) = sup_{Lambda in D_r(p)} |partial_Lambda^2 g_p(Lambda)|
+   ```
+
+   is finite.
+
+Then there exists a remainder `Rem_shift(p)` such that
+
+```text
+Lambda_ex(p) - Lambda_fr(p)
+=
+- (f_p(Lambda_fr(p)) - g_p(Lambda_fr(p))) / partial_Lambda g_p(Lambda_fr(p))
++ Rem_shift(p),
+```
+
+and
+
+```text
+|Rem_shift(p)|
+<=
+[H_Delta(p) |delta_p| + (1/2) H_g2(p) |delta_p|^2] / m1(p).
+```
+
+Consequently, if the constructive bound `|delta_p| <= B_shift(p)` is already
+available, then
+
+```text
+|Rem_shift(p)|
+<=
+[H_Delta(p) B_shift(p) + (1/2) H_g2(p) B_shift(p)^2] / m1(p).
+```
+
+This is a conditional local first-order comparison law between the exact and
+frozen branches. It is not yet a final asymptotic law unless the remainder is
+shown to be smaller than the leading term in a further argument.
+
+## 13. Derivative-control lemma from reduced-model objects
+
+Work on a local interval where the frozen model and the matrix remainder are
+already defined:
+
+```text
+G(Lambda,p) = ((Lambda-Lambda0) I - K0(p)),
+E(Lambda,p) = F(Lambda,p) - G(Lambda,p).
+```
+
+Let `D_r(p)` be the current moving discs, and define
+
+```text
+M_G(p) = sup_{Lambda in D_r(p)} ||G(Lambda,p)||_F,
+M_E(p) = sup_{Lambda in D_r(p)} ||E(Lambda,p)||_F,
+M_{E,1}(p) = sup_{Lambda in D_r(p)} ||partial_Lambda E(Lambda,p)||_F.
+```
+
+Then, in the local `2x2` setting:
+
+1. the frozen determinant derivative is given exactly by
+
+   ```text
+   partial_Lambda g_p(Lambda)
+   =
+   tr G(Lambda,p)
+   =
+   2 (Lambda-Lambda0) - tr K0(p);
+   ```
+
+   hence at the frozen root
+
+   ```text
+   |partial_Lambda g_p(Lambda_fr(p))|
+   =
+   |2 (Lambda_fr(p)-Lambda0) - tr K0(p)|.
+   ```
+2. the frozen second derivative is given exactly by
+
+   ```text
+   partial_Lambda^2 g_p(Lambda) = 2,
+   ```
+
+   so
+
+   ```text
+   sup_{Lambda in D_r(p)} |partial_Lambda^2 g_p(Lambda)| = 2;
+   ```
+3. the derivative discrepancy entering the first-order root-shift formula
+   satisfies
+
+   ```text
+   sup_{Lambda in D_r(p)} |partial_Lambda(f_p-g_p)(Lambda)|
+   <=
+   sqrt(2) M_E(p) + (M_G(p) + M_E(p)) M_{E,1}(p).
+   ```
+
+Consequently, the derivative hypotheses used in the first-order root-shift
+formula are reduced to:
+
+- a lower bound on the explicit frozen-model scalar
+
+  ```text
+  |2 (Lambda_fr(p)-Lambda0) - tr K0(p)|;
+  ```
+- local matrix controls for `E` and `partial_Lambda E` on the moving discs.
+
+This is a conditional constructive derivative-control lemma. It does not yet
+prove that the derivative lower bound is uniform or separated away from zero;
+that remains an explicit noncoalescence hypothesis on the frozen branch.
+
+## 14. Frozen-model denominator-control lemma from noncoalescence
+
+Work on a local interval where:
+
+```text
+G(Lambda,p) = ((Lambda-Lambda0) I - K0(p))
+```
+
+is the frozen `2x2` model, `Lambda_fr(p)` is the chosen local frozen root
+branch, and a second local frozen root branch
+
+```text
+Lambda_fr,2(p)
+```
+
+is available.
+
+Then, for each fixed `p` in that interval,
+
+```text
+g_p(Lambda)
+=
+det G(Lambda,p)
+=
+(Lambda - Lambda_fr(p)) (Lambda - Lambda_fr,2(p)).
+```
+
+Consequently,
+
+```text
+partial_Lambda g_p(Lambda_fr(p))
+=
+Lambda_fr(p) - Lambda_fr,2(p),
+```
+
+and therefore
+
+```text
+|partial_Lambda g_p(Lambda_fr(p))|
+=
+|Lambda_fr(p) - Lambda_fr,2(p)|
+=
+sep_fr(p).
+```
+
+Hence:
+
+1. if the frozen roots satisfy the separation bound
+
+   ```text
+   |Lambda_fr(p) - Lambda_fr,2(p)| >= sigma_fr(p) > 0,
+   ```
+
+   then
+
+   ```text
+   |partial_Lambda g_p(Lambda_fr(p))| >= sigma_fr(p);
+   ```
+2. if a uniform frozen-root noncoalescence bound
+
+   ```text
+   |Lambda_fr(p) - Lambda_fr,2(p)| >= sigma_fr > 0
+   ```
+
+   holds on the interval, then
+
+   ```text
+   |partial_Lambda g_p(Lambda_fr(p))| >= sigma_fr
+   ```
+
+   there;
+3. if the second frozen root stays outside the moving disc `D_r(p)`, then
+
+   ```text
+   |partial_Lambda g_p(Lambda_fr(p))| > r.
+   ```
+
+This is a conditional denominator-control lemma for the frozen model. It does
+not prove that the second frozen root branch exists or that the frozen-root
+separation bound holds for CoupledBeams; it shows that such a separation
+hypothesis is exactly the denominator hypothesis needed in `FOSF`.
+
+## 15. Frozen discriminant persistence and denominator-control lemma
+
+Fix a base parameter value `p0` and work near it with the frozen `2x2` model
+
+```text
+G(Lambda,p) = ((Lambda-Lambda0) I - K0(p)).
+```
+
+Define the frozen determinant and frozen discriminant by
+
+```text
+T(p) = tr K0(p),
+D0(p) = det K0(p),
+
+g_p(Lambda)
+=
+(Lambda-Lambda0)^2 - T(p) (Lambda-Lambda0) + D0(p),
+
+Disc_fr(p) = T(p)^2 - 4 D0(p).
+```
+
+Then, for each fixed `p`:
+
+1. the frozen roots are distinct if and only if
+
+   ```text
+   Disc_fr(p) != 0;
+   ```
+2. after shrinking to a sufficiently small interval on which two local frozen
+   root branches `Lambda_fr(p), Lambda_fr,2(p)` can be labeled, one has
+
+   ```text
+   Disc_fr(p) = (Lambda_fr(p) - Lambda_fr,2(p))^2;
+   ```
+3. consequently,
+
+   ```text
+   |partial_Lambda g_p(Lambda_fr(p))|
+   =
+   |Lambda_fr(p) - Lambda_fr,2(p)|
+   =
+   |Disc_fr(p)|^(1/2).
+   ```
+
+Assume now that
+
+```text
+Disc_fr(p0) != 0.
+```
+
+Then, after shrinking to a smaller local interval `I0` around `p0` if
+necessary:
+
+1. the frozen discriminant remains nonzero on `I0`;
+2. the two frozen roots remain distinct on `I0`;
+3. there exist local frozen root branches `Lambda_fr(p), Lambda_fr,2(p)` on
+   `I0`;
+4. on `I0`, one has the local root-label identity
+
+   ```text
+   Disc_fr(p) = (Lambda_fr(p) - Lambda_fr,2(p))^2;
+   ```
+5. there exists a constant `c0 > 0` such that
+
+   ```text
+   |Disc_fr(p)| >= c0^2,
+   |Lambda_fr(p) - Lambda_fr,2(p)| >= c0,
+   |partial_Lambda g_p(Lambda_fr(p))| >= c0
+   ```
+
+   for all `p in I0`.
+
+This is a local persistence lemma for frozen noncoalescence. It converts the
+remaining denominator-control hypothesis into a coefficient-level frozen
+discriminant condition near `p0`. It does not prove that the needed
+discriminant lower bound holds in the actual CoupledBeams regime.
+
+## 16. Frozen discriminant persistence from coefficient control lemma
+
+Fix a base parameter value `p0` and a local interval `I` around it. For the
+frozen `2x2` model
+
+```text
+G(Lambda,p) = ((Lambda-Lambda0) I - K0(p)),
+```
+
+define
+
+```text
+T(p) = tr K0(p),
+D0(p) = det K0(p),
+Disc_fr(p) = T(p)^2 - 4 D0(p).
+```
+
+Assume that on `I` one has the coefficient-level bounds
+
+```text
+|T(p)| <= M_T,
+|T(p) - T(p0)| <= eps_T,
+|D0(p) - D0(p0)| <= eps_D.
+```
+
+Then, for every `p in I`,
+
+```text
+|Disc_fr(p) - Disc_fr(p0)|
+<=
+2 M_T eps_T + 4 eps_D.
+```
+
+Consequently, if
+
+```text
+|Disc_fr(p0)| > 2 M_T eps_T + 4 eps_D,
+```
+
+then
+
+```text
+Disc_fr(p) != 0
+```
+
+for all `p in I`.
+
+Therefore, after possibly shrinking to a smaller local interval `I0` around
+`p0` and locally labeling the two frozen roots there, the conclusions of the
+frozen discriminant persistence and denominator-control lemma apply on `I0`.
+In particular, there exists a constant `c0 > 0` such that
+
+```text
+|partial_Lambda g_p(Lambda_fr(p))| >= c0
+```
+
+for all `p in I0`.
+
+This is a coefficient-level persistence lemma for frozen noncoalescence. It
+does not require the second frozen root branch as a primary input. It does
+not prove that the needed coefficient bounds hold on the actual CoupledBeams
+regime.

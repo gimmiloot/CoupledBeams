@@ -251,6 +251,81 @@ When this object is used in the current bridge line, it is understood as a
 root branch of the frozen `p`-only model, not of the exact normalized block.
 The simple-root condition for `g_p` is stated separately when needed.
 
+## Local second frozen root branch and frozen-root separation
+
+When the frozen quadratic has a second local root branch on an interval `I`,
+denote it by
+
+```text
+Lambda_fr,2(p),
+```
+
+with
+
+```text
+g_p(Lambda_fr,2(p)) = 0,
+Lambda_fr,2(p) != Lambda_fr(p).
+```
+
+The corresponding frozen-root separation is
+
+```text
+sep_fr(p) = |Lambda_fr(p) - Lambda_fr,2(p)|.
+```
+
+A uniform frozen-root noncoalescence bound on `I` means that there exists a
+constant `sigma_fr > 0` such that
+
+```text
+sep_fr(p) >= sigma_fr
+```
+
+for all `p in I`.
+
+If the second frozen root stays outside the moving disc `D_r(p)`, then
+automatically
+
+```text
+sep_fr(p) > r.
+```
+
+## Frozen discriminant of the frozen `2x2` model
+
+For the frozen block
+
+```text
+G(Lambda,p) = ((Lambda-Lambda0) I - K0(p)),
+```
+
+set
+
+```text
+T(p) = tr K0(p),
+D0(p) = det K0(p).
+```
+
+the frozen determinant is the monic quadratic
+
+```text
+g_p(Lambda)
+=
+(Lambda-Lambda0)^2 - T(p) (Lambda-Lambda0) + D0(p).
+```
+
+Its frozen discriminant is
+
+```text
+Disc_fr(p) = T(p)^2 - 4 D0(p).
+```
+
+After shrinking to a sufficiently small interval on which the two frozen roots
+can be labeled locally, one has
+
+```text
+Disc_fr(p) = (Lambda_fr(p) - Lambda_fr,2(p))^2,
+|Disc_fr(p)| = sep_fr(p)^2.
+```
+
 ## Moving discs
 
 Given a local frozen-model root branch `Lambda_fr(p)` and a radius `r > 0`,
@@ -317,11 +392,46 @@ package uses the Frobenius norm. On a moving disc `D_r(p)`, define
 
 ```text
 M_G(p) = sup_{Lambda in D_r(p)} ||G(Lambda,p)||_F,
-M_E(p) = sup_{Lambda in D_r(p)} ||E(Lambda,p)||_F.
+M_E(p) = sup_{Lambda in D_r(p)} ||E(Lambda,p)||_F,
+M_{E,1}(p) = sup_{Lambda in D_r(p)} ||partial_Lambda E(Lambda,p)||_F.
 ```
 
 These are local matrix-level control quantities on the moving discs. They are
-used to bound `eta_loc(p)` through the exact `2x2` determinant identity.
+used to bound `eta_loc(p)` and the derivative discrepancy
+`partial_Lambda(f_p-g_p)` through exact `2x2` determinant identities.
+
+## Local constructive branch-shift bound and closure condition
+
+Once the frozen simple-root lower bound `m0` and the local matrix controls
+`M_G(p), M_E(p)` are available, define
+
+```text
+B_shift(p) = [M_G(p) M_E(p) + (1/2) M_E(p)^2] / m0.
+```
+
+Its uniform version on an interval `I` is
+
+```text
+B_* = sup_{p in I} B_shift(p).
+```
+
+The corresponding moving-disc closure condition is
+
+```text
+B_shift(p) < r
+```
+
+for one fixed parameter value, or
+
+```text
+B_* < r
+```
+
+uniformly on an interval.
+
+This is not a new existence theorem. It is a self-consistency condition for
+the already chosen moving discs: if it holds, then the current quantitative
+branch bound itself guarantees that the exact root stays inside `D_r(p)`.
 
 ## Uniform frozen simple-root nondegeneracy
 
@@ -427,7 +537,31 @@ The bridge line currently uses the following layer discipline.
 10. constructive determinant-discrepancy control:
     in the local `2x2` setting, the determinant discrepancy can be bounded
     explicitly in terms of the matrix-level remainder of the frozen model;
-11. not yet reached:
-    derivative-level or asymptotic branch-shift laws, symmetric or
+11. moving-disc closure:
+    the constructive branch bound may be checked against the chosen disc
+    radius as a self-consistency condition;
+12. first-order root-shift comparison:
+    under explicit derivative lower bounds and derivative regularity on the
+    moving discs, one gets a conditional local first-order shift formula with
+    a controlled remainder;
+13. derivative control from reduced-model objects:
+    the derivative quantities entering the first-order shift formula are
+    linked constructively to `G`, `E`, and `partial_Lambda E` on the moving
+    discs;
+14. frozen-model denominator control from noncoalescence:
+    when a local second frozen root branch is available, the remaining
+    denominator in the first-order shift formula is identified with the
+    frozen-root separation and is therefore controlled by frozen noncoalescence
+    or second-root exclusion from the moving disc;
+15. frozen discriminant persistence:
+    a nonzero frozen discriminant at a base point persists on a smaller local
+    interval and, after local labeling of the frozen roots, gives a uniform
+    local denominator lower bound there;
+16. frozen discriminant persistence from coefficient control:
+    explicit bounds on `T(p)` and `D0(p)` can keep the frozen discriminant
+    away from zero on an interval and thereby feed the local denominator
+    lower bound after shrinking;
+17. not yet reached:
+    sharper asymptotic or derivative-level branch-shift laws, symmetric or
     self-adjoint normal form, project-defined `delta-kappa`, final veering
     criterion, and branch-case application theorems.

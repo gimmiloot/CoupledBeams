@@ -22,6 +22,12 @@
 | ERBC | Exact-root branch continuation | Starting from the moving-disc selected exact root at `p0`, if that exact root is simple, then a local regular exact root branch `Lambda_ex(p)` exists and is identified with the moving-disc selected root by uniqueness in each disc. | `proved_here` | parameterwise moving-disc comparison; joint analyticity; accepted standard background via implicit-function-style simple-root continuation | local exact root branch consistent with the moving-disc selection | quantitative branch separation from the frozen root; global continuation in `p`; symmetric or veering interpretation |
 | QPBC | Quantitative parameterwise branch comparison | If exact branch continuation, moving-disc isolation, a uniform frozen simple-root lower bound, and determinant discrepancy control are already in place, then `|Lambda_ex(p)-Lambda_fr(p)| <= eta_loc(p)/m0`. | `proved_here` | exact-root branch continuation; uniform moving-disc isolation; determinant discrepancy `eta_loc(p)`; accepted standard background for simple-root factorization / derivative lower bound | a conditional local quantitative comparison estimate between the exact and frozen branches | derivative-level shift formulas; symmetric normal form; `delta-kappa`; final veering criterion |
 | DDMR | Determinant-discrepancy bound from matrix remainder | If `E=F-G` on the moving discs, then in the local `2x2` Frobenius-norm setting the exact identity `det(G+E)-det(G)=tr(adj(G)E)+det(E)` yields `eta_loc(p) <= M_G(p) M_E(p) + (1/2) M_E(p)^2`; combined with `QPBC`, this gives a constructive conditional bound for `|Lambda_ex(p)-Lambda_fr(p)|`. | `proved_here` | first-order reduced model; moving discs; local matrix controls `M_G,M_E`; accepted standard background for the Frobenius determinant bound | a constructive route from matrix-level remainder control to determinant discrepancy and then to branch-distance control | derivative law, asymptotic shift formula, symmetry, `delta-kappa`, final veering criterion |
+| MDC | Moving-disc closure | If the constructive branch bound `B_shift(p) = [M_G(p) M_E(p) + (1/2) M_E(p)^2]/m0` satisfies `B_shift(p) < r` or uniformly `B_* < r`, then the exact branch selected earlier is certified to lie inside the chosen moving discs. | `proved_here` | QPBC; DDMR; chosen radius `r` | self-consistency of the moving-disc family with the current quantitative branch bound | a new existence theorem, derivative law, symmetry, `delta-kappa`, final veering criterion |
+| FOSF | First-order root-shift formula | If the exact branch already exists, the moving-disc closure condition holds, `partial_Lambda g_p(Lambda_fr(p))` has a positive lower bound, and local derivative controls for `f_p-g_p` and `g_p` hold on the moving disc, then `Lambda_ex(p)-Lambda_fr(p) = -(f_p(Lambda_fr(p))-g_p(Lambda_fr(p)))/partial_Lambda g_p(Lambda_fr(p)) + Rem_shift(p)` with an explicit local remainder bound. | `proved_here` | exact-root branch continuation; moving-disc closure; first-order derivative lower bound; derivative discrepancy control; second-derivative control of `g_p` | a conditional local first-order comparison law for the branch shift | a final asymptotic law, constructive derivative controls from the matrix model, symmetry, `delta-kappa`, final veering criterion |
+| DCL | Derivative control from reduced-model objects | If the frozen model `G` and matrix remainder `E` are defined on the moving discs, then in the local `2x2` setting one has the exact identities `partial_Lambda g_p(Lambda)=tr G(Lambda,p)=2(Lambda-Lambda0)-tr K0(p)` and `partial_Lambda^2 g_p(Lambda)=2`, together with the constructive bound `sup_{D_r(p)} |partial_Lambda(f_p-g_p)| <= sqrt(2) M_E(p) + (M_G(p)+M_E(p)) M_{E,1}(p)`. | `proved_here` | first-order reduced model; moving discs; local matrix controls `M_G,M_E,M_{E,1}`; accepted standard background for Frobenius trace inequalities | a constructive bridge from reduced-model matrices to the derivative quantities entering `FOSF` | a uniform positive derivative lower bound, a final asymptotic shift law, symmetry, `delta-kappa`, final veering criterion |
+| NCDL | Frozen-model denominator control from noncoalescence | If a second local frozen root branch `Lambda_fr,2(p)` is available for the frozen quadratic and the frozen roots remain separated, then `partial_Lambda g_p(Lambda_fr(p)) = Lambda_fr(p) - Lambda_fr,2(p)` and any lower bound on frozen-root separation, or exclusion of the second frozen root from `D_r(p)`, gives the denominator lower bound needed in `FOSF`. | `proved_here` | frozen `2x2` model; chosen frozen root branch `Lambda_fr(p)`; local second frozen root branch `Lambda_fr,2(p)` | converts the remaining denominator hypothesis in `FOSF` into a frozen-root noncoalescence or second-root-exclusion condition | existence of the second frozen root branch for CoupledBeams, proof of a separation bound, asymptotic shift law, symmetry, `delta-kappa`, final veering criterion |
+| FDPL | Frozen discriminant persistence and denominator control | If the frozen discriminant `Disc_fr(p0)` is nonzero at a base point, then after shrinking to a smaller interval `I0` and locally labeling the two frozen roots there, `Disc_fr` remains nonzero and there exists `c0 > 0` such that `|partial_Lambda g_p(Lambda_fr(p))| >= c0` for all `p in I0`. | `proved_here` | frozen `2x2` model; frozen discriminant; accepted standard background for local labeling of noncoalesced quadratic roots | a local coefficient-level route from base-point frozen noncoalescence to the denominator lower bound used in `FOSF` | proof that the needed discriminant lower bound holds for CoupledBeams, asymptotic shift law, symmetry, `delta-kappa`, final veering criterion |
+| FDCC | Frozen discriminant persistence from coefficient control | If `T(p)=tr K0(p)` and `D0(p)=det K0(p)` satisfy explicit local bounds `|T(p)| <= M_T`, `|T(p)-T(p0)| <= eps_T`, `|D0(p)-D0(p0)| <= eps_D`, then `|Disc_fr(p)-Disc_fr(p0)| <= 2 M_T eps_T + 4 eps_D`; hence, if `|Disc_fr(p0)|` exceeds that margin, then `Disc_fr` stays nonzero on the interval, and after shrinking and local root labeling one gets the local denominator lower bound from `FDPL`. | `proved_here` | frozen discriminant notation; coefficient functions `T,D0`; FDPL downstream | a simple coefficient-level criterion for local frozen noncoalescence persistence | proof that the needed coefficient bounds hold on the actual CoupledBeams regime, asymptotic shift law, symmetry, `delta-kappa`, final veering criterion |
 
 ## What is exact
 
@@ -58,6 +64,48 @@ Already exact in the current line:
   ```
 
   in the local `2x2` Frobenius-norm setting.
+- the moving-disc closure implication
+
+  ```text
+  B_shift(p) < r => Lambda_ex(p) in int D_r(p)
+  ```
+
+  and its uniform version with `B_*`.
+- the first-order shift identity with remainder once the derivative lower
+  bound and derivative regularity hypotheses are imposed.
+- the exact frozen-derivative identities
+
+  ```text
+  partial_Lambda g_p(Lambda)=tr G(Lambda,p),
+  partial_Lambda^2 g_p(Lambda)=2
+  ```
+
+  and the constructive derivative-discrepancy bound from `G`, `E`, and
+  `partial_Lambda E`.
+- whenever two local frozen root branches are available, the exact
+  factorization
+
+  ```text
+  g_p(Lambda)
+  =
+  (Lambda-Lambda_fr(p))(Lambda-Lambda_fr,2(p))
+  ```
+
+  and the denominator identity
+
+  ```text
+  partial_Lambda g_p(Lambda_fr(p))
+  =
+  Lambda_fr(p)-Lambda_fr,2(p).
+  ```
+- the exact frozen quadratic formula and discriminant identity
+
+  ```text
+  g_p(Lambda)
+  =
+  (Lambda-Lambda0)^2 - tr K0(p) (Lambda-Lambda0) + det K0(p),
+  Disc_fr(p) = (tr K0(p))^2 - 4 det K0(p).
+  ```
 
 ## What is exact only under explicit hypotheses
 
@@ -75,6 +123,16 @@ are carried along:
   simple-root lower bound and determinant error indicator are controlled.
 - local constructive comparison from matrix-level remainder to
   determinant-level discrepancy on the moving discs.
+- local moving-disc closure under the constructive branch bound.
+- local first-order root-shift comparison under explicit derivative lower
+  bounds and derivative regularity hypotheses.
+- local derivative control from reduced-model objects on the moving discs.
+- local denominator control from frozen-root noncoalescence or second-root
+  exclusion, when a second frozen root branch is available.
+- local discriminant persistence and denominator control from a nonvanishing
+  frozen discriminant at a base point.
+- local discriminant persistence from explicit coefficient control on
+  `T(p)=tr K0(p)` and `D0(p)=det K0(p)`.
 
 ## What is only accepted standard background
 
@@ -91,6 +149,14 @@ Imported but not reproved in the package:
 - local factorization of a simple analytic root and its equivalence with a
   derivative lower bound after shrinking.
 - the bound `|det E| <= (1/2)||E||_F^2` for `2x2` matrices.
+- one-variable Taylor expansion with integral remainder.
+- Frobenius trace inequalities for `2x2` matrices.
+- local labeling of both roots of a simple quadratic family away from
+  coalescence.
+- local analytic square-root selection for a nonvanishing discriminant after
+  shrinking.
+- continuity or mean-value shrinking arguments for preserving a nonzero scalar
+  quantity on a sufficiently small interval.
 
 ## What is only approximate
 
@@ -107,6 +173,8 @@ Approximate, not exact:
 - any quantitative identification of the exact-root branch with the frozen
   root branch beyond the conditional determinant-error estimates recorded
   here;
+- any first-order shift formula beyond the conditional remainder-controlled
+  comparison recorded here;
 - any interpretation of that frozen model as symmetric, canonical, or already
   in `delta-kappa` form.
 
@@ -204,12 +272,196 @@ Approximate, not exact:
   derivative laws, asymptotic shift formulas, symmetric normal form,
   `delta-kappa`, or a final veering criterion.
 
+### MDC. Moving-disc closure
+
+- `proved_here`:
+  once `B_shift(p)` is available, the implication
+
+  ```text
+  B_shift(p) < r => |Lambda_ex(p)-Lambda_fr(p)| < r
+  ```
+
+  is immediate, so the current quantitative bound certifies that the exact
+  branch stays inside the chosen moving disc.
+- `accepted_standard_background`:
+  none beyond elementary inequality use.
+- `explicit_hypothesis`:
+  the constructive branch bound is already available and the radius `r` is
+  the one defining the moving-disc family.
+- `what_it_still_does_not_give`:
+  a new nearby-root theorem, a derivative law, symmetric normal form,
+  `delta-kappa`, or a final veering criterion.
+
+### FOSF. First-order root-shift formula
+
+- `proved_here`:
+  fixing `p`, expanding `f_p` at `Lambda_fr(p)`, and comparing the linear term
+  with `partial_Lambda g_p(Lambda_fr(p))` yields the first-order shift
+  identity with an explicit remainder.
+- `accepted_standard_background`:
+  one-variable Taylor expansion with integral remainder.
+- `explicit_hypothesis`:
+  existence of the exact branch, moving-disc closure, a positive lower bound
+  for `|partial_Lambda g_p(Lambda_fr(p))|`, and local bounds for
+  `partial_Lambda(f_p-g_p)` and `partial_Lambda^2 g_p` on the moving disc.
+- `what_it_still_does_not_give`:
+  a final asymptotic shift law, constructive derivative controls from the
+  matrix model, symmetric normal form, `delta-kappa`, or a final veering
+  criterion.
+
+### DCL. Derivative control from reduced-model objects
+
+- `proved_here`:
+  in the local `2x2` setting, the frozen derivative quantities satisfy
+
+  ```text
+  partial_Lambda g_p(Lambda)=tr G(Lambda,p),
+  partial_Lambda^2 g_p(Lambda)=2,
+  ```
+
+  and the derivative discrepancy obeys
+
+  ```text
+  sup_{D_r(p)} |partial_Lambda(f_p-g_p)|
+  <=
+  sqrt(2) M_E(p) + (M_G(p)+M_E(p)) M_{E,1}(p).
+  ```
+- `accepted_standard_background`:
+  Frobenius trace inequalities for `2x2` matrices.
+- `explicit_hypothesis`:
+  the frozen model and matrix remainder are already defined on the moving
+  discs, and `M_G(p), M_E(p), M_{E,1}(p)` are finite there.
+- `what_it_still_does_not_give`:
+  a uniform positive lower bound for `|partial_Lambda g_p(Lambda_fr(p))|`,
+  a final asymptotic shift law, symmetric normal form, `delta-kappa`, or a
+  final veering criterion.
+
+### NCDL. Frozen-model denominator control from noncoalescence
+
+- `proved_here`:
+  once the frozen quadratic is written in terms of two local frozen root
+  branches,
+
+  ```text
+  g_p(Lambda)
+  =
+  (Lambda-Lambda_fr(p))(Lambda-Lambda_fr,2(p)),
+  ```
+
+  differentiating at `Lambda_fr(p)` gives
+
+  ```text
+  partial_Lambda g_p(Lambda_fr(p))
+  =
+  Lambda_fr(p)-Lambda_fr,2(p),
+  ```
+
+  so any lower bound on frozen-root separation gives the denominator lower
+  bound used in `FOSF`.
+- `accepted_standard_background`:
+  local labeling of the second frozen root branch away from coalescence.
+- `explicit_hypothesis`:
+  the second local frozen root branch exists on the interval under
+  discussion, and either a separation lower bound or second-root exclusion
+  from the moving disc is assumed there.
+- `what_it_still_does_not_give`:
+  a proof that the second branch exists for the current CoupledBeams regime,
+  a proof that frozen-root separation stays uniformly positive, a final
+  asymptotic shift law, symmetry, `delta-kappa`, or a final veering
+  criterion.
+
+### FDPL. Frozen discriminant persistence and denominator control
+
+- `proved_here`:
+  the frozen determinant is the monic quadratic
+
+  ```text
+  g_p(Lambda)
+  =
+  (Lambda-Lambda0)^2 - T(p) (Lambda-Lambda0) + D0(p),
+  ```
+
+  so distinct frozen roots are equivalent to
+
+  ```text
+  Disc_fr(p) = T(p)^2 - 4 D0(p) != 0.
+  ```
+
+  After shrinking and locally labeling the frozen roots, one has
+
+  ```text
+  Disc_fr(p) = (Lambda_fr(p)-Lambda_fr,2(p))^2,
+  |partial_Lambda g_p(Lambda_fr(p))| = |Disc_fr(p)|^(1/2).
+  ```
+
+  Therefore a nonzero frozen discriminant at `p0` yields, on a smaller
+  interval `I0`, a constant `c0 > 0` such that
+
+  ```text
+  |partial_Lambda g_p(Lambda_fr(p))| >= c0
+  ```
+
+  for all `p in I0`.
+- `accepted_standard_background`:
+  local labeling of the two frozen roots, or equivalently local choice of a
+  square root of a nonvanishing discriminant, after shrinking.
+- `explicit_hypothesis`:
+  `K0(p)` is defined on a local interval and `Disc_fr(p0) != 0` at the base
+  point.
+- `what_it_still_does_not_give`:
+  a proof that the discriminant stays uniformly far from zero on the actual
+  CoupledBeams regime of interest, a final asymptotic shift law, symmetry,
+  `delta-kappa`, or a final veering criterion.
+
+### FDCC. Frozen discriminant persistence from coefficient control
+
+- `proved_here`:
+  with
+
+  ```text
+  T(p)=tr K0(p),
+  D0(p)=det K0(p),
+  Disc_fr(p)=T(p)^2-4D0(p),
+  ```
+
+  the algebraic difference identity gives
+
+  ```text
+  |Disc_fr(p)-Disc_fr(p0)|
+  <=
+  2 M_T eps_T + 4 eps_D
+  ```
+
+  under the stated coefficient bounds. Therefore the explicit margin
+
+  ```text
+  |Disc_fr(p0)| > 2 M_T eps_T + 4 eps_D
+  ```
+
+  implies `Disc_fr(p) != 0` on the interval, and then `FDPL` yields the local
+  denominator lower bound after shrinking and local labeling.
+- `accepted_standard_background`:
+  continuity-based shrinking, and the derivative-based variant via a mean-value
+  estimate when bounds on `T'(p)` and `D0'(p)` are used instead.
+- `explicit_hypothesis`:
+  local coefficient bounds on `T(p)` and `D0(p)`, together with base-point
+  nonvanishing of `Disc_fr(p0)` by a margin exceeding the explicit error
+  bound.
+- `needs_caution`:
+  this does not yet prove project-specific frozen noncoalescence on the actual
+  CoupledBeams regime; it only turns that question into a transparent
+  coefficient-control check.
+- `what_it_still_does_not_give`:
+  a project-specific regime proof, a final asymptotic shift law, symmetry,
+  `delta-kappa`, or a final veering criterion.
+
 ## Current next real obstruction
 
 The next real obstruction is:
 
 ```text
-turn the constructive matrix-remainder bound into a sharper branch-shift law
-or a more structural reduced description, without skipping prematurely to
+turn the first-order shift formula into a sharper asymptotic or derivative-
+level law by turning the coefficient-level frozen discriminant checks into an
+actual project-specific regime verification, without skipping prematurely to
 symmetric normal form, delta-kappa, or a final veering criterion.
 ```
