@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 2026-04-22
+
+- Integrated four new veering/localization literature sources into the project
+  literature system: added notes, bibliography entries, and source-index blocks
+  for Manconi--Mace 2017, Ehrhardt et al. 2018, Lacarbonara et al. 2005, and
+  Fontanela et al. 2021; updated the veering assessment/terminology only to
+  clarify mechanism-vs-geometry priority and the weak-coupling versus
+  strong-coupling distinction, with no solver-code, script, test, data, figure,
+  or manuscript edits.
+
 ## 2026-04-21
 
 - Added `nair_1973_quasi_degeneracies` to the project literature system and

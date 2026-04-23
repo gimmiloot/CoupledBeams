@@ -51,6 +51,46 @@ Citation keys синхронизированы с `docs/literature/bibliography.
 - Замечание по применимости: useful by mechanism and terminology, not by geometry. Do not transfer the plate symmetry-group criteria directly to the two-rod CoupledBeams system.
 - Метаданные: recovered from the local PDF title page.
 
+## `manconi_2017_veering_strong_coupling`
+- PDF: `docs/literature/pdf/vib_139_02_021009.pdf`
+- Тип: статья.
+- Роль: основной для veering-линии по механизму.
+- Что важно для CoupledBeams: ключевой общий theoretical source для различения rapid veering under weak coupling и slow evolution under strong coupling; вводит `uncoupled-blocked system`, `skeleton` и `critical points`.
+- Обозначения: mode veering, weak/strong coupling, uncoupled-blocked system, skeleton, critical point, eigenvector rotation; малый параметр coupling order не является проектным `mu`.
+- Критично смотреть: p. 021009-1 abstract/introduction; Sec. 2 and Eq. (3) for weak coupling; Sec. 2.2 and Eqs. (17)--(19) near a critical point; Figs. 1, 3, 5 for skeleton/eigenvector rotation; Fig. 6 for strong coupling and gradual evolution; Sec. 5.3/Fig. 15 for continuous examples.
+- Замечание по применимости: очень близко по spectral mechanism, но не по геометрии. Использовать как главный источник для осторожной формулировки `not strict veering, possibly slow evolution / modal-character reorganization`.
+- Метаданные: title/authors/pages recovered from local PDF; DOI `10.1115/1.4035109` cross-checked because it is not exposed clearly in the local PDF metadata.
+
+## `ehrhardt_2018_clamped_beam_veering`
+- PDF: `docs/literature/pdf/ehrhardt2018.pdf`
+- Тип: статья.
+- Роль: основной/сильный вспомогательный для beam-like veering analogy.
+- Что важно для CoupledBeams: лучший близкий beam-аналог по механизму: symmetry-preserving crossing vs symmetry-breaking veering, eigenvector correlation/self-MAC, mode-shape mixing in a beam assembly.
+- Обозначения: clamped-clamped cross-beam, bending/torsion LNMs, movable tip masses, `self-MAC`, linear normal mode veering, nonlinear normal modes; tuning variables are mass positions/asymmetry, not `mu`.
+- Критично смотреть: pp. 1--2 introduction; Sec. 2/Fig. 1 system and model; Sec. 3.1/Fig. 3 linear crossing vs veering; Sec. 3.2/Figs. 4--5 nonlinear crossing/veering analogue; Secs. 4--5/Figs. 6--8 for forced/experimental comparison; Sec. 6 conclusion.
+- Замечание по применимости: близко по beam mechanism, но не по геометрии CoupledBeams; nonlinear parts are secondary for the current linear `mu` question.
+- Метаданные: verified from local PDF XMP and title page.
+
+## `lacarbonara_2005_imperfect_beams_veering`
+- PDF: `docs/literature/pdf/lacarbonara2005.pdf`
+- Тип: статья.
+- Роль: вспомогательный, второй эшелон для текущей линейной veering-задачи.
+- Что важно для CoupledBeams: useful beam/nonlinear source linking veering, one-to-one internal resonance, nonlinear stretching, bifurcations, frequency islands, and mode localization.
+- Обозначения: imperfect/shallow beam, torsional spring constant `k`, rise `b`, natural-frequency veering, internal resonance detuning, mode localization.
+- Критично смотреть: pp. 987--988 abstract/introduction; Sec. 2 and Eqs. (1)--(7) formulation and boundary conditions; Sec. 2.1/Figs. 2--4 natural frequencies and veering/crossing; Sec. 3 perturbation analysis; Sec. 4/Figs. 6--15 bifurcation/localization; Sec. 5 conclusion.
+- Замечание по применимости: полезно для nonlinear beam/localization background, but not a primary source for strict linear veering under `mu`.
+- Метаданные: recovered from local PDF title page, outline, and DOI metadata.
+
+## `fontanela_2021_nonlinear_localisation_coupled_beams`
+- PDF: `docs/literature/pdf/s11071-020-05760-x.pdf`
+- Тип: статья.
+- Роль: вспомогательный для localization in two-beam systems.
+- Что важно для CoupledBeams: источник по nonlinear vibration localisation in a symmetric system of two weakly coupled beams; useful for localization vocabulary and arm-wise response intuition.
+- Обозначения: vibration localisation, symmetry breaking bifurcation, clearance nonlinearity, piecewise linear stiffness, in-phase/out-of-phase modes, localized state, coupling stiffness `k_c`.
+- Критично смотреть: pp. 3417--3418 abstract/introduction; Sec. 2.1 and Eqs. (1)--(6) two-DOF model; Figs. 3--4 backbone/bifurcating localized branches; Sec. 3.1/Fig. 7 test setup; Figs. 9--11 measured localized states; Sec. 4 summary.
+- Замечание по применимости: близко по two-beam geometry, but the mechanism is nonlinear contact/clearance localization, not strict linear veering.
+- Метаданные: verified from local PDF XMP/title page.
+
 ## `quintana_2010_restrained_timoshenko_beams`
 - PDF: `docs/literature/pdf/1.pdf`
 - Тип: статья.

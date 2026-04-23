@@ -9,6 +9,10 @@ change rapidly in the interaction region.
 For the current project, a strict veering claim should be based on tracked
 branch identity, a close spectral gap, and mode-shape evidence.
 
+`manconi_2017_veering_strong_coupling` sharpens this distinction: rapid veering
+is a weak-coupling phenomenon, while strong coupling can produce slow evolution
+of eigenvalue loci rather than rapid veering.
+
 ## Quasi-Degeneracy
 
 Working meaning: a cautious label for close or nearly close spectral situations
