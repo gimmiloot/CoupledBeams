@@ -231,6 +231,138 @@ These are one-variable analytic functions of `Lambda`.
 Local frozen-model root comparison is stated in terms of `f_p` and `g_p` on a
 small closed disc `D` in the `Lambda`-plane.
 
+## Local frozen-model root branch
+
+A local frozen-model root branch is a function
+
+```text
+Lambda_fr(p)
+```
+
+defined on a local interval `I`, such that
+
+```text
+g_p(Lambda_fr(p)) = 0
+```
+
+for each `p in I`.
+
+When this object is used in the current bridge line, it is understood as a
+root branch of the frozen `p`-only model, not of the exact normalized block.
+The simple-root condition for `g_p` is stated separately when needed.
+
+## Moving discs
+
+Given a local frozen-model root branch `Lambda_fr(p)` and a radius `r > 0`,
+define the moving closed discs
+
+```text
+D_r(p) = { Lambda : |Lambda - Lambda_fr(p)| <= r }.
+```
+
+The current parameterwise comparison step uses one uniform radius `r` for all
+`p` in the chosen local interval.
+
+## Local exact root branch
+
+A local exact root branch is a locally regular function
+
+```text
+Lambda_ex(p)
+```
+
+defined on a local interval, such that
+
+```text
+f_p(Lambda_ex(p)) = 0
+```
+
+for each `p` in that interval.
+
+In the current bridge line, `Lambda_ex(p)` is selected from the exact
+normalized block and may later be identified with the moving-disc selected
+root when uniqueness in each disc is known.
+
+## Local determinant error indicator
+
+Once the exact normalized block and the frozen `p`-only model are both fixed,
+define the local determinant discrepancy on a moving disc by
+
+```text
+eta_loc(p) = sup_{Lambda in D_r(p)} |f_p(Lambda) - g_p(Lambda)|.
+```
+
+Its uniform version on an interval `I` is
+
+```text
+eta_* = sup_{p in I} eta_loc(p).
+```
+
+This is a scalar determinant-level error indicator. It is not the same object
+as the earlier matrix-level remainder for `F-G`, and it does not coincide
+with that remainder automatically. The latter may only be used to bound
+`eta_loc` through an additional determinant-discrepancy estimate.
+
+## Matrix-level remainder and local matrix controls
+
+Once the exact normalized block and the frozen `p`-only model are both fixed,
+set
+
+```text
+E(Lambda,p) = F(Lambda,p) - G(Lambda,p).
+```
+
+For determinant-discrepancy estimates in the current local `2x2` setting, the
+package uses the Frobenius norm. On a moving disc `D_r(p)`, define
+
+```text
+M_G(p) = sup_{Lambda in D_r(p)} ||G(Lambda,p)||_F,
+M_E(p) = sup_{Lambda in D_r(p)} ||E(Lambda,p)||_F.
+```
+
+These are local matrix-level control quantities on the moving discs. They are
+used to bound `eta_loc(p)` through the exact `2x2` determinant identity.
+
+## Uniform frozen simple-root nondegeneracy
+
+Let `Lambda_fr(p)` be a local frozen-model root branch on an interval `I`, and
+let `r > 0` be the moving-disc radius. Uniform frozen simple-root
+nondegeneracy on the discs `D_r(p)` means that there exist analytic functions
+`a_p(Lambda)` and a constant `m0 > 0` such that
+
+```text
+g_p(Lambda) = a_p(Lambda) (Lambda - Lambda_fr(p)),
+|a_p(Lambda)| >= m0
+```
+
+for all `Lambda in D_r(p)` and all `p in I`.
+
+This is the quantitative form of simple-root isolation used in the current
+branch-comparison step. It is equivalent in spirit to a uniform derivative
+lower bound for the frozen determinant near the frozen branch, after shrinking
+the interval and discs if necessary.
+
+## Uniform boundary-domination language
+
+Let `Lambda_fr(p)` be a local frozen-model root branch on an interval `I`, and
+let `r > 0` be fixed. Uniform moving-disc boundary domination means:
+
+1. every disc `D_r(p)` lies inside the claimed local normalization region;
+2. `g_p` has no zeros on `partial D_r(p)` for `p in I`;
+3. the strict bound
+
+   ```text
+   sup_{p in I} sup_{Lambda in partial D_r(p)} |f_p(Lambda) - g_p(Lambda)|
+   <
+   inf_{p in I} inf_{Lambda in partial D_r(p)} |g_p(Lambda)|
+   ```
+
+   holds.
+
+This is stronger than pointwise domination at one parameter value. It is the
+uniform hypothesis that lets the same moving-disc comparison argument be
+applied for every `p` in the interval.
+
 ## Multiplicity convention
 
 Unless explicitly stated otherwise, multiplicity means:
@@ -285,7 +417,17 @@ The bridge line currently uses the following layer discipline.
 7. fixed-`p` root comparison:
    a simple frozen-model root carries a nearby exact normalized root under
    extra local boundary hypotheses;
-8. not yet reached:
-   parameterwise comparison in `p`, symmetric or self-adjoint normal form,
-   project-defined `delta-kappa`, final veering criterion, and branch-case
-   application theorems.
+8. parameterwise nearby-root comparison:
+   a uniform moving-disc argument selects one nearby exact root for each `p`
+   in a local interval, and simple exact-root continuation upgrades that
+   selection to a local exact branch;
+9. quantitative parameterwise comparison:
+   under a uniform frozen simple-root lower bound and a determinant error
+   indicator, the exact branch is quantitatively close to the frozen branch;
+10. constructive determinant-discrepancy control:
+    in the local `2x2` setting, the determinant discrepancy can be bounded
+    explicitly in terms of the matrix-level remainder of the frozen model;
+11. not yet reached:
+    derivative-level or asymptotic branch-shift laws, symmetric or
+    self-adjoint normal form, project-defined `delta-kappa`, final veering
+    criterion, and branch-case application theorems.

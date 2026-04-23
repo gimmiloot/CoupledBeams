@@ -52,13 +52,22 @@ The current line has honestly reached:
   nonsingular spectral-derivative hypothesis;
 - a controlled frozen first-order `p`-only model at matrix level;
 - a narrow fixed-`p` nearby-root comparison between the exact normalized block
-  and the frozen model, under extra local boundary hypotheses.
+  and the frozen model, under extra local boundary hypotheses;
+- a local parameterwise nearby-root selection over a small interval in `p`
+  under uniform moving-disc hypotheses, together with local exact-root branch
+  continuation under a simple-root condition;
+- a conditional local quantitative comparison estimate between the exact
+  branch and the frozen branch, under explicit uniform frozen simple-root and
+  determinant-discrepancy hypotheses;
+- a constructive determinant-discrepancy bound from the matrix-level
+  remainder of the frozen model in the local `2x2` setting.
 
 ## What has not been reached
 
 The package does not yet prove:
 
-- parameterwise comparison or continuation in `p`;
+- a derivative-level or asymptotic branch-shift law for
+  `Lambda_ex(p)-Lambda_fr(p)`;
 - a symmetric or self-adjoint reduced normal form;
 - project-defined `delta(p)` and `kappa(p)`;
 - a final veering criterion for CoupledBeams;
