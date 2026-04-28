@@ -153,3 +153,13 @@ For code changes, prefer lightweight verification first:
 
 If a test cannot be run, say so explicitly.
 Never claim "works" without stating what was actually checked.
+
+## External article writing
+
+For external-facing texts, do not use internal project-note style.
+
+For article work in `paper_dorofeev_style/`, follow:
+- `skills/external_writing_general.md`
+- `skills/paper_dorofeev_style_article_writing.md`
+
+Keep `AGENTS.md` short; detailed writing rules belong in `skills/`.

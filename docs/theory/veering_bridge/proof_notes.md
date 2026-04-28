@@ -2829,3 +2829,47 @@ That step must be handled before any honest move to:
 - project-defined `delta-kappa`;
 - final veering criteria;
 - branch-case application theorems.
+
+## 29. Freeze decision
+
+The current veering-bridge theorem line is temporarily frozen here, pending
+broader regime evidence and additional examples.
+
+### Why freeze now
+
+The abstract derivative/reduction line has likely reached its natural ceiling.
+The remaining bottlenecks are no longer plausibly resolved by one more
+abstract lemma. They are candidate-dependent inputs: packet construction,
+certified spectral windows, complement regularity, frozen margins, `K0'(p)`,
+`M_{K,Lambda p}(p)`, and the local closure constants. Pushing the same strict
+line further right now would mostly rename these unresolved inputs rather than
+turn them into usable project evidence.
+
+Cheap feasibility questions now look more informative than further abstract
+tightening: which parameter regimes actually exhibit clean positive and
+negative veering-like behavior, where `Q_der(I_Q)` might plausibly close, and
+which examples fail early enough to rule out overinvestment in the wrong local
+picture.
+
+### What remains useful
+
+This package is not abandoned. It remains useful as the canonical record of:
+
+- the layer discipline for the bridge line;
+- the separation between strong theorem claims, conditional mechanism claims,
+  and candidate-level records;
+- what is exact, approximate, conditional, or still unresolved;
+- the framework to revisit later once better evidence exists.
+
+### What would justify reopening
+
+An honest return to this line would need one or more of:
+
+- more parameter examples, with both positive and negative veering-like
+  cases;
+- clearer beta-regime evidence and at least one named candidate with enough
+  data to decide `Q_der(I_Q)`;
+- a cheap feasibility or predictor criterion that helps sort promising local
+  regimes;
+- a different reduction or normalization strategy that genuinely decreases the
+  current derivative-control burden.

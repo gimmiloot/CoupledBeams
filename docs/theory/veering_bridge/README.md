@@ -123,6 +123,19 @@ The package does not yet prove:
 - a final veering criterion for CoupledBeams;
 - any branch-case application theorem.
 
+## Current freeze status
+
+The current strict theorem line is temporarily frozen at this abstract
+ceiling. This is not a claim that the line is inconsistent, false, or closed
+forever. It is a status decision: further progress is unlikely to be useful
+before broader parameter-regime evidence and additional examples are on hand.
+
+The package therefore remains the canonical record of what has been reached,
+what is only conditional, and where a later return should restart. An honest
+unfreeze would need richer example coverage, including both positive and
+negative veering-like cases, clearer beta-regime evidence, a better cheap
+feasibility signal, or a different reduction strategy.
+
 ## Canonical structure
 
 The canonical theorem-line package is:

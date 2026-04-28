@@ -1008,3 +1008,30 @@ checks, derivative control from a concrete normalization construction, or a
 different reduction strategy, without skipping prematurely to symmetric
 normal form, delta-kappa, a final veering criterion, or branch-case
 application theorems.
+
+### Temporary freeze status
+
+The current abstract theorem line is temporarily frozen at this obstruction.
+The freeze is not a claim of inconsistency. It records that another abstract
+rewrite is unlikely to be informative before broader regime evidence is
+available.
+
+What survives from the current package is still useful:
+
+- the layer discipline separating exact statements, conditional tools,
+  approximate comparisons, and candidate-level records;
+- the boundary map showing exactly which inputs were reduced and which ones
+  remain independent;
+- the `QDR`/`QVR` framework for returning later without overstating what is
+  already proved.
+
+An honest return to this line would need one or more of:
+
+- more parameter examples, including both positive and negative veering-like
+  cases;
+- clearer beta-regime evidence or a verified `Q_der(I_Q)` instance on a named
+  candidate;
+- a cheap feasibility or predictor criterion that helps decide where the
+  theorem line is worth pursuing;
+- a different reduction strategy that genuinely lowers the current derivative
+  bottleneck.
