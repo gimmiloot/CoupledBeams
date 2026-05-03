@@ -1,11 +1,24 @@
+import argparse
+import inspect
 from pathlib import Path
 import sys
 
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import mpmath as mp
 import numpy as np
 from matplotlib.colors import to_rgba
 from matplotlib.lines import Line2D
+
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_OUTPUT_PATH = REPO_ROOT / "results" / "lambda_mu_fixed_beta.png"
+DEFAULT_EPSILON = 0.0025
+DEFAULT_L_TOTAL = 2.0
+DEFAULT_E = 2.1e11
+DEFAULT_RHO = 7800.0
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -104,36 +117,62 @@ def single_lambda(alpha: np.ndarray, l: float, L: np.ndarray) -> np.ndarray:
     return alpha[:, None] * l / L[None, :]
 
 
+def beam_params_from_epsilon(
+    epsilon: float,
+    L_total: float = DEFAULT_L_TOTAL,
+    E: float = DEFAULT_E,
+    rho: float = DEFAULT_RHO,
+) -> BeamParams:
+    """Build project beam parameters from epsilon = sqrt(I/S) / l for a circular section."""
+    l_base = 0.5 * float(L_total)
+    radius = 2.0 * l_base * float(epsilon)
+    return BeamParams(E=float(E), rho=float(rho), r=radius, L_total=float(L_total))
+
+
 # ============================================================
 # Combined plot
 # ============================================================
 def plot_combined(
-    beta_deg_coupled: float = 15.0,
+    beta_deg_coupled: float = 45.0,
+    epsilon: float = 0.01,
+    L_total: float = DEFAULT_L_TOTAL,
     mu_min: float = 0.0,
     mu_max: float = 0.9,
     mu_step: float = 0.01,
-    n_coupled: int = 6,
-    n_Lplus_CS: int = 6,
-    n_Lminus_CS: int = 3,
-    y_max: int = 13,
-    save_path: str | None = None,
-):
+    n_coupled: int = 10,
+    n_Lplus_CS: int = 9,
+    n_Lminus_CS: int = 5,
+    n_dashed_lines: int | None = None,
+    y_max: int = 20,
+    save_path: str | Path | None = None,
+    show: bool = True,
+) -> Path | None:
     """
     One combined plot:
-      - first 6 coupled-rods frequencies, bright solid lines;
-      - first 6 single-beam CS frequencies for L+ = l(1+mu), muted dashed lines;
-      - first 3 single-beam CS frequencies for L- = l(1-mu), muted dashed lines.
+      - first n_coupled coupled-rods frequencies, bright solid lines;
+      - single-beam CS frequencies for L+ = l(1+mu), muted dashed lines;
+      - single-beam CS frequencies for L- = l(1-mu), muted dashed lines.
 
     The vertical axis is Lambda (not Lambda^2).
-    The angle beta_deg_coupled remains adjustable in the function call.
+    The angle, epsilon, number of coupled branches, and number of dashed
+    reference curves remain adjustable in the function call or CLI.
     """
-    params = BeamParams(E=2.1e11, rho=7800.0, r=0.04, L_total=2.0)
+    if n_dashed_lines is not None:
+        n_Lplus_CS = int(n_dashed_lines)
+        n_Lminus_CS = int(n_dashed_lines)
+    if n_coupled < 1:
+        raise ValueError("n_coupled must be positive.")
+    if n_Lplus_CS < 0 or n_Lminus_CS < 0:
+        raise ValueError("Dashed reference-line counts must be non-negative.")
+
+    params = beam_params_from_epsilon(epsilon=epsilon, L_total=L_total)
     l = params.L_base
     mu = np.arange(mu_min, mu_max + 1e-12, mu_step)
 
     Lambda_c = coupled_lambda_vs_mu(params, beta_deg_coupled, mu, n_modes=n_coupled)
 
-    a_cs = roots_clamped_supported(max(n_Lplus_CS, n_Lminus_CS))
+    n_reference = max(n_Lplus_CS, n_Lminus_CS)
+    a_cs = roots_clamped_supported(n_reference) if n_reference else np.array([], dtype=float)
     Lp = l * (1.0 + mu)
     Lm = l * (1.0 - mu)
     Lambda_Lp_CS = single_lambda(a_cs[:n_Lplus_CS], l, Lp)
@@ -147,11 +186,11 @@ def plot_combined(
     bright_colors = [ax.lines[i].get_color() for i in range(n_coupled)]
 
     for i in range(n_Lplus_CS):
-        c = to_rgba(bright_colors[i], alpha=0.48)
+        c = to_rgba(bright_colors[i % len(bright_colors)], alpha=0.48)
         ax.plot(mu, Lambda_Lp_CS[i], lw=1.8, ls="--", color=c)
 
     for i in range(n_Lminus_CS):
-        c = to_rgba(bright_colors[i], alpha=0.48)
+        c = to_rgba(bright_colors[i % len(bright_colors)], alpha=0.48)
         ax.plot(mu, Lambda_Lm_CS[i], lw=1.8, ls=(0, (2.0, 2.4)), color=c)
 
     ax.set_xlabel("μ")
@@ -161,18 +200,25 @@ def plot_combined(
     ax.grid(True, alpha=0.3)
     ax.set_title(
         f"Сопряжённые стержни (β={beta_deg_coupled}°) и одиночные стержни CS, "
-        fr"график для $\,\Lambda$, r={params.r}"
+        fr"график для $\,\Lambda$, $\varepsilon={params.eps:.5g}$"
     )
 
     handles = [
-        Line2D([0], [0], color="black", lw=2.4, ls="-", label="сплошная — сопряжённые стержни, первые 6 частот"),
+        Line2D(
+            [0],
+            [0],
+            color="black",
+            lw=2.4,
+            ls="-",
+            label=f"сплошная — сопряжённые стержни, первые {n_coupled} частот",
+        ),
         Line2D(
             [0],
             [0],
             color=to_rgba("black", alpha=0.38),
             lw=1.8,
             ls="--",
-            label=r"пунктир — одиночный стержень, CS (заделка–шарнир), $L^+=\ell(1+\mu)$, первые 6",
+            label=rf"пунктир — одиночный стержень, CS (заделка–шарнир), $L^+=\ell(1+\mu)$, первые {n_Lplus_CS}",
         ),
         Line2D(
             [0],
@@ -180,20 +226,137 @@ def plot_combined(
             color=to_rgba("black", alpha=0.28),
             lw=1.8,
             ls=(0, (2.0, 2.4)),
-            label=r"пунктир — одиночный стержень, CS (заделка–шарнир), $L^-=\ell(1-\mu)$, первые 3",
+            label=rf"пунктир — одиночный стержень, CS (заделка–шарнир), $L^-=\ell(1-\mu)$, первые {n_Lminus_CS}",
         ),
     ]
     ax.legend(handles=handles, fontsize=9, loc="upper left")
 
     fig.tight_layout()
 
+    saved_path: Path | None = None
     if save_path is not None:
-        fig.savefig(save_path, dpi=200, bbox_inches="tight")
-    plt.show()
+        saved_path = Path(save_path)
+        saved_path.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(saved_path, dpi=200, bbox_inches="tight")
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
+    return saved_path
 
 
-def main() -> None:
-    plot_combined(beta_deg_coupled=15.0)
+def plot_combined_default(parameter_name: str) -> object:
+    """Return the current default from plot_combined by parameter name."""
+    return inspect.signature(plot_combined).parameters[parameter_name].default
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Plot Lambda(mu) at fixed beta with single-rod CS dashed reference families.",
+    )
+    parser.add_argument(
+        "--beta",
+        type=float,
+        default=None,
+        help=f"fixed coupling angle in degrees; omitted value uses plot_combined default {plot_combined_default('beta_deg_coupled')}",
+    )
+    parser.add_argument(
+        "--epsilon",
+        type=float,
+        default=None,
+        help=f"thickness parameter; omitted value uses plot_combined default {plot_combined_default('epsilon')}",
+    )
+    parser.add_argument(
+        "--num-modes",
+        type=int,
+        default=None,
+        help=f"number of coupled analytic branches to plot; omitted value uses plot_combined default {plot_combined_default('n_coupled')}",
+    )
+    parser.add_argument(
+        "--num-dashed-lines",
+        type=int,
+        default=None,
+        help="number of dashed CS roots per family; overrides the two family-specific counts",
+    )
+    parser.add_argument(
+        "--num-lplus-dashed-lines",
+        type=int,
+        default=None,
+        help=f"number of dashed CS roots for L+ = l(1+mu); omitted value uses plot_combined default {plot_combined_default('n_Lplus_CS')}",
+    )
+    parser.add_argument(
+        "--num-lminus-dashed-lines",
+        type=int,
+        default=None,
+        help=f"number of dashed CS roots for L- = l(1-mu); omitted value uses plot_combined default {plot_combined_default('n_Lminus_CS')}",
+    )
+    parser.add_argument(
+        "--mu-min",
+        type=float,
+        default=None,
+        help=f"minimum mu value; omitted value uses plot_combined default {plot_combined_default('mu_min')}",
+    )
+    parser.add_argument(
+        "--mu-max",
+        type=float,
+        default=None,
+        help=f"maximum mu value; omitted value uses plot_combined default {plot_combined_default('mu_max')}",
+    )
+    parser.add_argument(
+        "--mu-step",
+        type=float,
+        default=None,
+        help=f"mu grid step; omitted value uses plot_combined default {plot_combined_default('mu_step')}",
+    )
+    parser.add_argument(
+        "--y-max",
+        type=float,
+        default=None,
+        help=f"upper y-axis limit; use <= 0 for automatic; omitted value uses plot_combined default {plot_combined_default('y_max')}",
+    )
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH, help="PNG output path")
+    parser.add_argument("--show", action="store_true", help="also display the figure window after saving")
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = parse_args(argv)
+    plot_kwargs: dict[str, object] = {
+        "save_path": args.output,
+        "show": args.show,
+    }
+    if args.beta is not None:
+        plot_kwargs["beta_deg_coupled"] = args.beta
+    if args.epsilon is not None:
+        plot_kwargs["epsilon"] = args.epsilon
+    if args.mu_min is not None:
+        plot_kwargs["mu_min"] = args.mu_min
+    if args.mu_max is not None:
+        plot_kwargs["mu_max"] = args.mu_max
+    if args.mu_step is not None:
+        plot_kwargs["mu_step"] = args.mu_step
+    if args.num_modes is not None:
+        plot_kwargs["n_coupled"] = args.num_modes
+    if args.num_lplus_dashed_lines is not None:
+        plot_kwargs["n_Lplus_CS"] = args.num_lplus_dashed_lines
+    if args.num_lminus_dashed_lines is not None:
+        plot_kwargs["n_Lminus_CS"] = args.num_lminus_dashed_lines
+    if args.num_dashed_lines is not None:
+        plot_kwargs["n_dashed_lines"] = args.num_dashed_lines
+    if args.y_max is not None:
+        plot_kwargs["y_max"] = None if args.y_max <= 0 else args.y_max
+
+    saved_path = plot_combined(**plot_kwargs)
+    if saved_path is not None:
+        print(f"saved figure: {saved_path}")
+    print(f"beta={plot_kwargs.get('beta_deg_coupled', plot_combined_default('beta_deg_coupled'))} deg")
+    print(f"epsilon={plot_kwargs.get('epsilon', plot_combined_default('epsilon'))}")
+    print(f"num_modes={plot_kwargs.get('n_coupled', plot_combined_default('n_coupled'))}")
+    if args.num_dashed_lines is not None:
+        print(f"num_dashed_lines_per_family={args.num_dashed_lines}")
+    else:
+        print(f"num_lplus_dashed_lines={plot_kwargs.get('n_Lplus_CS', plot_combined_default('n_Lplus_CS'))}")
+        print(f"num_lminus_dashed_lines={plot_kwargs.get('n_Lminus_CS', plot_combined_default('n_Lminus_CS'))}")
 
 
 if __name__ == "__main__":

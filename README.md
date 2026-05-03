@@ -15,7 +15,7 @@ CoupledBeams is a research repository for frequency models and computations for 
 
 - `src/my_project/analytic/FreqFromAngle.py` — analytic scenario sweeping the coupling angle `beta`.
 - `src/my_project/analytic/FreqFromMu.py` — analytic scenario sweeping the length-asymmetry parameter `mu` in frequency units, with tracked branches and optional close-pair diagnostics.
-- `src/my_project/analytic/FreqMuNet.py` — baseline `mu`-sweep plot in dimensionless `Lambda`, with additional single-beam CS reference curves over the coupled-beam branches.
+- `src/my_project/analytic/FreqMuNet.py` — baseline fixed-`beta` `mu`-sweep plot in dimensionless `Lambda`, with additional single-beam CS reference curves over the coupled-beam branches and CLI controls for `--beta`, `--epsilon`, `--num-modes`, `--num-dashed-lines`, and output path.
 - `src/my_project/analytic/formulas.py` — shared matrix and determinant assembly extracted during refactoring.
 - `src/my_project/analytic/solvers.py` — shared numerical solver logic extracted during refactoring.
 - `scripts/plot_freq_mu_vs_fem.py` — comparison plot overlaying analytic `mu`-branches with FEM frequencies from `results/fem_spectrum.csv`.
@@ -37,6 +37,7 @@ Run from the repository root:
 python src/my_project/analytic/FreqFromAngle.py
 python src/my_project/analytic/FreqFromMu.py
 python src/my_project/analytic/FreqMuNet.py
+python src/my_project/analytic/FreqMuNet.py --beta 15 --epsilon 0.0025 --num-modes 6 --num-dashed-lines 6 --output results/lambda_mu_beta15_eps0p0025.png
 python scripts/plot_freq_mu_vs_fem.py
 python scripts/compare_beta0_analytic_vs_fem.py
 python scripts/compare_beta_positive_type_aware.py

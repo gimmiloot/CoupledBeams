@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 2026-05-02
+
+- Updated `src/my_project/analytic/FreqMuNet.py` as the standalone fixed-`beta`
+  `Lambda(mu)` plotting entrypoint: added CLI controls for `--beta`,
+  `--epsilon`, `--num-modes`, dashed CS reference-line counts, `mu` range, and
+  output path, without changing determinant assembly, shared root-finding, or
+  FEM/data files.
+
 ## 2026-04-22
 
 - Integrated four new veering/localization literature sources into the project
