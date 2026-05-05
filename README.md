@@ -26,6 +26,7 @@ CoupledBeams is a research repository for frequency models and computations for 
 - `scripts/plot_beta_sweep_mu0_four_radii_compare.py` — builds one shared `2x2` presentation figure for `mu = 0` and radii `r = 0.005, 0.01, 0.015, 0.02`, reusing the smoothed beta-sweep comparison style, saving one common PNG plus a combined CSV and per-radius CSV outputs for newly computed radii.
 - `scripts/plot_mu_sweep_beta0_four_radii_compare.py` — builds one shared `2x2` presentation figure for the `beta = 0` mu-sweep at radii `r = 0.005, 0.01, 0.015, 0.02`, reusing the type-aware bending matching from `scripts/compare_beta0_analytic_vs_fem.py` and the muted CS single-rod dashed reference curves from `src/my_project/analytic/FreqMuNet.py`, and saving one common PNG plus per-radius and combined CSV outputs in `results/`.
 - `scripts/plot_mu_sweep_beta_fixed_four_radii_compare.py` — builds shared `2x2` presentation figures for fixed `beta` mu-sweeps at `beta = 7.5 deg` and `beta = 15 deg` across radii `r = 0.005, 0.01, 0.015, 0.02`, keeping the same four-radii style as the `beta = 0` figure while reusing the existing positive-`beta` low-branch comparison logic and the muted CS single-rod dashed reference curves.
+- `scripts/plot_tracked_bending_descendant_shapes_ru.py` — parameterized Russian-labeled mode-shape plot for a tracked bending descendant branch, with CLI controls for branch id, beta, target `mu` values, radii, title label, and output path.
 
 - `scripts/plot_mu_sweep_radius_fixed_four_betas_analytic.py` — builds one shared `2x2` presentation figure for the analytic-only mu-sweep at fixed `r = 0.005` and `beta = 15, 30, 45, 60 deg`, reusing the presentation mu grid, positive-`beta` low-branch root-finding settings, and the muted CS single-rod dashed reference curves, and saving one common PNG plus per-beta and combined CSV outputs in `results/`.
 
@@ -46,6 +47,8 @@ python scripts/plot_beta_sweep_mu0_compare.py
 python scripts/plot_beta_sweep_mu0_four_radii_compare.py
 python scripts/plot_mu_sweep_beta0_four_radii_compare.py
 python scripts/plot_mu_sweep_beta_fixed_four_radii_compare.py
+python scripts/plot_tracked_bending_descendant_shapes_ru.py --branch-id bending_desc_01
+python scripts/plot_tracked_bending_descendant_shapes_ru.py --branch-id bending_desc_04 --target-mus 0 0.1 0.2
 python scripts/plot_mu_sweep_radius_fixed_four_betas_analytic.py
 ```
 

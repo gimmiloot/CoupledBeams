@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2026-05-05
+
+- Introduced `scripts/plot_tracked_bending_descendant_shapes_ru.py` as the parameterized tracked bending-descendant mode-shape plotting entrypoint; converted the old `scripts/plot_flat_mu_bending_desc*.py` scripts into compatibility wrappers that preserve their branch ids and output PNG paths, without changing determinant, FEM, formula, or branch-tracking logic.
+
 ## 2026-05-02
 
 - Updated `src/my_project/analytic/FreqMuNet.py` as the standalone fixed-`beta`
