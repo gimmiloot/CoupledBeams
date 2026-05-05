@@ -2,7 +2,10 @@
 
 ## 2026-05-05
 
+- Split tracked bending descendant shape plotting into a reusable `scripts/lib/tracked_bending_descendant_shapes.py` core used by both the single-shape runner and the multi-panel builder; multi-panel figures now call shared in-process helpers instead of depending on single-case CLI behavior, with no determinant, FEM, formula, root-finding, or branch-tracking changes.
+- Added `scripts/run/run_tracked_bending_descendant_shape_ru.py` as a single-shape user-facing runner for tracked bending descendant mode shapes; it exposes descendant branch number/id, `mu`, `epsilon`, and `beta`, without changing determinant, FEM, formula, root-finding, or branch-tracking logic.
 - Introduced `scripts/plot_tracked_bending_descendant_shapes_ru.py` as the parameterized tracked bending-descendant mode-shape plotting entrypoint; converted the old `scripts/plot_flat_mu_bending_desc*.py` scripts into compatibility wrappers that preserve their branch ids and output PNG paths, without changing determinant, FEM, formula, or branch-tracking logic.
+- Added a `scripts/README.md` script map, introduced clear user-facing wrappers in `scripts/run/`, and documented analysis/helper/legacy groupings while preserving old root-level command paths; mathematical model, determinant/root logic, and FEM baseline were unchanged.
 
 ## 2026-05-02
 
