@@ -46,8 +46,10 @@ DEFAULT_BRANCH_ID = "bending_desc_01"
 DEFAULT_TARGET_MUS = (0.0, 0.1, 0.2)
 BENDING_DESCENDANT_PREFIX = "bending_desc_"
 PLOT_KINDS = ("full", "transverse", "components")
-NORMALIZE_KINDS = ("max-full", "max-transverse", "none")
+NORMALIZE_KINDS = ("auto", "max-full", "max-transverse", "none")
 NEAR_ZERO_NORM = 1e-12
+DEFAULT_SINGLE_GEOMETRY_FIGSIZE = (8.0, 4.2)
+DEFAULT_SINGLE_COMPONENTS_FIGSIZE = (8.0, 5.4)
 
 
 def mu_label(mu: float) -> str:
@@ -76,12 +78,17 @@ def default_single_output_path(
     mu_value: float,
     epsilon: float,
     plot_kind: str = "full",
+    mode_scale: float = MODE_SHAPE_SCALE,
+    normalize: str = "auto",
 ) -> Path:
     beta_token = filename_number_token(beta_deg)
     mu_token = filename_number_token(mu_value)
     epsilon_token = filename_number_token(epsilon)
+    scale_token = filename_number_token(mode_scale)
+    normalize_token = "" if normalize == "auto" else f"_norm{normalize.replace('-', '_')}"
     return RESULTS_DIR / (
-        f"tracked_bending_descendant_shape_{plot_kind}_beta{beta_token}_{branch_id}_mu{mu_token}_eps{epsilon_token}_ru.png"
+        f"tracked_bending_descendant_shape_{plot_kind}_beta{beta_token}_{branch_id}_mu{mu_token}"
+        f"_eps{epsilon_token}_scale{scale_token}{normalize_token}_ru.png"
     )
 
 
@@ -101,6 +108,8 @@ def resolve_single_output_path(
     mu_value: float,
     epsilon: float,
     plot_kind: str = "full",
+    mode_scale: float = MODE_SHAPE_SCALE,
+    normalize: str = "auto",
 ) -> Path:
     if value is None:
         return default_single_output_path(
@@ -109,6 +118,8 @@ def resolve_single_output_path(
             mu_value=mu_value,
             epsilon=epsilon,
             plot_kind=plot_kind,
+            mode_scale=mode_scale,
+            normalize=normalize,
         )
     path = Path(value)
     if path.is_absolute():
@@ -134,14 +145,13 @@ def lambda_from_frequency_hz(freq_hz: float, radius: float) -> float:
     return float(np.sqrt(max(float(freq_hz) / frequency_scale(params), 0.0)))
 
 
-def radius_from_epsilon(epsilon: float) -> float:
-    params = build_params(float(DEFAULT_TARGET_RADII[0]))
-    ell = params.L_total / 2.0
+def radius_from_epsilon(epsilon: float, l_total: float | None = None) -> float:
+    ell = (build_params(float(DEFAULT_TARGET_RADII[0])).L_total if l_total is None else float(l_total)) / 2.0
     return 2.0 * ell * float(epsilon)
 
 
 def resolve_normalization(plot_kind: str, normalize: str | None) -> str:
-    if normalize is not None:
+    if normalize is not None and normalize != "auto":
         return normalize
     if plot_kind == "transverse":
         return "max-transverse"
@@ -583,12 +593,15 @@ def build_component_diagnostic_plot(
     output_path: Path,
     title_label: str,
     normalize: str,
+    dpi: int = 240,
+    figsize: tuple[float, float] | None = None,
+    show: bool = False,
 ) -> Path:
     curves = normalized_component_curves(shape_case=shape_case, normalize=normalize)
     s_left = np.asarray(shape_case["s_left_normalized"], dtype=float)
     s_right = np.asarray(shape_case["s_right_normalized"], dtype=float)
 
-    fig, axes = plt.subplots(2, 1, figsize=(8.0, 5.4), sharex=True)
+    fig, axes = plt.subplots(2, 1, figsize=figsize or DEFAULT_SINGLE_COMPONENTS_FIGSIZE, sharex=True)
     axes[0].plot(s_left, curves["left_axial"], color="#1f77b4", linewidth=2.0, label="левое плечо")
     axes[0].plot(s_right, curves["right_axial"], color="#ff7f0e", linewidth=2.0, label="правое плечо")
     axes[0].set_ylabel("локальная продольная")
@@ -615,8 +628,11 @@ def build_component_diagnostic_plot(
     )
     fig.tight_layout(pad=0.8)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(output_path, dpi=240, bbox_inches="tight")
-    plt.close(fig)
+    fig.savefig(output_path, dpi=dpi, bbox_inches="tight")
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
     return output_path
 
 
@@ -658,6 +674,9 @@ def build_single_shape_plot(
     mode_scale: float = MODE_SHAPE_SCALE,
     normalize: str | None = None,
     shape_case: dict[str, object] | None = None,
+    dpi: int = 240,
+    figsize: tuple[float, float] | None = None,
+    show: bool = False,
 ) -> Path:
     if plot_kind not in PLOT_KINDS:
         raise ValueError(f"Unknown plot kind: {plot_kind}")
@@ -679,6 +698,9 @@ def build_single_shape_plot(
             output_path=output_path,
             title_label=title_label,
             normalize=resolved_normalize,
+            dpi=dpi,
+            figsize=figsize,
+            show=show,
         )
 
     x_limits, y_limits = shape_axis_limits(
@@ -687,7 +709,7 @@ def build_single_shape_plot(
         mode_scale=mode_scale,
         normalize=resolved_normalize,
     )
-    fig, ax = plt.subplots(figsize=(8.0, 4.2))
+    fig, ax = plt.subplots(figsize=figsize or DEFAULT_SINGLE_GEOMETRY_FIGSIZE)
     draw_shape_case(
         ax=ax,
         shape_case=shape_case,
@@ -713,6 +735,9 @@ def build_single_shape_plot(
 
     fig.tight_layout(pad=0.8)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(output_path, dpi=240, bbox_inches="tight")
-    plt.close(fig)
+    fig.savefig(output_path, dpi=dpi, bbox_inches="tight")
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
     return output_path

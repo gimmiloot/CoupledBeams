@@ -2,6 +2,7 @@
 
 ## 2026-05-05
 
+- Expanded the single tracked bending descendant shape runner CLI with explicit branch defaults, `--l-total`, `--dpi`, `--figsize`, `--show`, `--normalize auto`, deterministic scale-aware output names, and optional one-row diagnostics CSV export, without changing determinant, FEM, formulas, root-finding, branch tracking, eigenfrequencies, or parameter meanings.
 - Added `full`, `transverse`, and `components` plot modes plus `--mode-scale` and normalization controls to the single tracked bending descendant shape runner; the new diagnostics report local axial/transverse amplitudes without changing determinant, FEM, formulas, root-finding, branch tracking, eigenfrequencies, or baseline mode-shape normalization.
 - Generalized Russian title-label inference for tracked bending descendants so any `bending_desc_NN` branch id renders as `потомок N-й изгибной ветви`, with a unit-style fallback check and no determinant, FEM, formula, root-finding, tracking, normalization, layout, or color changes.
 - Cleaned up the single-case tracked bending descendant shape PNG layout by removing its top legend, shortening the title to the requested beta/mu/epsilon and Russian branch label metadata, and reducing the single-case figure height, without changing tracking, normalization, scale, colors, formulas, determinant, root-finding, or FEM logic.
