@@ -44,12 +44,10 @@ from scripts.sweep_grid_policy import ANALYSIS_BETA_STEP, ANALYSIS_MU_STEP, anal
 DEFAULT_BETA_DEG = 15.0
 DEFAULT_BRANCH_ID = "bending_desc_01"
 DEFAULT_TARGET_MUS = (0.0, 0.1, 0.2)
-TITLE_LABELS_RU = {
-    "bending_desc_01": "потомок 1-й изгибной ветви",
-    "bending_desc_02": "потомок 2-й изгибной ветви",
-    "bending_desc_04": "потомок 4-й изгибной ветви",
-    "bending_desc_06": "потомок 6-й изгибной ветви",
-}
+BENDING_DESCENDANT_PREFIX = "bending_desc_"
+PLOT_KINDS = ("full", "transverse", "components")
+NORMALIZE_KINDS = ("max-full", "max-transverse", "none")
+NEAR_ZERO_NORM = 1e-12
 
 
 def mu_label(mu: float) -> str:
@@ -72,12 +70,18 @@ def default_output_path(branch_id: str, beta_deg: float, target_mus: Sequence[fl
     return RESULTS_DIR / f"tracked_bending_descendant_shapes_beta{beta_token}_{branch_id}_{target_mus_token(target_mus)}_ru.png"
 
 
-def default_single_output_path(branch_id: str, beta_deg: float, mu_value: float, epsilon: float) -> Path:
+def default_single_output_path(
+    branch_id: str,
+    beta_deg: float,
+    mu_value: float,
+    epsilon: float,
+    plot_kind: str = "full",
+) -> Path:
     beta_token = filename_number_token(beta_deg)
     mu_token = filename_number_token(mu_value)
     epsilon_token = filename_number_token(epsilon)
     return RESULTS_DIR / (
-        f"tracked_bending_descendant_shape_beta{beta_token}_{branch_id}_mu{mu_token}_eps{epsilon_token}_ru.png"
+        f"tracked_bending_descendant_shape_{plot_kind}_beta{beta_token}_{branch_id}_mu{mu_token}_eps{epsilon_token}_ru.png"
     )
 
 
@@ -96,6 +100,7 @@ def resolve_single_output_path(
     beta_deg: float,
     mu_value: float,
     epsilon: float,
+    plot_kind: str = "full",
 ) -> Path:
     if value is None:
         return default_single_output_path(
@@ -103,6 +108,7 @@ def resolve_single_output_path(
             beta_deg=beta_deg,
             mu_value=mu_value,
             epsilon=epsilon,
+            plot_kind=plot_kind,
         )
     path = Path(value)
     if path.is_absolute():
@@ -110,8 +116,17 @@ def resolve_single_output_path(
     return REPO_ROOT / path
 
 
+def infer_bending_descendant_title_label(branch_id: str) -> str:
+    if branch_id.startswith(BENDING_DESCENDANT_PREFIX):
+        number_part = branch_id.removeprefix(BENDING_DESCENDANT_PREFIX)
+        if number_part.isdecimal():
+            number = int(number_part)
+            return f"потомок {number}-й изгибной ветви"
+    return f"ветвь {branch_id}"
+
+
 def infer_title_label(branch_id: str) -> str:
-    return TITLE_LABELS_RU.get(branch_id, f"ветвь {branch_id}")
+    return infer_bending_descendant_title_label(branch_id)
 
 
 def lambda_from_frequency_hz(freq_hz: float, radius: float) -> float:
@@ -123,6 +138,45 @@ def radius_from_epsilon(epsilon: float) -> float:
     params = build_params(float(DEFAULT_TARGET_RADII[0]))
     ell = params.L_total / 2.0
     return 2.0 * ell * float(epsilon)
+
+
+def resolve_normalization(plot_kind: str, normalize: str | None) -> str:
+    if normalize is not None:
+        return normalize
+    if plot_kind == "transverse":
+        return "max-transverse"
+    return "max-full"
+
+
+def normalization_factor(shape_case: dict[str, object], normalize: str) -> float:
+    if normalize == "none":
+        return 1.0
+    if normalize == "max-transverse":
+        value = float(shape_case["max_abs_transverse"])
+    elif normalize == "max-full":
+        value = float(shape_case["max_full_displacement"])
+    else:
+        raise ValueError(f"Unknown normalization mode: {normalize}")
+    return max(value, NEAR_ZERO_NORM)
+
+
+def compute_local_components(
+    u_global: np.ndarray,
+    v_global: np.ndarray,
+    beta_deg: float,
+) -> dict[str, np.ndarray]:
+    joint = fem.N_ELEM
+    beta_rad = np.deg2rad(beta_deg)
+    cos_beta = float(np.cos(beta_rad))
+    sin_beta = float(np.sin(beta_rad))
+    u_right_global = u_global[joint:]
+    v_right_global = v_global[joint:]
+    return {
+        "u_left_local": u_global[: joint + 1],
+        "w_left_local": v_global[: joint + 1],
+        "u_right_local": cos_beta * u_right_global + sin_beta * v_right_global,
+        "w_right_local": -sin_beta * u_right_global + cos_beta * v_right_global,
+    }
 
 
 def track_branch_family(radius: float, beta_deg: float, target_mus: Sequence[float]) -> dict[str, object]:
@@ -213,9 +267,26 @@ def shape_case_from_tracking(
     x_base, y_base = build_node_coordinates(mu=float(mu_value), beta_deg=case_beta, ell=ell)
     u = full_vec[0::3]
     v = full_vec[1::3]
-    max_disp = float(np.max(np.sqrt(u * u + v * v)))
-    norm = max(max_disp, 1e-12)
+    local = compute_local_components(u_global=u, v_global=v, beta_deg=case_beta)
+    full_displacement = np.sqrt(u * u + v * v)
+    max_disp = float(np.max(full_displacement))
+    max_abs_transverse = float(
+        max(
+            np.max(np.abs(local["w_left_local"])),
+            np.max(np.abs(local["w_right_local"])),
+        )
+    )
+    max_abs_axial = float(
+        max(
+            np.max(np.abs(local["u_left_local"])),
+            np.max(np.abs(local["u_right_local"])),
+        )
+    )
+    norm = max(max_disp, NEAR_ZERO_NORM)
     frequency_hz = float(snapshot["frequency_hz"][branch_pos])
+    axial_fraction_values = snapshot.get("axial_fraction")
+    axial_fraction = float(axial_fraction_values[branch_pos]) if axial_fraction_values is not None else np.nan
+    full_for_ratio = max(max_disp, NEAR_ZERO_NORM)
 
     return {
         "beta": case_beta,
@@ -227,8 +298,22 @@ def shape_case_from_tracking(
         "lambda": lambda_from_frequency_hz(freq_hz=frequency_hz, radius=case_radius),
         "x_base": x_base,
         "y_base": y_base,
+        "u_raw": u,
+        "v_raw": v,
         "u": u / norm,
         "v": v / norm,
+        "u_left_local": local["u_left_local"],
+        "w_left_local": local["w_left_local"],
+        "u_right_local": local["u_right_local"],
+        "w_right_local": local["w_right_local"],
+        "s_left_normalized": np.linspace(0.0, 1.0, fem.N_ELEM + 1),
+        "s_right_normalized": np.linspace(0.0, 1.0, fem.N_ELEM + 1),
+        "max_full_displacement": max_disp,
+        "max_abs_transverse": max_abs_transverse,
+        "max_abs_axial": max_abs_axial,
+        "transverse_to_full_ratio": max_abs_transverse / full_for_ratio,
+        "axial_to_full_ratio": max_abs_axial / full_for_ratio,
+        "axial_fraction": axial_fraction,
     }
 
 
@@ -303,23 +388,114 @@ def collect_branch_shape_cases(
     return cases
 
 
-def deformed_coordinates(shape_case: dict[str, object]) -> tuple[np.ndarray, np.ndarray]:
+def full_deformed_coordinates(
+    shape_case: dict[str, object],
+    *,
+    mode_scale: float = MODE_SHAPE_SCALE,
+    normalize: str = "max-full",
+) -> tuple[np.ndarray, np.ndarray]:
     x_base = np.asarray(shape_case["x_base"], dtype=float)
     y_base = np.asarray(shape_case["y_base"], dtype=float)
-    u = np.asarray(shape_case["u"], dtype=float)
-    v = np.asarray(shape_case["v"], dtype=float)
-    return x_base + MODE_SHAPE_SCALE * u, y_base + MODE_SHAPE_SCALE * v
+    norm = normalization_factor(shape_case=shape_case, normalize=normalize)
+    u = np.asarray(shape_case["u_raw"], dtype=float) / norm
+    v = np.asarray(shape_case["v_raw"], dtype=float) / norm
+    return x_base + mode_scale * u, y_base + mode_scale * v
 
 
-def shape_axis_limits(shape_cases: Sequence[dict[str, object]]) -> tuple[tuple[float, float], tuple[float, float]]:
+def transverse_deformed_arm_coordinates(
+    shape_case: dict[str, object],
+    *,
+    mode_scale: float = MODE_SHAPE_SCALE,
+    normalize: str = "max-transverse",
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    joint = fem.N_ELEM
+    x_base = np.asarray(shape_case["x_base"], dtype=float)
+    y_base = np.asarray(shape_case["y_base"], dtype=float)
+    beta_rad = np.deg2rad(float(shape_case["beta"]))
+    normal_x = -float(np.sin(beta_rad))
+    normal_y = float(np.cos(beta_rad))
+    norm = normalization_factor(shape_case=shape_case, normalize=normalize)
+    w_left = np.asarray(shape_case["w_left_local"], dtype=float) / norm
+    w_right = np.asarray(shape_case["w_right_local"], dtype=float) / norm
+
+    x_left = x_base[: joint + 1].copy()
+    y_left = y_base[: joint + 1] + mode_scale * w_left
+    x_right = x_base[joint:] + mode_scale * w_right * normal_x
+    y_right = y_base[joint:] + mode_scale * w_right * normal_y
+    return x_left, y_left, x_right, y_right
+
+
+def deformed_arm_coordinates(
+    shape_case: dict[str, object],
+    *,
+    plot_kind: str = "full",
+    mode_scale: float = MODE_SHAPE_SCALE,
+    normalize: str = "max-full",
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    joint = fem.N_ELEM
+    if plot_kind == "full":
+        x_def, y_def = full_deformed_coordinates(
+            shape_case=shape_case,
+            mode_scale=mode_scale,
+            normalize=normalize,
+        )
+        return x_def[: joint + 1], y_def[: joint + 1], x_def[joint:], y_def[joint:]
+    if plot_kind == "transverse":
+        return transverse_deformed_arm_coordinates(
+            shape_case=shape_case,
+            mode_scale=mode_scale,
+            normalize=normalize,
+        )
+    raise ValueError(f"Geometry deformation is not defined for plot kind: {plot_kind}")
+
+
+def deformed_coordinates(
+    shape_case: dict[str, object],
+    *,
+    mode_scale: float = MODE_SHAPE_SCALE,
+    normalize: str = "max-full",
+) -> tuple[np.ndarray, np.ndarray]:
+    return full_deformed_coordinates(shape_case=shape_case, mode_scale=mode_scale, normalize=normalize)
+
+
+def shape_axis_limits(
+    shape_cases: Sequence[dict[str, object]],
+    *,
+    plot_kind: str = "full",
+    mode_scale: float = MODE_SHAPE_SCALE,
+    normalize: str = "max-full",
+) -> tuple[tuple[float, float], tuple[float, float]]:
     x_all: list[float] = []
     y_all: list[float] = []
     for shape_case in shape_cases:
         x_base = np.asarray(shape_case["x_base"], dtype=float)
         y_base = np.asarray(shape_case["y_base"], dtype=float)
-        x_def, y_def = deformed_coordinates(shape_case)
-        x_all.extend([float(np.min(x_base)), float(np.max(x_base)), float(np.min(x_def)), float(np.max(x_def))])
-        y_all.extend([float(np.min(y_base)), float(np.max(y_base)), float(np.min(y_def)), float(np.max(y_def))])
+        x_left, y_left, x_right, y_right = deformed_arm_coordinates(
+            shape_case=shape_case,
+            plot_kind=plot_kind,
+            mode_scale=mode_scale,
+            normalize=normalize,
+        )
+        x_all.extend(
+            [
+                float(np.min(x_base)),
+                float(np.max(x_base)),
+                float(np.min(x_left)),
+                float(np.max(x_left)),
+                float(np.min(x_right)),
+                float(np.max(x_right)),
+            ]
+        )
+        y_all.extend(
+            [
+                float(np.min(y_base)),
+                float(np.max(y_base)),
+                float(np.min(y_left)),
+                float(np.max(y_left)),
+                float(np.min(y_right)),
+                float(np.max(y_right)),
+            ]
+        )
 
     x_margin = 0.06 * max(max(x_all) - min(x_all), 1.0)
     y_margin = 0.10 * max(max(y_all) - min(y_all), 0.5)
@@ -332,16 +508,24 @@ def draw_shape_case(
     *,
     x_limits: tuple[float, float] | None = None,
     y_limits: tuple[float, float] | None = None,
+    plot_kind: str = "full",
+    mode_scale: float = MODE_SHAPE_SCALE,
+    normalize: str = "max-full",
 ) -> None:
     joint = fem.N_ELEM
     x_base = np.asarray(shape_case["x_base"], dtype=float)
     y_base = np.asarray(shape_case["y_base"], dtype=float)
-    x_def, y_def = deformed_coordinates(shape_case)
+    x_left, y_left, x_right, y_right = deformed_arm_coordinates(
+        shape_case=shape_case,
+        plot_kind=plot_kind,
+        mode_scale=mode_scale,
+        normalize=normalize,
+    )
 
     ax.plot(x_base[: joint + 1], y_base[: joint + 1], color="0.78", linestyle="--", linewidth=1.1)
     ax.plot(x_base[joint:], y_base[joint:], color="0.78", linestyle="--", linewidth=1.1)
-    ax.plot(x_def[: joint + 1], y_def[: joint + 1], color="#1f77b4", linewidth=2.2)
-    ax.plot(x_def[joint:], y_def[joint:], color="#ff7f0e", linewidth=2.2)
+    ax.plot(x_left, y_left, color="#1f77b4", linewidth=2.2)
+    ax.plot(x_right, y_right, color="#ff7f0e", linewidth=2.2)
     ax.scatter([x_base[joint]], [y_base[joint]], color="black", s=12, zorder=5)
     ax.set_aspect("equal", adjustable="box")
     if x_limits is not None:
@@ -359,6 +543,109 @@ def shape_legend_handles() -> list[Line2D]:
     ]
 
 
+def single_shape_title(
+    shape_case: dict[str, object],
+    *,
+    beta_deg: float,
+    mu_value: float,
+    epsilon: float,
+    title_label: str,
+    plot_kind: str,
+) -> str:
+    prefix = "Локальные компоненты: " if plot_kind == "components" else ""
+    return (
+        f"{prefix}β = {beta_deg:g}°, μ = {mu_label(mu_value)}, ε = {epsilon:g}\n"
+        f"{title_label}, Λ = {float(shape_case['lambda']):.3f}, "
+        f"место в спектре: {int(shape_case['current_sorted_index'])}"
+    )
+
+
+def normalized_component_curves(
+    shape_case: dict[str, object],
+    *,
+    normalize: str,
+) -> dict[str, np.ndarray]:
+    norm = normalization_factor(shape_case=shape_case, normalize=normalize)
+    return {
+        "left_axial": np.asarray(shape_case["u_left_local"], dtype=float) / norm,
+        "left_transverse": np.asarray(shape_case["w_left_local"], dtype=float) / norm,
+        "right_axial": np.asarray(shape_case["u_right_local"], dtype=float) / norm,
+        "right_transverse": np.asarray(shape_case["w_right_local"], dtype=float) / norm,
+    }
+
+
+def build_component_diagnostic_plot(
+    shape_case: dict[str, object],
+    *,
+    beta_deg: float,
+    mu_value: float,
+    epsilon: float,
+    output_path: Path,
+    title_label: str,
+    normalize: str,
+) -> Path:
+    curves = normalized_component_curves(shape_case=shape_case, normalize=normalize)
+    s_left = np.asarray(shape_case["s_left_normalized"], dtype=float)
+    s_right = np.asarray(shape_case["s_right_normalized"], dtype=float)
+
+    fig, axes = plt.subplots(2, 1, figsize=(8.0, 5.4), sharex=True)
+    axes[0].plot(s_left, curves["left_axial"], color="#1f77b4", linewidth=2.0, label="левое плечо")
+    axes[0].plot(s_right, curves["right_axial"], color="#ff7f0e", linewidth=2.0, label="правое плечо")
+    axes[0].set_ylabel("локальная продольная")
+    axes[0].grid(True, alpha=0.22)
+    axes[0].legend(fontsize=9, loc="best")
+
+    axes[1].plot(s_left, curves["left_transverse"], color="#1f77b4", linewidth=2.0, label="левое плечо")
+    axes[1].plot(s_right, curves["right_transverse"], color="#ff7f0e", linewidth=2.0, label="правое плечо")
+    axes[1].set_xlabel("локальная координата s / L")
+    axes[1].set_ylabel("локальная поперечная")
+    axes[1].grid(True, alpha=0.22)
+    axes[1].legend(fontsize=9, loc="best")
+
+    fig.suptitle(
+        single_shape_title(
+            shape_case=shape_case,
+            beta_deg=beta_deg,
+            mu_value=mu_value,
+            epsilon=epsilon,
+            title_label=title_label,
+            plot_kind="components",
+        ),
+        fontsize=10.6,
+    )
+    fig.tight_layout(pad=0.8)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=240, bbox_inches="tight")
+    plt.close(fig)
+    return output_path
+
+
+def single_shape_diagnostics(
+    shape_case: dict[str, object],
+    *,
+    plot_kind: str,
+    mode_scale: float,
+    normalize: str,
+) -> dict[str, float | int | str]:
+    return {
+        "branch_id": str(shape_case["branch_id"]),
+        "beta": float(shape_case["beta"]),
+        "mu": float(shape_case["mu"]),
+        "radius": float(shape_case["r"]),
+        "lambda": float(shape_case["lambda"]),
+        "current_sorted_index": int(shape_case["current_sorted_index"]),
+        "plot_kind": plot_kind,
+        "mode_scale": float(mode_scale),
+        "normalization": normalize,
+        "max_full_displacement": float(shape_case["max_full_displacement"]),
+        "max_abs_transverse": float(shape_case["max_abs_transverse"]),
+        "max_abs_axial": float(shape_case["max_abs_axial"]),
+        "transverse_to_full_ratio": float(shape_case["transverse_to_full_ratio"]),
+        "axial_to_full_ratio": float(shape_case["axial_to_full_ratio"]),
+        "axial_fraction": float(shape_case["axial_fraction"]),
+    }
+
+
 def build_single_shape_plot(
     branch_id: str,
     beta_deg: float,
@@ -367,29 +654,64 @@ def build_single_shape_plot(
     epsilon: float,
     output_path: Path,
     title_label: str,
+    plot_kind: str = "full",
+    mode_scale: float = MODE_SHAPE_SCALE,
+    normalize: str | None = None,
+    shape_case: dict[str, object] | None = None,
 ) -> Path:
-    shape_case = collect_single_branch_shape(
-        branch_id=branch_id,
-        beta_deg=beta_deg,
-        mu_value=mu_value,
-        radius=radius,
+    if plot_kind not in PLOT_KINDS:
+        raise ValueError(f"Unknown plot kind: {plot_kind}")
+    resolved_normalize = resolve_normalization(plot_kind=plot_kind, normalize=normalize)
+    if shape_case is None:
+        shape_case = collect_single_branch_shape(
+            branch_id=branch_id,
+            beta_deg=beta_deg,
+            mu_value=mu_value,
+            radius=radius,
+        )
+
+    if plot_kind == "components":
+        return build_component_diagnostic_plot(
+            shape_case=shape_case,
+            beta_deg=beta_deg,
+            mu_value=mu_value,
+            epsilon=epsilon,
+            output_path=output_path,
+            title_label=title_label,
+            normalize=resolved_normalize,
+        )
+
+    x_limits, y_limits = shape_axis_limits(
+        [shape_case],
+        plot_kind=plot_kind,
+        mode_scale=mode_scale,
+        normalize=resolved_normalize,
     )
-    x_limits, y_limits = shape_axis_limits([shape_case])
-    fig, ax = plt.subplots(figsize=(8.0, 5.6))
-    draw_shape_case(ax=ax, shape_case=shape_case, x_limits=x_limits, y_limits=y_limits)
+    fig, ax = plt.subplots(figsize=(8.0, 4.2))
+    draw_shape_case(
+        ax=ax,
+        shape_case=shape_case,
+        x_limits=x_limits,
+        y_limits=y_limits,
+        plot_kind=plot_kind,
+        mode_scale=mode_scale,
+        normalize=resolved_normalize,
+    )
     ax.set_xlabel("координата x")
     ax.set_ylabel("координата y")
     ax.set_title(
-        (
-            f"β = {beta_deg:g}°, μ = {mu_label(mu_value)}, ε = {epsilon:g}, r = {radius * 1e3:g} мм\n"
-            f"{branch_id}, {title_label}, Λ = {float(shape_case['lambda']):.3f}, "
-            f"место в спектре: {int(shape_case['current_sorted_index'])}"
+        single_shape_title(
+            shape_case=shape_case,
+            beta_deg=beta_deg,
+            mu_value=mu_value,
+            epsilon=epsilon,
+            title_label=title_label,
+            plot_kind=plot_kind,
         ),
         fontsize=10.6,
     )
 
-    fig.legend(handles=shape_legend_handles(), loc="upper center", ncol=3, bbox_to_anchor=(0.5, 0.985), fontsize=10)
-    fig.tight_layout(rect=(0, 0, 1, 0.90))
+    fig.tight_layout(pad=0.8)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_path, dpi=240, bbox_inches="tight")
     plt.close(fig)

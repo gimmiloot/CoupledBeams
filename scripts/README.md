@@ -53,13 +53,23 @@ The original root-level scripts remain in place because many scripts import each
 ### Single tracked descendant shape
 
 - Task: plot one Russian-labeled mode shape for one tracked bending descendant at explicit `branch`, `mu`, `epsilon`, and `beta`.
-- Command: `python scripts/run/run_tracked_bending_descendant_shape_ru.py --branch-number 4 --mu 0.2 --epsilon 0.0025 --beta 15`
-- Main parameters: `--branch-number`, `--branch-id`, `--mu`, `--epsilon`, `--beta`, `--output`, `--title-label`.
-- Results: by default `results/tracked_bending_descendant_shape_beta..._ru.png`; custom `--output` is supported.
+- Command: `python scripts/run/run_tracked_bending_descendant_shape_ru.py --branch-number 4 --mu 0.2 --epsilon 0.0025 --beta 15 --plot-kind full`
+- Main parameters: `--branch-number`, `--branch-id`, `--mu`, `--epsilon`, `--beta`, `--plot-kind`, `--mode-scale`, `--normalize`, `--output`, `--title-label`.
+- Results: by default `results/tracked_bending_descendant_shape_{plot_kind}_beta..._ru.png`; custom `--output` is supported.
 - Use when: you need one final tracked descendant shape for a specific parameter point.
 - Do not use when: you need comparison panels over several `mu` values or several radii.
 
 `--branch-number` is the descendant number used to form `bending_desc_XX`; it is not the current sorted mode index printed as "место в спектре".
+
+`--plot-kind full` shows the total modal displacement, analogous to a scaled total-deformation mode-shape view. `--plot-kind transverse` removes local axial displacement from the geometry and shows the local bending-deflection shape on each arm. `--plot-kind components` draws diagnostic local axial/transverse component curves for the two arms, normalized together so relative axial/transverse size remains visible.
+
+Examples:
+
+```bash
+python scripts/run/run_tracked_bending_descendant_shape_ru.py --branch-number 5 --mu 0 --epsilon 0.0025 --beta 30 --plot-kind full --mode-scale 0.05
+python scripts/run/run_tracked_bending_descendant_shape_ru.py --branch-number 5 --mu 0 --epsilon 0.0025 --beta 30 --plot-kind transverse
+python scripts/run/run_tracked_bending_descendant_shape_ru.py --branch-number 5 --mu 0 --epsilon 0.0025 --beta 30 --plot-kind components
+```
 
 ### Branchwise FEM audit
 
@@ -128,6 +138,6 @@ These preserve old command paths and old output filenames.
 | `scripts/run/run_mu_sweep_beta0_four_radii.py` | main user-facing command | Friendly wrapper for four-radius `mu` sweep at `beta = 0`. | `python scripts/run/run_mu_sweep_beta0_four_radii.py` | keep |
 | `scripts/run/run_mu_sweep_fixed_beta_four_radii.py` | main user-facing command | Friendly wrapper for fixed-beta four-radius `mu` sweeps. | `python scripts/run/run_mu_sweep_fixed_beta_four_radii.py` | keep |
 | `scripts/run/run_mu_sweep_four_betas_analytic.py` | main user-facing command | Friendly wrapper for analytic-only selected-beta `mu` sweeps. | `python scripts/run/run_mu_sweep_four_betas_analytic.py --betas 15 30 45 60` | keep |
-| `scripts/run/run_tracked_bending_descendant_shape_ru.py` | main user-facing command | Friendly wrapper for one tracked bending descendant shape at explicit `mu`, `epsilon`, and `beta`. | `python scripts/run/run_tracked_bending_descendant_shape_ru.py --branch-number 4 --mu 0.2 --epsilon 0.0025 --beta 15` | keep |
+| `scripts/run/run_tracked_bending_descendant_shape_ru.py` | main user-facing command | Friendly wrapper for one tracked bending descendant shape at explicit `mu`, `epsilon`, `beta`, and plot kind. | `python scripts/run/run_tracked_bending_descendant_shape_ru.py --branch-number 4 --mu 0.2 --epsilon 0.0025 --beta 15 --plot-kind full` | keep |
 | `scripts/run/run_tracked_bending_descendant_shapes_ru.py` | main user-facing command | Friendly wrapper for tracked bending descendant shapes. | `python scripts/run/run_tracked_bending_descendant_shapes_ru.py --branch-id bending_desc_01` | keep |
 | `scripts/run/run_branchwise_fem_audit.py` | main user-facing command | Friendly wrapper for the branchwise FEM audit. | `python scripts/run/run_branchwise_fem_audit.py` | keep |

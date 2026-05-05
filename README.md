@@ -29,7 +29,7 @@ python scripts/run/run_beta_sweep_mu0_four_radii.py
 python scripts/run/run_mu_sweep_beta0_four_radii.py
 python scripts/run/run_mu_sweep_fixed_beta_four_radii.py
 python scripts/run/run_mu_sweep_four_betas_analytic.py --betas 15 30 45 60
-python scripts/run/run_tracked_bending_descendant_shape_ru.py --branch-number 4 --mu 0.2 --epsilon 0.0025 --beta 15
+python scripts/run/run_tracked_bending_descendant_shape_ru.py --branch-number 4 --mu 0.2 --epsilon 0.0025 --beta 15 --plot-kind full
 python scripts/run/run_branchwise_fem_audit.py
 ```
 
