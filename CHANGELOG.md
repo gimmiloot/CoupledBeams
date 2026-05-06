@@ -1,7 +1,13 @@
 # CHANGELOG
 
+## 2026-05-06
+
+- Added `scripts/analysis/compare_analytic_fem_tracked_descendant_shape.py` for analytic-vs-FEM local component comparison of tracked descendants; it reconstructs the analytic mode shape from the determinant nullspace and changes no determinant, FEM, formulas, root-finding, or branch tracking.
+
 ## 2026-05-05
 
+- Added `--diagnostics-level all` to the single tracked bending descendant shape runner, with local projection reconstruction checks, strain-like local derivative diagnostics, and arm-wise axial/bending diagnostic energies for the selected mode shape, without changing determinant, FEM, formulas, root-finding, branch tracking, or eigenfrequencies.
+- Added an editable `USER PARAMETERS` block to the single tracked bending descendant shape runner so no-argument runs use file-local working defaults while CLI arguments remain available as overrides, without changing determinant, FEM, formulas, root-finding, branch tracking, or eigenfrequencies.
 - Expanded the single tracked bending descendant shape runner CLI with explicit branch defaults, `--l-total`, `--dpi`, `--figsize`, `--show`, `--normalize auto`, deterministic scale-aware output names, and optional one-row diagnostics CSV export, without changing determinant, FEM, formulas, root-finding, branch tracking, eigenfrequencies, or parameter meanings.
 - Added `full`, `transverse`, and `components` plot modes plus `--mode-scale` and normalization controls to the single tracked bending descendant shape runner; the new diagnostics report local axial/transverse amplitudes without changing determinant, FEM, formulas, root-finding, branch tracking, eigenfrequencies, or baseline mode-shape normalization.
 - Generalized Russian title-label inference for tracked bending descendants so any `bending_desc_NN` branch id renders as `потомок N-й изгибной ветви`, with a unit-style fallback check and no determinant, FEM, formula, root-finding, tracking, normalization, layout, or color changes.

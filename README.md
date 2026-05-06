@@ -29,9 +29,11 @@ python scripts/run/run_beta_sweep_mu0_four_radii.py
 python scripts/run/run_mu_sweep_beta0_four_radii.py
 python scripts/run/run_mu_sweep_fixed_beta_four_radii.py
 python scripts/run/run_mu_sweep_four_betas_analytic.py --betas 15 30 45 60
-python scripts/run/run_tracked_bending_descendant_shape_ru.py --branch-number 5 --mu 0 --epsilon 0.0025 --beta 30 --plot-kind full --mode-scale 0.05
+python scripts/run/run_tracked_bending_descendant_shape_ru.py
 python scripts/run/run_branchwise_fem_audit.py
 ```
+
+For the single tracked descendant shape runner, ordinary runs use the editable `USER PARAMETERS` block at the top of `scripts/run/run_tracked_bending_descendant_shape_ru.py`; CLI arguments remain available as overrides.
 
 See `scripts/README.md` for the full script inventory and legacy command map.
 

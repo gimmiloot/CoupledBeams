@@ -33,6 +33,7 @@ from scripts.analyze_flat_mu_bending_energy import (  # noqa: E402
     build_branch_metadata,
     build_node_coordinates,
     build_params,
+    element_bending_stiffness,
     expand_full_vector,
     mu_key,
     solve_fem_modes,
@@ -47,6 +48,7 @@ DEFAULT_TARGET_MUS = (0.0, 0.1, 0.2)
 BENDING_DESCENDANT_PREFIX = "bending_desc_"
 PLOT_KINDS = ("full", "transverse", "components")
 NORMALIZE_KINDS = ("auto", "max-full", "max-transverse", "none")
+DIAGNOSTICS_LEVELS = ("basic", "all")
 NEAR_ZERO_NORM = 1e-12
 DEFAULT_SINGLE_GEOMETRY_FIGSIZE = (8.0, 4.2)
 DEFAULT_SINGLE_COMPONENTS_FIGSIZE = (8.0, 5.4)
@@ -189,6 +191,164 @@ def compute_local_components(
     }
 
 
+def safe_divide(numerator: float, denominator: float) -> float:
+    return float(numerator) / float(denominator) if abs(float(denominator)) > NEAR_ZERO_NORM else np.nan
+
+
+def local_arm_lengths(shape_case: dict[str, object]) -> tuple[float, float, float]:
+    params = build_params(float(shape_case["r"]))
+    ell = params.L_total / 2.0
+    mu_value = float(shape_case["mu"])
+    return ell, ell * (1.0 - mu_value), ell * (1.0 + mu_value)
+
+
+def local_projection_reconstruction_diagnostics(shape_case: dict[str, object]) -> dict[str, float]:
+    joint = fem.N_ELEM
+    beta_rad = np.deg2rad(float(shape_case["beta"]))
+    cos_beta = float(np.cos(beta_rad))
+    sin_beta = float(np.sin(beta_rad))
+    u_raw = np.asarray(shape_case["u_raw"], dtype=float)
+    v_raw = np.asarray(shape_case["v_raw"], dtype=float)
+    u_left_local = np.asarray(shape_case["u_left_local"], dtype=float)
+    w_left_local = np.asarray(shape_case["w_left_local"], dtype=float)
+    u_right_local = np.asarray(shape_case["u_right_local"], dtype=float)
+    w_right_local = np.asarray(shape_case["w_right_local"], dtype=float)
+
+    left_u_error = u_left_local - u_raw[: joint + 1]
+    left_v_error = w_left_local - v_raw[: joint + 1]
+    left_norm_error = np.sqrt(left_u_error * left_u_error + left_v_error * left_v_error)
+
+    u_rec = cos_beta * u_right_local - sin_beta * w_right_local
+    v_rec = sin_beta * u_right_local + cos_beta * w_right_local
+    right_u_error = u_rec - u_raw[joint:]
+    right_v_error = v_rec - v_raw[joint:]
+    right_norm_error = np.sqrt(right_u_error * right_u_error + right_v_error * right_v_error)
+    max_full = max(float(shape_case["max_full_displacement"]), NEAR_ZERO_NORM)
+
+    return {
+        "left_projection_max_abs_u_error": float(np.max(np.abs(left_u_error))),
+        "left_projection_max_abs_v_error": float(np.max(np.abs(left_v_error))),
+        "left_projection_max_norm_error": float(np.max(left_norm_error)),
+        "left_projection_relative_norm_error": float(np.max(left_norm_error) / max_full),
+        "right_projection_max_abs_u_error": float(np.max(np.abs(right_u_error))),
+        "right_projection_max_abs_v_error": float(np.max(np.abs(right_v_error))),
+        "right_projection_max_norm_error": float(np.max(right_norm_error)),
+        "right_projection_relative_norm_error": float(np.max(right_norm_error) / max_full),
+    }
+
+
+def local_derivative_diagnostics(shape_case: dict[str, object]) -> dict[str, float]:
+    """Estimate strain-like slopes from nodal local displacement amplitudes.
+
+    These are diagnostic derivatives of the selected eigenvector amplitude on the
+    FEM nodes, not exact element strain fields.
+    """
+    _, left_length, right_length = local_arm_lengths(shape_case)
+    left_length = max(float(left_length), NEAR_ZERO_NORM)
+    right_length = max(float(right_length), NEAR_ZERO_NORM)
+    s_left = np.linspace(0.0, left_length, fem.N_ELEM + 1)
+    s_right = np.linspace(0.0, right_length, fem.N_ELEM + 1)
+    u_left = np.asarray(shape_case["u_left_local"], dtype=float)
+    u_right = np.asarray(shape_case["u_right_local"], dtype=float)
+    w_left = np.asarray(shape_case["w_left_local"], dtype=float)
+    w_right = np.asarray(shape_case["w_right_local"], dtype=float)
+
+    du_left_ds = np.gradient(u_left, s_left)
+    du_right_ds = np.gradient(u_right, s_right)
+    dw_left_ds = np.gradient(w_left, s_left)
+    dw_right_ds = np.gradient(w_right, s_right)
+
+    return {
+        "max_abs_du_left_ds": float(np.max(np.abs(du_left_ds))),
+        "max_abs_du_right_ds": float(np.max(np.abs(du_right_ds))),
+        "rms_du_left_ds": float(np.sqrt(np.mean(du_left_ds * du_left_ds))),
+        "rms_du_right_ds": float(np.sqrt(np.mean(du_right_ds * du_right_ds))),
+        "max_abs_dw_left_ds": float(np.max(np.abs(dw_left_ds))),
+        "max_abs_dw_right_ds": float(np.max(np.abs(dw_right_ds))),
+        "rms_dw_left_ds": float(np.sqrt(np.mean(dw_left_ds * dw_left_ds))),
+        "rms_dw_right_ds": float(np.sqrt(np.mean(dw_right_ds * dw_right_ds))),
+    }
+
+
+def arm_energy_diagnostics(shape_case: dict[str, object], epsilon: float | None = None) -> dict[str, float]:
+    """Compute diagnostic arm-wise axial and bending energies for one eigenvector.
+
+    Energies use the current nondimensional FEM convention on the selected modal
+    amplitude. They are postprocessing diagnostics and do not modify the FEM model.
+    """
+    eps = float(epsilon) if epsilon is not None else float(shape_case["r"]) / (2.0 * local_arm_lengths(shape_case)[0])
+    ea_nd = 1.0 / eps**2
+    _, left_length, right_length = local_arm_lengths(shape_case)
+    left_length = max(float(left_length), NEAR_ZERO_NORM)
+    right_length = max(float(right_length), NEAR_ZERO_NORM)
+    le_left = left_length / fem.N_ELEM
+    le_right = right_length / fem.N_ELEM
+
+    u_left = np.asarray(shape_case["u_left_local"], dtype=float)
+    u_right = np.asarray(shape_case["u_right_local"], dtype=float)
+    u_raw = np.asarray(shape_case["u_raw"], dtype=float)
+    v_raw = np.asarray(shape_case["v_raw"], dtype=float)
+    theta_raw = np.asarray(shape_case["theta_raw"], dtype=float)
+    t6 = fem.rotation_matrix_6x6(np.deg2rad(float(shape_case["beta"])))
+    kb_left = element_bending_stiffness(le_left)
+    kb_right = element_bending_stiffness(le_right)
+
+    left_axial_energy = 0.0
+    right_axial_energy = 0.0
+    left_bending_energy = 0.0
+    right_bending_energy = 0.0
+
+    for elem in range(fem.N_ELEM):
+        du_left = float(u_left[elem + 1] - u_left[elem])
+        du_right = float(u_right[elem + 1] - u_right[elem])
+        left_axial_energy += 0.5 * ea_nd / le_left * du_left * du_left
+        right_axial_energy += 0.5 * ea_nd / le_right * du_right * du_right
+
+        q_b_left = np.array(
+            [v_raw[elem], theta_raw[elem], v_raw[elem + 1], theta_raw[elem + 1]],
+            dtype=float,
+        )
+        left_bending_energy += 0.5 * float(q_b_left @ kb_left @ q_b_left)
+
+        node0 = fem.N_ELEM + elem
+        node1 = fem.N_ELEM + elem + 1
+        q_global_right = np.array(
+            [
+                u_raw[node0],
+                v_raw[node0],
+                theta_raw[node0],
+                u_raw[node1],
+                v_raw[node1],
+                theta_raw[node1],
+            ],
+            dtype=float,
+        )
+        q_local_right = t6 @ q_global_right
+        q_b_right = q_local_right[[1, 2, 4, 5]]
+        right_bending_energy += 0.5 * float(q_b_right @ kb_right @ q_b_right)
+
+    left_axial_energy = max(float(left_axial_energy), 0.0)
+    right_axial_energy = max(float(right_axial_energy), 0.0)
+    left_bending_energy = max(float(left_bending_energy), 0.0)
+    right_bending_energy = max(float(right_bending_energy), 0.0)
+    total_axial_energy = left_axial_energy + right_axial_energy
+    total_bending_energy = left_bending_energy + right_bending_energy
+    total_energy = total_axial_energy + total_bending_energy
+
+    return {
+        "left_axial_energy": left_axial_energy,
+        "right_axial_energy": right_axial_energy,
+        "left_bending_energy": left_bending_energy,
+        "right_bending_energy": right_bending_energy,
+        "total_axial_energy": total_axial_energy,
+        "total_bending_energy": total_bending_energy,
+        "total_energy": total_energy,
+        "axial_energy_fraction_from_arm_energies": safe_divide(total_axial_energy, total_energy),
+        "right_axial_share": safe_divide(right_axial_energy, total_axial_energy),
+        "right_bending_share": safe_divide(right_bending_energy, total_bending_energy),
+    }
+
+
 def track_branch_family(radius: float, beta_deg: float, target_mus: Sequence[float]) -> dict[str, object]:
     mu_track_values = analysis_mu_grid(start=0.0, stop=max(target_mus), anchor_points=tuple(target_mus))
     seed_freqs, seed_vecs = solve_fem_modes(radius=radius, mu=0.0, beta_deg=0.0, n_modes=N_SOLVE)
@@ -277,6 +437,7 @@ def shape_case_from_tracking(
     x_base, y_base = build_node_coordinates(mu=float(mu_value), beta_deg=case_beta, ell=ell)
     u = full_vec[0::3]
     v = full_vec[1::3]
+    theta = full_vec[2::3]
     local = compute_local_components(u_global=u, v_global=v, beta_deg=case_beta)
     full_displacement = np.sqrt(u * u + v * v)
     max_disp = float(np.max(full_displacement))
@@ -310,6 +471,7 @@ def shape_case_from_tracking(
         "y_base": y_base,
         "u_raw": u,
         "v_raw": v,
+        "theta_raw": theta,
         "u": u / norm,
         "v": v / norm,
         "u_left_local": local["u_left_local"],
@@ -642,8 +804,12 @@ def single_shape_diagnostics(
     plot_kind: str,
     mode_scale: float,
     normalize: str,
+    diagnostics_level: str = "basic",
+    epsilon: float | None = None,
 ) -> dict[str, float | int | str]:
-    return {
+    if diagnostics_level not in DIAGNOSTICS_LEVELS:
+        raise ValueError(f"Unknown diagnostics level: {diagnostics_level}")
+    diagnostics = {
         "branch_id": str(shape_case["branch_id"]),
         "beta": float(shape_case["beta"]),
         "mu": float(shape_case["mu"]),
@@ -660,6 +826,11 @@ def single_shape_diagnostics(
         "axial_to_full_ratio": float(shape_case["axial_to_full_ratio"]),
         "axial_fraction": float(shape_case["axial_fraction"]),
     }
+    if diagnostics_level == "all":
+        diagnostics.update(local_projection_reconstruction_diagnostics(shape_case))
+        diagnostics.update(local_derivative_diagnostics(shape_case))
+        diagnostics.update(arm_energy_diagnostics(shape_case, epsilon=epsilon))
+    return diagnostics
 
 
 def build_single_shape_plot(
