@@ -42,6 +42,21 @@ If notation must change, update:
 - relevant code comments/docstrings
 - `README.md` if the change affects project usage
 
+## Branch identity rule
+
+For analytic branches, `branch_id` is defined by continuation from the base point
+`beta = 0`, `mu = 0` for each `epsilon` independently.
+`current_sorted_index` is only the current position of that branch in the sorted
+spectrum and must not be used as branch identity. Analytic frequency plots and
+analytic shape plots must use `scripts/lib/analytic_branch_tracking.py` for
+branch selection. Tracking CSV/JSON files are optional debug artifacts only and
+must not be treated as the source of truth.
+Branch tracking results used in figures must be regression-tested when they
+resolve previous inconsistencies. Low-MAC assignments are not canonical unless
+they are explicitly accepted in a diagnostic run.
+Adaptive refinement and failure CSVs are diagnostic machinery only; they do not
+change the definition of branch identity.
+
 ## Hard rules for mathematical edits
 
 Treat verified formulas, determinants, matrix entries, sign conventions, and unknown ordering as frozen unless the user explicitly asks for a mathematical revision.

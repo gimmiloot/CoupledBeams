@@ -14,11 +14,17 @@ from matplotlib.lines import Line2D
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+SRC_ROOT = REPO_ROOT / "src"
 DEFAULT_OUTPUT_PATH = REPO_ROOT / "results" / "lambda_mu_fixed_beta.png"
 DEFAULT_EPSILON = 0.0025
 DEFAULT_L_TOTAL = 2.0
 DEFAULT_E = 2.1e11
 DEFAULT_RHO = 7800.0
+
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -27,7 +33,6 @@ if __package__ in {None, ""}:
         find_first_n_roots as _shared_find_first_n_roots,
         find_roots_scan_bisect as _shared_find_roots_scan_bisect,
         track_branches as _shared_track_branches,
-        tracked_lambdas_vs_mu,
     )
 else:
     from .formulas import BeamParams, det_clamped_coupled
@@ -35,8 +40,16 @@ else:
         find_first_n_roots as _shared_find_first_n_roots,
         find_roots_scan_bisect as _shared_find_roots_scan_bisect,
         track_branches as _shared_track_branches,
-        tracked_lambdas_vs_mu,
     )
+
+from scripts.lib.analytic_branch_tracking import (  # noqa: E402
+    DEFAULT_MU_STEPS,
+    DEFAULT_N_SOLVE,
+    DEFAULT_N_TRACK,
+    branch_id_from_base_sorted_index,
+    dense_mu_values_for_targets,
+    track_mu_sweep,
+)
 
 
 def _find_roots_scan_bisect(
@@ -80,19 +93,32 @@ def track_branches(values_sorted: np.ndarray) -> np.ndarray:
     return _shared_track_branches(values_sorted, method="greedy")
 
 
-def coupled_lambda_vs_mu(params: BeamParams, beta_deg: float, mu: np.ndarray, n_modes: int = 6) -> np.ndarray:
-    return tracked_lambdas_vs_mu(
-        params=params,
-        beta_deg=beta_deg,
-        mu_values=mu,
-        n_modes=n_modes,
-        Lmin=0.2,
-        Lmax0=55.0,
-        scan_step=0.02,
-        grow_factor=1.35,
-        max_tries=8,
-        tracking_method="greedy",
+def coupled_lambda_vs_mu(
+    params: BeamParams,
+    beta_deg: float,
+    mu: np.ndarray,
+    n_modes: int = 6,
+    *,
+    allow_low_mac: bool = False,
+) -> np.ndarray:
+    n_track = max(DEFAULT_N_TRACK, int(n_modes))
+    requested_mu = np.asarray(mu, dtype=float)
+    tracking_mu = dense_mu_values_for_targets(
+        requested_mu,
+        mu_steps=max(DEFAULT_MU_STEPS, int(len(requested_mu))),
     )
+    branch_ids = [branch_id_from_base_sorted_index(index) for index in range(1, int(n_modes) + 1)]
+    result = track_mu_sweep(
+        epsilon=params.eps,
+        beta=beta_deg,
+        mu_values=tracking_mu,
+        n_track=n_track,
+        n_solve=max(DEFAULT_N_SOLVE, n_track),
+        shape_metric="full",
+        allow_low_mac=allow_low_mac,
+        required_branch_ids=branch_ids,
+    )
+    return result.lambda_grid(branch_ids, requested_mu, beta=float(beta_deg))
 
 
 # ============================================================
@@ -146,6 +172,7 @@ def plot_combined(
     y_max: int = 20,
     save_path: str | Path | None = None,
     show: bool = True,
+    allow_low_mac: bool = False,
 ) -> Path | None:
     """
     One combined plot:
@@ -169,7 +196,13 @@ def plot_combined(
     l = params.L_base
     mu = np.arange(mu_min, mu_max + 1e-12, mu_step)
 
-    Lambda_c = coupled_lambda_vs_mu(params, beta_deg_coupled, mu, n_modes=n_coupled)
+    Lambda_c = coupled_lambda_vs_mu(
+        params,
+        beta_deg_coupled,
+        mu,
+        n_modes=n_coupled,
+        allow_low_mac=allow_low_mac,
+    )
 
     n_reference = max(n_Lplus_CS, n_Lminus_CS)
     a_cs = roots_clamped_supported(n_reference) if n_reference else np.array([], dtype=float)
@@ -316,6 +349,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH, help="PNG output path")
     parser.add_argument("--show", action="store_true", help="also display the figure window after saving")
+    parser.add_argument(
+        "--allow-low-mac",
+        action="store_true",
+        help="Allow exploratory plots even if analytic branch assignment falls below the MAC warning threshold.",
+    )
     return parser.parse_args(argv)
 
 
@@ -324,6 +362,7 @@ def main(argv: list[str] | None = None) -> None:
     plot_kwargs: dict[str, object] = {
         "save_path": args.output,
         "show": args.show,
+        "allow_low_mac": args.allow_low_mac,
     }
     if args.beta is not None:
         plot_kwargs["beta_deg_coupled"] = args.beta

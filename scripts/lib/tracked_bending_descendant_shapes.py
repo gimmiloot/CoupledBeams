@@ -202,6 +202,112 @@ def local_arm_lengths(shape_case: dict[str, object]) -> tuple[float, float, floa
     return ell, ell * (1.0 - mu_value), ell * (1.0 + mu_value)
 
 
+def fem_element_stiffness_for_epsilon(le: float, epsilon: float) -> np.ndarray:
+    """Return the current FEM local element stiffness for a diagnostic epsilon.
+
+    The FEM module stores nondimensional stiffness constants as globals. This
+    helper temporarily sets the same values used for the requested diagnostic
+    epsilon, calls the baseline `elem_K`, and restores the module state.
+    """
+    saved_ea_nd = float(fem.EA_nd)
+    saved_ei_nd = float(fem.EI_nd)
+    try:
+        fem.EA_nd = 1.0 / float(epsilon) ** 2
+        fem.EI_nd = 1.0
+        return np.asarray(fem.elem_K(float(le)), dtype=float)
+    finally:
+        fem.EA_nd = saved_ea_nd
+        fem.EI_nd = saved_ei_nd
+
+
+def fem_direct_element_energy_diagnostics(
+    shape_case: dict[str, object],
+    epsilon: float | None = None,
+) -> dict[str, float]:
+    """Compute arm-wise FEM energies from local element stiffness matrices.
+
+    This follows the assembly convention in `python_fem.py`: the global element
+    DOF vector is rotated to local coordinates with `rotation_matrix_6x6(beta)`
+    before applying the local axial and bending stiffness blocks.
+    """
+    eps = float(epsilon) if epsilon is not None else float(shape_case["r"]) / (2.0 * local_arm_lengths(shape_case)[0])
+    _, left_length, right_length = local_arm_lengths(shape_case)
+    left_length = max(float(left_length), NEAR_ZERO_NORM)
+    right_length = max(float(right_length), NEAR_ZERO_NORM)
+    le_left = left_length / fem.N_ELEM
+    le_right = right_length / fem.N_ELEM
+    k_left = fem_element_stiffness_for_epsilon(le_left, eps)
+    k_right = fem_element_stiffness_for_epsilon(le_right, eps)
+    axial_idx = np.array([0, 3], dtype=int)
+    bending_idx = np.array([1, 2, 4, 5], dtype=int)
+    k_axial_left = k_left[np.ix_(axial_idx, axial_idx)]
+    k_bending_left = k_left[np.ix_(bending_idx, bending_idx)]
+    k_axial_right = k_right[np.ix_(axial_idx, axial_idx)]
+    k_bending_right = k_right[np.ix_(bending_idx, bending_idx)]
+    t_left = fem.rotation_matrix_6x6(0.0)
+    t_right = fem.rotation_matrix_6x6(np.deg2rad(float(shape_case["beta"])))
+
+    u_raw = np.asarray(shape_case["u_raw"], dtype=float)
+    v_raw = np.asarray(shape_case["v_raw"], dtype=float)
+    theta_raw = np.asarray(shape_case["theta_raw"], dtype=float)
+
+    left_axial_energy = 0.0
+    right_axial_energy = 0.0
+    left_bending_energy = 0.0
+    right_bending_energy = 0.0
+
+    def q_global_for_nodes(node0: int, node1: int) -> np.ndarray:
+        return np.array(
+            [
+                u_raw[node0],
+                v_raw[node0],
+                theta_raw[node0],
+                u_raw[node1],
+                v_raw[node1],
+                theta_raw[node1],
+            ],
+            dtype=float,
+        )
+
+    for elem in range(fem.N_ELEM):
+        q_left = t_left @ q_global_for_nodes(elem, elem + 1)
+        q_left_axial = q_left[axial_idx]
+        q_left_bending = q_left[bending_idx]
+        left_axial_energy += 0.5 * float(q_left_axial @ k_axial_left @ q_left_axial)
+        left_bending_energy += 0.5 * float(q_left_bending @ k_bending_left @ q_left_bending)
+
+        node0 = fem.N_ELEM + elem
+        node1 = fem.N_ELEM + elem + 1
+        q_right = t_right @ q_global_for_nodes(node0, node1)
+        q_right_axial = q_right[axial_idx]
+        q_right_bending = q_right[bending_idx]
+        right_axial_energy += 0.5 * float(q_right_axial @ k_axial_right @ q_right_axial)
+        right_bending_energy += 0.5 * float(q_right_bending @ k_bending_right @ q_right_bending)
+
+    left_axial_energy = max(float(left_axial_energy), 0.0)
+    right_axial_energy = max(float(right_axial_energy), 0.0)
+    left_bending_energy = max(float(left_bending_energy), 0.0)
+    right_bending_energy = max(float(right_bending_energy), 0.0)
+    total_axial_energy = left_axial_energy + right_axial_energy
+    total_bending_energy = left_bending_energy + right_bending_energy
+    total_energy = total_axial_energy + total_bending_energy
+    axial_energy_fraction = safe_divide(total_axial_energy, total_energy)
+
+    return {
+        "left_axial_energy": left_axial_energy,
+        "right_axial_energy": right_axial_energy,
+        "left_bending_energy": left_bending_energy,
+        "right_bending_energy": right_bending_energy,
+        "total_axial_energy": total_axial_energy,
+        "total_bending_energy": total_bending_energy,
+        "total_energy": total_energy,
+        "axial_energy_fraction": axial_energy_fraction,
+        "axial_energy_fraction_from_arm_energies": axial_energy_fraction,
+        "right_axial_share": safe_divide(right_axial_energy, total_axial_energy),
+        "right_bending_share": safe_divide(right_bending_energy, total_bending_energy),
+    }
+
+
 def local_projection_reconstruction_diagnostics(shape_case: dict[str, object]) -> dict[str, float]:
     joint = fem.N_ELEM
     beta_rad = np.deg2rad(float(shape_case["beta"]))
@@ -270,11 +376,11 @@ def local_derivative_diagnostics(shape_case: dict[str, object]) -> dict[str, flo
     }
 
 
-def arm_energy_diagnostics(shape_case: dict[str, object], epsilon: float | None = None) -> dict[str, float]:
-    """Compute diagnostic arm-wise axial and bending energies for one eigenvector.
+def legacy_arm_energy_diagnostics(shape_case: dict[str, object], epsilon: float | None = None) -> dict[str, float]:
+    """Legacy nodal-gradient diagnostic arm-wise energies.
 
-    Energies use the current nondimensional FEM convention on the selected modal
-    amplitude. They are postprocessing diagnostics and do not modify the FEM model.
+    This implementation is kept only for reference because the right-arm axial
+    local-coordinate convention overestimates right axial energy for rotated arms.
     """
     eps = float(epsilon) if epsilon is not None else float(shape_case["r"]) / (2.0 * local_arm_lengths(shape_case)[0])
     ea_nd = 1.0 / eps**2
@@ -347,6 +453,18 @@ def arm_energy_diagnostics(shape_case: dict[str, object], epsilon: float | None 
         "right_axial_share": safe_divide(right_axial_energy, total_axial_energy),
         "right_bending_share": safe_divide(right_bending_energy, total_bending_energy),
     }
+
+
+def arm_energy_diagnostics(shape_case: dict[str, object], epsilon: float | None = None) -> dict[str, float]:
+    """Compute diagnostic arm-wise axial and bending energies for one eigenvector.
+
+    The default diagnostic uses the current FEM local element stiffness blocks:
+    each element's global DOF vector is rotated to local coordinates, then the
+    local axial `[u1, u2]` and bending `[v1, theta1, v2, theta2]` blocks are
+    evaluated separately. This is postprocessing only and does not modify the FEM
+    baseline.
+    """
+    return fem_direct_element_energy_diagnostics(shape_case, epsilon=epsilon)
 
 
 def track_branch_family(radius: float, beta_deg: float, target_mus: Sequence[float]) -> dict[str, object]:

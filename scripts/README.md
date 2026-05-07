@@ -3,6 +3,16 @@
 This directory keeps the historical script names working, but the preferred entry points are now in `scripts/run/`.
 The original root-level scripts remain in place because many scripts import each other through `scripts.*`; moving them now would require broad import churn with no numerical benefit.
 
+## Branch identity and current sorted index
+
+Analytic branch identity is defined at the base point `beta = 0`, `mu = 0` for each `epsilon` independently. A `branch_id` such as `bending_desc_05` means "the branch seeded by base sorted index 5"; it does not mean "whatever root is currently fifth."
+
+The current place of that branch in the sorted spectrum is `current_sorted_index`. It may change along `beta` or `mu`, so plots and CSV tables should label it separately from `branch_id`. Do not label a continued branch only by root number.
+
+All analytic branch-selecting frequency and shape plots should use `scripts/lib/analytic_branch_tracking.py`. That helper performs in-memory shape-MAC tracking with a small frequency tie-breaker, adaptive step refinement for low-MAC transitions, and local smallest-singular-value candidate recovery when a sign-change root scan misses a branch near a close interaction. CSV/JSON tracking paths are optional debug artifacts only, disposable, and not a source of truth.
+
+Branch tracking results used in figures must be regression-tested when they resolve a previous inconsistency. Low-MAC assignments are not canonical unless explicitly accepted in a diagnostic run, for example with `--allow-low-mac`.
+
 ## Main commands
 
 ### Beta sweep at `mu = 0`
@@ -40,6 +50,19 @@ The original root-level scripts remain in place because many scripts import each
 - Results: `results/mu_sweep_r015_selected_betas_analytic.png`, `results/mu_sweep_r015_selected_betas_analytic.csv`, and per-beta analytic CSV files.
 - Use when: you need an analytic-only comparison of several beta values at the fixed presentation radius.
 - Do not use when: FEM markers are required.
+
+Branch-selecting Lambda(mu) plots should use the shared analytic branch tracker. The standalone `src/my_project/analytic/FreqMuNet.py` path now tracks coupled branches by the same `branch_id` / `current_sorted_index` rule as analytic shape plots.
+
+### Fixed-beta analytic Lambda(mu) plot
+
+- Task: plot the coupled-rods analytic `Lambda(mu)` curves at one fixed `beta` for an arbitrary number of canonical tracked branches.
+- Command: `python scripts/run/run_lambda_mu_fixed_beta_analytic.py --beta 15 --epsilon 0.0025 --num-modes 7 --num-dashed-lines 7`
+- Main parameters: `--beta`, `--epsilon`, `--num-modes`, `--num-dashed-lines`, `--mu-min`, `--mu-max`, `--mu-step`, `--y-max`, `--output`, `--csv-output`, `--show`, `--allow-low-mac`.
+- Results: by default deterministic PNG/CSV paths such as `results/lambda_mu_beta15_eps0p0025_modes7_dash7.png` and `results/lambda_mu_beta15_eps0p0025_modes7_dash7.csv`.
+- Use when: you need the same visual style as `FreqMuNet.py` but with a convenient script wrapper and a summary CSV for any chosen number of coupled modes.
+- Do not use when: you need FEM comparison markers or one highlighted branch.
+
+The solid lines are the first `--num-modes` canonical analytic branches seeded at `beta = 0`, `mu = 0`; dashed CS reference families use `--num-dashed-lines` roots per family. The CSV records the displayed line rank, canonical `branch_id`, `base_sorted_index`, `current_sorted_index`, and `Lambda` at each plotted `mu`. No full tracking debug CSV is saved by default. If the shared tracker detects a low-MAC assignment on a displayed branch, ordinary plotting fails fast; `--allow-low-mac` is only for exploratory diagnostics.
 
 ### Analytic coupled-rods mode shape
 
@@ -96,7 +119,7 @@ CLI arguments remain available as optional overrides. For example:
 
 `--mu` must be non-negative because the tracked continuation starts at `mu = 0`; values above `0.9` run with a warning because they are outside the usual analysis window.
 
-`--diagnostics-level all` adds three checks for local components. The projection check reconstructs global components from local right-arm components. The derivative diagnostics estimate whether large local axial displacement also produces large axial strain-like slopes; these are nodal amplitude slopes, not exact FEM strain fields. The arm-energy diagnostics compares axial and bending participation by arm for the selected eigenvector amplitude.
+`--diagnostics-level all` adds three checks for local components. The projection check reconstructs global components from local right-arm components. The derivative diagnostics estimate whether large local axial displacement also produces large axial strain-like slopes; these are nodal amplitude slopes, not exact element strain fields. The arm-energy diagnostics compares axial and bending participation by arm for the selected eigenvector amplitude using the current FEM local element stiffness matrices and the same local rotation convention as assembly.
 
 Examples:
 
@@ -137,7 +160,7 @@ Energy comparison diagnostics:
 python scripts/analysis/compare_analytic_fem_tracked_descendant_shape.py --branch-number 5 --beta 30 --mu 0 --epsilon 0.0025 --compare-energies
 ```
 
-This computes arm-wise axial/bending diagnostic energies for the normalized reconstructed analytic shape and for the same FEM mode through the existing arm-energy helper. The values are reported as diagnostic fractions and shares; the arbitrary modal scale is also recorded in the CSV.
+This computes arm-wise axial/bending diagnostic energies for the normalized reconstructed analytic shape and for the same FEM mode. FEM energies are evaluated from the current `fem.elem_K(Le)` local axial and bending stiffness blocks after rotating each element vector to local coordinates. The values are reported as diagnostic fractions and shares; the arbitrary modal scale is also recorded in the CSV.
 
 Direct FEM element-stiffness energy check:
 
@@ -145,18 +168,18 @@ Direct FEM element-stiffness energy check:
 python scripts/analysis/compare_analytic_fem_tracked_descendant_shape.py --branch-number 5 --beta 30 --mu 0 --epsilon 0.0025 --check-fem-direct-energy
 ```
 
-This recomputes FEM arm-wise axial/bending energies directly from the current `fem.elem_K(Le)` local stiffness blocks and compares them against `arm_energy_diagnostics(...)`. It is diagnostic postprocessing only and does not modify the FEM baseline.
+This independently recomputes FEM arm-wise axial/bending energies from the current `fem.elem_K(Le)` local stiffness blocks and compares them against the default `arm_energy_diagnostics(...)` path. It should now report agreement; it is diagnostic postprocessing only and does not modify the FEM baseline.
 
 ### Article shape validation at `beta = 15 deg`
 
 - Task: run the analytic-vs-FEM component and energy diagnostics for the article small-angle cases.
 - Command: `python scripts/analysis/validate_article_shape_cases_beta15.py`
 - Main parameters: `--branch-ids`, `--mus`, `--beta`, `--epsilon`, `--right-coordinate`, `--use-best-orientation`, `--output`, `--output-prefix-root`.
-- Results: by default `results/article_shape_validation_beta15_summary.csv` plus one overlay PNG, samples CSV, diagnostics CSV, orientation scan CSV, and energy comparison CSV per branch/mu case.
+- Results: by default `results/article_shape_validation_beta15_summary.csv`, `results/article_shape_validation_beta15_report.md`, plus one overlay PNG, samples CSV, diagnostics CSV, orientation scan CSV, energy comparison CSV, and direct-energy check CSV per branch/mu case.
 - Use when: you need a compact review table for `bending_desc_01` and `bending_desc_02` at `beta = 15 deg`, `epsilon = 0.0025`, and the article `mu = 0, 0.1, 0.2` set.
 - Do not use when: you need to change determinant entries, FEM baseline behavior, branch tracking, or root matching.
 
-The summary table records the FEM tracked descendant, nearest analytic root index, `Lambda` mismatch, local component relative L2 errors, analytic/FEM axial-energy fractions, right axial shares, and a conservative `conclusion_flag`. The flag is a review aid only; it does not make a physical conclusion automatically.
+The summary table records the FEM tracked descendant, nearest analytic root index, `Lambda` mismatch, full local component errors, component-wise errors, transverse-only and axial-only shape metrics, analytic/FEM direct axial-energy fractions, right axial/bending shares, and review flags. The FEM energy fields are explicitly sourced from direct local element-stiffness diagnostics. The `article_use_flag` evaluates transverse plotting separately from axial-component mismatch and is a review aid only.
 
 Examples:
 
@@ -164,6 +187,17 @@ Examples:
 python scripts/analysis/validate_article_shape_cases_beta15.py
 python scripts/analysis/validate_article_shape_cases_beta15.py --branch-ids bending_desc_01 bending_desc_02 --mus 0 --beta 15 --epsilon 0.0025
 ```
+
+### Desc05 analytic full-shape epsilon sweep
+
+- Task: plot analytic full mode shapes for the fifth analytic bending descendant at `beta = 15 deg` over several `epsilon` values.
+- Command: `python scripts/analysis/plot_desc05_full_shapes_beta15_eps_sweep.py`
+- Main parameters: edit the script `USER PARAMETERS` block or use `--branch-number`, `--beta`, `--mus`, `--epsilons`, `--mode-scale`, `--output-dir`, `--beta-steps`, `--mu-steps`, `--max-refinement-depth`, `--min-beta-step`, `--min-mu-step`, `--shape-metric`, `--save-tracking-debug`, `--allow-low-mac`, `--check-known-contradiction`.
+- Results: by default one PNG per configured `mu` value and `results/analytic_full_shapes_desc05_beta15_eps_sweep_summary.csv`.
+- Use when: you need discussion figures for the analytic branch seeded as root/branch number 5 at `beta = 0`, `mu = 0`.
+- Do not use when: you need FEM descendant tracking or FEM-based root selection.
+
+For each `epsilon`, the script starts independently at `beta = 0`, `mu = 0`, selects the requested analytic base root number, then calls `scripts/lib/analytic_branch_tracking.py` to track by global assignment over sampled-shape MAC. No FEM Lambda is used for selecting analytic roots. The summary CSV records `branch_id`, `base_sorted_index`, `current_sorted_index`, Lambda, MAC diagnostics, analytic energy fractions, and review flags. Full tracking-path CSVs are not written by default; pass `--save-tracking-debug` to write disposable debug files under `results/debug/`. Low-MAC assignments fail fast unless `--allow-low-mac` is passed for an explicit diagnostic run; at larger `beta`, adaptive refinement runs first, and users can tune `--max-refinement-depth`, `--min-beta-step`, and `--min-mu-step`. If canonical tracking still fails, the helper writes a one-case `results/debug/analytic_tracking_failure_*.csv` when possible. The known-contradiction diagnostic is opt-in via `--check-known-contradiction` and is only relevant to the historical `beta=15`, `epsilon=0.0025`, `mu=0.8` case.
 
 ### Branchwise FEM audit
 
@@ -183,6 +217,7 @@ python scripts/analysis/validate_article_shape_cases_beta15.py --branch-ids bend
 | `scripts/analyze_flat_mu_branches.py` | analysis/audit | Build flat-mu candidate metrics, slot occupancy, and representative cases. | `python scripts/analyze_flat_mu_branches.py` | keep root; analysis dependency |
 | `scripts/analyze_target_descendants_beta15_r5.py` | analysis/audit | Targeted beta=15, r=5 mm descendant analysis for selected bending branches. | `python scripts/analyze_target_descendants_beta15_r5.py` | keep root; specialized audit |
 | `scripts/analysis/compare_analytic_fem_tracked_descendant_shape.py` | analysis/diagnostic | Compare analytic determinant-nullspace local components with one tracked FEM descendant shape. | `python scripts/analysis/compare_analytic_fem_tracked_descendant_shape.py --branch-number 5 --beta 30 --mu 0 --epsilon 0.0025` | keep in `scripts/analysis/` |
+| `scripts/analysis/plot_desc05_full_shapes_beta15_eps_sweep.py` | analysis/diagnostic | Plot analytic-only full shapes for the fifth base bending descendant at beta=15 over an epsilon sweep. | `python scripts/analysis/plot_desc05_full_shapes_beta15_eps_sweep.py` | keep in `scripts/analysis/` |
 | `scripts/analysis/validate_article_shape_cases_beta15.py` | analysis/diagnostic | Batch analytic/FEM component and energy validation for article `beta=15` descendant cases. | `python scripts/analysis/validate_article_shape_cases_beta15.py` | keep in `scripts/analysis/` |
 | `scripts/compare_beta0_analytic_vs_fem.py` | analysis/audit | Beta=0 analytic/FEM type-aware audit and shared helper source. | `python scripts/compare_beta0_analytic_vs_fem.py` | keep root; many imports depend on it |
 | `scripts/compare_beta_positive_type_aware.py` | analysis/audit | Positive-beta type-aware analytic/FEM comparison. | `python scripts/compare_beta_positive_type_aware.py` | keep root; specialized audit |
@@ -205,6 +240,7 @@ python scripts/analysis/validate_article_shape_cases_beta15.py --branch-ids bend
 | file | category | purpose | recommended command | keep/move/wrapper/archive |
 | --- | --- | --- | --- | --- |
 | `scripts/lib/analytic_coupled_rods_shapes.py` | internal helper | Shared analytic null-vector reconstruction, endpoint diagnostics, normalization, and analytic arm-energy utilities. | none | keep in `scripts/lib/` |
+| `scripts/lib/analytic_branch_tracking.py` | internal helper | Source-of-truth analytic branch identity tracking from `beta=0`, `mu=0` using shape-MAC assignment and `current_sorted_index` diagnostics. | none | keep in `scripts/lib/` |
 | `scripts/lib/tracked_bending_descendant_shapes.py` | internal helper | Shared tracked-state extraction and one-case drawing for tracked bending descendant shape plots. | none | keep in `scripts/lib/` |
 | `scripts/sweep_grid_policy.py` | internal helper | Shared presentation/analysis grid policy. | none | keep root; moving would require broad import updates |
 
@@ -236,6 +272,7 @@ These preserve old command paths and old output filenames.
 | `scripts/run/run_mu_sweep_beta0_four_radii.py` | main user-facing command | Friendly wrapper for four-radius `mu` sweep at `beta = 0`. | `python scripts/run/run_mu_sweep_beta0_four_radii.py` | keep |
 | `scripts/run/run_mu_sweep_fixed_beta_four_radii.py` | main user-facing command | Friendly wrapper for fixed-beta four-radius `mu` sweeps. | `python scripts/run/run_mu_sweep_fixed_beta_four_radii.py` | keep |
 | `scripts/run/run_mu_sweep_four_betas_analytic.py` | main user-facing command | Friendly wrapper for analytic-only selected-beta `mu` sweeps. | `python scripts/run/run_mu_sweep_four_betas_analytic.py --betas 15 30 45 60` | keep |
+| `scripts/run/run_lambda_mu_fixed_beta_analytic.py` | main user-facing command | Friendly wrapper for fixed-beta analytic `Lambda(mu)` plots with arbitrary mode count and summary CSV. | `python scripts/run/run_lambda_mu_fixed_beta_analytic.py --beta 15 --epsilon 0.0025 --num-modes 7 --num-dashed-lines 7` | keep |
 | `scripts/run/run_analytic_coupled_rods_mode_shape_ru.py` | main user-facing command | Friendly wrapper for one analytic determinant-nullspace mode shape. | `python scripts/run/run_analytic_coupled_rods_mode_shape_ru.py` | keep |
 | `scripts/run/run_tracked_bending_descendant_shape_ru.py` | main user-facing command | Friendly wrapper for one tracked bending descendant shape at explicit `mu`, `epsilon`, `beta`, plot kind, scale, and diagnostics settings. | `python scripts/run/run_tracked_bending_descendant_shape_ru.py` | keep |
 | `scripts/run/run_tracked_bending_descendant_shapes_ru.py` | main user-facing command | Friendly wrapper for tracked bending descendant shapes. | `python scripts/run/run_tracked_bending_descendant_shapes_ru.py --branch-id bending_desc_01` | keep |

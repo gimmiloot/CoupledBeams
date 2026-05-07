@@ -34,6 +34,7 @@ from scripts.lib.tracked_bending_descendant_shapes import (  # noqa: E402
     arm_energy_diagnostics,
     collect_single_branch_shape,
     compute_local_components,
+    fem_direct_element_energy_diagnostics,
     radius_from_epsilon,
 )
 
@@ -54,6 +55,7 @@ SIGN_CHOICES = (-1.0, 1.0)
 ORIENTATION_WARNING_RELATIVE_FACTOR = 0.75
 ORIENTATION_WARNING_ABSOLUTE_GAIN = 0.20
 ENDPOINT_CONSISTENCY_TOL = 1e-9
+RIGHT_AXIAL_DOMINANCE_TOL = 1e-9
 ROW_LABELS = (
     "kinematic_transverse_compatibility",
     "kinematic_longitudinal_compatibility",
@@ -211,7 +213,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--check-fem-direct-energy",
         action="store_true",
-        help="Write a direct FEM element-stiffness energy check against arm_energy_diagnostics.",
+        help="Write an independent FEM element-stiffness energy agreement check against arm_energy_diagnostics.",
     )
     args = parser.parse_args(raw_args)
 
@@ -506,6 +508,15 @@ def safe_relative_l2(diff: np.ndarray, reference: np.ndarray) -> float:
 
 def safe_ratio(numerator: float, denominator: float) -> float:
     return float(numerator) / float(denominator) if abs(float(denominator)) > NEAR_ZERO_NORM else np.nan
+
+
+def right_axial_dominance_label(share: float) -> str:
+    value = float(share)
+    if value > 0.5 + RIGHT_AXIAL_DOMINANCE_TOL:
+        return "right"
+    if value < 0.5 - RIGHT_AXIAL_DOMINANCE_TOL:
+        return "left"
+    return "balanced"
 
 
 def comparison_errors(
@@ -1176,10 +1187,12 @@ def build_energy_comparison_row(
         float(fem_energy["total_bending_energy"]),
         float(fem_energy["total_energy"]),
     )
-    analytic_right_axial_dominant = bool(float(analytic_energy["right_axial_share"]) > 0.5)
-    fem_right_axial_dominant = bool(float(fem_energy["right_axial_share"]) > 0.5)
+    analytic_right_axial_dominance = right_axial_dominance_label(float(analytic_energy["right_axial_share"]))
+    fem_right_axial_dominance = right_axial_dominance_label(float(fem_energy["right_axial_share"]))
+    analytic_right_axial_dominant = bool(analytic_right_axial_dominance == "right")
+    fem_right_axial_dominant = bool(fem_right_axial_dominance == "right")
     right_axial_dominance_agreement = (
-        "agree" if analytic_right_axial_dominant == fem_right_axial_dominant else "disagree"
+        "agree" if analytic_right_axial_dominance == fem_right_axial_dominance else "disagree"
     )
 
     row: dict[str, float | int | str] = {
@@ -1243,6 +1256,8 @@ def build_energy_comparison_row(
             ),
             "analytic_right_axial_dominant": str(analytic_right_axial_dominant),
             "fem_right_axial_dominant": str(fem_right_axial_dominant),
+            "analytic_right_axial_dominance": analytic_right_axial_dominance,
+            "fem_right_axial_dominance": fem_right_axial_dominance,
             "right_axial_dominance_agreement": right_axial_dominance_agreement,
         }
     )
@@ -1255,98 +1270,6 @@ def write_energy_comparison_csv(path: Path, row: dict[str, float | int | str]) -
         writer = csv.DictWriter(handle, fieldnames=list(row.keys()))
         writer.writeheader()
         writer.writerow(row)
-
-
-def fem_element_stiffness_for_epsilon(le: float, epsilon: float) -> np.ndarray:
-    saved_ea_nd = float(fem.EA_nd)
-    saved_ei_nd = float(fem.EI_nd)
-    try:
-        fem.EA_nd = 1.0 / float(epsilon) ** 2
-        fem.EI_nd = 1.0
-        return np.asarray(fem.elem_K(float(le)), dtype=float)
-    finally:
-        fem.EA_nd = saved_ea_nd
-        fem.EI_nd = saved_ei_nd
-
-
-def fem_direct_element_energy_diagnostics(
-    shape_case: dict[str, object],
-    *,
-    epsilon: float,
-) -> dict[str, float]:
-    """Compute FEM energies directly from current element stiffness blocks."""
-    mu_value = float(shape_case["mu"])
-    ell = DEFAULT_L_TOTAL / 2.0
-    left_length = max(ell * (1.0 - mu_value), NEAR_ZERO_NORM)
-    right_length = max(ell * (1.0 + mu_value), NEAR_ZERO_NORM)
-    le_left = left_length / fem.N_ELEM
-    le_right = right_length / fem.N_ELEM
-    k_left = fem_element_stiffness_for_epsilon(le_left, epsilon)
-    k_right = fem_element_stiffness_for_epsilon(le_right, epsilon)
-    t_left = fem.rotation_matrix_6x6(0.0)
-    t_right = fem.rotation_matrix_6x6(np.deg2rad(float(shape_case["beta"])))
-    axial_idx = np.array([0, 3], dtype=int)
-    bending_idx = np.array([1, 2, 4, 5], dtype=int)
-    k_axial_left = k_left[np.ix_(axial_idx, axial_idx)]
-    k_bending_left = k_left[np.ix_(bending_idx, bending_idx)]
-    k_axial_right = k_right[np.ix_(axial_idx, axial_idx)]
-    k_bending_right = k_right[np.ix_(bending_idx, bending_idx)]
-    u_raw = np.asarray(shape_case["u_raw"], dtype=float)
-    v_raw = np.asarray(shape_case["v_raw"], dtype=float)
-    theta_raw = np.asarray(shape_case["theta_raw"], dtype=float)
-
-    left_axial_energy = 0.0
-    right_axial_energy = 0.0
-    left_bending_energy = 0.0
-    right_bending_energy = 0.0
-
-    def q_global_for_nodes(node0: int, node1: int) -> np.ndarray:
-        return np.array(
-            [
-                u_raw[node0],
-                v_raw[node0],
-                theta_raw[node0],
-                u_raw[node1],
-                v_raw[node1],
-                theta_raw[node1],
-            ],
-            dtype=float,
-        )
-
-    for elem in range(fem.N_ELEM):
-        q_left = t_left @ q_global_for_nodes(elem, elem + 1)
-        q_left_axial = q_left[axial_idx]
-        q_left_bending = q_left[bending_idx]
-        left_axial_energy += 0.5 * float(q_left_axial @ k_axial_left @ q_left_axial)
-        left_bending_energy += 0.5 * float(q_left_bending @ k_bending_left @ q_left_bending)
-
-        node0 = fem.N_ELEM + elem
-        node1 = fem.N_ELEM + elem + 1
-        q_right = t_right @ q_global_for_nodes(node0, node1)
-        q_right_axial = q_right[axial_idx]
-        q_right_bending = q_right[bending_idx]
-        right_axial_energy += 0.5 * float(q_right_axial @ k_axial_right @ q_right_axial)
-        right_bending_energy += 0.5 * float(q_right_bending @ k_bending_right @ q_right_bending)
-
-    left_axial_energy = max(float(left_axial_energy), 0.0)
-    right_axial_energy = max(float(right_axial_energy), 0.0)
-    left_bending_energy = max(float(left_bending_energy), 0.0)
-    right_bending_energy = max(float(right_bending_energy), 0.0)
-    total_axial = left_axial_energy + right_axial_energy
-    total_bending = left_bending_energy + right_bending_energy
-    total = total_axial + total_bending
-    return {
-        "left_axial_energy": left_axial_energy,
-        "right_axial_energy": right_axial_energy,
-        "left_bending_energy": left_bending_energy,
-        "right_bending_energy": right_bending_energy,
-        "total_axial_energy": float(total_axial),
-        "total_bending_energy": float(total_bending),
-        "total_energy": float(total),
-        "axial_energy_fraction": safe_ratio(total_axial, total),
-        "right_axial_share": safe_ratio(right_axial_energy, total_axial),
-        "right_bending_share": safe_ratio(right_bending_energy, total_bending),
-    }
 
 
 def build_fem_direct_energy_check_row(
@@ -1404,7 +1327,9 @@ def build_fem_direct_energy_check_row(
         "radius": float(radius),
         "fem_lambda": float(fem_lambda),
         "fem_direct_energy_check_csv": str(output_path),
-        "fem_direct_energy_source": "fem.elem_K local stiffness blocks with q_local = rotation_matrix_6x6(beta) @ q_global",
+        "fem_direct_energy_source": (
+            "fem.elem_K local stiffness blocks with q_local = rotation_matrix_6x6(beta) @ q_global"
+        ),
         "fem_existing_left_axial_energy": float(existing["left_axial_energy"]),
         "fem_existing_right_axial_energy": float(existing["right_axial_energy"]),
         "fem_existing_left_bending_energy": float(existing["left_bending_energy"]),
