@@ -1,7 +1,20 @@
 # CHANGELOG
 
+## 2026-05-11
+
+- Documented the public FEM right-arm transform convention in `AGENTS.md` and
+  `scripts/README.md`, and kept generated/private article artifacts ignored;
+  no determinant, `formulas.py`, `solvers.py`, FEM physical-model, article
+  prose, or article figure-styling changes were made by this cleanup pass.
+
 ## 2026-05-06
 
+- Corrected the production FEM right-arm transform convention in `src/my_project/fem/python_fem.py` to the local-to-global map `q_global = R(+beta) q_local`, assembling right-arm element matrices as `K_global = T K_local T.T` and `M_global = T M_local T.T`; updated related residual/joint/energy diagnostics and added `tests/test_fem_right_transform_convention.py`, with no analytic determinant, formulas, solvers, physical parameters, or analytic eigenfrequency changes.
+- Added `scripts/analysis/check_fem_right_transform_variants.py` to reassemble diagnostic-only right-arm FEM transform variants and compare determinant-null shapes against each corrected-convention variant, writing variant audit and local-direction sanity CSVs with no `python_fem.py`, determinant, formula, solver, production-eigenfrequency, or physical-model changes.
+- Added `scripts/analysis/check_beta0_single_rod_limit.py` to verify that the current determinant roots and SVD null-vector reconstruction reduce to the exact single clamped-clamped rod of total length 2 at `beta = 0`, writing root, shape, sample, and mu-invariance CSV diagnostics with no determinant, formula, solver, FEM baseline, physical-model, or eigenfrequency changes.
+- Added `--derive-determinant-as-joint-system` to `scripts/analysis/compare_joint_dynamic_stiffness_analytic_fem.py`, deriving the current determinant force equations as a `q_joint=[ux,uy,theta]` operator on the determinant kinematic nullspace and comparing current/sign/order variants against analytic/FEM joint dynamic stiffness, with no determinant, formula, solver, FEM baseline, physical-model, or eigenfrequency changes.
+- Added `--audit-determinant-nullspace-conditioning` to `scripts/analysis/compare_joint_dynamic_stiffness_analytic_fem.py`, comparing raw determinant SVD coefficients against coefficients reconstructed from the joint-displacement dynamic-stiffness null vector and auditing row, column, row+column, and axial physical column scalings, with no determinant, formula, solver, FEM baseline, physical-model, or eigenfrequency changes.
+- Added `--compare-joint-nullspace` to `scripts/analysis/compare_joint_dynamic_stiffness_analytic_fem.py`, comparing `D_total_FEM` and `D_total_analytic` directly on `q_joint=[ux,uy,theta]`, writing matrix, summary, vector, pairwise, and reconstruction-residual CSV diagnostics while avoiding determinant internal-force row conventions, with no determinant, formula, solver, FEM baseline, physical-model, or eigenfrequency changes.
 - Added `results/right_arm_force_projection_sign_audit.md`, deriving the right-arm mixed force projection signs from the FEM virtual-work convention `K_global = T.T K_local T`, identifying candidate future sign flips for `N2*sin(beta)` in the transverse row and `Q2*sin(beta)` in the axial row, with no determinant, FEM baseline, formula, solver, physical-model, or eigenfrequency changes.
 - Added a force-row scaling audit behind `--audit-force-row-scaling` in `scripts/analysis/compare_joint_dynamic_stiffness_analytic_fem.py`, decomposing determinant force rows into FEM-compatible nondimensional `M`, `Q`, and `N` endpoint contributions and writing scaling, summary, and diagnostic-matrix CSVs, with no determinant, FEM baseline, formula, solver, physical-model, or eigenfrequency changes.
 - Added a constrained determinant force-row audit behind `--constrained-row-audit` in `scripts/analysis/compare_joint_dynamic_stiffness_analytic_fem.py`, restricting coefficient comparisons to the SVD nullspace of the kinematic compatibility rows before comparing determinant and dynamic-stiffness force operators, with no determinant, FEM baseline, formula, solver, physical-model, or eigenfrequency changes.

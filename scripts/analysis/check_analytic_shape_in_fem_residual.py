@@ -682,8 +682,8 @@ def assemble_fem_matrices(
         t_right = fem.rotation_matrix_6x6(np.deg2rad(float(beta_deg)))
         k_left = fem.elem_K(le_left)
         m_left = fem.elem_M(le_left)
-        k_right = t_right.T @ fem.elem_K(le_right) @ t_right
-        m_right = t_right.T @ fem.elem_M(le_right) @ t_right
+        k_right = t_right @ fem.elem_K(le_right) @ t_right.T
+        m_right = t_right @ fem.elem_M(le_right) @ t_right.T
         k_full = np.zeros((ndof, ndof), dtype=float)
         m_full = np.zeros((ndof, ndof), dtype=float)
 
@@ -1747,7 +1747,7 @@ def element_residual_energy_rows(
         k_right = np.asarray(fem.elem_K(le_right), dtype=float)
         m_right = np.asarray(fem.elem_M(le_right), dtype=float)
         t_left = fem.rotation_matrix_6x6(0.0)
-        t_right = fem.rotation_matrix_6x6(np.deg2rad(float(beta_deg)))
+        t_right = fem.rotation_matrix_6x6(np.deg2rad(float(beta_deg))).T
 
     def append_element(arm: str, elem_idx: int, node0: int, node1: int) -> None:
         dofs = np.array(
@@ -2247,7 +2247,7 @@ def element_diagnostic_context(
             "k_right": np.asarray(fem.elem_K(le_right), dtype=float),
             "m_right": np.asarray(fem.elem_M(le_right), dtype=float),
             "t_left": fem.rotation_matrix_6x6(0.0),
-            "t_right": fem.rotation_matrix_6x6(np.deg2rad(float(beta_deg))),
+            "t_right": fem.rotation_matrix_6x6(np.deg2rad(float(beta_deg))).T,
             "axial_idx": np.array([0, 3], dtype=int),
             "bending_idx": np.array([1, 2, 4, 5], dtype=int),
         }
@@ -2670,7 +2670,7 @@ def print_axial_scale_scan_top(rows: Sequence[dict[str, float | str]], *, limit:
 
 
 def fem_transform_inference_text() -> str:
-    return "K_global=T.T K_local T implies q_local=T q_global; therefore FEM-consistent global_from_local is T.T."
+    return "K_global=T K_local T.T implies q_global=T q_local; therefore FEM-consistent global_from_local is T."
 
 
 def right_transform_matrix(beta_deg: float, transform_kind: str) -> np.ndarray:
@@ -2719,8 +2719,8 @@ def right_transform_variants() -> tuple[tuple[str, str, str], ...]:
         ),
         (
             "right_global_from_local_same_as_fem_energy_convention",
-            "FEM assembly Kglob=T.T Kloc T gives q_local=T q_global, so q_global=T.T q_local",
-            "T_transpose",
+            "FEM assembly Kglob=T Kloc T.T gives q_global=T q_local",
+            "T",
         ),
     )
 

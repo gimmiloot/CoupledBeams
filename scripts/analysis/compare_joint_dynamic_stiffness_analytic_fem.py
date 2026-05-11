@@ -36,6 +36,7 @@ from scripts.analysis.check_analytic_shape_in_fem_residual import (  # noqa: E40
     build_params_for_case,
     residual_metrics,
     resolve_analytic_branch,
+    track_fem_branch,
 )
 from scripts.compare_beta0_analytic_vs_fem import fem_parameter_override  # noqa: E402
 from scripts.lib.analytic_coupled_rods_shapes import (  # noqa: E402
@@ -264,6 +265,121 @@ FORCE_ROW_SCALING_DIAGNOSTIC_FIELDNAMES = [
     "notes",
 ]
 
+JOINT_NULLSPACE_MATRIX_FIELDNAMES = [
+    "case_id",
+    "matrix_name",
+    "row",
+    "col",
+    "fem_value",
+    "analytic_value",
+    "abs_diff",
+    "rel_diff",
+]
+
+JOINT_NULLSPACE_SUMMARY_FIELDNAMES = [
+    "case_id",
+    "lambda",
+    "fem_singular_values",
+    "analytic_singular_values",
+    "fem_condition_number",
+    "analytic_condition_number",
+    "frobenius_rel_diff",
+    "max_abs_diff",
+    "smallest_singular_value_fem",
+    "smallest_singular_value_analytic",
+]
+
+JOINT_NULLSPACE_VECTOR_FIELDNAMES = [
+    "case_id",
+    "vector_name",
+    "ux",
+    "uy",
+    "theta",
+    "normalized_ux",
+    "normalized_uy",
+    "normalized_theta",
+]
+
+JOINT_NULLSPACE_PAIRWISE_FIELDNAMES = [
+    "case_id",
+    "vector_a",
+    "vector_b",
+    "mac",
+    "relative_l2_after_sign_alignment",
+    "dot_after_sign_alignment",
+    "notes",
+]
+
+JOINT_RECONSTRUCTION_RESIDUAL_FIELDNAMES = [
+    "case_id",
+    "reconstruction_name",
+    "lambda",
+    "omega_sq",
+    "residual_l2",
+    "relative_residual",
+    "residual_inf",
+    "relative_residual_inf",
+    "q_joint_ux",
+    "q_joint_uy",
+    "q_joint_theta",
+    "notes",
+]
+
+DETERMINANT_NULLSPACE_CONDITIONING_FIELDNAMES = [
+    "method",
+    "row_scaling",
+    "column_scaling",
+    "smallest_singular_value",
+    "second_singular_value",
+    "singular_ratio",
+    "raw_matrix_residual",
+    "row_normalized_matrix_residual",
+    "q_joint_mac_vs_joint_null",
+    "q_joint_rel_l2_vs_joint_null",
+    "fem_relative_residual",
+    "rayleigh_lambda",
+    "notes",
+]
+
+DETERMINANT_AS_JOINT_MATRIX_FIELDNAMES = [
+    "row",
+    "col",
+    "D_det_joint_value",
+    "D_analytic_joint_value",
+    "D_fem_joint_value",
+    "abs_diff_det_vs_analytic",
+    "rel_diff_det_vs_analytic",
+    "abs_diff_det_vs_fem",
+    "rel_diff_det_vs_fem",
+]
+
+DETERMINANT_AS_JOINT_SUMMARY_FIELDNAMES = [
+    "case_id",
+    "det_joint_singular_values",
+    "analytic_joint_singular_values",
+    "fem_joint_singular_values",
+    "frobenius_rel_diff_det_vs_analytic",
+    "frobenius_rel_diff_det_vs_fem",
+    "smallest_singular_vector_MAC_det_vs_analytic",
+    "smallest_singular_vector_MAC_det_vs_fem",
+    "condition_QN",
+    "notes",
+]
+
+DETERMINANT_AS_JOINT_VARIANT_FIELDNAMES = [
+    "case_id",
+    "variant_name",
+    "row",
+    "col",
+    "D_det_joint_variant_value",
+    "D_analytic_joint_value",
+    "abs_diff_det_vs_analytic",
+    "rel_diff_det_vs_analytic",
+    "frobenius_rel_diff_det_vs_analytic",
+    "smallest_singular_vector_MAC_det_vs_analytic",
+    "notes",
+]
+
 BASIS_LABELS = ("A1", "B1", "A2", "B2", "P1", "P2")
 
 
@@ -277,6 +393,17 @@ def default_output_prefix(branch_id: str, beta: float, mu: float, epsilon: float
         / "results"
         / (
             f"joint_dynamic_stiffness_compare_beta{filename_number_token(beta)}_{branch_id}"
+            f"_mu{filename_number_token(mu)}_eps{filename_number_token(epsilon)}"
+        )
+    )
+
+
+def joint_nullspace_output_prefix(branch_id: str, beta: float, mu: float, epsilon: float) -> Path:
+    return (
+        REPO_ROOT
+        / "results"
+        / (
+            f"joint_nullspace_compare_beta{filename_number_token(beta)}_{branch_id}"
             f"_mu{filename_number_token(mu)}_eps{filename_number_token(epsilon)}"
         )
     )
@@ -325,6 +452,33 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Audit determinant force-row scaling against FEM-compatible N/Q/M endpoint quantities.",
     )
+    parser.add_argument(
+        "--compare-joint-nullspace",
+        action="store_true",
+        default=False,
+        help=(
+            "Compare D_total_FEM and D_total_analytic through the physical "
+            "joint displacement nullspace q_joint=[ux,uy,theta]."
+        ),
+    )
+    parser.add_argument(
+        "--audit-determinant-nullspace-conditioning",
+        action="store_true",
+        default=False,
+        help=(
+            "Audit whether the determinant coefficient null vector is sensitive "
+            "to row/column scaling, without changing the determinant."
+        ),
+    )
+    parser.add_argument(
+        "--derive-determinant-as-joint-system",
+        action="store_true",
+        default=False,
+        help=(
+            "Restrict determinant force rows to the kinematic nullspace and "
+            "express them as a 3x3 q_joint=[ux,uy,theta] system."
+        ),
+    )
     args = parser.parse_args(argv)
     if args.epsilon <= 0.0:
         parser.error("--epsilon must be positive.")
@@ -372,8 +526,8 @@ def assemble_fem_arm_matrices(
     Me = fem.elem_M(le)
     if rotate_to_global:
         T = fem.rotation_matrix_6x6(np.deg2rad(float(beta_deg)))
-        Ke = T.T @ Ke @ T
-        Me = T.T @ Me @ T
+        Ke = T @ Ke @ T.T
+        Me = T @ Me @ T.T
 
     for elem in range(n):
         dofs = np.array(
@@ -934,16 +1088,16 @@ def force_contribution_matrices_dynamic(
 ) -> dict[tuple[str, str], np.ndarray]:
     T = rotation3(beta_deg)
     q_global = np.asarray(q_matrix, dtype=float)
-    q_right_local = T @ q_global
+    q_right_local = T.T @ q_global
     f_left = np.asarray(D_left, dtype=float) @ q_global
     f_right_local = np.asarray(D_right_local, dtype=float) @ q_right_local
-    right_axial_global = T.T @ np.vstack(
+    right_axial_global = T @ np.vstack(
         [f_right_local[0, :], np.zeros(q_global.shape[1]), np.zeros(q_global.shape[1])]
     )
-    right_shear_global = T.T @ np.vstack(
+    right_shear_global = T @ np.vstack(
         [np.zeros(q_global.shape[1]), f_right_local[1, :], np.zeros(q_global.shape[1])]
     )
-    right_moment_global = T.T @ np.vstack(
+    right_moment_global = T @ np.vstack(
         [np.zeros(q_global.shape[1]), np.zeros(q_global.shape[1]), f_right_local[2, :]]
     )
     force_scale_eps = float(epsilon) / (float(Lambda) ** 2)
@@ -1563,6 +1717,1112 @@ def constrained_null_vector_rows(
     return rows
 
 
+def safe_scalar_ratio(numerator: float, denominator: float) -> float:
+    return float(numerator) / float(denominator) if abs(float(denominator)) > NEAR_ZERO_NORM else np.nan
+
+
+def condition_number_from_singular_values(singular_values: np.ndarray) -> float:
+    s = np.asarray(singular_values, dtype=float)
+    if s.size == 0:
+        return np.nan
+    return float(s[0] / s[-1]) if abs(float(s[-1])) > NEAR_ZERO_NORM else float("inf")
+
+
+def normalized_vector(vector: np.ndarray) -> np.ndarray:
+    values = np.asarray(vector, dtype=float)
+    norm = float(np.linalg.norm(values))
+    return values / norm if norm > NEAR_ZERO_NORM else np.full(values.shape, np.nan, dtype=float)
+
+
+def right_singular_null_vector(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray, float]:
+    _, singular_values, vh = np.linalg.svd(np.asarray(matrix, dtype=float), full_matrices=True)
+    vector = normalized_vector(vh[-1, :].copy())
+    smallest = float(singular_values[-1]) if singular_values.size else np.nan
+    return vector, singular_values, smallest
+
+
+def component_ratio_note(vector_name: str, vector: np.ndarray) -> str:
+    values = np.asarray(vector, dtype=float)
+    ux, uy, theta = [float(value) for value in values]
+    ratios = {
+        "ux/theta": safe_scalar_ratio(ux, theta),
+        "uy/theta": safe_scalar_ratio(uy, theta),
+        "ux/uy": safe_scalar_ratio(ux, uy),
+    }
+    formatted = ", ".join(f"{name}={value:.6e}" for name, value in ratios.items())
+    return f"{vector_name}: {formatted}"
+
+
+def joint_nullspace_matrix_rows(
+    *,
+    case_id: str,
+    D_total_fem: np.ndarray,
+    D_total_analytic: np.ndarray,
+) -> list[dict[str, float | str]]:
+    diff = np.asarray(D_total_fem, dtype=float) - np.asarray(D_total_analytic, dtype=float)
+    rows: list[dict[str, float | str]] = []
+    for row_idx, row_label in enumerate(DOF_LABELS):
+        for col_idx, col_label in enumerate(JOINT_Q_LABELS):
+            fem_value = float(D_total_fem[row_idx, col_idx])
+            analytic_value = float(D_total_analytic[row_idx, col_idx])
+            rows.append(
+                {
+                    "case_id": case_id,
+                    "matrix_name": "D_total",
+                    "row": row_label,
+                    "col": col_label,
+                    "fem_value": fem_value,
+                    "analytic_value": analytic_value,
+                    "abs_diff": float(abs(diff[row_idx, col_idx])),
+                    "rel_diff": safe_relative_diff(fem_value, analytic_value),
+                }
+            )
+    return rows
+
+
+def joint_nullspace_summary_row(
+    *,
+    case_id: str,
+    Lambda: float,
+    D_total_fem: np.ndarray,
+    D_total_analytic: np.ndarray,
+    fem_singular_values: np.ndarray,
+    analytic_singular_values: np.ndarray,
+) -> dict[str, float | str]:
+    diff = np.asarray(D_total_fem, dtype=float) - np.asarray(D_total_analytic, dtype=float)
+    return {
+        "case_id": case_id,
+        "lambda": float(Lambda),
+        "fem_singular_values": format_float_sequence(fem_singular_values),
+        "analytic_singular_values": format_float_sequence(analytic_singular_values),
+        "fem_condition_number": condition_number_from_singular_values(fem_singular_values),
+        "analytic_condition_number": condition_number_from_singular_values(analytic_singular_values),
+        "frobenius_rel_diff": relative_matrix_norm(diff, D_total_analytic),
+        "max_abs_diff": float(np.max(np.abs(diff))),
+        "smallest_singular_value_fem": float(fem_singular_values[-1]) if fem_singular_values.size else np.nan,
+        "smallest_singular_value_analytic": float(analytic_singular_values[-1])
+        if analytic_singular_values.size
+        else np.nan,
+    }
+
+
+def joint_vector_rows(
+    *,
+    case_id: str,
+    vectors: dict[str, np.ndarray],
+) -> list[dict[str, float | str]]:
+    rows: list[dict[str, float | str]] = []
+    for vector_name, vector in vectors.items():
+        values = np.asarray(vector, dtype=float)
+        unit = normalized_vector(values)
+        rows.append(
+            {
+                "case_id": case_id,
+                "vector_name": vector_name,
+                "ux": float(values[0]),
+                "uy": float(values[1]),
+                "theta": float(values[2]),
+                "normalized_ux": float(unit[0]),
+                "normalized_uy": float(unit[1]),
+                "normalized_theta": float(unit[2]),
+            }
+        )
+    return rows
+
+
+def aligned_unit_vector_metrics(reference: np.ndarray, candidate: np.ndarray) -> tuple[float, float, float]:
+    a = normalized_vector(reference)
+    b = normalized_vector(candidate)
+    if not (np.all(np.isfinite(a)) and np.all(np.isfinite(b))):
+        return np.nan, np.nan, np.nan
+    dot = float(np.dot(a, b))
+    if dot < 0.0:
+        b = -b
+        dot = -dot
+    relative_l2 = float(np.linalg.norm(a - b) / np.linalg.norm(a))
+    return float(dot * dot), relative_l2, dot
+
+
+def joint_pairwise_rows(
+    *,
+    case_id: str,
+    vectors: dict[str, np.ndarray],
+) -> list[dict[str, float | str]]:
+    names = list(vectors.keys())
+    rows: list[dict[str, float | str]] = []
+    for i, name_a in enumerate(names):
+        for name_b in names[i + 1 :]:
+            mac, relative_l2, dot = aligned_unit_vector_metrics(vectors[name_a], vectors[name_b])
+            rows.append(
+                {
+                    "case_id": case_id,
+                    "vector_a": name_a,
+                    "vector_b": name_b,
+                    "mac": mac,
+                    "relative_l2_after_sign_alignment": relative_l2,
+                    "dot_after_sign_alignment": dot,
+                    "notes": (
+                        "unit-vector comparison; "
+                        f"{component_ratio_note(name_a, vectors[name_a])}; "
+                        f"{component_ratio_note(name_b, vectors[name_b])}"
+                    ),
+                }
+            )
+    return rows
+
+
+def solve_bending_coefficients_from_joint_values(
+    *,
+    length: float,
+    Lambda: float,
+    joint_at_right: bool,
+    w_joint: float,
+    theta_joint: float,
+) -> np.ndarray:
+    rows_0 = full_basis_rows(float(Lambda), 0.0)
+    rows_L = full_basis_rows(float(Lambda), float(length))
+    system = np.vstack([rows_0["w"], rows_0["theta"], rows_L["w"], rows_L["theta"]])
+    rhs = (
+        np.array([0.0, 0.0, float(w_joint), float(theta_joint)], dtype=float)
+        if joint_at_right
+        else np.array([float(w_joint), float(theta_joint), 0.0, 0.0], dtype=float)
+    )
+    return np.linalg.solve(system, rhs)
+
+
+def solve_axial_coefficients_from_joint_value(
+    *,
+    length: float,
+    Lambda: float,
+    epsilon: float,
+    joint_at_right: bool,
+    u_joint: float,
+) -> np.ndarray:
+    omega_sq = float(Lambda) ** 4
+    EA = 1.0 / float(epsilon) ** 2
+    gamma = np.sqrt(max(omega_sq / EA, 0.0))
+    u0, _ = axial_value_rows(gamma, 0.0)
+    uL, _ = axial_value_rows(gamma, float(length))
+    system = np.vstack([u0, uL])
+    rhs = (
+        np.array([0.0, float(u_joint)], dtype=float)
+        if joint_at_right
+        else np.array([float(u_joint), 0.0], dtype=float)
+    )
+    return np.linalg.solve(system, rhs)
+
+
+def sample_analytic_arm_from_joint_q(
+    *,
+    length: float,
+    Lambda: float,
+    epsilon: float,
+    joint_at_right: bool,
+    q_local: np.ndarray,
+    n_nodes: int,
+) -> dict[str, np.ndarray]:
+    q = np.asarray(q_local, dtype=float)
+    axial_coeff = solve_axial_coefficients_from_joint_value(
+        length=float(length),
+        Lambda=float(Lambda),
+        epsilon=float(epsilon),
+        joint_at_right=joint_at_right,
+        u_joint=float(q[0]),
+    )
+    bending_coeff = solve_bending_coefficients_from_joint_values(
+        length=float(length),
+        Lambda=float(Lambda),
+        joint_at_right=joint_at_right,
+        w_joint=float(q[1]),
+        theta_joint=float(q[2]),
+    )
+    x_values = np.linspace(0.0, float(length), int(n_nodes))
+    omega_sq = float(Lambda) ** 4
+    gamma = np.sqrt(max(omega_sq / (1.0 / float(epsilon) ** 2), 0.0))
+    u_values = []
+    w_values = []
+    theta_values = []
+    for x_value in x_values:
+        u_row, _ = axial_value_rows(gamma, float(x_value))
+        rows = full_basis_rows(float(Lambda), float(x_value))
+        u_values.append(float(u_row @ axial_coeff))
+        w_values.append(float(rows["w"] @ bending_coeff))
+        theta_values.append(float(rows["theta"] @ bending_coeff))
+    return {
+        "u": np.asarray(u_values, dtype=float),
+        "w": np.asarray(w_values, dtype=float),
+        "theta": np.asarray(theta_values, dtype=float),
+    }
+
+
+def build_q_global_from_joint_null_vector(
+    *,
+    q_joint_global: np.ndarray,
+    Lambda: float,
+    mu: float,
+    epsilon: float,
+    beta: float,
+    params,
+) -> np.ndarray:
+    n = fem.N_ELEM
+    n_nodes = 2 * n + 1
+    q_joint = np.asarray(q_joint_global, dtype=float)
+    length_left = float(params.L_base) * (1.0 - float(mu))
+    length_right = float(params.L_base) * (1.0 + float(mu))
+    T = rotation3(float(beta))
+    left = sample_analytic_arm_from_joint_q(
+        length=length_left,
+        Lambda=float(Lambda),
+        epsilon=float(epsilon),
+        joint_at_right=True,
+        q_local=q_joint,
+        n_nodes=n + 1,
+    )
+    right_local_joint_q = T.T @ q_joint
+    right = sample_analytic_arm_from_joint_q(
+        length=length_right,
+        Lambda=float(Lambda),
+        epsilon=float(epsilon),
+        joint_at_right=False,
+        q_local=right_local_joint_q,
+        n_nodes=n + 1,
+    )
+    ux = np.zeros(n_nodes, dtype=float)
+    uy = np.zeros(n_nodes, dtype=float)
+    theta = np.zeros(n_nodes, dtype=float)
+    ux[: n + 1] = left["u"]
+    uy[: n + 1] = left["w"]
+    theta[: n + 1] = left["theta"]
+    right_global = T @ np.vstack([right["u"], right["w"], right["theta"]])
+    ux[n + 1 :] = right_global[0, 1:]
+    uy[n + 1 :] = right_global[1, 1:]
+    theta[n + 1 :] = right_global[2, 1:]
+    q_full = np.empty(3 * n_nodes, dtype=float)
+    q_full[0::3] = ux
+    q_full[1::3] = uy
+    q_full[2::3] = theta
+    return q_full
+
+
+def joint_reconstruction_residual_rows(
+    *,
+    case_id: str,
+    Lambda: float,
+    omega_sq: float,
+    mu: float,
+    epsilon: float,
+    beta: float,
+    params,
+    q_full_determinant: np.ndarray,
+    q_joint_determinant: np.ndarray,
+    q_joint_null_analytic: np.ndarray,
+) -> list[dict[str, float | str]]:
+    k_free, m_free, _, _, free = assemble_fem_matrices(params, mu=float(mu), beta_deg=float(beta))
+    q_full_joint_null = build_q_global_from_joint_null_vector(
+        q_joint_global=q_joint_null_analytic,
+        Lambda=float(Lambda),
+        mu=float(mu),
+        epsilon=float(epsilon),
+        beta=float(beta),
+        params=params,
+    )
+    cases = [
+        (
+            "determinant_null_vector_reconstruction",
+            np.asarray(q_full_determinant, dtype=float),
+            np.asarray(q_joint_determinant, dtype=float),
+            "current determinant-null coefficient embedding from build_analytic_global_q",
+        ),
+        (
+            "joint_null_analytic_D_reconstruction",
+            q_full_joint_null,
+            np.asarray(q_joint_null_analytic, dtype=float),
+            "arm coefficients solved from q_joint_null_analytic_D using the D_global=T*D_local*T.T convention",
+        ),
+    ]
+    rows: list[dict[str, float | str]] = []
+    for name, q_full, q_joint, notes in cases:
+        metrics = residual_metrics(k_free, m_free, q_full, free, omega_sq=float(omega_sq))
+        rows.append(
+            {
+                "case_id": case_id,
+                "reconstruction_name": name,
+                "lambda": float(Lambda),
+                "omega_sq": float(omega_sq),
+                "residual_l2": float(metrics["residual_l2"]),
+                "relative_residual": float(metrics["relative_residual"]),
+                "residual_inf": float(metrics["residual_inf"]),
+                "relative_residual_inf": float(metrics["relative_residual_inf"]),
+                "q_joint_ux": float(q_joint[0]),
+                "q_joint_uy": float(q_joint[1]),
+                "q_joint_theta": float(q_joint[2]),
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def pairwise_value(
+    rows: Sequence[dict[str, float | str]],
+    name_a: str,
+    name_b: str,
+    key: str,
+) -> float:
+    wanted = {name_a, name_b}
+    for row in rows:
+        if {str(row["vector_a"]), str(row["vector_b"])} == wanted:
+            return float(row[key])
+    return np.nan
+
+
+def joint_nullspace_interpretation_lines(
+    *,
+    summary_row: dict[str, float | str],
+    pairwise_rows: Sequence[dict[str, float | str]],
+) -> list[str]:
+    operator_rel = float(summary_row["frobenius_rel_diff"])
+    operator_close = np.isfinite(operator_rel) and operator_rel <= 1e-3
+    fem_null_mac = pairwise_value(
+        pairwise_rows,
+        "q_joint_from_FEM_eigenvector",
+        "q_joint_null_FEM_D",
+        "mac",
+    )
+    dynamic_null_mac = pairwise_value(
+        pairwise_rows,
+        "q_joint_null_FEM_D",
+        "q_joint_null_analytic_D",
+        "mac",
+    )
+    det_vs_dynamic_mac = pairwise_value(
+        pairwise_rows,
+        "q_joint_from_analytic_determinant_coeffs",
+        "q_joint_null_analytic_D",
+        "mac",
+    )
+    lines = []
+    if operator_close and np.isfinite(dynamic_null_mac) and dynamic_null_mac >= 0.999:
+        lines.append(
+            "A: D_total_FEM and D_total_analytic agree at the joint-displacement operator level."
+        )
+    elif operator_close:
+        lines.append(
+            "B-like: D_total operators are close, but the FEM/analytic joint null vectors need review."
+        )
+    else:
+        lines.append(
+            "C: D_total_FEM and D_total_analytic are not close enough under the current 1e-3 Frobenius threshold."
+        )
+    if operator_close and np.isfinite(det_vs_dynamic_mac) and det_vs_dynamic_mac < 0.999:
+        lines.append(
+            "B: determinant-null q_joint differs from the analytic D_total nullspace; inspect coefficient-to-joint mapping or determinant force rows."
+        )
+    if np.isfinite(fem_null_mac) and fem_null_mac < 0.999:
+        lines.append(
+            "D: FEM eigenvector q_joint differs from FEM Schur D_total nullspace; inspect Schur assembly/order or frequency mismatch."
+        )
+    return lines
+
+
+def row_unit_scale(matrix: np.ndarray) -> np.ndarray:
+    norms = np.linalg.norm(np.asarray(matrix, dtype=float), axis=1)
+    return np.array([1.0 / value if value > NEAR_ZERO_NORM else 1.0 for value in norms], dtype=float)
+
+
+def column_unit_scale(matrix: np.ndarray, row_scale: np.ndarray | None = None) -> np.ndarray:
+    base = np.asarray(matrix, dtype=float)
+    if row_scale is not None:
+        base = np.asarray(row_scale, dtype=float)[:, None] * base
+    norms = np.linalg.norm(base, axis=0)
+    return np.array([1.0 / value if value > NEAR_ZERO_NORM else 1.0 for value in norms], dtype=float)
+
+
+def row_normalized_matrix(matrix: np.ndarray) -> np.ndarray:
+    return row_unit_scale(matrix)[:, None] * np.asarray(matrix, dtype=float)
+
+
+def determinant_coefficients_from_joint_q(
+    *,
+    q_joint_global: np.ndarray,
+    Lambda: float,
+    beta: float,
+    mu: float,
+    epsilon: float,
+) -> np.ndarray:
+    q_left = np.asarray(q_joint_global, dtype=float)
+    q_right = rotation3(float(beta)) @ q_left
+    x1 = float(Lambda) * (1.0 - float(mu))
+    x2 = float(Lambda) * (1.0 + float(mu))
+    z2 = -x2
+    left_rows = reduced_bending_values(1.0, 0.0, x1), reduced_bending_values(0.0, 1.0, x1)
+    left_system = np.array(
+        [
+            [left_rows[0]["w"], left_rows[1]["w"]],
+            [left_rows[0]["slope_z"], left_rows[1]["slope_z"]],
+        ],
+        dtype=float,
+    )
+    right_rows = reduced_bending_values(1.0, 0.0, z2), reduced_bending_values(0.0, 1.0, z2)
+    right_system = np.array(
+        [
+            [right_rows[0]["w"], right_rows[1]["w"]],
+            [right_rows[0]["slope_z"], right_rows[1]["slope_z"]],
+        ],
+        dtype=float,
+    )
+    A1, B1 = np.linalg.solve(left_system, np.array([q_left[1], q_left[2] / float(Lambda)], dtype=float))
+    A2, B2 = np.linalg.solve(right_system, np.array([q_right[1], q_right[2] / float(Lambda)], dtype=float))
+    th1 = float(epsilon) * float(Lambda) ** 2 * (1.0 - float(mu))
+    th2 = -float(epsilon) * float(Lambda) ** 2 * (1.0 + float(mu))
+    P1 = safe_scalar_ratio(float(q_left[0]), float(np.sin(th1)))
+    P2 = safe_scalar_ratio(float(q_right[0]), float(np.sin(th2)))
+    return np.array([A1, B1, A2, B2, P1, P2], dtype=float)
+
+
+def normalize_coefficients(coeff: np.ndarray) -> np.ndarray:
+    values = np.asarray(coeff, dtype=float)
+    norm = float(np.linalg.norm(values))
+    out = values / norm if norm > NEAR_ZERO_NORM else values.copy()
+    if out.size:
+        pivot = int(np.argmax(np.abs(out)))
+        if out[pivot] < 0.0:
+            out = -out
+    return out
+
+
+def scaled_svd_null_coeff(
+    matrix: np.ndarray,
+    *,
+    row_scale: np.ndarray,
+    column_scale: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    scaled = np.asarray(row_scale, dtype=float)[:, None] * np.asarray(matrix, dtype=float)
+    scaled = scaled * np.asarray(column_scale, dtype=float)[None, :]
+    _, singular_values, vh = np.linalg.svd(scaled, full_matrices=True)
+    scaled_coeff = vh[-1, :].astype(float)
+    coeff = np.asarray(column_scale, dtype=float) * scaled_coeff
+    return normalize_coefficients(coeff), singular_values
+
+
+def determinant_q_joint_from_coeff(
+    *,
+    coeff: np.ndarray,
+    Lambda: float,
+    beta_rad: float,
+    mu: float,
+    epsilon: float,
+) -> np.ndarray:
+    q_matrix = joint_q_matrix(
+        Lambda=float(Lambda),
+        beta_rad=float(beta_rad),
+        mu=float(mu),
+        epsilon=float(epsilon),
+        q_source_variant="left_joint_fem_theta",
+    )
+    return q_matrix @ np.asarray(coeff, dtype=float)
+
+
+def rayleigh_lambda_for_q(
+    *,
+    k_free: np.ndarray,
+    m_free: np.ndarray,
+    q_full: np.ndarray,
+    free: np.ndarray,
+) -> float:
+    q_free = np.asarray(q_full, dtype=float)[np.asarray(free, dtype=int)]
+    mass_q = np.asarray(m_free, dtype=float) @ q_free
+    denom = float(q_free @ mass_q)
+    if abs(denom) <= NEAR_ZERO_NORM:
+        return np.nan
+    omega_sq_rayleigh = float((q_free @ (np.asarray(k_free, dtype=float) @ q_free)) / denom)
+    return float(omega_sq_rayleigh ** 0.25) if omega_sq_rayleigh > 0.0 else np.nan
+
+
+def determinant_conditioning_method_row(
+    *,
+    method: str,
+    row_scaling_label: str,
+    column_scaling_label: str,
+    matrix: np.ndarray,
+    coeff: np.ndarray,
+    singular_values: np.ndarray,
+    q_joint_null: np.ndarray,
+    Lambda: float,
+    beta: float,
+    beta_rad: float,
+    mu: float,
+    epsilon: float,
+    params,
+    notes: str,
+) -> dict[str, float | str]:
+    c = normalize_coefficients(coeff)
+    raw_residual = np.asarray(matrix, dtype=float) @ c
+    row_matrix = row_normalized_matrix(matrix)
+    row_residual = row_matrix @ c
+    matrix_norm = float(np.linalg.norm(matrix))
+    row_matrix_norm = float(np.linalg.norm(row_matrix))
+    coeff_norm = float(np.linalg.norm(c))
+    raw_rel = (
+        float(np.linalg.norm(raw_residual) / (matrix_norm * coeff_norm))
+        if matrix_norm > NEAR_ZERO_NORM and coeff_norm > NEAR_ZERO_NORM
+        else np.nan
+    )
+    row_rel = (
+        float(np.linalg.norm(row_residual) / (row_matrix_norm * coeff_norm))
+        if row_matrix_norm > NEAR_ZERO_NORM and coeff_norm > NEAR_ZERO_NORM
+        else np.nan
+    )
+    q_joint = determinant_q_joint_from_coeff(
+        coeff=c,
+        Lambda=float(Lambda),
+        beta_rad=float(beta_rad),
+        mu=float(mu),
+        epsilon=float(epsilon),
+    )
+    mac, q_rel_l2, _ = aligned_unit_vector_metrics(q_joint_null, q_joint)
+    fields = analytic_local_fields(
+        Lambda,
+        mu=mu,
+        epsilon=epsilon,
+        coeff=c,
+        s_norm=np.linspace(0.0, 1.0, fem.N_ELEM + 1),
+        right_theta_sign=1.0,
+    )
+    q_full, _ = build_analytic_global_q(fields, beta_deg=beta)
+    k_free, m_free, _, _, free = assemble_fem_matrices(params, mu=mu, beta_deg=beta)
+    fem_residual = residual_metrics(k_free, m_free, q_full, free, omega_sq=float(Lambda) ** 4)
+    rayleigh_lambda = rayleigh_lambda_for_q(k_free=k_free, m_free=m_free, q_full=q_full, free=free)
+    s = np.asarray(singular_values, dtype=float)
+    smallest = float(s[-1]) if s.size else np.nan
+    second = float(s[-2]) if s.size >= 2 else np.nan
+    ratio = safe_scalar_ratio(smallest, second)
+    row_components = format_float_sequence(row_residual)
+    raw_components = format_float_sequence(raw_residual)
+    raw_labeled = ";".join(
+        f"{label}={float(value):.16g}" for label, value in zip(ROW_LABELS, raw_residual)
+    )
+    row_labeled = ";".join(
+        f"{label}={float(value):.16g}" for label, value in zip(ROW_LABELS, row_residual)
+    )
+    return {
+        "method": method,
+        "row_scaling": row_scaling_label,
+        "column_scaling": column_scaling_label,
+        "smallest_singular_value": smallest,
+        "second_singular_value": second,
+        "singular_ratio": ratio,
+        "raw_matrix_residual": raw_rel,
+        "row_normalized_matrix_residual": row_rel,
+        "q_joint_mac_vs_joint_null": mac,
+        "q_joint_rel_l2_vs_joint_null": q_rel_l2,
+        "fem_relative_residual": float(fem_residual["relative_residual"]),
+        "rayleigh_lambda": rayleigh_lambda,
+        "notes": (
+            f"{notes}; raw_abs={float(np.linalg.norm(raw_residual)):.16g}; "
+            f"row_abs={float(np.linalg.norm(row_residual)):.16g}; "
+            f"raw_row_components={raw_components}; row_normalized_components={row_components}; "
+            f"raw_labeled_residual={raw_labeled}; row_normalized_labeled_residual={row_labeled}"
+        ),
+    }
+
+
+def determinant_conditioning_rows(
+    *,
+    matrix: np.ndarray,
+    c_det_raw: np.ndarray,
+    c_joint: np.ndarray,
+    q_joint_null: np.ndarray,
+    Lambda: float,
+    beta: float,
+    beta_rad: float,
+    mu: float,
+    epsilon: float,
+    params,
+) -> list[dict[str, float | str]]:
+    rows: list[dict[str, float | str]] = []
+    raw_singular_values = np.linalg.svd(np.asarray(matrix, dtype=float), compute_uv=False)
+    rows.append(
+        determinant_conditioning_method_row(
+            method="reference_raw_svd",
+            row_scaling_label="none",
+            column_scaling_label="none",
+            matrix=matrix,
+            coeff=c_det_raw,
+            singular_values=raw_singular_values,
+            q_joint_null=q_joint_null,
+            Lambda=Lambda,
+            beta=beta,
+            beta_rad=beta_rad,
+            mu=mu,
+            epsilon=epsilon,
+            params=params,
+            notes="current analytic_null_vector(raw determinant matrix)",
+        )
+    )
+    rows.append(
+        determinant_conditioning_method_row(
+            method="reference_joint_null_coefficients",
+            row_scaling_label="none",
+            column_scaling_label="none",
+            matrix=matrix,
+            coeff=c_joint,
+            singular_values=raw_singular_values,
+            q_joint_null=q_joint_null,
+            Lambda=Lambda,
+            beta=beta,
+            beta_rad=beta_rad,
+            mu=mu,
+            epsilon=epsilon,
+            params=params,
+            notes="coefficients reconstructed from q_joint_null_analytic_D in determinant basis",
+        )
+    )
+    ones_row = np.ones(np.asarray(matrix, dtype=float).shape[0], dtype=float)
+    ones_col = np.ones(np.asarray(matrix, dtype=float).shape[1], dtype=float)
+    row_scale = row_unit_scale(matrix)
+    method_specs: list[tuple[str, str, str, np.ndarray, np.ndarray]] = [
+        ("scaled_raw_svd", "none", "none", ones_row, ones_col),
+        ("scaled_row_normalized_svd", "unit_row_norm", "none", row_scale, ones_col),
+        (
+            "scaled_column_normalized_svd",
+            "none",
+            "unit_column_norm",
+            ones_row,
+            column_unit_scale(matrix),
+        ),
+        (
+            "scaled_row_column_normalized_svd",
+            "unit_row_norm",
+            "unit_column_norm_after_row_scaling",
+            row_scale,
+            column_unit_scale(matrix, row_scale=row_scale),
+        ),
+    ]
+    physical_scales = {
+        "P_epsilon": float(epsilon),
+        "P_inv_epsilon": 1.0 / float(epsilon),
+        "P_Lambda": float(Lambda),
+        "P_inv_Lambda": 1.0 / float(Lambda),
+        "P_Lambda2": float(Lambda) ** 2,
+        "P_inv_Lambda2": 1.0 / (float(Lambda) ** 2),
+    }
+    for label, p_scale in physical_scales.items():
+        col_scale = np.array([1.0, 1.0, 1.0, 1.0, p_scale, p_scale], dtype=float)
+        method_specs.append((f"scaled_physical_{label}", "none", label, ones_row, col_scale))
+        method_specs.append((f"scaled_row_physical_{label}", "unit_row_norm", label, row_scale, col_scale))
+    for method, row_label, col_label, method_row_scale, method_col_scale in method_specs:
+        coeff_scaled, singular_values = scaled_svd_null_coeff(
+            matrix,
+            row_scale=method_row_scale,
+            column_scale=method_col_scale,
+        )
+        rows.append(
+            determinant_conditioning_method_row(
+                method=method,
+                row_scaling_label=row_label,
+                column_scaling_label=col_label,
+                matrix=matrix,
+                coeff=coeff_scaled,
+                singular_values=singular_values,
+                q_joint_null=q_joint_null,
+                Lambda=Lambda,
+                beta=beta,
+                beta_rad=beta_rad,
+                mu=mu,
+                epsilon=epsilon,
+                params=params,
+                notes="SVD null vector of scaled determinant matrix, then mapped back to raw coefficient basis",
+            )
+        )
+    return rows
+
+
+def determinant_conditioning_conclusion(rows: Sequence[dict[str, float | str]]) -> list[str]:
+    joint_row = next((row for row in rows if str(row["method"]) == "reference_joint_null_coefficients"), None)
+    raw_row = next((row for row in rows if str(row["method"]) == "reference_raw_svd"), None)
+    lines: list[str] = []
+    if joint_row is not None:
+        joint_row_res = float(joint_row["row_normalized_matrix_residual"])
+        if np.isfinite(joint_row_res) and joint_row_res <= 1e-8:
+            lines.append("c_joint satisfies the current determinant matrix in row-normalized residual.")
+        else:
+            lines.append("c_joint does not satisfy the current determinant matrix closely; equation mismatch remains.")
+    if raw_row is not None and joint_row is not None:
+        raw_q = float(raw_row["q_joint_mac_vs_joint_null"])
+        joint_q = float(joint_row["q_joint_mac_vs_joint_null"])
+        if np.isfinite(joint_q) and joint_q >= 0.999999 and (not np.isfinite(raw_q) or raw_q < 0.999):
+            lines.append("raw determinant SVD selects a different q_joint direction than the joint-null reference.")
+    finite = [row for row in rows if np.isfinite(float(row["fem_relative_residual"]))]
+    if finite:
+        best_fem = min(finite, key=lambda row: float(row["fem_relative_residual"]))
+        lines.append(
+            "best FEM residual method: "
+            f"{best_fem['method']} ({float(best_fem['fem_relative_residual']):.6e})"
+        )
+    finite_q = [row for row in rows if np.isfinite(float(row["q_joint_rel_l2_vs_joint_null"]))]
+    if finite_q:
+        best_q = min(finite_q, key=lambda row: float(row["q_joint_rel_l2_vs_joint_null"]))
+        lines.append(
+            "best q_joint match method: "
+            f"{best_q['method']} (rel_l2={float(best_q['q_joint_rel_l2_vs_joint_null']):.6e})"
+        )
+    return lines
+
+
+def print_top_conditioning_methods(rows: Sequence[dict[str, float | str]], *, limit: int = 5) -> None:
+    finite_fem = [row for row in rows if np.isfinite(float(row["fem_relative_residual"]))]
+    finite_q = [row for row in rows if np.isfinite(float(row["q_joint_rel_l2_vs_joint_null"]))]
+    print("determinant nullspace conditioning audit:")
+    print("  top by FEM relative residual:")
+    for row in sorted(finite_fem, key=lambda item: float(item["fem_relative_residual"]))[:limit]:
+        print(
+            f"    {row['method']}: fem={float(row['fem_relative_residual']):.6e}, "
+            f"q_rel_l2={float(row['q_joint_rel_l2_vs_joint_null']):.6e}, "
+            f"row_res={float(row['row_normalized_matrix_residual']):.6e}"
+        )
+    print("  top by q_joint match:")
+    for row in sorted(finite_q, key=lambda item: float(item["q_joint_rel_l2_vs_joint_null"]))[:limit]:
+        print(
+            f"    {row['method']}: q_rel_l2={float(row['q_joint_rel_l2_vs_joint_null']):.6e}, "
+            f"mac={float(row['q_joint_mac_vs_joint_null']):.6e}, "
+            f"fem={float(row['fem_relative_residual']):.6e}"
+        )
+    for line in determinant_conditioning_conclusion(rows):
+        print(f"  conclusion: {line}")
+
+
+def determinant_force_raw_to_physical_transform(
+    *,
+    Lambda: float,
+    epsilon: float,
+    mapping_variant: str,
+) -> np.ndarray:
+    lambda_sq = float(Lambda) ** 2
+    force_scale = lambda_sq / float(epsilon)
+    if mapping_variant == "current_scaled_rows_to_Fx_Fy_M":
+        return np.array(
+            [
+                [0.0, 0.0, force_scale],
+                [0.0, force_scale, 0.0],
+                [lambda_sq, 0.0, 0.0],
+            ],
+            dtype=float,
+        )
+    if mapping_variant == "swap_Fx_Fy_scaled_rows":
+        return np.array(
+            [
+                [0.0, force_scale, 0.0],
+                [0.0, 0.0, force_scale],
+                [lambda_sq, 0.0, 0.0],
+            ],
+            dtype=float,
+        )
+    raise ValueError(f"Unknown determinant force mapping variant: {mapping_variant}")
+
+
+def determinant_as_joint_raw_matrix(
+    *,
+    Rf: np.ndarray,
+    N: np.ndarray,
+    QN_inverse: np.ndarray,
+) -> np.ndarray:
+    return np.asarray(Rf, dtype=float) @ np.asarray(N, dtype=float) @ np.asarray(QN_inverse, dtype=float)
+
+
+def determinant_as_joint_physical_matrix(
+    *,
+    Rf: np.ndarray,
+    N: np.ndarray,
+    QN_inverse: np.ndarray,
+    Lambda: float,
+    epsilon: float,
+    mapping_variant: str,
+) -> np.ndarray:
+    D_raw = determinant_as_joint_raw_matrix(Rf=Rf, N=N, QN_inverse=QN_inverse)
+    transform = determinant_force_raw_to_physical_transform(
+        Lambda=float(Lambda),
+        epsilon=float(epsilon),
+        mapping_variant=mapping_variant,
+    )
+    return transform @ D_raw
+
+
+def determinant_force_row_variants(matrix: np.ndarray) -> list[tuple[str, np.ndarray, str, str]]:
+    Rf = np.asarray(matrix, dtype=float)[3:6, :]
+    variants: list[tuple[str, np.ndarray, str, str]] = [
+        (
+            "current",
+            Rf.copy(),
+            "current_scaled_rows_to_Fx_Fy_M",
+            "current determinant force rows mapped from [M/Lambda^2, eps*Fy/Lambda^2, eps*Fx/Lambda^2] to [Fx,Fy,M]",
+        )
+    ]
+    mixed = Rf.copy()
+    mixed[1, 5] *= -1.0
+    mixed[2, 2:4] *= -1.0
+    variants.append(
+        (
+            "flip_mixed_right_arm_signs_candidate",
+            mixed,
+            "current_scaled_rows_to_Fx_Fy_M",
+            "flips candidate right-arm N2*sin(beta) term in transverse row and Q2*sin(beta) terms in axial row",
+        )
+    )
+    axial = Rf.copy()
+    axial[2, :] *= -1.0
+    variants.append(
+        (
+            "flip_axial_row_sign",
+            axial,
+            "current_scaled_rows_to_Fx_Fy_M",
+            "flips the determinant axial/global-x force row before physical row mapping",
+        )
+    )
+    transverse = Rf.copy()
+    transverse[1, :] *= -1.0
+    variants.append(
+        (
+            "flip_transverse_row_sign",
+            transverse,
+            "current_scaled_rows_to_Fx_Fy_M",
+            "flips the determinant transverse/global-y force row before physical row mapping",
+        )
+    )
+    variants.append(
+        (
+            "swap_Fx_Fy_row_mapping",
+            Rf.copy(),
+            "swap_Fx_Fy_scaled_rows",
+            "interprets determinant force rows as [M/Lambda^2, eps*Fx/Lambda^2, eps*Fy/Lambda^2]",
+        )
+    )
+    return variants
+
+
+def determinant_as_joint_matrix_rows(
+    *,
+    D_det_joint: np.ndarray,
+    D_analytic_joint: np.ndarray,
+    D_fem_joint: np.ndarray,
+) -> list[dict[str, float | str]]:
+    rows: list[dict[str, float | str]] = []
+    for row_idx, row_label in enumerate(DOF_LABELS):
+        for col_idx, col_label in enumerate(JOINT_Q_LABELS):
+            det_value = float(D_det_joint[row_idx, col_idx])
+            analytic_value = float(D_analytic_joint[row_idx, col_idx])
+            fem_value = float(D_fem_joint[row_idx, col_idx])
+            rows.append(
+                {
+                    "row": row_label,
+                    "col": col_label,
+                    "D_det_joint_value": det_value,
+                    "D_analytic_joint_value": analytic_value,
+                    "D_fem_joint_value": fem_value,
+                    "abs_diff_det_vs_analytic": float(abs(det_value - analytic_value)),
+                    "rel_diff_det_vs_analytic": safe_relative_diff(det_value, analytic_value),
+                    "abs_diff_det_vs_fem": float(abs(det_value - fem_value)),
+                    "rel_diff_det_vs_fem": safe_relative_diff(det_value, fem_value),
+                }
+            )
+    return rows
+
+
+def smallest_right_singular_vector(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    _, singular_values, vh = np.linalg.svd(np.asarray(matrix, dtype=float), full_matrices=True)
+    return normalized_vector(vh[-1, :].copy()), singular_values
+
+
+def determinant_as_joint_summary_row(
+    *,
+    case_id: str,
+    D_det_joint: np.ndarray,
+    D_analytic_joint: np.ndarray,
+    D_fem_joint: np.ndarray,
+    condition_QN: float,
+    notes: str,
+) -> dict[str, float | str]:
+    det_vec, det_s = smallest_right_singular_vector(D_det_joint)
+    analytic_vec, analytic_s = smallest_right_singular_vector(D_analytic_joint)
+    fem_vec, fem_s = smallest_right_singular_vector(D_fem_joint)
+    mac_det_analytic, _, _ = aligned_unit_vector_metrics(det_vec, analytic_vec)
+    mac_det_fem, _, _ = aligned_unit_vector_metrics(det_vec, fem_vec)
+    return {
+        "case_id": case_id,
+        "det_joint_singular_values": format_float_sequence(det_s),
+        "analytic_joint_singular_values": format_float_sequence(analytic_s),
+        "fem_joint_singular_values": format_float_sequence(fem_s),
+        "frobenius_rel_diff_det_vs_analytic": relative_matrix_norm(D_det_joint - D_analytic_joint, D_analytic_joint),
+        "frobenius_rel_diff_det_vs_fem": relative_matrix_norm(D_det_joint - D_fem_joint, D_fem_joint),
+        "smallest_singular_vector_MAC_det_vs_analytic": mac_det_analytic,
+        "smallest_singular_vector_MAC_det_vs_fem": mac_det_fem,
+        "condition_QN": float(condition_QN),
+        "notes": notes,
+    }
+
+
+def determinant_as_joint_variant_rows(
+    *,
+    case_id: str,
+    matrix: np.ndarray,
+    N: np.ndarray,
+    QN_inverse: np.ndarray,
+    Lambda: float,
+    epsilon: float,
+    D_analytic_joint: np.ndarray,
+) -> list[dict[str, float | str]]:
+    rows: list[dict[str, float | str]] = []
+    analytic_vec, _ = smallest_right_singular_vector(D_analytic_joint)
+    for variant_name, Rf_variant, mapping_variant, note in determinant_force_row_variants(matrix):
+        D_variant = determinant_as_joint_physical_matrix(
+            Rf=Rf_variant,
+            N=N,
+            QN_inverse=QN_inverse,
+            Lambda=float(Lambda),
+            epsilon=float(epsilon),
+            mapping_variant=mapping_variant,
+        )
+        diff = D_variant - np.asarray(D_analytic_joint, dtype=float)
+        rel_fro = relative_matrix_norm(diff, D_analytic_joint)
+        variant_vec, _ = smallest_right_singular_vector(D_variant)
+        mac, _, _ = aligned_unit_vector_metrics(variant_vec, analytic_vec)
+        for row_idx, row_label in enumerate(DOF_LABELS):
+            for col_idx, col_label in enumerate(JOINT_Q_LABELS):
+                det_value = float(D_variant[row_idx, col_idx])
+                analytic_value = float(D_analytic_joint[row_idx, col_idx])
+                rows.append(
+                    {
+                        "case_id": case_id,
+                        "variant_name": variant_name,
+                        "row": row_label,
+                        "col": col_label,
+                        "D_det_joint_variant_value": det_value,
+                        "D_analytic_joint_value": analytic_value,
+                        "abs_diff_det_vs_analytic": float(abs(det_value - analytic_value)),
+                        "rel_diff_det_vs_analytic": safe_relative_diff(det_value, analytic_value),
+                        "frobenius_rel_diff_det_vs_analytic": rel_fro,
+                        "smallest_singular_vector_MAC_det_vs_analytic": mac,
+                        "notes": f"{note}; physical rows=[Fx,Fy,M], cols=[ux,uy,theta]",
+                    }
+                )
+    return rows
+
+
+def determinant_as_joint_system_rows(
+    *,
+    case_id: str,
+    matrix: np.ndarray,
+    Lambda: float,
+    beta_rad: float,
+    mu: float,
+    epsilon: float,
+    D_analytic_joint: np.ndarray,
+    D_fem_joint: np.ndarray,
+) -> tuple[list[dict[str, float | str]], list[dict[str, float | str]], list[dict[str, float | str]]]:
+    Rk = np.asarray(matrix, dtype=float)[:3, :]
+    Rf = np.asarray(matrix, dtype=float)[3:6, :]
+    N, singular_values, rank, tol, condition_Rk, kinematic_residual = kinematic_nullspace_basis(Rk)
+    Q = joint_q_matrix(
+        Lambda=float(Lambda),
+        beta_rad=float(beta_rad),
+        mu=float(mu),
+        epsilon=float(epsilon),
+        q_source_variant="left_joint_fem_theta",
+    )
+    QN = Q @ N
+    if QN.shape == (3, 3):
+        condition_QN = float(np.linalg.cond(QN))
+        QN_inverse = np.linalg.inv(QN)
+        qn_note = "QN inverted directly"
+    else:
+        condition_QN = float(np.linalg.cond(QN)) if QN.size else np.nan
+        QN_inverse = np.linalg.pinv(QN)
+        qn_note = "QN was not 3x3; Moore-Penrose pseudoinverse used"
+    D_det_joint = determinant_as_joint_physical_matrix(
+        Rf=Rf,
+        N=N,
+        QN_inverse=QN_inverse,
+        Lambda=float(Lambda),
+        epsilon=float(epsilon),
+        mapping_variant="current_scaled_rows_to_Fx_Fy_M",
+    )
+    notes = (
+        "determinant rows restricted to null(Rk), then mapped from raw determinant force order "
+        "[M/Lambda^2, eps*Fy/Lambda^2, eps*Fx/Lambda^2] to physical [Fx,Fy,M]; "
+        f"Rk_rank={rank}; Rk_singular_values={format_float_sequence(singular_values)}; "
+        f"Rk_tol={tol:.16g}; Rk_condition={condition_Rk:.16g}; "
+        f"kinematic_residual_norm={kinematic_residual:.16g}; {qn_note}"
+    )
+    matrix_rows = determinant_as_joint_matrix_rows(
+        D_det_joint=D_det_joint,
+        D_analytic_joint=D_analytic_joint,
+        D_fem_joint=D_fem_joint,
+    )
+    summary_rows = [
+        determinant_as_joint_summary_row(
+            case_id=case_id,
+            D_det_joint=D_det_joint,
+            D_analytic_joint=D_analytic_joint,
+            D_fem_joint=D_fem_joint,
+            condition_QN=condition_QN,
+            notes=notes,
+        )
+    ]
+    variant_rows = determinant_as_joint_variant_rows(
+        case_id=case_id,
+        matrix=matrix,
+        N=N,
+        QN_inverse=QN_inverse,
+        Lambda=float(Lambda),
+        epsilon=float(epsilon),
+        D_analytic_joint=D_analytic_joint,
+    )
+    return matrix_rows, summary_rows, variant_rows
+
+
+def print_determinant_as_joint_top_entries(
+    matrix_rows: Sequence[dict[str, float | str]],
+    variant_rows: Sequence[dict[str, float | str]],
+    summary_rows: Sequence[dict[str, float | str]],
+    *,
+    limit: int = 5,
+) -> None:
+    print("determinant as q_joint system:")
+    if summary_rows:
+        summary = summary_rows[0]
+        print(
+            "  current mapping: "
+            f"rel_fro_det_vs_analytic={float(summary['frobenius_rel_diff_det_vs_analytic']):.6e}, "
+            f"rel_fro_det_vs_fem={float(summary['frobenius_rel_diff_det_vs_fem']):.6e}, "
+            f"condition_QN={float(summary['condition_QN']):.6e}"
+        )
+        print(
+            "  null-vector MAC: "
+            f"det-vs-analytic={float(summary['smallest_singular_vector_MAC_det_vs_analytic']):.6e}, "
+            f"det-vs-fem={float(summary['smallest_singular_vector_MAC_det_vs_fem']):.6e}"
+        )
+    print("  largest current entry differences vs analytic:")
+    for row in sorted(matrix_rows, key=lambda item: float(item["abs_diff_det_vs_analytic"]), reverse=True)[:limit]:
+        print(
+            f"    {row['row']}<-{row['col']}: "
+            f"det={float(row['D_det_joint_value']):.6e}, "
+            f"analytic={float(row['D_analytic_joint_value']):.6e}, "
+            f"abs={float(row['abs_diff_det_vs_analytic']):.6e}"
+        )
+    variant_summaries: dict[str, dict[str, float | str]] = {}
+    for row in variant_rows:
+        variant_summaries.setdefault(str(row["variant_name"]), row)
+    print("  variants by Frobenius difference vs analytic:")
+    for row in sorted(
+        variant_summaries.values(),
+        key=lambda item: float(item["frobenius_rel_diff_det_vs_analytic"]),
+    )[:limit]:
+        print(
+            f"    {row['variant_name']}: "
+            f"rel_fro={float(row['frobenius_rel_diff_det_vs_analytic']):.6e}, "
+            f"null_MAC={float(row['smallest_singular_vector_MAC_det_vs_analytic']):.6e}"
+        )
+
+
 def largest_matrix_entry(rows: Sequence[dict[str, float | str]]) -> dict[str, float | str]:
     return max(rows, key=lambda row: float(row["abs_diff"]))
 
@@ -1660,7 +2920,7 @@ def main(argv: Sequence[str] | None = None) -> dict[str, float | str]:
         joint_at_right=False,
     )
     T3 = rotation3(beta)
-    D_right_analytic_global = T3.T @ D_right_analytic_local @ T3
+    D_right_analytic_global = T3 @ D_right_analytic_local @ T3.T
     D_total_analytic = D_left_analytic + D_right_analytic_global
 
     fields = analytic_local_fields(
@@ -1983,6 +3243,126 @@ def main(argv: Sequence[str] | None = None) -> dict[str, float | str]:
             beta=beta,
             params=params,
         )
+    joint_nullspace_matrix_data: list[dict[str, float | str]] = []
+    joint_nullspace_summary_data: list[dict[str, float | str]] = []
+    joint_nullspace_vector_data: list[dict[str, float | str]] = []
+    joint_nullspace_pairwise_data: list[dict[str, float | str]] = []
+    joint_reconstruction_residual_data: list[dict[str, float | str]] = []
+    joint_nullspace_prefix = joint_nullspace_output_prefix(branch_id, beta, mu, epsilon)
+    joint_nullspace_matrix_csv = Path(f"{joint_nullspace_prefix}_matrix.csv")
+    joint_nullspace_summary_csv = Path(f"{joint_nullspace_prefix}_summary.csv")
+    joint_nullspace_vectors_csv = Path(f"{joint_nullspace_prefix}_vectors.csv")
+    joint_nullspace_pairwise_csv = Path(f"{joint_nullspace_prefix}_pairwise.csv")
+    joint_reconstruction_residual_csv = REPO_ROOT / "results" / (
+        f"joint_nullspace_reconstruction_residual_beta{filename_number_token(beta)}_{branch_id}"
+        f"_mu{filename_number_token(mu)}_eps{filename_number_token(epsilon)}.csv"
+    )
+    joint_interpretation_lines: list[str] = []
+    q_joint_null_analytic_for_audit: np.ndarray | None = None
+    if bool(args.compare_joint_nullspace):
+        q_joint_null_fem, fem_singular_values, _ = right_singular_null_vector(D_total_fem)
+        q_joint_null_analytic, analytic_singular_values, _ = right_singular_null_vector(D_total_analytic)
+        q_joint_null_analytic_for_audit = q_joint_null_analytic
+        fem_branch = track_fem_branch(
+            params,
+            branch_id=branch_id,
+            beta_deg=beta,
+            mu=mu,
+        )
+        q_joint_from_fem_eigenvector = fem_branch.full_vec[3 * fem.N_ELEM : 3 * fem.N_ELEM + 3]
+        joint_vectors = {
+            "q_joint_from_FEM_eigenvector": q_joint_from_fem_eigenvector,
+            "q_joint_from_analytic_determinant_coeffs": q_joint,
+            "q_joint_null_FEM_D": q_joint_null_fem,
+            "q_joint_null_analytic_D": q_joint_null_analytic,
+        }
+        joint_nullspace_matrix_data = joint_nullspace_matrix_rows(
+            case_id=case_id,
+            D_total_fem=D_total_fem,
+            D_total_analytic=D_total_analytic,
+        )
+        joint_summary = joint_nullspace_summary_row(
+            case_id=case_id,
+            Lambda=Lambda,
+            D_total_fem=D_total_fem,
+            D_total_analytic=D_total_analytic,
+            fem_singular_values=fem_singular_values,
+            analytic_singular_values=analytic_singular_values,
+        )
+        joint_nullspace_summary_data = [joint_summary]
+        joint_nullspace_vector_data = joint_vector_rows(case_id=case_id, vectors=joint_vectors)
+        joint_nullspace_pairwise_data = joint_pairwise_rows(case_id=case_id, vectors=joint_vectors)
+        joint_reconstruction_residual_data = joint_reconstruction_residual_rows(
+            case_id=case_id,
+            Lambda=Lambda,
+            omega_sq=omega_sq,
+            mu=mu,
+            epsilon=epsilon,
+            beta=beta,
+            params=params,
+            q_full_determinant=q_full,
+            q_joint_determinant=q_joint,
+            q_joint_null_analytic=q_joint_null_analytic,
+        )
+        joint_interpretation_lines = joint_nullspace_interpretation_lines(
+            summary_row=joint_summary,
+            pairwise_rows=joint_nullspace_pairwise_data,
+        )
+    determinant_conditioning_rows_data: list[dict[str, float | str]] = []
+    determinant_conditioning_csv = REPO_ROOT / "results" / (
+        f"determinant_nullspace_conditioning_beta{filename_number_token(beta)}_{branch_id}"
+        f"_mu{filename_number_token(mu)}_eps{filename_number_token(epsilon)}.csv"
+    )
+    if bool(args.audit_determinant_nullspace_conditioning):
+        if q_joint_null_analytic_for_audit is None:
+            q_joint_null_analytic_for_audit, _, _ = right_singular_null_vector(D_total_analytic)
+        c_joint = determinant_coefficients_from_joint_q(
+            q_joint_global=q_joint_null_analytic_for_audit,
+            Lambda=Lambda,
+            beta=beta,
+            mu=mu,
+            epsilon=epsilon,
+        )
+        determinant_conditioning_rows_data = determinant_conditioning_rows(
+            matrix=matrix,
+            c_det_raw=coeff,
+            c_joint=c_joint,
+            q_joint_null=q_joint_null_analytic_for_audit,
+            Lambda=Lambda,
+            beta=beta,
+            beta_rad=beta_rad,
+            mu=mu,
+            epsilon=epsilon,
+            params=params,
+        )
+    determinant_as_joint_matrix_data: list[dict[str, float | str]] = []
+    determinant_as_joint_summary_data: list[dict[str, float | str]] = []
+    determinant_as_joint_variant_data: list[dict[str, float | str]] = []
+    determinant_as_joint_prefix = REPO_ROOT / "results" / (
+        f"determinant_as_joint_system_beta{filename_number_token(beta)}_{branch_id}"
+        f"_mu{filename_number_token(mu)}_eps{filename_number_token(epsilon)}"
+    )
+    determinant_as_joint_matrix_csv = Path(f"{determinant_as_joint_prefix}_matrix.csv")
+    determinant_as_joint_summary_csv = Path(f"{determinant_as_joint_prefix}_summary.csv")
+    determinant_as_joint_variants_csv = REPO_ROOT / "results" / (
+        f"determinant_as_joint_system_variants_beta{filename_number_token(beta)}_{branch_id}"
+        f"_mu{filename_number_token(mu)}_eps{filename_number_token(epsilon)}.csv"
+    )
+    if bool(args.derive_determinant_as_joint_system):
+        (
+            determinant_as_joint_matrix_data,
+            determinant_as_joint_summary_data,
+            determinant_as_joint_variant_data,
+        ) = determinant_as_joint_system_rows(
+            case_id=case_id,
+            matrix=matrix,
+            Lambda=Lambda,
+            beta_rad=beta_rad,
+            mu=mu,
+            epsilon=epsilon,
+            D_analytic_joint=D_total_analytic,
+            D_fem_joint=D_total_fem,
+        )
     largest = largest_matrix_entry(matrix_rows)
     determinant_diff_norm = float(
         np.linalg.norm([float(row["abs_diff"]) for row in crosscheck_rows])
@@ -2059,6 +3439,38 @@ def main(argv: Sequence[str] | None = None) -> dict[str, float | str]:
             force_scaling_diagnostic_csv,
             FORCE_ROW_SCALING_DIAGNOSTIC_FIELDNAMES,
             force_scaling_diagnostic_rows,
+        )
+    if bool(args.compare_joint_nullspace):
+        write_csv(joint_nullspace_matrix_csv, JOINT_NULLSPACE_MATRIX_FIELDNAMES, joint_nullspace_matrix_data)
+        write_csv(joint_nullspace_summary_csv, JOINT_NULLSPACE_SUMMARY_FIELDNAMES, joint_nullspace_summary_data)
+        write_csv(joint_nullspace_vectors_csv, JOINT_NULLSPACE_VECTOR_FIELDNAMES, joint_nullspace_vector_data)
+        write_csv(joint_nullspace_pairwise_csv, JOINT_NULLSPACE_PAIRWISE_FIELDNAMES, joint_nullspace_pairwise_data)
+        write_csv(
+            joint_reconstruction_residual_csv,
+            JOINT_RECONSTRUCTION_RESIDUAL_FIELDNAMES,
+            joint_reconstruction_residual_data,
+        )
+    if bool(args.audit_determinant_nullspace_conditioning):
+        write_csv(
+            determinant_conditioning_csv,
+            DETERMINANT_NULLSPACE_CONDITIONING_FIELDNAMES,
+            determinant_conditioning_rows_data,
+        )
+    if bool(args.derive_determinant_as_joint_system):
+        write_csv(
+            determinant_as_joint_matrix_csv,
+            DETERMINANT_AS_JOINT_MATRIX_FIELDNAMES,
+            determinant_as_joint_matrix_data,
+        )
+        write_csv(
+            determinant_as_joint_summary_csv,
+            DETERMINANT_AS_JOINT_SUMMARY_FIELDNAMES,
+            determinant_as_joint_summary_data,
+        )
+        write_csv(
+            determinant_as_joint_variants_csv,
+            DETERMINANT_AS_JOINT_VARIANT_FIELDNAMES,
+            determinant_as_joint_variant_data,
         )
 
     print("Joint dynamic stiffness analytic/FEM comparison")
@@ -2145,6 +3557,57 @@ def main(argv: Sequence[str] | None = None) -> dict[str, float | str]:
         print(f"force-row scaling audit CSV: {force_scaling_csv}")
         print(f"force-row scaling summary CSV: {force_scaling_summary_csv}")
         print(f"force-row scaling diagnostic matrix CSV: {force_scaling_diagnostic_csv}")
+    if bool(args.compare_joint_nullspace):
+        joint_summary_print = joint_nullspace_summary_data[0]
+        print("joint displacement nullspace comparison:")
+        print(
+            "  D_total FEM/analytic: "
+            f"frobenius_rel_diff={float(joint_summary_print['frobenius_rel_diff']):.6e}, "
+            f"max_abs_diff={float(joint_summary_print['max_abs_diff']):.6e}"
+        )
+        print(
+            "  singular values: "
+            f"FEM=[{joint_summary_print['fem_singular_values']}], "
+            f"analytic=[{joint_summary_print['analytic_singular_values']}]"
+        )
+        print(
+            "  q_null FEM_D vs analytic_D: "
+            f"MAC={pairwise_value(joint_nullspace_pairwise_data, 'q_joint_null_FEM_D', 'q_joint_null_analytic_D', 'mac'):.6e}, "
+            "rel_l2="
+            f"{pairwise_value(joint_nullspace_pairwise_data, 'q_joint_null_FEM_D', 'q_joint_null_analytic_D', 'relative_l2_after_sign_alignment'):.6e}"
+        )
+        print(
+            "  q FEM eigenvector vs FEM Schur null: "
+            f"MAC={pairwise_value(joint_nullspace_pairwise_data, 'q_joint_from_FEM_eigenvector', 'q_joint_null_FEM_D', 'mac'):.6e}, "
+            "rel_l2="
+            f"{pairwise_value(joint_nullspace_pairwise_data, 'q_joint_from_FEM_eigenvector', 'q_joint_null_FEM_D', 'relative_l2_after_sign_alignment'):.6e}"
+        )
+        print(
+            "  q determinant coeffs vs analytic D null: "
+            "MAC="
+            f"{pairwise_value(joint_nullspace_pairwise_data, 'q_joint_from_analytic_determinant_coeffs', 'q_joint_null_analytic_D', 'mac'):.6e}, "
+            "rel_l2="
+            f"{pairwise_value(joint_nullspace_pairwise_data, 'q_joint_from_analytic_determinant_coeffs', 'q_joint_null_analytic_D', 'relative_l2_after_sign_alignment'):.6e}"
+        )
+        for line in joint_interpretation_lines:
+            print(f"  interpretation: {line}")
+        print(f"joint nullspace matrix CSV: {joint_nullspace_matrix_csv}")
+        print(f"joint nullspace summary CSV: {joint_nullspace_summary_csv}")
+        print(f"joint nullspace vectors CSV: {joint_nullspace_vectors_csv}")
+        print(f"joint nullspace pairwise CSV: {joint_nullspace_pairwise_csv}")
+        print(f"joint nullspace reconstruction residual CSV: {joint_reconstruction_residual_csv}")
+    if bool(args.audit_determinant_nullspace_conditioning):
+        print_top_conditioning_methods(determinant_conditioning_rows_data)
+        print(f"determinant nullspace conditioning CSV: {determinant_conditioning_csv}")
+    if bool(args.derive_determinant_as_joint_system):
+        print_determinant_as_joint_top_entries(
+            determinant_as_joint_matrix_data,
+            determinant_as_joint_variant_data,
+            determinant_as_joint_summary_data,
+        )
+        print(f"determinant as joint matrix CSV: {determinant_as_joint_matrix_csv}")
+        print(f"determinant as joint summary CSV: {determinant_as_joint_summary_csv}")
+        print(f"determinant as joint variants CSV: {determinant_as_joint_variants_csv}")
     print(f"matrix CSV: {matrix_csv}")
     print(f"summary CSV: {summary_csv}")
     print(f"determinant cross-check CSV: {crosscheck_csv}")

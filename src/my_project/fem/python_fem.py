@@ -18,9 +18,10 @@
 
 Трансформация плеча 2:
     Каждый элемент плеча 2 поворачивается из локальной в глобальную СК:
+        q_global = T @ q_local
         T = block_diag(R, R),  R = [[cos, -sin, 0], [sin, cos, 0], [0, 0, 1]]
-        K_глоб = T^T @ K_лок @ T
-        M_глоб = T^T @ M_лок @ T
+        K_global = T @ K_local @ T.T
+        M_global = T @ M_local @ T.T
 
 Отслеживание мод:
     MAC (Modal Assurance Criterion) + венгерский алгоритм
@@ -149,6 +150,7 @@ def rotation_matrix_6x6(beta_rad):
 
     Для элемента: T = block_diag(R, R)
     """
+    # T is local-to-global; right-arm assembly uses T @ K_local @ T.T.
     c, s = np.cos(beta_rad), np.sin(beta_rad)
     R = np.array([[c, -s, 0],
                   [s,  c, 0],
@@ -217,8 +219,8 @@ def fem_solve(mu, beta_deg=0.0, n_modes=14):
         # Узел j плеча 2 в глобальной нумерации: узел (n1 + j)
         dofs = [3*(n1+j),   3*(n1+j)+1,   3*(n1+j)+2,
                 3*(n1+j+1), 3*(n1+j+1)+1, 3*(n1+j+1)+2]
-        Ke_glob = T6.T @ elem_K(le2) @ T6
-        Me_glob = T6.T @ elem_M(le2) @ T6
+        Ke_glob = T6 @ elem_K(le2) @ T6.T
+        Me_glob = T6 @ elem_M(le2) @ T6.T
         assemble(dofs, Ke_glob, Me_glob)
 
     # --- Граничные условия: заделки на обоих концах ---

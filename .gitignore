@@ -6,6 +6,12 @@ __pycache__/
 .vscode/
 results/*
 !results/.gitkeep
+docs/verification/fem_transform_fix_and_article_shapes.md
+docs/verification/cleanup_manifest_after_fem_transform_fix.md
+docs/verification/minimal_pre_article_test_plan.md
+scripts/analysis/audit_fig4_panel_06_frequency.py
+scripts/analysis/validate_detected_article_shape_cases_after_fem_transform_fix.py
+scripts/analysis/write_article_shape_regeneration_report_after_fem_transform_fix.py
 docs/literature/pdf/Диссертация_Шайна_Е.А..pdf
 docs/literature/pdf/02.-Dissertatsiya_M.-K.-CHien-_21.03.25_.pdf
 paper_dorofeev_style/

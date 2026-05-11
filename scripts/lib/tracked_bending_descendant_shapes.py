@@ -226,9 +226,9 @@ def fem_direct_element_energy_diagnostics(
 ) -> dict[str, float]:
     """Compute arm-wise FEM energies from local element stiffness matrices.
 
-    This follows the assembly convention in `python_fem.py`: the global element
-    DOF vector is rotated to local coordinates with `rotation_matrix_6x6(beta)`
-    before applying the local axial and bending stiffness blocks.
+    This follows the assembly convention in `python_fem.py`: `rotation_matrix_6x6`
+    maps local right-arm DOF to global DOF, so global element vectors are rotated
+    to local coordinates with its transpose before applying local stiffness blocks.
     """
     eps = float(epsilon) if epsilon is not None else float(shape_case["r"]) / (2.0 * local_arm_lengths(shape_case)[0])
     _, left_length, right_length = local_arm_lengths(shape_case)
@@ -245,7 +245,7 @@ def fem_direct_element_energy_diagnostics(
     k_axial_right = k_right[np.ix_(axial_idx, axial_idx)]
     k_bending_right = k_right[np.ix_(bending_idx, bending_idx)]
     t_left = fem.rotation_matrix_6x6(0.0)
-    t_right = fem.rotation_matrix_6x6(np.deg2rad(float(shape_case["beta"])))
+    t_right = fem.rotation_matrix_6x6(np.deg2rad(float(shape_case["beta"]))).T
 
     u_raw = np.asarray(shape_case["u_raw"], dtype=float)
     v_raw = np.asarray(shape_case["v_raw"], dtype=float)

@@ -131,6 +131,12 @@ For FEM code:
 - separate technical cleanup from mathematical/model changes
 - document required inputs, outputs, and run steps
 
+FEM right-arm transform convention must remain local-to-global:
+`q_global = T @ q_local`, with right axial mapped to `(cos beta, sin beta)`
+and right transverse mapped to `(-sin beta, cos beta)`. Production assembly
+uses `K_global = T @ K_local @ T.T` and `M_global = T @ M_local @ T.T`.
+Do not change this convention without an explicit theory/code consistency audit.
+
 ## Documentation rules
 
 Update documentation when relevant:
