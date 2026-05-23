@@ -27,20 +27,29 @@ from scripts.analysis.track_lambda_eta_thickness_mismatch import (  # noqa: E402
 )
 
 
-RESULTS_DIR = REPO_ROOT / "results"
-TRACKED_CSV = RESULTS_DIR / "thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_sweep_tracked.csv"
-TRACKED_PNG = RESULTS_DIR / "thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_sweep_tracked.png"
-REPORT_MD = RESULTS_DIR / "thickness_mismatch_lambda_mu_eta_sweep_tracking_report.md"
-
-BETA_DEG = 15.0
+# =========================
+# User-editable parameters
+# =========================
+BETA_DEG = 7.5
 EPSILON = 0.0025
 ETA_VALUES = (-0.1, 0.0, 0.1)
-MU_VALUES = np.round(np.arange(0.0, 0.9000001, 0.01), 10)
+MU_MIN = 0.0
+MU_MAX = 0.9
+MU_STEP = 0.01
+
 NUM_TRACKED_BRANCHES = 6
 NUM_SORTED_ROOTS = 12
 ROOT_SCAN_STEP = 0.01
 ROOT_LMAX0 = 35.0
+
+OUTPUT_DIR = REPO_ROOT / "results"
+OUTPUT_TAG: str | None = None
+SAVE_PNG = True
+SAVE_CSV = False
+SAVE_REPORT = False
+
 AMBIGUOUS_MARGIN_TOL = 1e-5
+MU_VALUES = np.round(np.arange(MU_MIN, MU_MAX + 0.5 * MU_STEP, MU_STEP), 10)
 
 TRACKED_FIELDNAMES = [
     "beta_deg",
@@ -58,6 +67,33 @@ TRACKED_FIELDNAMES = [
     "second_nearest_distance",
     "assignment_margin",
 ]
+
+
+def number_tag(value: float) -> str:
+    text = f"{float(value):.10g}"
+    return text.replace("-", "m").replace(".", "p")
+
+
+def output_stem() -> str:
+    if OUTPUT_TAG:
+        return OUTPUT_TAG
+    return (
+        "thickness_mismatch_lambda_mu_"
+        f"beta{number_tag(BETA_DEG)}_eps{number_tag(EPSILON)}_eta_sweep_tracked"
+    )
+
+
+def tracked_csv_path() -> Path:
+    return OUTPUT_DIR / f"{output_stem()}.csv"
+
+
+def tracked_png_path() -> Path:
+    return OUTPUT_DIR / f"{output_stem()}.png"
+
+
+def report_md_path() -> Path:
+    report_stem = output_stem().removesuffix("_tracked")
+    return OUTPUT_DIR / f"{report_stem}_tracking_report.md"
 
 
 def roots_for(mu: float, eta: float, n_roots: int = NUM_SORTED_ROOTS) -> np.ndarray:
@@ -171,6 +207,16 @@ def track_one_eta(
     return rows, tracked
 
 
+def eta_panel_title(eta: float) -> str:
+    if eta > 0.0:
+        meaning = "longer rod thicker for $\\mu>0$"
+    elif eta < 0.0:
+        meaning = "shorter rod thicker for $\\mu>0$"
+    else:
+        meaning = "equal radii"
+    return rf"$\eta={eta:g}$" + "\n" + meaning
+
+
 def plot_tracked(
     *,
     sorted_roots: dict[float, dict[float, np.ndarray]],
@@ -178,12 +224,8 @@ def plot_tracked(
     output: Path,
 ) -> None:
     fig, axes = plt.subplots(1, len(ETA_VALUES), figsize=(11.2, 3.8), sharey=True)
+    axes = np.atleast_1d(axes)
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
-    titles = {
-        -0.1: "$\\eta=-0.1$\nshorter rod thicker for $\\mu>0$",
-        0.0: "$\\eta=0$\nequal radii",
-        0.1: "$\\eta=0.1$\nlonger rod thicker for $\\mu>0$",
-    }
     for ax, eta in zip(axes, ETA_VALUES, strict=True):
         tracked = tracked_by_eta[float(eta)]
         sorted_grid = np.column_stack(
@@ -199,7 +241,7 @@ def plot_tracked(
                 lw=1.7,
                 label=f"branch {branch_idx + 1}" if ax is axes[0] else "_nolegend_",
             )
-        ax.set_title(titles[float(eta)], fontsize=10)
+        ax.set_title(eta_panel_title(float(eta)), fontsize=10)
         ax.set_xlabel(r"$\mu$")
         ax.grid(True, color="0.88", linewidth=0.6)
     axes[0].set_ylabel(r"$\Lambda$")
@@ -365,7 +407,7 @@ def build_report(
     jumps: Sequence[dict[str, float | int]],
     eta_zero: dict[str, float | int],
     swap: dict[str, float | int],
-    output: Path,
+    output: Path | None,
 ) -> dict[str, float | int]:
     max_diff_row = max(same_index_diffs, key=lambda row: float(row["abs_diff"]))
     switches = [
@@ -399,13 +441,21 @@ def build_report(
         "",
         "For each fixed eta, branches are seeded at mu=0 and continued to mu=0.9.",
         "Each step assigns previous branch values to current sorted candidate roots",
-        "by unique nearest-root matching. The CSV records nearest sorted index,",
+        "by unique nearest-root matching. The tracking diagnostics record nearest sorted index,",
         "distance to the previous point, assignment margin, and local root gap.",
         "",
         "## Outputs",
         "",
-        f"- tracked CSV: `{TRACKED_CSV.relative_to(REPO_ROOT)}`",
-        f"- tracked plot: `{TRACKED_PNG.relative_to(REPO_ROOT)}`",
+        (
+            f"- tracked CSV: `{tracked_csv_path().relative_to(REPO_ROOT)}`"
+            if SAVE_CSV
+            else "- tracked CSV: disabled (`SAVE_CSV = False`)"
+        ),
+        (
+            f"- tracked plot: `{tracked_png_path().relative_to(REPO_ROOT)}`"
+            if SAVE_PNG
+            else "- tracked plot: disabled (`SAVE_PNG = False`)"
+        ),
         "",
         "## Checks",
         "",
@@ -531,8 +581,9 @@ def build_report(
         ]
     )
 
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text("\n".join(lines), encoding="utf-8")
+    if output is not None:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text("\n".join(lines), encoding="utf-8")
     return {
         "eta_zero_max_nearest_old_root_diff": float(eta_zero["max_nearest_old_root_diff"]),
         "eta_zero_max_same_index_old_root_diff": float(eta_zero["max_same_index_old_root_diff"]),
@@ -560,8 +611,10 @@ def main() -> dict[str, Path | float | int]:
         tracked_rows.extend(rows)
         tracked_by_eta[float(eta)] = tracked
 
-    write_csv(TRACKED_CSV, tracked_rows, TRACKED_FIELDNAMES)
-    plot_tracked(sorted_roots=sorted_roots, tracked_by_eta=tracked_by_eta, output=TRACKED_PNG)
+    if SAVE_CSV:
+        write_csv(tracked_csv_path(), tracked_rows, TRACKED_FIELDNAMES)
+    if SAVE_PNG:
+        plot_tracked(sorted_roots=sorted_roots, tracked_by_eta=tracked_by_eta, output=tracked_png_path())
 
     same_index_diffs = compute_same_index_diffs(sorted_roots, tracked_by_eta)
     sensitivity = branch_sensitivity_rows(tracked_by_eta)
@@ -575,12 +628,21 @@ def main() -> dict[str, Path | float | int]:
         jumps=jumps,
         eta_zero=eta_zero,
         swap=swap,
-        output=REPORT_MD,
+        output=report_md_path() if SAVE_REPORT else None,
     )
 
-    print(f"saved tracked Lambda(mu) CSV: {TRACKED_CSV}")
-    print(f"saved tracked Lambda(mu) plot: {TRACKED_PNG}")
-    print(f"saved tracking report: {REPORT_MD}")
+    if SAVE_CSV:
+        print(f"saved tracked Lambda(mu) CSV: {tracked_csv_path()}")
+    else:
+        print("tracked Lambda(mu) CSV not saved (SAVE_CSV=False)")
+    if SAVE_PNG:
+        print(f"saved tracked Lambda(mu) plot: {tracked_png_path()}")
+    else:
+        print("tracked Lambda(mu) plot not saved (SAVE_PNG=False)")
+    if SAVE_REPORT:
+        print(f"saved tracking report: {report_md_path()}")
+    else:
+        print("tracking report not saved (SAVE_REPORT=False)")
     print(f"eta=0 max nearest old-root diff: {float(report['eta_zero_max_nearest_old_root_diff']):.6e}")
     print(f"eta=0 max same-index old-root diff: {float(report['eta_zero_max_same_index_old_root_diff']):.6e}")
     print(f"swap symmetry sanity max abs diff: {float(report['swap_max_abs_diff']):.6e}")
@@ -595,9 +657,9 @@ def main() -> dict[str, Path | float | int]:
     )
 
     return {
-        "tracked_csv": TRACKED_CSV,
-        "tracked_png": TRACKED_PNG,
-        "report_md": REPORT_MD,
+        "tracked_csv": tracked_csv_path(),
+        "tracked_png": tracked_png_path(),
+        "report_md": report_md_path(),
         **report,
     }
 

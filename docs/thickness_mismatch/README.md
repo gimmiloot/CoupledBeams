@@ -121,7 +121,16 @@ transformation.
   branches at `mu=0` for fixed `eta=-0.1, 0, 0.1` and continues them to
   `mu=0.9` by the same nearest-root assignment. For `mu>0`, `eta=0.1` means
   that the longer second rod is thicker, while `eta=-0.1` means that the
-  shorter first rod is thicker.
+  shorter first rod is thicker. Edit the user-parameter block at the top of
+  this script to set one `BETA_DEG`, `EPSILON`, `ETA_VALUES`, the mu range, and
+  branch/root scan settings. By default this script saves only a PNG; CSV and
+  Markdown report files are optional debug outputs controlled by `SAVE_CSV` and
+  `SAVE_REPORT`.
+- `scripts/analysis/plot_thickness_mismatch_branch5_shapes.py` reconstructs
+  full analytic deformed shapes for tracked branch 5 in the thickness-mismatch
+  model. It tracks branch 5 from `mu=0` separately for each configured eta,
+  reconstructs the determinant null-vector shape, and writes diagnostic PNG
+  panels only.
 
 Sorted root curves can be misleading near veering or close branch interactions:
 the sorted index can change its branch identity even when the continued branch
@@ -142,9 +151,13 @@ The first diagnostic run writes:
 - `results/thickness_mismatch_lambda_eta_beta15_eps0p0025_sorted_for_tracking.csv`
 - `results/thickness_mismatch_lambda_eta_beta15_eps0p0025_tracked.png`
 - `results/thickness_mismatch_lambda_eta_tracking_report.md`
-- `results/thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_sweep_tracked.csv`
-- `results/thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_sweep_tracked.png`
-- `results/thickness_mismatch_lambda_mu_eta_sweep_tracking_report.md`
+- `results/thickness_mismatch_lambda_mu_beta{...}_eps{...}_eta_sweep_tracked.png`
+- optional, only when enabled in the script:
+  `results/thickness_mismatch_lambda_mu_beta{...}_eps{...}_eta_sweep_tracked.csv`
+  and
+  `results/thickness_mismatch_lambda_mu_beta{...}_eps{...}_eta_sweep_tracking_report.md`
+- `results/thickness_mismatch_branch5_shapes_beta15_eps0p0025_mu0p0.png`
+- `results/thickness_mismatch_branch5_shapes_beta15_eps0p0025_mu0p1.png`
 
 These files are diagnostic artifacts only. They do not change the article
 figures, the FEM model, or the baseline equal-radius determinant.
@@ -159,4 +172,10 @@ Run the fixed-eta `Lambda(mu)` tracking diagnostic with:
 
 ```bash
 python scripts/analysis/track_lambda_mu_thickness_mismatch_eta_sweep.py
+```
+
+Run the tracked branch-5 shape comparison diagnostic with:
+
+```bash
+python scripts/analysis/plot_thickness_mismatch_branch5_shapes.py
 ```

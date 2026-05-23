@@ -20,6 +20,15 @@
   outputs and `results/thickness_mismatch_lambda_mu_eta_sweep_tracking_report.md`
   with eta=0 consistency, sorted-index switch, gap, jump, and eta-sensitivity
   summaries.
+- Updated `scripts/analysis/track_lambda_mu_thickness_mismatch_eta_sweep.py`
+  into a single-beta, user-parameterized plotting script with dynamic
+  beta/epsilon output names and PNG-only output by default; CSV and Markdown
+  report files are now optional debug outputs.
+- Added `scripts/analysis/plot_thickness_mismatch_branch5_shapes.py` to plot
+  diagnostic full deformed shapes for tracked thickness-mismatch branch 5 at
+  `beta=15 deg`, `epsilon=0.0025`, comparing `eta=-0.1, 0, 0.1` for
+  `mu=0` and `mu=0.1` without changing the baseline determinant, solvers, FEM
+  model, article files, or article figures.
 - Added `scripts/analysis/plot_article_fig3_with_fp_and_ff_refs.py` to build a
   results-only diagnostic version of article Figure 3 with the original
   clamped-pinned single-rod references and an additional clamped-clamped
