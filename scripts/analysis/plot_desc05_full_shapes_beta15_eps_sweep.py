@@ -31,12 +31,25 @@ DEFAULT_MODE_SCALE = 0.12
 DEFAULT_NORMALIZE = "max-full"
 DEFAULT_DPI = 240
 DEFAULT_OUTPUT_DIR = "results"
+DEFAULT_OUTPUT = None
 DEFAULT_ALLOW_LOW_MAC = False
 DEFAULT_BETA_STEPS = 200
 DEFAULT_MU_STEPS = 260
 DEFAULT_MAX_REFINEMENT_DEPTH = 8
 DEFAULT_MIN_BETA_STEP = 1e-3
 DEFAULT_MIN_MU_STEP = 1e-4
+DEFAULT_TITLE_PREFIX = "Полные аналитические формы: потомок 5-й изгибной ветви"
+DEFAULT_INCLUDE_GEOMETRY_IN_LEGEND = True
+DEFAULT_SHOW_TITLE = True
+DEFAULT_SHOW_LEGEND = True
+DEFAULT_AXIS_OFF = False
+
+CASE_COLOR_BY_EPSILON = {
+    0.0025: "#1f77b4",
+    0.005: "#d62728",
+    0.01: "#2ca02c",
+}
+FALLBACK_CASE_COLORS = ["#1f77b4", "#d62728", "#2ca02c", "#9467bd", "#ff7f0e"]
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -70,6 +83,7 @@ NUM_SAMPLES = 401
 CONSISTENCY_TOL = 1e-7
 CLAMP_TOL = 1e-9
 FIGSIZE = (8.6, 4.8)
+AXIS_OFF_PAD_INCHES = 0.015
 SUMMARY_FILENAME = "analytic_full_shapes_desc05_beta15_eps_sweep_summary.csv"
 KNOWN_DIAGNOSTIC_BETA = 15.0
 KNOWN_DIAGNOSTIC_MU = 0.8
@@ -127,6 +141,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--normalize", default=DEFAULT_NORMALIZE, choices=("max-full",))
     parser.add_argument("--dpi", type=int, default=DEFAULT_DPI)
     parser.add_argument("--output-dir", default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument(
+        "--output",
+        default=DEFAULT_OUTPUT,
+        help="Optional PNG output path for a single configured mu value.",
+    )
     parser.add_argument("--l-total", type=float, default=DEFAULT_L_TOTAL)
     parser.add_argument("--n-track", type=int, default=DEFAULT_N_TRACK)
     parser.add_argument("--n-solve", type=int, default=DEFAULT_N_SOLVE)
@@ -161,6 +180,39 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Minimum mu step allowed during adaptive tracking refinement.",
     )
     parser.add_argument("--shape-metric", default=DEFAULT_SHAPE_METRIC, choices=("full", "transverse"))
+    parser.add_argument(
+        "--case-root-labels",
+        type=int,
+        nargs="+",
+        default=None,
+        help="Optional legend root labels, one per epsilon. Labels only; tracking still uses branch_id.",
+    )
+    parser.add_argument("--title-prefix", default=DEFAULT_TITLE_PREFIX)
+    parser.add_argument(
+        "--no-title",
+        dest="show_title",
+        action="store_false",
+        default=DEFAULT_SHOW_TITLE,
+        help="Omit the in-figure title while keeping all calculations unchanged.",
+    )
+    parser.add_argument(
+        "--no-legend",
+        dest="show_legend",
+        action="store_false",
+        default=DEFAULT_SHOW_LEGEND,
+        help="Omit the in-figure legend while keeping all plotted curves unchanged.",
+    )
+    parser.add_argument(
+        "--axis-off",
+        action="store_true",
+        default=DEFAULT_AXIS_OFF,
+        help="Hide axes, ticks, frame, labels, and grid for article mode-shape panels.",
+    )
+    parser.add_argument(
+        "--hide-geometry-legend",
+        action="store_true",
+        help="Keep the undeformed dashed geometry in the plot but omit it from the legend.",
+    )
     parser.add_argument("--save-tracking-debug", action="store_true", help="Write disposable tracking CSVs under results/debug/.")
     parser.add_argument(
         "--check-known-contradiction",
@@ -187,6 +239,12 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         parser.error("--epsilons must contain at least one value.")
     if any(epsilon <= 0.0 for epsilon in args.epsilons):
         parser.error("--epsilons must be positive.")
+    if args.case_root_labels is not None and len(args.case_root_labels) != len(args.epsilons):
+        parser.error("--case-root-labels must contain exactly one value per --epsilons entry.")
+    if args.case_root_labels is not None and any(root_label <= 0 for root_label in args.case_root_labels):
+        parser.error("--case-root-labels must be positive.")
+    if args.output is not None and len(args.mus) != 1:
+        parser.error("--output can only be used when exactly one --mus value is configured.")
     if args.l_total <= 0.0:
         parser.error("--l-total must be positive.")
     if args.dpi <= 0:
@@ -227,6 +285,19 @@ def output_png_path(output_dir: Path, *, beta_deg: float, mu_value: float) -> Pa
         f"analytic_full_shapes_desc05_beta{filename_number_token(beta_deg)}"
         f"_mu{filename_number_token(mu_value)}_eps_sweep.png"
     )
+
+
+def case_color(epsilon: float, fallback_index: int) -> str:
+    for reference_epsilon, color in CASE_COLOR_BY_EPSILON.items():
+        if abs(float(epsilon) - reference_epsilon) <= 1e-12:
+            return color
+    return FALLBACK_CASE_COLORS[int(fallback_index) % len(FALLBACK_CASE_COLORS)]
+
+
+def case_legend_label(epsilon: float, current_index: int, root_label: int | None) -> str:
+    if root_label is not None:
+        return f"ε = {float(epsilon):g}, root = {int(root_label)}"
+    return f"ε = {float(epsilon):g}, current index = {int(current_index)}"
 
 
 def debug_csv_path(
@@ -435,11 +506,17 @@ def plot_mu_panel(
     mu_value: float,
     epsilons: Sequence[float],
     current_indices: Sequence[int],
+    case_root_labels: Sequence[int] | None,
     components_by_epsilon: Sequence[dict[str, np.ndarray]],
     s_norm: np.ndarray,
     l_total: float,
     mode_scale: float,
     dpi: int,
+    title_prefix: str,
+    show_title: bool,
+    show_legend: bool,
+    axis_off: bool,
+    include_geometry_in_legend: bool,
 ) -> None:
     beta_rad = float(np.deg2rad(beta_deg))
     x_left_base, y_left_base, x_right_base, y_right_base = base_coordinates(
@@ -456,18 +533,19 @@ def plot_mu_panel(
         l_total=l_total,
         mode_scale=mode_scale,
     )
-    colors = ["#1f77b4", "#d62728", "#2ca02c", "#9467bd", "#ff7f0e"]
     fig, ax = plt.subplots(figsize=FIGSIZE)
     ax.plot(x_left_base, y_left_base, color="0.68", linestyle="--", linewidth=1.1)
     ax.plot(x_right_base, y_right_base, color="0.68", linestyle="--", linewidth=1.1)
 
-    legend_handles: list[Line2D] = [
-        Line2D([0], [0], color="0.68", linestyle="--", linewidth=1.1, label="недеформированная геометрия")
-    ]
+    legend_handles: list[Line2D] = []
+    if include_geometry_in_legend:
+        legend_handles.append(
+            Line2D([0], [0], color="0.68", linestyle="--", linewidth=1.1, label="недеформированная геометрия")
+        )
     for idx, (epsilon, current_index, components) in enumerate(
         zip(epsilons, current_indices, components_by_epsilon)
     ):
-        color = colors[idx % len(colors)]
+        color = case_color(float(epsilon), idx)
         x_left, y_left, x_right, y_right = deformed_coordinates(
             components=components,
             s_norm=s_norm,
@@ -476,27 +554,40 @@ def plot_mu_panel(
             l_total=l_total,
             mode_scale=mode_scale,
         )
-        label = f"ε = {float(epsilon):g}, current index = {int(current_index)}"
+        root_label = None if case_root_labels is None else int(case_root_labels[idx])
+        label = case_legend_label(float(epsilon), int(current_index), root_label)
         ax.plot(x_left, y_left, color=color, linewidth=2.1)
         ax.plot(x_right, y_right, color=color, linewidth=2.1)
         legend_handles.append(Line2D([0], [0], color=color, linewidth=2.1, label=label))
 
     ax.scatter([x_left_base[-1]], [y_left_base[-1]], color="black", s=14, zorder=5)
-    ax.set_title(
-        "Полные аналитические формы: потомок 5-й изгибной ветви\n"
-        f"β = {float(beta_deg):g}°, μ = {mu_label(mu_value)}",
-        fontsize=11,
-    )
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
+    if show_title:
+        ax.set_title(
+            f"{title_prefix}\n"
+            f"β = {float(beta_deg):g}°, μ = {mu_label(mu_value)}",
+            fontsize=11,
+        )
     ax.set_aspect("equal", adjustable="box")
     ax.set_xlim(*x_limits)
     ax.set_ylim(*y_limits)
-    ax.grid(True, alpha=0.20)
-    ax.legend(handles=legend_handles, fontsize=9, loc="best")
-    fig.tight_layout(pad=0.9)
+    if axis_off:
+        ax.axis("off")
+        ax.set_frame_on(False)
+    else:
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.grid(True, alpha=0.20)
+    if show_legend and legend_handles:
+        ax.legend(handles=legend_handles, fontsize=9, loc="best")
+    if axis_off:
+        fig.subplots_adjust(left=0.0, right=1.0, bottom=0.0, top=1.0)
+    else:
+        fig.tight_layout(pad=0.9)
     output_png.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(output_png, dpi=dpi, bbox_inches="tight")
+    save_kwargs = {"dpi": dpi, "bbox_inches": "tight"}
+    if axis_off:
+        save_kwargs["pad_inches"] = AXIS_OFF_PAD_INCHES
+    fig.savefig(output_png, **save_kwargs)
     plt.close(fig)
 
 
@@ -576,6 +667,7 @@ def print_known_contradiction_diagnostic(
 def main(argv: Sequence[str] | None = None) -> list[dict[str, float | int | str]]:
     args = parse_args(argv)
     output_dir = resolve_repo_path(args.output_dir)
+    output_override = resolve_repo_path(args.output) if args.output is not None else None
     branch_id = branch_id_from_base_sorted_index(int(args.branch_number))
     s_norm = np.linspace(0.0, 1.0, NUM_SAMPLES)
     summary_rows: list[dict[str, float | int | str]] = []
@@ -616,7 +708,7 @@ def main(argv: Sequence[str] | None = None) -> list[dict[str, float | int | str]
             debug_paths.append(result.write_debug_csv(path, branch_id=branch_id))
 
     for mu_value in args.mus:
-        output_png = output_png_path(output_dir, beta_deg=float(args.beta), mu_value=float(mu_value))
+        output_png = output_override or output_png_path(output_dir, beta_deg=float(args.beta), mu_value=float(mu_value))
         components_for_mu: list[dict[str, np.ndarray]] = []
         current_indices_for_mu: list[int] = []
         reference_components: dict[str, np.ndarray] | None = None
@@ -650,11 +742,17 @@ def main(argv: Sequence[str] | None = None) -> list[dict[str, float | int | str]
             mu_value=float(mu_value),
             epsilons=[float(value) for value in args.epsilons],
             current_indices=current_indices_for_mu,
+            case_root_labels=args.case_root_labels,
             components_by_epsilon=components_for_mu,
             s_norm=s_norm,
             l_total=float(args.l_total),
             mode_scale=float(args.mode_scale),
             dpi=int(args.dpi),
+            title_prefix=str(args.title_prefix),
+            show_title=bool(args.show_title),
+            show_legend=bool(args.show_legend),
+            axis_off=bool(args.axis_off),
+            include_geometry_in_legend=not bool(args.hide_geometry_legend),
         )
 
     summary_path = output_dir / SUMMARY_FILENAME

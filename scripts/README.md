@@ -72,6 +72,64 @@ Branch-selecting Lambda(mu) plots should use the shared analytic branch tracker.
 
 The solid lines are the first `--num-modes` canonical analytic branches seeded at `beta = 0`, `mu = 0`; dashed CS reference families use `--num-dashed-lines` roots per family. The CSV records the displayed line rank, canonical `branch_id`, `base_sorted_index`, `current_sorted_index`, and `Lambda` at each plotted `mu`. No full tracking debug CSV is saved by default. If the shared tracker detects a low-MAC assignment on a displayed branch, ordinary plotting fails fast; `--allow-low-mac` is only for exploratory diagnostics.
 
+### Article Figure 3 diagnostic with FP and FF references
+
+- Task: rebuild the article Figure 3 spectral plot as a results-only diagnostic and add fixed-fixed single-rod references alongside the existing clamped-pinned references.
+- Command: `python scripts/analysis/plot_article_fig3_with_fp_and_ff_refs.py`
+- Results: `results/article_fig3_with_fp_and_ff_refs.png` and `results/article_fig3_with_fp_and_ff_refs.csv`.
+- Use when: you need the article Figure 3 data and style, but with both FP (`clamped-pinned`) and FF (`clamped-clamped`) variable-length single-rod dashed reference families.
+- Do not use when: you are regenerating article figures; this script does not write `paper_dorofeev_style/figures/` and does not update `main.tex`.
+
+The coupled analytic curves, FEM markers, axes, labels, mu grid, and original FP reference counts are reused from `paper_dorofeev_style/generate_article_spectral_figures.py`. FF reference curves use the same single-rod length logic, with `L+ = l(1+mu)` and `L- = l(1-mu)`, and roots of `cosh(alpha) cos(alpha) = 1`.
+
+### Thickness-mismatch diagnostic model
+
+- Task: run the diagnostic-only analytic model for two circular rods with
+  different radii under the mass-preserving `eta=(r2-r1)/(r1+r2)`
+  parameterization.
+- Command: `python scripts/analysis/check_thickness_mismatch_eta_zero_limit.py`,
+  `python scripts/analysis/plot_lambda_eta_thickness_mismatch.py`, and
+  `python scripts/analysis/track_lambda_eta_thickness_mismatch.py`; for
+  fixed-eta `Lambda(mu)` tracking, run
+  `python scripts/analysis/track_lambda_mu_thickness_mismatch_eta_sweep.py`
+- Results: `results/thickness_mismatch_eta_zero_roots_check.csv`,
+  `results/thickness_mismatch_swap_symmetry_check.csv`,
+  `results/thickness_mismatch_lambda_eta_beta15_eps0p0025.png`,
+  `results/thickness_mismatch_lambda_eta_beta15_eps0p0025.csv`, plus the
+  optional `Lambda(mu)` eta-sweep PNG/CSV, and tracked-branch outputs
+  `results/thickness_mismatch_lambda_eta_beta15_eps0p0025_tracked.*` plus
+  `results/thickness_mismatch_lambda_eta_tracking_report.md`; fixed-eta
+  `Lambda(mu)` tracking writes
+  `results/thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_sweep_tracked.csv`,
+  `results/thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_sweep_tracked.png`,
+  and `results/thickness_mismatch_lambda_mu_eta_sweep_tracking_report.md`.
+- Use when: you need initial sorted-root diagnostics for radius mismatch while
+  preserving total mass and the equal-radius `eta=0` limit.
+- Do not use when: you need the baseline equal-radius article model, FEM
+  outputs, or article figure regeneration.
+
+The determinant lives in `src/my_project/analytic/formulas_thickness_mismatch.py`
+and leaves `src/my_project/analytic/formulas.py`, the FEM model, and the article
+workflow unchanged. The first `Lambda(eta)` plot uses sorted roots; near veering
+or close interactions the sorted root index can switch branch identity. Use
+`track_lambda_eta_thickness_mismatch.py` to seed branches at `eta=0` and continue
+them to positive and negative eta by unique nearest-root matching. The model is
+diagnostic-only; do not infer physical conclusions from these plots without a
+separate validation pass. The fixed-eta `Lambda(mu)` tracker seeds each
+`eta=-0.1, 0, 0.1` case at `mu=0`; for `mu>0`, `eta=0.1` makes the longer
+second rod thicker, while `eta=-0.1` makes the shorter first rod thicker.
+
+### Fixed-beta analytic Lambda(mu) plot with fixed-fixed L=2 reference
+
+- Task: plot article-style first-six analytic `Lambda(mu)` curves at `beta = 15 deg` or `beta = 45 deg`, `epsilon = 0.01`, and `Ltot = 2 m`, replacing the old variable-length CS reference families with six horizontal single-beam fixed-fixed references for `L = 2 m`.
+- Command: `python scripts/run/run_lambda_mu_beta15_eps001_fixed_fixed_ref.py --beta 15` and `python scripts/run/run_lambda_mu_beta15_eps001_fixed_fixed_ref.py --beta 45`
+- Main parameters: `--beta`, `--epsilon`, `--L-total`, `--num-modes`, `--mu-min`, `--mu-max`, `--mu-step`, `--y-max`, `--style-split-mu`, `--output`, `--csv-output`, `--ref-csv-output`, `--show`, `--allow-low-mac`.
+- Results: deterministic article-style paths such as `results/lambda_mu_beta15_eps0p01_fixed_fixed_L2_compact_mu06split_article.png`, `results/lambda_mu_beta15_eps0p01_fixed_fixed_L2_compact_mu06split_article.csv`, and `results/lambda_mu_beta15_eps0p01_fixed_fixed_L2_compact_mu06split_article_refs.csv`; `--beta 45` writes matching `beta45` paths.
+- Use when: you need the analytic-only beta-15 or beta-45, epsilon-0.01 figure with fixed-fixed single-rod `L = 2 m` reference lines.
+- Do not use when: you need the old CS variable-length dashed families; use `scripts/run/run_lambda_mu_fixed_beta_analytic.py` for that unchanged default behavior.
+
+The compact plot uses `ylim = [0, 11.2]` by default, Russian axis labels (`Параметр асимметрии μ`, `Безразмерный частотный параметр Λ`), no in-figure title, and no legend. Coupled branches are drawn solid for `mu <= 0.6` and dashed for `mu > 0.6` to mark the region where the shorter arm is no longer confidently treated as thin; this is a plotting convention only and does not change branch tracking or `Lambda` values. The main CSV records this as `region_style`. The reference CSV records the first `--num-modes` roots of `cosh(alpha) cos(alpha) = 1` and the plotted horizontal values `Lambda_ref = alpha l / Lref`; with `Ltot = Lref = 2 m` and `l = 1 m`, this is `Lambda_ref = alpha / 2`. Axial fixed-fixed single-rod references are reported as a diagnostic in stdout but are not plotted.
+
 ### Analytic coupled-rods mode shape
 
 - Task: build one analytic mode shape directly from the determinant nullspace, without FEM comparison.
@@ -240,6 +298,28 @@ This mode forms `D_total_FEM = D_left_FEM + D_right_FEM_global` from the existin
 
 The script compares determinant roots near the exact clamped-clamped bending roots `alpha_n/2`, reconstructs the determinant null-vector shape in the current left/right coefficient convention, compares it against the exact beam shape on `x in [0,2]`, embeds the reconstructed determinant shape into the existing two-arm FEM model at `beta=0`, and reports FEM residual/Rayleigh diagnostics plus `mu`-invariance spreads. It is diagnostic postprocessing only and does not modify the determinant, formulas, solvers, FEM baseline, physical model, or eigenfrequencies.
 
+### Mu -> 1 single-rod limit diagnostic
+
+- Task: check whether the thin-rod coupled-system roots approach a single long-arm rod as `mu -> 1`, and compare clamped-pinned (FP) against clamped-clamped (FF) reference families.
+- Command: `python scripts/analysis/check_mu_to_one_single_rod_limit.py --epsilon 0.0025 --betas 10 45 90 --mus 0.8 0.9 0.95 0.98 0.99 --num-roots 12`
+- Main parameters: `--epsilon`, `--betas`, `--mus`, `--num-roots`, `--include-fem`, `--no-include-fem`.
+- Results: `results/mu_to_one_single_rod_limit_roots.csv`, optional `results/mu_to_one_single_rod_limit_fem_roots.csv`, `results/mu_to_one_single_rod_limit_branches.csv` when branch tracking is available for `bending_desc_01`, `bending_desc_02`, and `bending_desc_04`, `results/mu_to_one_single_rod_limit_report.md`, and one simple diagnostic PNG per beta.
+- Use when: you need to test whether the `mu -> 1` limiting interpretation is closer to FP or FF single-rod boundary conditions, and whether finite `L2=1+mu` explains `mu=0.9/0.95` better than the limiting `L=2`.
+
+This is diagnostic postprocessing only. It compares sorted analytic roots and, by default, a sorted FEM cross-check from the current production FEM against 12 numerically computed FP and FF reference alpha roots. The default `--num-roots` is also 12 so the plotted system roots cover the same visible mode count as the reference families. The script validates the computed prefixes against the known FP values `3.9266, 7.0686, 10.2102` and FF values `4.730040744862704, 7.853204624095838, 10.99560783800167`. It does not modify the determinant, `formulas.py`, `solvers.py`, `python_fem.py`, the FEM physical model, article prose, or article figure styling.
+
+The diagnostic analytic root scan uses `scan_step=0.01` internally so the default 12 displayed roots are recovered in the high-`mu` cases.
+
+### Fixed-mu Lambda(beta) diagnostic
+
+- Task: check whether changing the coupling angle `beta` at fixed `mu` produces branch approach or sorted-index exchange in `Lambda(beta)`.
+- Command: `python scripts/analysis/plot_lambda_vs_beta_fixed_mu.py --epsilon 0.0025 --mus 0 0.2 0.5 0.8 0.9 --beta-min 0 --beta-max 90 --beta-step 1 --num-roots 8`
+- Main parameters: `--epsilon`, `--mus`, `--beta-min`, `--beta-max`, `--beta-step`, `--num-roots`, `--output-dir`.
+- Results: `results/lambda_beta_fixed_mu_eps0p0025.csv`, `results/lambda_beta_fixed_mu_branch_paths_eps0p0025.csv`, `results/lambda_beta_fixed_mu_report.md`, and one PNG per fixed `mu`.
+- Use when: you need to separate beta-driven coupling-strength effects from mu-driven detuning sweeps.
+
+The script uses canonical analytic branch tracking from `beta = 0`, `mu = 0` by first continuing to the requested fixed `mu` at `beta = 0`, then sweeping `beta`. It is diagnostic postprocessing only and does not modify the determinant, `formulas.py`, `solvers.py`, `python_fem.py`, FEM physical model, article prose, or article figure styling.
+
 ### Single-beam exact-shape FEM residual sanity check
 
 - Task: verify that the FEM residual normalization and exact-shape embedding pass simple single-member tests before interpreting coupled-rods analytic-in-FEM residuals.
@@ -271,12 +351,30 @@ python scripts/analysis/validate_article_shape_cases_beta15.py --branch-ids bend
 
 - Task: plot analytic full mode shapes for the fifth analytic bending descendant at `beta = 15 deg` over several `epsilon` values.
 - Command: `python scripts/analysis/plot_desc05_full_shapes_beta15_eps_sweep.py`
-- Main parameters: edit the script `USER PARAMETERS` block or use `--branch-number`, `--beta`, `--mus`, `--epsilons`, `--mode-scale`, `--output-dir`, `--beta-steps`, `--mu-steps`, `--max-refinement-depth`, `--min-beta-step`, `--min-mu-step`, `--shape-metric`, `--save-tracking-debug`, `--allow-low-mac`, `--check-known-contradiction`.
+- Main parameters: edit the script `USER PARAMETERS` block or use `--branch-number`, `--beta`, `--mus`, `--epsilons`, `--case-root-labels`, `--title-prefix`, `--no-title`, `--no-legend`, `--axis-off`, `--output`, `--mode-scale`, `--output-dir`, `--beta-steps`, `--mu-steps`, `--max-refinement-depth`, `--min-beta-step`, `--min-mu-step`, `--shape-metric`, `--save-tracking-debug`, `--allow-low-mac`, `--check-known-contradiction`.
 - Results: by default one PNG per configured `mu` value and `results/analytic_full_shapes_desc05_beta15_eps_sweep_summary.csv`.
 - Use when: you need discussion figures for the analytic branch seeded as root/branch number 5 at `beta = 0`, `mu = 0`.
 - Do not use when: you need FEM descendant tracking or FEM-based root selection.
 
 For each `epsilon`, the script starts independently at `beta = 0`, `mu = 0`, selects the requested analytic base root number, then calls `scripts/lib/analytic_branch_tracking.py` to track by global assignment over sampled-shape MAC. No FEM Lambda is used for selecting analytic roots. The summary CSV records `branch_id`, `base_sorted_index`, `current_sorted_index`, Lambda, MAC diagnostics, analytic energy fractions, and review flags. Full tracking-path CSVs are not written by default; pass `--save-tracking-debug` to write disposable debug files under `results/debug/`. Low-MAC assignments fail fast unless `--allow-low-mac` is passed for an explicit diagnostic run; at larger `beta`, adaptive refinement runs first, and users can tune `--max-refinement-depth`, `--min-beta-step`, and `--min-mu-step`. If canonical tracking still fails, the helper writes a one-case `results/debug/analytic_tracking_failure_*.csv` when possible. The known-contradiction diagnostic is opt-in via `--check-known-contradiction` and is only relevant to the historical `beta=15`, `epsilon=0.0025`, `mu=0.8` case.
+
+For the two-case beta=15, `mu=0.6` vibration-shape figure with `epsilon=0.0025, root=6` and `epsilon=0.01, root=5`, use the fixed wrapper:
+
+```bash
+python scripts/run/run_analytic_coupled_rods_vibration_shapes_beta15_mu06_eps0025_001_ru.py
+```
+
+This wrapper removes the intermediate `epsilon=0.005` case, keeps the same branch-tracking and shape reconstruction workflow, leaves the undeformed gray dashed geometry on the plot, omits that geometry from the legend, and writes `results/vibration_shapes_descendant5_beta15_mu0p6_eps0p0025_0p01.png`.
+Edit the `USER PARAMETERS` block at the top of the wrapper to change `beta`,
+`mu`, epsilon/root-label pairs, output path, title, mode scale, DPI, or tracking
+grid parameters.
+
+For article-local figure regeneration with no in-figure title and no legend,
+use `paper_dorofeev_style/generate_descendant5_vibration_shape_figures.py`;
+it writes the PNG to `paper_dorofeev_style/figures/`, hides axes/grid/frame in
+the same mode-shape-panel style as the local `target_descendants` figures, and
+delegates all calculation and branch tracking to the same desc05 analysis
+plotter.
 
 ### Branchwise FEM audit
 
@@ -298,6 +396,13 @@ For each `epsilon`, the script starts independently at `beta = 0`, `mu = 0`, sel
 | `scripts/analysis/check_analytic_shape_in_fem_residual.py` | analysis/diagnostic | Embed a canonically tracked analytic shape into the FEM DOF vector and compute direct FEM residual/global DOF diagnostics. | `python scripts/analysis/check_analytic_shape_in_fem_residual.py --branch-id bending_desc_05 --beta 15 --mu 0.2 --epsilon 0.0025` | keep in `scripts/analysis/` |
 | `scripts/analysis/check_beta0_single_rod_limit.py` | analysis/diagnostic | Check current determinant roots and SVD null-vector reconstruction against the beta=0 single clamped-clamped rod limit. | `python scripts/analysis/check_beta0_single_rod_limit.py` | keep in `scripts/analysis/` |
 | `scripts/analysis/check_fem_right_transform_variants.py` | analysis/diagnostic | Reassemble diagnostic FEM right-arm transform variants and compare determinant-null shapes against each corrected-convention variant. | `python scripts/analysis/check_fem_right_transform_variants.py` | keep in `scripts/analysis/` |
+| `scripts/analysis/check_mu_to_one_single_rod_limit.py` | analysis/diagnostic | Compare thin-rod `mu -> 1` sorted roots with 12-mode FP/FF single-rod references using finite `L2=1+mu` and limiting `L=2` lengths. | `python scripts/analysis/check_mu_to_one_single_rod_limit.py --epsilon 0.0025 --betas 10 45 90 --mus 0.8 0.9 0.95 0.98 0.99 --num-roots 12` | keep in `scripts/analysis/` |
+| `scripts/analysis/check_thickness_mismatch_eta_zero_limit.py` | analysis/diagnostic | Check the diagnostic mass-preserving thickness-mismatch determinant against the equal-radius eta=0 limit and swap symmetry. | `python scripts/analysis/check_thickness_mismatch_eta_zero_limit.py` | keep in `scripts/analysis/` |
+| `scripts/analysis/plot_article_fig3_with_fp_and_ff_refs.py` | analysis/diagnostic | Build a results-only article Figure 3 diagnostic with both clamped-pinned and clamped-clamped single-rod reference families. | `python scripts/analysis/plot_article_fig3_with_fp_and_ff_refs.py` | keep in `scripts/analysis/` |
+| `scripts/analysis/plot_lambda_eta_thickness_mismatch.py` | analysis/diagnostic | Plot sorted-root Lambda(eta) and Lambda(mu) diagnostics for the mass-preserving thickness-mismatch model. | `python scripts/analysis/plot_lambda_eta_thickness_mismatch.py` | keep in `scripts/analysis/` |
+| `scripts/analysis/plot_lambda_vs_beta_fixed_mu.py` | analysis/diagnostic | Plot canonically tracked analytic `Lambda(beta)` branches at fixed `mu` values and report adjacent-gap/sorted-index-exchange diagnostics. | `python scripts/analysis/plot_lambda_vs_beta_fixed_mu.py --epsilon 0.0025 --mus 0 0.2 0.5 0.8 0.9 --beta-min 0 --beta-max 90 --beta-step 1 --num-roots 8` | keep in `scripts/analysis/` |
+| `scripts/analysis/track_lambda_eta_thickness_mismatch.py` | analysis/diagnostic | Track the first six thickness-mismatch branches from eta=0 to positive/negative eta and compare against same-index sorted roots. | `python scripts/analysis/track_lambda_eta_thickness_mismatch.py` | keep in `scripts/analysis/` |
+| `scripts/analysis/track_lambda_mu_thickness_mismatch_eta_sweep.py` | analysis/diagnostic | Track the first six thickness-mismatch `Lambda(mu)` branches from mu=0 to 0.9 for eta=-0.1, 0, and 0.1, with sorted-index switch and eta-sensitivity diagnostics. | `python scripts/analysis/track_lambda_mu_thickness_mismatch_eta_sweep.py` | keep in `scripts/analysis/` |
 | `scripts/analysis/check_single_beam_exact_shape_residual.py` | analysis/diagnostic | Sanity-check FEM residual/Rayleigh convergence on exact single-beam bending and axial-bar modes. | `python scripts/analysis/check_single_beam_exact_shape_residual.py` | keep in `scripts/analysis/` |
 | `scripts/analysis/compare_joint_dynamic_stiffness_analytic_fem.py` | analysis/diagnostic | Compare per-arm FEM Schur-complement joint dynamic stiffness with full-basis analytic arm response, with optional determinant force-row audit. | `python scripts/analysis/compare_joint_dynamic_stiffness_analytic_fem.py --branch-id bending_desc_05 --beta 15 --mu 0.2 --epsilon 0.0025` | keep in `scripts/analysis/` |
 | `scripts/analysis/compare_analytic_fem_tracked_descendant_shape.py` | analysis/diagnostic | Compare analytic determinant-nullspace local components with one tracked FEM descendant shape. | `python scripts/analysis/compare_analytic_fem_tracked_descendant_shape.py --branch-number 5 --beta 30 --mu 0 --epsilon 0.0025` | keep in `scripts/analysis/` |
@@ -316,6 +421,7 @@ For each `epsilon`, the script starts independently at `beta = 0`, `mu = 0`, sel
 | `scripts/plot_mu_sweep_beta_fixed_four_radii_compare.py` | presentation/figure | Four-radius `mu` sweep for fixed positive beta values. | `python scripts/run/run_mu_sweep_fixed_beta_four_radii.py` | keep root; wrapper in `scripts/run/` |
 | `scripts/plot_mu_sweep_radius_fixed_four_betas_analytic.py` | presentation/figure | Analytic-only `mu` sweeps for selected betas at fixed radius. | `python scripts/run/run_mu_sweep_four_betas_analytic.py --betas 15 30 45 60` | keep root; wrapper in `scripts/run/` |
 | `scripts/run/run_analytic_coupled_rods_mode_shape_ru.py` | main user-facing command | Build one analytic coupled-rods mode shape directly from the determinant nullspace. | `python scripts/run/run_analytic_coupled_rods_mode_shape_ru.py` | keep |
+| `scripts/run/run_analytic_coupled_rods_vibration_shapes_beta15_mu06_eps0025_001_ru.py` | main user-facing command | Build the two-case beta=15, mu=0.6 descendant-5 vibration-shape overlay for epsilon 0.0025/root 6 and epsilon 0.01/root 5. | `python scripts/run/run_analytic_coupled_rods_vibration_shapes_beta15_mu06_eps0025_001_ru.py` | keep |
 | `scripts/plot_tracked_bending_descendant_shapes_ru.py` | main user-facing command | Parameterized Russian mode-shape plot for tracked bending descendants. | `python scripts/run/run_tracked_bending_descendant_shapes_ru.py --branch-id bending_desc_01` | keep root; wrapper in `scripts/run/` |
 | `scripts/plot_freq_mu_vs_fem.py` | one-off/obsolete | Older beta=15 frequency comparison against `results/fem_spectrum.csv`. | `python scripts/plot_freq_mu_vs_fem.py` | archive candidate after manual review |
 

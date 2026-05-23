@@ -1,7 +1,164 @@
 # CHANGELOG
 
+## 2026-05-23
+
+- Added a diagnostic-only mass-preserving thickness-mismatch analytic model with
+  `eta=(r2-r1)/(r1+r2)`, a separate determinant implementation in
+  `src/my_project/analytic/formulas_thickness_mismatch.py`, eta=0/root/swap
+  checks, Lambda(eta) diagnostic plots, and
+  `docs/thickness_mismatch/README.md`, leaving the baseline equal-radius
+  determinant, FEM model, article files, and article figures unchanged.
+- Added `scripts/analysis/track_lambda_eta_thickness_mismatch.py` to seed the
+  first six thickness-mismatch branches at `eta=0`, continue them to positive
+  and negative eta by unique nearest-root matching, and write tracked-vs-sorted
+  CSV/PNG diagnostics plus `results/thickness_mismatch_lambda_eta_tracking_report.md`
+  without changing the baseline determinant, solvers, FEM model, article files,
+  or article figures.
+- Added `scripts/analysis/track_lambda_mu_thickness_mismatch_eta_sweep.py` to
+  track the first six mass-preserving thickness-mismatch `Lambda(mu)` branches
+  from `mu=0` to `mu=0.9` for `eta=-0.1, 0, 0.1`, writing diagnostic CSV/PNG
+  outputs and `results/thickness_mismatch_lambda_mu_eta_sweep_tracking_report.md`
+  with eta=0 consistency, sorted-index switch, gap, jump, and eta-sensitivity
+  summaries.
+- Added `scripts/analysis/plot_article_fig3_with_fp_and_ff_refs.py` to build a
+  results-only diagnostic version of article Figure 3 with the original
+  clamped-pinned single-rod references and an additional clamped-clamped
+  single-rod reference family, writing only
+  `results/article_fig3_with_fp_and_ff_refs.png` and the matching CSV.
+
+## 2026-05-18
+
+- Restored automatic equation numbering and `\eqref`/`\ref` cross-references in
+  `paper_dorofeev_style/main.tex` after the article file rename, preserving
+  formula content, figure files, bibliography, and mathematical model.
+- Converted manually tagged equations in
+  `paper_dorofeev_style/dorofeev_article_journal_template.tex` to automatic
+  LaTeX equation numbering with `\label`/`\eqref`, preserving formula content,
+  order, notation, figures, bibliography, and article conclusions.
+- Rebalanced article Figure 8 layout in
+  `paper_dorofeev_style/generate_descendant5_vibration_shape_figures.py` by
+  padding only panel view limits to a shared aspect before saving
+  `Dorofeev.Fig.8.eps` and a preview PDF, keeping beta, mu, epsilon,
+  mode-scale, branch tracking, reconstructed shapes, and beta=45 deg geometry
+  unchanged.
+- Added `paper_dorofeev_style/dorofeev_article_journal_template.tex` as a
+  single-file journal-template article draft assembled from the current
+  article text, final EPS figures, and manual literature/References lists, with
+  missing required metadata marked as `to do` and no changes to formulas,
+  plotted data, figures, determinant, solver logic, FEM model, or branch
+  tracking.
+- Finalized the current article figure set as journal-ready EPS files
+  `Dorofeev.Fig.1.eps` through `Dorofeev.Fig.8.eps`, updated article LaTeX
+  paths to those final names, removed preview/test/variant article figure
+  outputs, and converted multipanel article figures into one EPS file per
+  figure without changing plotted data, determinant, solver logic, FEM model,
+  or branch tracking.
+- Fixed Figure 2 marker styling by making the colored FEM markers edge-free in
+  the final `Dorofeev.Fig.2.eps`, preserving marker size, point count,
+  coordinates, analytic curves, plotted data, determinant, solver logic, FEM
+  model, and branch tracking.
+- Improved article Figure 2 EPS output quality by saving the primary EPS
+  directly from matplotlib at 600 dpi and tightening Figure 2 line/tick/spine
+  styling while keeping all plotted data, branch identities, FEM markers,
+  determinant, solver logic, and branch tracking unchanged.
+- Updated article Figure 2 generation to write `Dorofeev.Fig.2.eps`, use
+  math-only axis labels `\beta` in degrees and `\Lambda`, and render the
+  right-edge branch numbers in black italic without changing the analytic/FEM
+  data, branch set, determinant, solver logic, FEM model, or branch tracking.
+
+## 2026-05-13
+
+- Updated the descendant-5 vibration-shape article generator to use the same
+  axis-free panel styling as the local `target_descendants_beta15_r5` figures,
+  and added an `--axis-off` styling flag to the shared desc05 full-shape plotter
+  to hide axes, ticks, frame, labels, and grid without changing calculations or
+  plotted shapes.
+- Added `paper_dorofeev_style/generate_descendant5_vibration_shape_figures.py`
+  to regenerate descendant-5 vibration-shape article figures into
+  `paper_dorofeev_style/figures/` from a top-of-file `USER PARAMETERS` block,
+  using the existing desc05 analytic full-shape workflow with article styling
+  defaults of no in-figure title and no legend; the shared plotter now exposes
+  `--no-title` and `--no-legend` styling flags, with no determinant,
+  `formulas.py`, `solvers.py`, `python_fem.py`, FEM physical model, branch
+  tracking, shape reconstruction, or mathematical changes.
+
 ## 2026-05-11
 
+- Updated `scripts/run/run_analytic_coupled_rods_vibration_shapes_beta15_mu06_eps0025_001_ru.py`
+  so beta, mu, epsilon/root-label cases, output path, title, mode scale, DPI,
+  and tracking-grid parameters are edited through a top-of-file `USER
+  PARAMETERS` block; no determinant, `formulas.py`, `solvers.py`,
+  `python_fem.py`, FEM physical model, branch tracking, shape reconstruction,
+  or mathematical changes were made.
+- Added `scripts/run/run_analytic_coupled_rods_vibration_shapes_beta15_mu06_eps0025_001_ru.py`
+  for the two-case descendant-5 vibration-shape overlay at beta=15 deg and
+  `mu=0.6` (`epsilon=0.0025, root=6` and `epsilon=0.01, root=5`), and extended
+  the existing desc05 analytic full-shape sweep plotter with optional
+  case-root legend labels, single-PNG `--output`, title-prefix control, and
+  geometry-legend hiding; the same analytic branch tracking, shape
+  reconstruction, normalization, root search, and sampling grid are reused, with
+  no determinant, `formulas.py`, `solvers.py`, `python_fem.py`, FEM physical
+  model, or mathematical changes.
+- Updated the article-local fixed-fixed reference figure generator so its beta
+  values, sweep parameters, compact y-limit, and axis labels are edited through
+  a top-of-file configuration block; the article x-axis label is now
+  `Параметр μ`, with no determinant, `formulas.py`, `solvers.py`,
+  `python_fem.py`, FEM physical model, branch tracking, or mathematical
+  changes.
+- Added `paper_dorofeev_style/generate_fixed_fixed_reference_spectral_figures.py`
+  so the compact beta=15 deg and beta=45 deg fixed-fixed reference
+  `Lambda(mu)` article figures can be regenerated directly into
+  `paper_dorofeev_style/figures/`, reusing the existing analytic-only plotting
+  workflow without determinant, `formulas.py`, `solvers.py`, `python_fem.py`,
+  FEM physical model, branch tracking, or mathematical changes.
+- Updated the compact fixed-fixed reference plotting workflow to generate
+  separate article-style `Lambda(mu)` outputs for beta=15 deg and beta=45 deg,
+  using Russian axis labels, no in-figure title, no legend, compact
+  `ylim = [0, 11.2]`, solid coupled branches for `mu <= 0.6`, dashed coupled
+  branches for `mu > 0.6`, and full-range dotted fixed-fixed bending
+  references only; no determinant, `formulas.py`, `solvers.py`,
+  `python_fem.py`, FEM physical model, branch tracking, or mathematical
+  changes were made.
+- Updated `scripts/run/run_lambda_mu_beta15_eps001_fixed_fixed_ref.py` to
+  write separate compact article-style outputs with `ylim = [0, 11.2]`, keep
+  fixed-fixed reference lines dotted over the full `mu` range, and draw the
+  same tracked coupled branches solid for `mu <= 0.6` and dashed for
+  `mu > 0.6`; the main CSV now records `region_style`, with no determinant,
+  `formulas.py`, `solvers.py`, `python_fem.py`, FEM physical model, branch
+  tracking, or mathematical changes.
+- Added `scripts/run/run_lambda_mu_beta15_eps001_fixed_fixed_ref.py` to plot
+  the first six beta=15 deg, epsilon=0.01 analytic `Lambda(mu)` branches with
+  six horizontal fixed-fixed single-beam `L = 2 m` reference lines, writing
+  PNG, main-curve CSV, and reference-root CSV outputs; the old CS
+  variable-length reference families and existing fixed-beta defaults remain
+  unchanged, with no determinant, `formulas.py`, `solvers.py`,
+  `python_fem.py`, FEM physical model, or article figure changes.
+- Added `scripts/analysis/plot_lambda_vs_beta_fixed_mu.py` to plot
+  canonically tracked analytic `Lambda(beta)` branches at fixed `mu` values,
+  writing sorted-root CSVs, focused branch-path CSVs, per-`mu` PNGs, and a
+  gap/exchange summary report for beta-driven veering diagnostics; no
+  determinant, `formulas.py`, `solvers.py`, `python_fem.py`, FEM physical
+  model, article prose, or article figure styling changes were made.
+- Updated the `mu -> 1` single-rod limit diagnostic to compute and plot 12
+  coupled-system roots by default, matching the 12-mode FP/FF reference set and
+  making the beta 10/45/90 plots visually comparable; the diagnostic root scan
+  now uses a finer `scan_step=0.01` to recover the 12th displayed root in the
+  high-mu cases without changing the determinant, `formulas.py`, `solvers.py`,
+  `python_fem.py`, FEM physical model, article prose, or article figure styling.
+- Expanded `scripts/analysis/check_mu_to_one_single_rod_limit.py` so the
+  clamped-pinned and clamped-clamped single-rod reference roots are computed
+  numerically through 12 modes, validated against known FP/FF prefixes, and
+  reported with an explicit comparison against the earlier first-five-reference
+  diagnostic; no determinant, `formulas.py`, `solvers.py`, `python_fem.py`,
+  FEM physical-model, article prose, or article figure-styling changes were
+  made.
+- Added `scripts/analysis/check_mu_to_one_single_rod_limit.py` to compare the
+  thin-rod `mu -> 1` coupled-system roots against clamped-pinned and
+  clamped-clamped single-rod references using both finite `L2 = 1 + mu` and
+  limiting `L = 2` lengths, with sorted-root CSVs, optional FEM cross-check,
+  branch-focused CSV, diagnostic plots, and a summary report; no determinant,
+  `formulas.py`, `solvers.py`, `python_fem.py`, FEM physical-model, article
+  prose, or article figure-styling changes were made.
 - Documented the public FEM right-arm transform convention in `AGENTS.md` and
   `scripts/README.md`, and kept generated/private article artifacts ignored;
   no determinant, `formulas.py`, `solvers.py`, FEM physical-model, article

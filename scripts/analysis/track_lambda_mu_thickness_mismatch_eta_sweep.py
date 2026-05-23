@@ -1,0 +1,606 @@
+from __future__ import annotations
+
+from pathlib import Path
+import sys
+from typing import Sequence
+
+import matplotlib
+
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = REPO_ROOT / "src"
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from my_project.analytic.formulas_thickness_mismatch import find_first_n_roots_eta  # noqa: E402
+from my_project.analytic.solvers import find_first_n_roots  # noqa: E402
+from scripts.analysis.track_lambda_eta_thickness_mismatch import (  # noqa: E402
+    unique_nearest_assignment,
+    write_csv,
+)
+
+
+RESULTS_DIR = REPO_ROOT / "results"
+TRACKED_CSV = RESULTS_DIR / "thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_sweep_tracked.csv"
+TRACKED_PNG = RESULTS_DIR / "thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_sweep_tracked.png"
+REPORT_MD = RESULTS_DIR / "thickness_mismatch_lambda_mu_eta_sweep_tracking_report.md"
+
+BETA_DEG = 15.0
+EPSILON = 0.0025
+ETA_VALUES = (-0.1, 0.0, 0.1)
+MU_VALUES = np.round(np.arange(0.0, 0.9000001, 0.01), 10)
+NUM_TRACKED_BRANCHES = 6
+NUM_SORTED_ROOTS = 12
+ROOT_SCAN_STEP = 0.01
+ROOT_LMAX0 = 35.0
+AMBIGUOUS_MARGIN_TOL = 1e-5
+
+TRACKED_FIELDNAMES = [
+    "beta_deg",
+    "epsilon",
+    "eta",
+    "mu",
+    "branch_index_from_mu0",
+    "Lambda_tracked",
+    "nearest_sorted_root_index",
+    "nearest_sorted_Lambda",
+    "abs_diff_to_nearest_sorted",
+    "tracking_step_status",
+    "min_gap_to_other_sorted_roots",
+    "distance_from_previous",
+    "second_nearest_distance",
+    "assignment_margin",
+]
+
+
+def roots_for(mu: float, eta: float, n_roots: int = NUM_SORTED_ROOTS) -> np.ndarray:
+    roots = find_first_n_roots_eta(
+        float(np.deg2rad(BETA_DEG)),
+        float(mu),
+        EPSILON,
+        float(eta),
+        int(n_roots),
+        Lmax0=ROOT_LMAX0,
+        scan_step=ROOT_SCAN_STEP,
+    )
+    if np.any(~np.isfinite(roots)):
+        raise RuntimeError(f"Missing roots for mu={mu:g}, eta={eta:g}.")
+    return roots
+
+
+def sorted_roots_by_eta_mu() -> dict[float, dict[float, np.ndarray]]:
+    by_eta: dict[float, dict[float, np.ndarray]] = {}
+    for eta in ETA_VALUES:
+        by_eta[float(eta)] = {}
+        for mu in MU_VALUES:
+            by_eta[float(eta)][float(mu)] = roots_for(float(mu), float(eta))
+    return by_eta
+
+
+def row_for_tracked(
+    *,
+    eta: float,
+    mu: float,
+    branch_index: int,
+    value: float,
+    roots: np.ndarray,
+    status: str,
+    distance_from_previous: float,
+    second_nearest_distance: float,
+    assignment_margin: float,
+) -> dict[str, float | int | str]:
+    distances = np.abs(roots - float(value))
+    nearest_idx = int(np.argmin(distances))
+    other_distances = np.delete(distances, nearest_idx)
+    min_gap = float(np.min(other_distances)) if len(other_distances) else np.inf
+    return {
+        "beta_deg": BETA_DEG,
+        "epsilon": EPSILON,
+        "eta": float(eta),
+        "mu": float(mu),
+        "branch_index_from_mu0": int(branch_index),
+        "Lambda_tracked": float(value),
+        "nearest_sorted_root_index": int(nearest_idx) + 1,
+        "nearest_sorted_Lambda": float(roots[nearest_idx]),
+        "abs_diff_to_nearest_sorted": float(distances[nearest_idx]),
+        "tracking_step_status": status,
+        "min_gap_to_other_sorted_roots": min_gap,
+        "distance_from_previous": float(distance_from_previous),
+        "second_nearest_distance": float(second_nearest_distance),
+        "assignment_margin": float(assignment_margin),
+    }
+
+
+def track_one_eta(
+    eta: float,
+    roots_by_mu: dict[float, np.ndarray],
+) -> tuple[list[dict[str, float | int | str]], np.ndarray]:
+    tracked = np.full((NUM_TRACKED_BRANCHES, len(MU_VALUES)), np.nan, dtype=float)
+    tracked[:, 0] = roots_by_mu[0.0][:NUM_TRACKED_BRANCHES]
+
+    rows: list[dict[str, float | int | str]] = []
+    for branch_idx, value in enumerate(tracked[:, 0], start=1):
+        rows.append(
+            row_for_tracked(
+                eta=eta,
+                mu=0.0,
+                branch_index=branch_idx,
+                value=float(value),
+                roots=roots_by_mu[0.0],
+                status="seed_mu0",
+                distance_from_previous=np.nan,
+                second_nearest_distance=np.nan,
+                assignment_margin=np.nan,
+            )
+        )
+
+    previous = tracked[:, 0].copy()
+    for col in range(1, len(MU_VALUES)):
+        mu = float(MU_VALUES[col])
+        roots = roots_by_mu[mu]
+        assignments = unique_nearest_assignment(previous, roots)
+        current = np.full(NUM_TRACKED_BRANCHES, np.nan, dtype=float)
+        for assignment in assignments:
+            value = float(roots[assignment.root_index - 1])
+            current[assignment.branch_index - 1] = value
+            status = "ok" if assignment.assignment_margin > AMBIGUOUS_MARGIN_TOL else "ambiguous"
+            rows.append(
+                row_for_tracked(
+                    eta=eta,
+                    mu=mu,
+                    branch_index=assignment.branch_index,
+                    value=value,
+                    roots=roots,
+                    status=status,
+                    distance_from_previous=assignment.distance_from_previous,
+                    second_nearest_distance=assignment.second_nearest_distance,
+                    assignment_margin=assignment.assignment_margin,
+                )
+            )
+        tracked[:, col] = current
+        previous = current
+
+    rows.sort(key=lambda row: (float(row["mu"]), int(row["branch_index_from_mu0"])))
+    return rows, tracked
+
+
+def plot_tracked(
+    *,
+    sorted_roots: dict[float, dict[float, np.ndarray]],
+    tracked_by_eta: dict[float, np.ndarray],
+    output: Path,
+) -> None:
+    fig, axes = plt.subplots(1, len(ETA_VALUES), figsize=(11.2, 3.8), sharey=True)
+    colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+    titles = {
+        -0.1: "$\\eta=-0.1$\nshorter rod thicker for $\\mu>0$",
+        0.0: "$\\eta=0$\nequal radii",
+        0.1: "$\\eta=0.1$\nlonger rod thicker for $\\mu>0$",
+    }
+    for ax, eta in zip(axes, ETA_VALUES, strict=True):
+        tracked = tracked_by_eta[float(eta)]
+        sorted_grid = np.column_stack(
+            [sorted_roots[float(eta)][float(mu)][:NUM_TRACKED_BRANCHES] for mu in MU_VALUES]
+        )
+        for branch_idx in range(NUM_TRACKED_BRANCHES):
+            color = colors[branch_idx % len(colors)]
+            ax.plot(MU_VALUES, sorted_grid[branch_idx], color=color, lw=0.8, ls=":", alpha=0.5)
+            ax.plot(
+                MU_VALUES,
+                tracked[branch_idx],
+                color=color,
+                lw=1.7,
+                label=f"branch {branch_idx + 1}" if ax is axes[0] else "_nolegend_",
+            )
+        ax.set_title(titles[float(eta)], fontsize=10)
+        ax.set_xlabel(r"$\mu$")
+        ax.grid(True, color="0.88", linewidth=0.6)
+    axes[0].set_ylabel(r"$\Lambda$")
+    axes[0].legend(loc="upper right", fontsize=8, frameon=False)
+    fig.suptitle(
+        rf"Tracked Lambda(mu), beta={BETA_DEG:g}$^\circ$, epsilon={EPSILON:g}; dotted = same sorted index",
+        fontsize=12,
+    )
+    fig.tight_layout()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output, dpi=240, bbox_inches="tight")
+    plt.close(fig)
+
+
+def compute_same_index_diffs(
+    sorted_roots: dict[float, dict[float, np.ndarray]],
+    tracked_by_eta: dict[float, np.ndarray],
+) -> list[dict[str, float | int]]:
+    diffs: list[dict[str, float | int]] = []
+    for eta in ETA_VALUES:
+        tracked = tracked_by_eta[float(eta)]
+        for branch_idx in range(NUM_TRACKED_BRANCHES):
+            for col, mu in enumerate(MU_VALUES):
+                sorted_value = sorted_roots[float(eta)][float(mu)][branch_idx]
+                tracked_value = tracked[branch_idx, col]
+                diffs.append(
+                    {
+                        "eta": float(eta),
+                        "mu": float(mu),
+                        "branch_index": int(branch_idx) + 1,
+                        "abs_diff": abs(float(sorted_value) - float(tracked_value)),
+                    }
+                )
+    return diffs
+
+
+def eta_zero_consistency(tracked_by_eta: dict[float, np.ndarray]) -> dict[str, float | int]:
+    tracked = tracked_by_eta[0.0]
+    max_nearest_diff = 0.0
+    max_same_index_diff = 0.0
+    max_nearest_mu = 0.0
+    max_nearest_branch = 1
+    max_same_mu = 0.0
+    max_same_branch = 1
+    for col, mu in enumerate(MU_VALUES):
+        old_roots = find_first_n_roots(
+            float(np.deg2rad(BETA_DEG)),
+            float(mu),
+            EPSILON,
+            NUM_SORTED_ROOTS,
+            Lmax0=ROOT_LMAX0,
+            scan_step=ROOT_SCAN_STEP,
+        )
+        if np.any(~np.isfinite(old_roots)):
+            raise RuntimeError(f"Missing baseline roots for eta=0 consistency at mu={mu:g}.")
+        for branch_idx in range(NUM_TRACKED_BRANCHES):
+            tracked_value = float(tracked[branch_idx, col])
+            nearest_diff = float(np.min(np.abs(old_roots - tracked_value)))
+            same_index_diff = abs(float(old_roots[branch_idx]) - tracked_value)
+            if nearest_diff > max_nearest_diff:
+                max_nearest_diff = nearest_diff
+                max_nearest_mu = float(mu)
+                max_nearest_branch = branch_idx + 1
+            if same_index_diff > max_same_index_diff:
+                max_same_index_diff = same_index_diff
+                max_same_mu = float(mu)
+                max_same_branch = branch_idx + 1
+    return {
+        "max_nearest_old_root_diff": max_nearest_diff,
+        "max_nearest_old_root_mu": max_nearest_mu,
+        "max_nearest_old_root_branch": max_nearest_branch,
+        "max_same_index_old_root_diff": max_same_index_diff,
+        "max_same_index_old_root_mu": max_same_mu,
+        "max_same_index_old_root_branch": max_same_branch,
+    }
+
+
+def swap_symmetry_sanity() -> dict[str, float | int]:
+    max_abs = 0.0
+    max_rel = 0.0
+    max_mu = 0.0
+    max_eta = 0.0
+    max_root = 1
+    for mu in (0.0, 0.3, 0.6, 0.9):
+        for eta in ETA_VALUES:
+            roots = roots_for(float(mu), float(eta), NUM_TRACKED_BRANCHES)
+            swapped = roots_for(-float(mu), -float(eta), NUM_TRACKED_BRANCHES)
+            for idx, (left, right) in enumerate(zip(roots, swapped, strict=True), start=1):
+                abs_diff = abs(float(left) - float(right))
+                rel_diff = abs_diff / max(abs(float(left)), abs(float(right)), 1e-15)
+                if abs_diff > max_abs:
+                    max_abs = abs_diff
+                    max_rel = rel_diff
+                    max_mu = float(mu)
+                    max_eta = float(eta)
+                    max_root = int(idx)
+    return {
+        "max_swap_abs_diff": max_abs,
+        "max_swap_rel_diff": max_rel,
+        "max_swap_mu": max_mu,
+        "max_swap_eta": max_eta,
+        "max_swap_root": max_root,
+    }
+
+
+def branch_sensitivity_rows(tracked_by_eta: dict[float, np.ndarray]) -> list[dict[str, float | int]]:
+    rows: list[dict[str, float | int]] = []
+    for branch_idx in range(NUM_TRACKED_BRANCHES):
+        values_by_eta = np.vstack([tracked_by_eta[float(eta)][branch_idx] for eta in ETA_VALUES])
+        spreads = np.max(values_by_eta, axis=0) - np.min(values_by_eta, axis=0)
+        max_col = int(np.argmax(spreads))
+        rows.append(
+            {
+                "branch_index": int(branch_idx) + 1,
+                "max_eta_spread": float(spreads[max_col]),
+                "max_eta_spread_mu": float(MU_VALUES[max_col]),
+                "spread_at_mu_0p9": float(spreads[-1]),
+                "eta_p0p1_minus_m0p1_at_mu_0p9": float(values_by_eta[2, -1] - values_by_eta[0, -1]),
+            }
+        )
+    rows.sort(key=lambda row: float(row["max_eta_spread"]), reverse=True)
+    return rows
+
+
+def jump_rows(tracked_by_eta: dict[float, np.ndarray]) -> list[dict[str, float | int]]:
+    rows: list[dict[str, float | int]] = []
+    for eta in ETA_VALUES:
+        tracked = tracked_by_eta[float(eta)]
+        jumps = np.abs(np.diff(tracked, axis=1))
+        for branch_idx in range(NUM_TRACKED_BRANCHES):
+            local_jumps = jumps[branch_idx]
+            max_col = int(np.argmax(local_jumps))
+            rows.append(
+                {
+                    "eta": float(eta),
+                    "branch_index": int(branch_idx) + 1,
+                    "max_adjacent_mu_jump": float(local_jumps[max_col]),
+                    "left_mu": float(MU_VALUES[max_col]),
+                    "right_mu": float(MU_VALUES[max_col + 1]),
+                }
+            )
+    rows.sort(key=lambda row: float(row["max_adjacent_mu_jump"]), reverse=True)
+    return rows
+
+
+def format_table(rows: Sequence[Sequence[str]]) -> list[str]:
+    if not rows:
+        return []
+    widths = [max(len(row[col]) for row in rows) for col in range(len(rows[0]))]
+    formatted = []
+    for idx, row in enumerate(rows):
+        formatted.append("| " + " | ".join(value.ljust(widths[col]) for col, value in enumerate(row)) + " |")
+        if idx == 0:
+            formatted.append("| " + " | ".join("-" * widths[col] for col in range(len(row))) + " |")
+    return formatted
+
+
+def build_report(
+    *,
+    tracked_rows: Sequence[dict[str, float | int | str]],
+    same_index_diffs: Sequence[dict[str, float | int]],
+    sensitivity_rows: Sequence[dict[str, float | int]],
+    jumps: Sequence[dict[str, float | int]],
+    eta_zero: dict[str, float | int],
+    swap: dict[str, float | int],
+    output: Path,
+) -> dict[str, float | int]:
+    max_diff_row = max(same_index_diffs, key=lambda row: float(row["abs_diff"]))
+    switches = [
+        row
+        for row in tracked_rows
+        if int(row["nearest_sorted_root_index"]) != int(row["branch_index_from_mu0"])
+    ]
+    ambiguous = [row for row in tracked_rows if str(row["tracking_step_status"]) == "ambiguous"]
+    close_rows = sorted(
+        (row for row in tracked_rows if str(row["tracking_step_status"]) != "seed_mu0"),
+        key=lambda row: float(row["min_gap_to_other_sorted_roots"]),
+    )[:8]
+
+    lines = [
+        "# Thickness-Mismatch Lambda(mu) Eta-Sweep Tracking Report",
+        "",
+        "## Setup",
+        "",
+        f"- beta: {BETA_DEG:g} deg",
+        f"- epsilon: {EPSILON:g}",
+        f"- eta values: {', '.join(f'{value:g}' for value in ETA_VALUES)}",
+        f"- mu range: {float(MU_VALUES[0]):g} .. {float(MU_VALUES[-1]):g}",
+        f"- mu step: {float(MU_VALUES[1] - MU_VALUES[0]):g}",
+        f"- tracked branches: first {NUM_TRACKED_BRANCHES} sorted roots at mu=0 for each eta",
+        "",
+        "For eta > 0 the second rod is thicker than the first. For mu > 0 the",
+        "second rod is also longer, so eta=0.1 is the case where the longer rod",
+        "is thicker, while eta=-0.1 is the case where the shorter rod is thicker.",
+        "",
+        "## Method",
+        "",
+        "For each fixed eta, branches are seeded at mu=0 and continued to mu=0.9.",
+        "Each step assigns previous branch values to current sorted candidate roots",
+        "by unique nearest-root matching. The CSV records nearest sorted index,",
+        "distance to the previous point, assignment margin, and local root gap.",
+        "",
+        "## Outputs",
+        "",
+        f"- tracked CSV: `{TRACKED_CSV.relative_to(REPO_ROOT)}`",
+        f"- tracked plot: `{TRACKED_PNG.relative_to(REPO_ROOT)}`",
+        "",
+        "## Checks",
+        "",
+        f"- eta=0 max nearest old-root difference: {float(eta_zero['max_nearest_old_root_diff']):.6e}",
+        f"- eta=0 max same-index old-root difference: {float(eta_zero['max_same_index_old_root_diff']):.6e}",
+        f"- swap-symmetry sorted-root sanity max abs diff: {float(swap['max_swap_abs_diff']):.6e}",
+        f"- swap-symmetry sorted-root sanity max rel diff: {float(swap['max_swap_rel_diff']):.6e}",
+        f"- max same-index sorted-vs-tracked difference: {float(max_diff_row['abs_diff']):.6e}",
+        (
+            "- max same-index difference location: "
+            f"eta={float(max_diff_row['eta']):g}, "
+            f"branch/root={int(max_diff_row['branch_index'])}, "
+            f"mu={float(max_diff_row['mu']):g}"
+        ),
+        f"- rows where nearest sorted index differs from mu=0 branch index: {len(switches)}",
+        f"- ambiguous nearest-root assignments: {len(ambiguous)}",
+        "",
+        "## Eta Sensitivity",
+        "",
+    ]
+
+    sensitivity_table = [["branch", "max eta spread", "at mu", "spread at mu=0.9", "eta=0.1 minus eta=-0.1 at mu=0.9"]]
+    for row in sensitivity_rows:
+        sensitivity_table.append(
+            [
+                str(int(row["branch_index"])),
+                f"{float(row['max_eta_spread']):.6e}",
+                f"{float(row['max_eta_spread_mu']):g}",
+                f"{float(row['spread_at_mu_0p9']):.6e}",
+                f"{float(row['eta_p0p1_minus_m0p1_at_mu_0p9']):.6e}",
+            ]
+        )
+    lines.extend(format_table(sensitivity_table))
+
+    top_sensitivity = sensitivity_rows[0]
+    lines.extend(
+        [
+            "",
+            (
+                "The largest eta spread on this grid is on branch "
+                f"{int(top_sensitivity['branch_index'])} near mu={float(top_sensitivity['max_eta_spread_mu']):g}. "
+                "This is a sensitivity diagnostic, not a physical conclusion."
+            ),
+            "",
+            "Qualitatively, the eta=-0.1, eta=0, and eta=0.1 curves separate in",
+            "a branch-dependent way; the largest spread on this grid need not occur",
+            "at the largest mu. At mu=0.9, eta=0.1 gives lower Lambda than eta=-0.1",
+            "for all six tracked branches in this diagnostic run.",
+            "",
+            "## Tracking Sanity",
+            "",
+        ]
+    )
+
+    jump_table = [["eta", "branch", "max adjacent mu jump", "left mu", "right mu"]]
+    for row in jumps[:10]:
+        jump_table.append(
+            [
+                f"{float(row['eta']):g}",
+                str(int(row["branch_index"])),
+                f"{float(row['max_adjacent_mu_jump']):.6e}",
+                f"{float(row['left_mu']):g}",
+                f"{float(row['right_mu']):g}",
+            ]
+        )
+    lines.extend(format_table(jump_table))
+
+    lines.extend(["", "Smallest local gaps to neighboring sorted roots:", ""])
+    gap_table = [["eta", "mu", "branch", "nearest sorted index", "min gap"]]
+    for row in close_rows:
+        gap_table.append(
+            [
+                f"{float(row['eta']):g}",
+                f"{float(row['mu']):g}",
+                str(int(row["branch_index_from_mu0"])),
+                str(int(row["nearest_sorted_root_index"])),
+                f"{float(row['min_gap_to_other_sorted_roots']):.6e}",
+            ]
+        )
+    lines.extend(format_table(gap_table))
+
+    lines.extend(["", "## Suspected Sorted-Index Switches", ""])
+    if switches:
+        switch_table = [["eta", "mu", "branch from mu=0", "nearest sorted index", "Lambda tracked"]]
+        for row in switches[:24]:
+            switch_table.append(
+                [
+                    f"{float(row['eta']):g}",
+                    f"{float(row['mu']):g}",
+                    str(int(row["branch_index_from_mu0"])),
+                    str(int(row["nearest_sorted_root_index"])),
+                    f"{float(row['Lambda_tracked']):.8g}",
+                ]
+            )
+        lines.extend(format_table(switch_table))
+        if len(switches) > 24:
+            lines.append("")
+            lines.append(f"Only the first 24 of {len(switches)} switch rows are shown.")
+    else:
+        lines.append("No sorted-index switches were detected for the tracked branches on this mu grid.")
+
+    if ambiguous:
+        lines.extend(["", "## Ambiguous Assignments", ""])
+        ambiguous_table = [["eta", "mu", "branch", "assignment margin", "distance from previous"]]
+        for row in ambiguous[:24]:
+            ambiguous_table.append(
+                [
+                    f"{float(row['eta']):g}",
+                    f"{float(row['mu']):g}",
+                    str(int(row["branch_index_from_mu0"])),
+                    f"{float(row['assignment_margin']):.6e}",
+                    f"{float(row['distance_from_previous']):.6e}",
+                ]
+            )
+        lines.extend(format_table(ambiguous_table))
+
+    lines.extend(
+        [
+            "",
+            "These are diagnostic observations only. The script does not change the",
+            "baseline determinant, solvers, FEM model, article files, or article figures.",
+            "",
+        ]
+    )
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text("\n".join(lines), encoding="utf-8")
+    return {
+        "eta_zero_max_nearest_old_root_diff": float(eta_zero["max_nearest_old_root_diff"]),
+        "eta_zero_max_same_index_old_root_diff": float(eta_zero["max_same_index_old_root_diff"]),
+        "swap_max_abs_diff": float(swap["max_swap_abs_diff"]),
+        "swap_max_rel_diff": float(swap["max_swap_rel_diff"]),
+        "max_same_index_diff": float(max_diff_row["abs_diff"]),
+        "switch_count": len(switches),
+        "ambiguous_count": len(ambiguous),
+        "top_sensitive_branch": int(top_sensitivity["branch_index"]),
+        "top_sensitive_spread": float(top_sensitivity["max_eta_spread"]),
+        "top_sensitive_mu": float(top_sensitivity["max_eta_spread_mu"]),
+        "max_adjacent_mu_jump": float(jumps[0]["max_adjacent_mu_jump"]),
+        "max_adjacent_mu_jump_eta": float(jumps[0]["eta"]),
+        "max_adjacent_mu_jump_branch": int(jumps[0]["branch_index"]),
+    }
+
+
+def main() -> dict[str, Path | float | int]:
+    sorted_roots = sorted_roots_by_eta_mu()
+    tracked_rows: list[dict[str, float | int | str]] = []
+    tracked_by_eta: dict[float, np.ndarray] = {}
+
+    for eta in ETA_VALUES:
+        rows, tracked = track_one_eta(float(eta), sorted_roots[float(eta)])
+        tracked_rows.extend(rows)
+        tracked_by_eta[float(eta)] = tracked
+
+    write_csv(TRACKED_CSV, tracked_rows, TRACKED_FIELDNAMES)
+    plot_tracked(sorted_roots=sorted_roots, tracked_by_eta=tracked_by_eta, output=TRACKED_PNG)
+
+    same_index_diffs = compute_same_index_diffs(sorted_roots, tracked_by_eta)
+    sensitivity = branch_sensitivity_rows(tracked_by_eta)
+    jumps = jump_rows(tracked_by_eta)
+    eta_zero = eta_zero_consistency(tracked_by_eta)
+    swap = swap_symmetry_sanity()
+    report = build_report(
+        tracked_rows=tracked_rows,
+        same_index_diffs=same_index_diffs,
+        sensitivity_rows=sensitivity,
+        jumps=jumps,
+        eta_zero=eta_zero,
+        swap=swap,
+        output=REPORT_MD,
+    )
+
+    print(f"saved tracked Lambda(mu) CSV: {TRACKED_CSV}")
+    print(f"saved tracked Lambda(mu) plot: {TRACKED_PNG}")
+    print(f"saved tracking report: {REPORT_MD}")
+    print(f"eta=0 max nearest old-root diff: {float(report['eta_zero_max_nearest_old_root_diff']):.6e}")
+    print(f"eta=0 max same-index old-root diff: {float(report['eta_zero_max_same_index_old_root_diff']):.6e}")
+    print(f"swap symmetry sanity max abs diff: {float(report['swap_max_abs_diff']):.6e}")
+    print(f"max same-index sorted-vs-tracked diff: {float(report['max_same_index_diff']):.6e}")
+    print(f"sorted-index switch rows: {int(report['switch_count'])}")
+    print(f"ambiguous nearest-root assignments: {int(report['ambiguous_count'])}")
+    print(
+        "largest eta sensitivity: "
+        f"branch={int(report['top_sensitive_branch'])}, "
+        f"mu={float(report['top_sensitive_mu']):g}, "
+        f"spread={float(report['top_sensitive_spread']):.6e}"
+    )
+
+    return {
+        "tracked_csv": TRACKED_CSV,
+        "tracked_png": TRACKED_PNG,
+        "report_md": REPORT_MD,
+        **report,
+    }
+
+
+if __name__ == "__main__":
+    main()
