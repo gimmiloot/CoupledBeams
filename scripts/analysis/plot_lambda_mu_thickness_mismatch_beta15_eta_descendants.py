@@ -149,19 +149,6 @@ def plot_cases(cases: dict[float, dict[str, object]]) -> None:
                 zorder=3,
             )
 
-        x_warn, y_warn = warning_points(tracking.rows, float(eta))
-        if len(x_warn):
-            ax.scatter(
-                x_warn,
-                y_warn,
-                marker="x",
-                s=24,
-                linewidths=0.9,
-                color="black",
-                zorder=5,
-                label="tracking warning" if ax is axes[0] else None,
-            )
-
         ax.set_title(eta_title(float(eta)), fontsize=10)
         ax.set_xlabel(r"$\mu$")
         ax.grid(True, color="0.88", linewidth=0.6)
@@ -174,7 +161,6 @@ def plot_cases(cases: dict[float, dict[str, object]]) -> None:
     style_handles = [
         Line2D([0], [0], color="0.2", lw=1.8, ls="-", label=r"solid: $2r_i/l_i \leq 0.1$"),
         Line2D([0], [0], color="0.2", lw=1.8, ls="--", label="dashed: criterion violated"),
-        Line2D([0], [0], color="black", marker="x", lw=0.0, label="tracking warning"),
     ]
     fig.legend(
         handles=branch_handles + style_handles,
@@ -213,6 +199,9 @@ def write_report(cases: dict[float, dict[str, object]]) -> dict[str, object]:
         "diagnostic metadata only. Tracking uses adjacent-step analytic shape MAC.",
         "Low-MAC, low-margin, or large-jump candidates are warnings and do not",
         "automatically rename a branch.",
+        "Tracking warnings are retained in this report but are not drawn on the",
+        "presentation-style PNG; the figure shows only descendant branches and",
+        "the solid/dashed thin-rod applicability split.",
         "",
         f"- PNG: `{OUTPUT_PNG.relative_to(REPO_ROOT)}`",
         "",

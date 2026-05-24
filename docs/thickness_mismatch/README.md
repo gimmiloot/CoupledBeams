@@ -221,6 +221,15 @@ transformation.
   clamped-supported single-rod reference convention, adapted to the
   thickness-mismatch Lambda scaling as
   `Lambda=alpha*sqrt(tau_i)/(1 +/- mu)`.
+- `scripts/analysis/plot_lambda_mu_thickness_mismatch_beta45_eta_p0p5_with_isolated_rods.py`
+  repeats the same eta=0.5 isolated-rod diagnostic at `beta=45 deg` and
+  reports a cautious nearest-reference-grid comparison against the beta-15
+  case.
+- `scripts/analysis/plot_lambda_mu_thickness_mismatch_beta45_eta_p0p5_with_isolated_rods_fixed_fixed.py`
+  repeats the beta-45 eta=0.5 isolated-rod diagnostic with
+  clamped-clamped / fixed-fixed single-rod references. It changes only the
+  isolated-rod alpha roots, preserving the same eta-model Lambda scaling
+  `Lambda=alpha*sqrt(tau_i)/(1 +/- mu)`.
 - `scripts/analysis/plot_thickness_mismatch_branch5_shapes.py` reconstructs
   full analytic deformed shapes for tracked branch 5 in the thickness-mismatch
   model. It tracks branch 5 from `mu=0` separately for each configured eta,

@@ -8,6 +8,15 @@
   overlay, and an eta=0.5 descendant plot with clamped-supported isolated-rod
   reference curves, all preserving the diameter-based applicability rule and
   branch-descendant convention.
+- Added a diagnostic-only beta-45 eta=0.5 thickness-mismatch `Lambda(mu)` plot
+  with descendant branches and the same clamped-supported isolated-rod
+  reference convention, including the `sqrt(tau_i)` thickness-mismatch Lambda
+  normalization and a cautious beta-45 vs beta-15 nearest-reference-grid
+  observation.
+- Added a separate diagnostic-only beta-45 eta=0.5 isolated-rod plot using
+  clamped-clamped / fixed-fixed single-rod references, preserving the same
+  descendant tracking, thin-rod applicability split, and `sqrt(tau_i)`
+  thickness-mismatch Lambda normalization while writing distinct output files.
 - Added `docs/project_rules.md` as the central project-wide rules document and
   linked it from the root README, theory assumptions, thickness-mismatch docs,
   veering docs, and scripts helper guides.

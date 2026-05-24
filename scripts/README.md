@@ -125,6 +125,11 @@ The coupled analytic curves, FEM markers, axes, labels, mu grid, and original FP
   For eta=0.5 descendant branches with isolated clamped-supported rod
   references, run
   `python scripts/analysis/plot_lambda_mu_thickness_mismatch_eta_p0p5_with_isolated_rods.py`.
+  For the analogous beta-45 eta=0.5 isolated-rod diagnostic, run
+  `python scripts/analysis/plot_lambda_mu_thickness_mismatch_beta45_eta_p0p5_with_isolated_rods.py`.
+  For the beta-45 eta=0.5 variant with clamped-clamped / fixed-fixed
+  isolated-rod references, run
+  `python scripts/analysis/plot_lambda_mu_thickness_mismatch_beta45_eta_p0p5_with_isolated_rods_fixed_fixed.py`.
 - Results: `results/thickness_mismatch_eta_zero_roots_check.csv`,
   `results/thickness_mismatch_swap_symmetry_check.csv`,
   `results/thickness_mismatch_lambda_eta_beta15_eps0p0025.png`,
@@ -170,6 +175,14 @@ The coupled analytic curves, FEM markers, axes, labels, mu grid, and original FP
   `results/thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_p0p5_with_isolated_rods.png`
   and
   `results/thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_p0p5_with_isolated_rods_report.md`.
+  The beta-45 eta=0.5 isolated-rod reference diagnostic writes
+  `results/thickness_mismatch_lambda_mu_beta45_eps0p0025_eta_p0p5_with_isolated_rods.png`
+  and
+  `results/thickness_mismatch_lambda_mu_beta45_eps0p0025_eta_p0p5_with_isolated_rods_report.md`.
+  The beta-45 fixed-fixed isolated-rod reference diagnostic writes
+  `results/thickness_mismatch_lambda_mu_beta45_eps0p0025_eta_p0p5_with_isolated_rods_fixed_fixed.png`
+  and
+  `results/thickness_mismatch_lambda_mu_beta45_eps0p0025_eta_p0p5_with_isolated_rods_fixed_fixed_report.md`.
 - Use when: you need initial sorted-root diagnostics for radius mismatch while
   preserving total mass and the equal-radius `eta=0` limit.
 - Do not use when: you need the baseline equal-radius article model, FEM
