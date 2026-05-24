@@ -7,6 +7,7 @@ CoupledBeams is a research repository for frequency models and computations for 
 - `docs/project_rules.md` -- global project rules for branch identity,
   diagnostics, thin-rod applicability, model-extension checks, and FEM
   comparison conventions.
+- `docs/writing/` -- diagnostic-to-article workflow notes.
 
 - `docs/theory/` — verified local theory, equations, assumptions, and theory notes.
 - `docs/literature/` — literature PDFs, source notes, and bibliography material.
@@ -14,6 +15,10 @@ CoupledBeams is a research repository for frequency models and computations for 
 - `src/my_project/fem/` — baseline FEM implementation.
 - `tests/` — smoke tests and local verification helpers.
 - `results/` — generated computational outputs and tables.
+
+- `paper_thickness_mismatch_timoshenko/` -- skeleton for a planned
+  thickness-mismatch / Timoshenko article; diagnostic-only until figures and
+  claims are explicitly promoted.
 
 ## Analytic Layer
 

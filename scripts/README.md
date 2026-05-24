@@ -1,6 +1,8 @@
 # Scripts guide
 
-This directory keeps the historical script names working, but the preferred entry points are now in `scripts/run/`.
+This directory keeps the historical script names working. Most baseline
+presentation entry points are in `scripts/run/`, while some diagnostic-only
+families, including thickness mismatch, still use `scripts/analysis/`.
 The original root-level scripts remain in place because many scripts import each other through `scripts.*`; moving them now would require broad import churn with no numerical benefit.
 
 Project-wide rules for branch identity, diagnostic workflow, thin-rod
@@ -99,129 +101,26 @@ The coupled analytic curves, FEM markers, axes, labels, mu grid, and original FP
 
 ### Thickness-mismatch diagnostic model
 
-- Task: run the diagnostic-only analytic model for two circular rods with
-  different radii under the mass-preserving `eta=(r2-r1)/(r1+r2)`
-  parameterization.
-- Command: `python scripts/analysis/check_thickness_mismatch_eta_zero_limit.py`,
-  `python scripts/analysis/plot_lambda_eta_thickness_mismatch.py`, and
-  `python scripts/analysis/track_lambda_eta_thickness_mismatch.py`; for
-  fixed-eta single-beta `Lambda(mu)` tracking, edit the user-parameter block in
-  `scripts/analysis/track_lambda_mu_thickness_mismatch_eta_sweep.py`, then run
-  `python scripts/analysis/track_lambda_mu_thickness_mismatch_eta_sweep.py`.
-  For the large-eta beta-15 diagnostic with shape-MAC tracking and a
-  diameter-based thin-rod solid/dashed split, run
-  `python scripts/analysis/plot_lambda_mu_thickness_mismatch_beta15_eta_large_slenderness.py`.
-  For the eta=0.5 FEM frequency/MAC check, run
-  `python scripts/analysis/fem_check_thickness_mismatch_eta_p0p5_beta15.py`.
-  For the eta=0.5 refined descendant-branch identity audit, run
-  `python scripts/analysis/check_thickness_mismatch_branch_identity_eta_p0p5.py`.
-  For the eta=0.5 global sorted-spectrum/descendant overview, run
-  `python scripts/analysis/plot_thickness_mismatch_eta_p0p5_global_spectrum.py`.
-  For the current beta-15 eta-sweep descendant plot with the diameter-based
-  solid/dashed split, run
-  `python scripts/analysis/plot_lambda_mu_thickness_mismatch_beta15_eta_descendants.py`.
-  For the eta=0.5 analytic-vs-FEM frequency overlay, run
-  `python scripts/analysis/plot_thickness_mismatch_fem_comparison_eta_p0p5_beta15.py`.
-  For eta=0.5 descendant branches with isolated clamped-supported rod
-  references, run
-  `python scripts/analysis/plot_lambda_mu_thickness_mismatch_eta_p0p5_with_isolated_rods.py`.
-  For the analogous beta-45 eta=0.5 isolated-rod diagnostic, run
-  `python scripts/analysis/plot_lambda_mu_thickness_mismatch_beta45_eta_p0p5_with_isolated_rods.py`.
-  For the beta-45 eta=0.5 variant with clamped-clamped / fixed-fixed
-  isolated-rod references, run
-  `python scripts/analysis/plot_lambda_mu_thickness_mismatch_beta45_eta_p0p5_with_isolated_rods_fixed_fixed.py`.
-- Results: `results/thickness_mismatch_eta_zero_roots_check.csv`,
-  `results/thickness_mismatch_swap_symmetry_check.csv`,
-  `results/thickness_mismatch_lambda_eta_beta15_eps0p0025.png`,
-  `results/thickness_mismatch_lambda_eta_beta15_eps0p0025.csv`, plus the
-  optional `Lambda(mu)` eta-sweep PNG/CSV, and tracked-branch outputs
-  `results/thickness_mismatch_lambda_eta_beta15_eps0p0025_tracked.*` plus
-  `results/thickness_mismatch_lambda_eta_tracking_report.md`; fixed-eta
-  `Lambda(mu)` tracking writes a parameterized PNG such as
-  `results/thickness_mismatch_lambda_mu_beta7p5_eps0p0025_eta_sweep_tracked.png`.
-  Its CSV and Markdown report outputs are disabled by default and controlled by
-  `SAVE_CSV` and `SAVE_REPORT` in the script. For tracked branch-5 deformed
-  shape comparisons at `beta=15 deg`, run
-  `python scripts/analysis/plot_thickness_mismatch_branch5_shapes.py`. The
-  large-eta thin-rod applicability diagnostic writes
-  `results/thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_m0p5_0_p0p5_thickness_ratio_split.png`.
-  It also writes nearest-frequency-vs-MAC warning diagnostics to
-  `results/thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_m0p5_0_p0p5_mac_tracking_warnings.csv`
-  and
-  `results/thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_m0p5_0_p0p5_mac_tracking_report.md`.
-  The eta=0.5 FEM check writes
-  `results/thickness_mismatch_fem_check_beta15_eps0p0025_eta_p0p5.csv`,
-  `results/thickness_mismatch_fem_check_beta15_eps0p0025_eta_p0p5.png`, and
-  `results/thickness_mismatch_fem_check_beta15_eps0p0025_eta_p0p5_report.md`.
-  The eta=0.5 refined branch-identity audit writes
-  `results/thickness_mismatch_branch_identity_eta_p0p5_beta15_refined.csv`,
-  `results/thickness_mismatch_branch_identity_eta_p0p5_beta15_refined.png`, and
-  `results/thickness_mismatch_branch_identity_eta_p0p5_beta15_refined_report.md`.
-  The eta=0.5 global overview writes
-  `results/thickness_mismatch_eta_p0p5_beta15_global_spectrum_8modes.csv`,
-  `results/thickness_mismatch_eta_p0p5_beta15_global_spectrum_8modes.png`,
-  `results/thickness_mismatch_eta_p0p5_beta15_global_spectrum_8modes_zoom_4_8.png`,
-  and
-  `results/thickness_mismatch_eta_p0p5_beta15_global_spectrum_8modes_report.md`.
-  The current beta-15 eta-sweep descendant plot writes
-  `results/thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_m0p5_0_p0p5_descendants.png`
-  and
-  `results/thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_m0p5_0_p0p5_descendants_report.md`.
-  The eta=0.5 FEM overlay writes
-  `results/thickness_mismatch_fem_comparison_beta15_eps0p0025_eta_p0p5.png`
-  and
-  `results/thickness_mismatch_fem_comparison_beta15_eps0p0025_eta_p0p5_report.md`.
-  The eta=0.5 isolated-rod reference plot writes
-  `results/thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_p0p5_with_isolated_rods.png`
-  and
-  `results/thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_p0p5_with_isolated_rods_report.md`.
-  The beta-45 eta=0.5 isolated-rod reference diagnostic writes
-  `results/thickness_mismatch_lambda_mu_beta45_eps0p0025_eta_p0p5_with_isolated_rods.png`
-  and
-  `results/thickness_mismatch_lambda_mu_beta45_eps0p0025_eta_p0p5_with_isolated_rods_report.md`.
-  The beta-45 fixed-fixed isolated-rod reference diagnostic writes
-  `results/thickness_mismatch_lambda_mu_beta45_eps0p0025_eta_p0p5_with_isolated_rods_fixed_fixed.png`
-  and
-  `results/thickness_mismatch_lambda_mu_beta45_eps0p0025_eta_p0p5_with_isolated_rods_fixed_fixed_report.md`.
-- Use when: you need initial sorted-root diagnostics for radius mismatch while
-  preserving total mass and the equal-radius `eta=0` limit.
-- Do not use when: you need the baseline equal-radius article model, FEM
-  outputs, or article figure regeneration.
+Use the detailed map in `scripts/analysis/thickness_mismatch/README.md` for
+the full audit of current entry points, historical scripts, wrappers/TODOs,
+outputs, and helper ownership. Thickness-specific formulas and diagnostic
+notes live in `../docs/thickness_mismatch/README.md`.
 
-The determinant lives in `src/my_project/analytic/formulas_thickness_mismatch.py`
-and leaves `src/my_project/analytic/formulas.py`, the FEM model, and the article
-workflow unchanged. The first `Lambda(eta)` plot uses sorted roots; near veering
-or close interactions the sorted root index can switch branch identity. Use
-`track_lambda_eta_thickness_mismatch.py` to seed branches at `eta=0` and continue
-them to positive and negative eta by unique nearest-root matching. The model is
-diagnostic-only; do not infer physical conclusions from these plots without a
-separate validation pass. The fixed-eta `Lambda(mu)` tracker seeds each
-configured eta case at `mu=0`; for `mu>0`, `eta=0.1` makes the longer second
-rod thicker, while `eta=-0.1` makes the shorter first rod thicker. The tracker
-is intentionally a one-angle script: change `BETA_DEG` at the top of the file
-and run it once per desired angle. Its continuation uses adjacent-step
-analytic shape-MAC assignment; low-MAC assignments are marked, and
-nearest-frequency assignment is retained only as a warning diagnostic. The
-large-eta beta-15 script uses
-`eta=-0.5, 0, 0.5` and draws dashed tracked-branch segments where either rod
-violates `2r_i/l_i <= 0.1`; it tracks the first 10 branches, plots the first
-7, and is diagnostic-only, writing only the plot plus MAC-tracking
-warning/report outputs.
-All thickness-mismatch diagnostic applicability checks use the diameter-based
-rule `2*r_i/l_i <= 0.1` for each rod, not `r_i/l_i <= 0.1`; valid curve
-segments are solid, and segments where either rod violates the rule must be
-dashed with a warning/report that lists eta, mu range, rod number, and the
-maximum ratio.
-The eta=0.5 FEM check uses the same Euler-Bernoulli frame-element convention as
-`src/my_project/fem/python_fem.py`, but assembles a separate two-radius
-diagnostic model with arm-specific section factors, MAC-tracked analytic
-branches with low-MAC warnings, and a coarse/refined mesh comparison; it does
-not modify the existing FEM module.
-Use the refined branch-identity audit before interpreting any apparent
-sorted-position jump in descendants 5--7 as a real spectral-order change.
-Use the global eta=0.5 overview to inspect sorted-root gaps, descendant curves,
-accepted canonical sorted positions, and unresolved candidate assignments
-before changing tracking rules.
+| Task | Preferred command | Outputs | Notes |
+| --- | --- | --- | --- |
+| Eta-zero and swap checks | `python scripts/analysis/check_thickness_mismatch_eta_zero_limit.py` | `results/thickness_mismatch_eta_zero_roots_check.csv`, `results/thickness_mismatch_swap_symmetry_check.csv` | Sanity checks for the diagnostic eta extension. |
+| Clean beta-15 descendant eta sweep | `python scripts/analysis/plot_lambda_mu_thickness_mismatch_beta15_eta_descendants.py` | `results/thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_m0p5_0_p0p5_descendants.*` | Current presentation-style descendant plot. |
+| Eta=0.5 global spectrum overview | `python scripts/analysis/plot_thickness_mismatch_eta_p0p5_global_spectrum.py` | `results/thickness_mismatch_eta_p0p5_beta15_global_spectrum_8modes.*` | Sorted roots, descendants, canonical sorted positions, and unresolved candidates. |
+| Refined branch identity audit | `python scripts/analysis/check_thickness_mismatch_branch_identity_eta_p0p5.py` | `results/thickness_mismatch_branch_identity_eta_p0p5_beta15_refined.*` | Local audit for descendants 5--7. |
+| Eta=0.5 FEM overlay | `python scripts/analysis/plot_thickness_mismatch_fem_comparison_eta_p0p5_beta15.py` | `results/thickness_mismatch_fem_comparison_beta15_eps0p0025_eta_p0p5.*` | Lightweight analytic-descendant vs FEM marker plot. |
+| Isolated-rod references | See `scripts/analysis/thickness_mismatch/README.md` | beta-15/beta-45 CS/CP and beta-45 CC/FF outputs | Reference grids are interpretation aids and must state their boundary conditions. |
+
+All thickness-mismatch diagnostics are diagnostic-only. They leave
+`src/my_project/analytic/formulas.py`, old solvers, the baseline FEM model,
+article files, and article figures unchanged. Branches are descendant mode
+shapes seeded at the script start point, usually `mu=0`; sorted positions are
+metadata only. Thin-rod applicability uses the diameter criterion
+`2*r_i/l_i <= 0.1` for each rod, not `r_i/l_i <= 0.1`.
 
 ### Fixed-beta analytic Lambda(mu) plot with fixed-fixed L=2 reference
 
@@ -506,7 +405,7 @@ plotter.
 | `scripts/analysis/fem_check_thickness_mismatch_eta_p0p5_beta15.py` | analysis/diagnostic | Compare eta=0.5 thickness-mismatch analytic sorted/MAC-tracked Lambda values against a separate two-radius FEM diagnostic and branch-5/6/7 MAC check. | `python scripts/analysis/fem_check_thickness_mismatch_eta_p0p5_beta15.py` | keep in `scripts/analysis/` |
 | `scripts/analysis/plot_article_fig3_with_fp_and_ff_refs.py` | analysis/diagnostic | Build a results-only article Figure 3 diagnostic with both clamped-pinned and clamped-clamped single-rod reference families. | `python scripts/analysis/plot_article_fig3_with_fp_and_ff_refs.py` | keep in `scripts/analysis/` |
 | `scripts/analysis/plot_lambda_eta_thickness_mismatch.py` | analysis/diagnostic | Plot sorted-root Lambda(eta) and Lambda(mu) diagnostics for the mass-preserving thickness-mismatch model. | `python scripts/analysis/plot_lambda_eta_thickness_mismatch.py` | keep in `scripts/analysis/` |
-| `scripts/analysis/plot_lambda_mu_thickness_mismatch_beta15_eta_large_slenderness.py` | analysis/diagnostic | Plot the first seven displayed MAC-tracked large-eta thickness-mismatch `Lambda(mu)` branches at beta=15, tracking ten branches internally, with solid/dashed segments for the `2r_i/l_i <= 0.1` criterion and warning output when nearest-frequency tracking disagrees. | `python scripts/analysis/plot_lambda_mu_thickness_mismatch_beta15_eta_large_slenderness.py` | keep in `scripts/analysis/` |
+| `scripts/analysis/plot_lambda_mu_thickness_mismatch_beta15_eta_large_slenderness.py` | analysis/diagnostic | Plot the first seven displayed MAC-tracked large-eta thickness-mismatch `Lambda(mu)` branches at beta=15, tracking ten branches internally, with solid/dashed segments for the `2*r_i/l_i <= 0.1` criterion and warning output when nearest-frequency tracking disagrees. | `python scripts/analysis/plot_lambda_mu_thickness_mismatch_beta15_eta_large_slenderness.py` | keep in `scripts/analysis/` |
 | `scripts/analysis/plot_thickness_mismatch_eta_p0p5_global_spectrum.py` | analysis/diagnostic | Plot eta=0.5 global sorted-root and descendant-branch overview for the first eight modes, including accepted canonical sorted positions, unresolved candidate assignments, and tracking warning markers. | `python scripts/analysis/plot_thickness_mismatch_eta_p0p5_global_spectrum.py` | keep in `scripts/analysis/` |
 | `scripts/analysis/plot_thickness_mismatch_branch5_shapes.py` | analysis/diagnostic | Plot full deformed shapes for tracked thickness-mismatch branch 5 at beta=15, epsilon=0.0025, comparing eta=-0.1, 0, 0.1 for configured mu values. | `python scripts/analysis/plot_thickness_mismatch_branch5_shapes.py` | keep in `scripts/analysis/` |
 | `scripts/analysis/plot_lambda_vs_beta_fixed_mu.py` | analysis/diagnostic | Plot canonically tracked analytic `Lambda(beta)` branches at fixed `mu` values and report adjacent-gap/sorted-index-exchange diagnostics. | `python scripts/analysis/plot_lambda_vs_beta_fixed_mu.py --epsilon 0.0025 --mus 0 0.2 0.5 0.8 0.9 --beta-min 0 --beta-max 90 --beta-step 1 --num-roots 8` | keep in `scripts/analysis/` |

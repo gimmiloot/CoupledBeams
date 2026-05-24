@@ -381,7 +381,7 @@ def plot_overview(
     fig.text(
         0.5,
         0.01,
-        "Solid/dashed segments show 2r_i/l_i <= 0.1; accepted positions retain previous value when candidate tracking is unresolved.",
+        "Solid/dashed segments show 2*r_i/l_i <= 0.1; accepted positions retain previous value when candidate tracking is unresolved.",
         ha="center",
         fontsize=9,
     )

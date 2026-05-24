@@ -60,32 +60,14 @@ epsilon2 = epsilon tau2
 
 ## Branch and Mode Numbering Convention
 
-For the thickness-mismatch diagnostics, a branch is a descendant of a mode
-shape, not the k-th entry of the sorted spectrum at each parameter value.
+The project-wide convention is recorded in `../project_rules.md`: a branch is
+a descendant of a mode shape, while sorted position is diagnostic metadata. For
+fixed-eta thickness-mismatch `Lambda(mu)` diagnostics, the local tracking seed
+is usually `mu=0`.
 
-- `sorted mode k` or `k-th sorted frequency` means the k-th frequency in
-  increasing order at one fixed parameter point.
-- `descendant branch k` means the continuation of the k-th mode shape selected
-  at the tracking start point, usually `mu=0` for fixed-eta `Lambda(mu)`
-  diagnostics.
-- In this diagnostic study, `branch k` means `descendant branch k` unless a
-  script explicitly says it is plotting sorted roots.
-- The current sorted position of a descendant may change, but that sorted
-  position is diagnostic metadata. It is not the definition of branch identity.
-- A change of sorted position must be supported by local mode-shape/MAC
-  evidence. A jump over one or more neighboring sorted roots, such as a
-  descendant recorded as moving from sorted position 5 to 7 in one step, is a
-  suspicious assignment and requires a refined local mu-grid check before it is
-  interpreted as a real change of sorted position.
-- Low-MAC or low-margin assignments do not change the accepted descendant
-  identity and do not change the accepted canonical sorted position. They must
-  be recorded as unresolved candidate assignments; the previous canonical
-  sorted position is retained until a refined local analysis provides a
-  high-confidence continuation.
-
-MAC diagnostics can indicate possible ambiguity in the branch group 5--7. Such
-results should be reported as shape-assignment ambiguity until a refined local
-grid confirms or rejects the sorted-position change.
+Low-MAC, low-margin, and large-jump assignments are unresolved diagnostic
+candidates until a refined local shape/MAC audit accepts them. They must not
+rename descendant branches or change canonical branch identity.
 
 ## Thin-Rod Applicability Rule
 
@@ -107,9 +89,29 @@ thickness_ratio_2 = 2*r2/l2 = 4*epsilon*tau2/(1 + mu)
 ```
 
 A plotted curve segment is valid and drawn solid only when both ratios are at
-or below `0.1`. If either ratio exceeds `0.1`, the segment is drawn dashed and
-the script or report must warn with the eta value, the affected mu range, the
-rod number, and the maximum value of `2*r_i/l_i` on the computed grid.
+or below `0.1`. If either ratio exceeds `0.1`, the segment is drawn dashed.
+Warning/report requirements are project-wide and live in
+`../project_rules.md`.
+
+## Isolated-Rod Reference Curves
+
+Isolated-rod reference curves are interpretation aids, not proof of branch
+identity or modal exchange. Diagnostic scripts must state which boundary
+condition family is used.
+
+For the thickness-mismatch eta scaling, the isolated-rod references use the
+same project normalization as the coupled system:
+
+```text
+Lambda_rod_1 = alpha_n*sqrt(tau1)/(1 - mu)
+Lambda_rod_2 = alpha_n*sqrt(tau2)/(1 + mu)
+```
+
+The clamped-supported / clamped-pinned reference family uses the project
+convention already present in the diagnostic scripts, with roots of
+`tan(alpha)=tanh(alpha)`. The clamped-clamped / fixed-fixed reference family
+uses roots of `cosh(alpha) cos(alpha)=1` and the same eta-normalized
+`Lambda_rod_i` conversion above.
 
 ## Determinant Convention
 
@@ -162,6 +164,10 @@ transformation.
 
 ## Diagnostic Code
 
+For the current script audit, preferred entry points, historical diagnostics,
+and future wrapper/refactor TODOs, see
+`../../scripts/analysis/thickness_mismatch/README.md`.
+
 - `src/my_project/analytic/formulas_thickness_mismatch.py` implements
   `det_eta(Lambda, beta, mu, epsilon, eta)` and local root scanning helpers.
 - `scripts/analysis/check_thickness_mismatch_eta_zero_limit.py` checks mass
@@ -190,7 +196,7 @@ transformation.
   low-MAC warnings, stores warnings when nearest-frequency and MAC assignments
   differ, tracks the first 10 branches while plotting the first 7,
   and uses the common diameter-to-length helper, marking curve segments as dashed
-  whenever the thin-rod criterion `2r_i/l_i <= 0.1` is violated for either rod.
+  whenever the thin-rod criterion `2*r_i/l_i <= 0.1` is violated for either rod.
 - `scripts/analysis/fem_check_thickness_mismatch_eta_p0p5_beta15.py` performs a
   diagnostic-only FEM check for `eta=0.5`, `beta=15 deg`, and `epsilon=0.0025`.
   It uses the same planar Euler-Bernoulli frame-element convention as the
@@ -293,7 +299,7 @@ Run the fixed-eta `Lambda(mu)` tracking diagnostic with:
 python scripts/analysis/track_lambda_mu_thickness_mismatch_eta_sweep.py
 ```
 
-Run the large-eta `Lambda(mu)` diagnostic with the `2r_i/l_i <= 0.1`
+Run the large-eta `Lambda(mu)` diagnostic with the `2*r_i/l_i <= 0.1`
 solid/dashed split and shape-MAC tracking with:
 
 ```bash

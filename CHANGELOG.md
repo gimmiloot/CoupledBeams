@@ -2,6 +2,11 @@
 
 ## 2026-05-24
 
+- Added a conservative documentation cleanup for the diagnostic
+  thickness-mismatch series: a script audit/navigation map, a diagnostic-to-
+  article workflow note, a thickness-mismatch / Timoshenko article-writing
+  skill, and a skeleton `paper_thickness_mismatch_timoshenko/` article folder
+  without moving old scripts or changing numerical models.
 - Added three diagnostic-only thickness-mismatch plots for the beta-15,
   epsilon-0.0025 eta=0.5 study: a descendant `Lambda(mu)` eta sweep for
   `eta=-0.5, 0, 0.5`, an eta=0.5 analytic descendant vs FEM frequency

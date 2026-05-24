@@ -823,7 +823,7 @@ def build_report(
             "",
             "## Thickness Criterion",
             "",
-            f"- criterion: `2r_i/l_i <= {THICKNESS_RATIO_LIMIT:g}` for both rods",
+            f"- criterion: `2*r_i/l_i <= {THICKNESS_RATIO_LIMIT:g}` for both rods",
             f"- max ratio on checked grid: {max_ratio:.6g} "
             f"(rod {max_ratio_rod}, mu={max_ratio_mu:g})",
         ]
@@ -833,7 +833,7 @@ def build_report(
         for mu, rods in violations:
             lines.append(f"  - mu={mu:g}: rod(s) {', '.join(str(rod) for rod in rods)}")
     else:
-        lines.append("- no violations of `2r_i/l_i <= 0.1` were found on this FEM-check grid.")
+        lines.append("- no violations of `2*r_i/l_i <= 0.1` were found on this FEM-check grid.")
 
     lines.extend(
         [

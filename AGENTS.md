@@ -183,4 +183,12 @@ For article work in `paper_dorofeev_style/`, follow:
 - `skills/external_writing_general.md`
 - `skills/paper_dorofeev_style_article_writing.md`
 
+For the planned thickness-mismatch / Timoshenko article, follow:
+- `skills/external_writing_general.md`
+- `skills/thickness_mismatch_timoshenko_article_writing.md`
+
+The Dorofeev-style article skill is scoped to the current
+`paper_dorofeev_style/` article; the thickness-mismatch / Timoshenko skill is
+for the new planned article workflow.
+
 Keep `AGENTS.md` short; detailed writing rules belong in `skills/`.

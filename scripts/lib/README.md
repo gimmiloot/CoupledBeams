@@ -17,8 +17,15 @@ Project-wide branch identity and diagnostic-tracking rules are summarized in
 - `thickness_mismatch_diagnostic_helpers.py` collects plotting/report helpers
   for thickness-mismatch diagnostics: fixed-eta descendant tracking wrappers,
   diameter-to-length validity summaries, solid/dashed applicability plotting,
-  and the clamped-supported isolated-rod reference convention used in
-  diagnostic `Lambda(mu)` plots.
+  and isolated-rod reference utilities/conventions used in diagnostic
+  `Lambda(mu)` plots. Reference curves are interpretation aids and must state
+  their boundary-condition family, such as clamped-supported / clamped-pinned
+  (CS/CP) or clamped-clamped / fixed-fixed (CC/FF).
 - `tracked_bending_descendant_shapes.py` provides the shared tracked-state extraction, one-case normalization, one-case drawing, and output-path helpers used by both the single-shape and multi-panel tracked bending descendant commands.
+
+FEM comparison logic is intentionally split: reusable FEM model code stays in
+`../../src/my_project/fem/python_fem.py`, while diagnostic comparison and
+normalization notes remain local to the corresponding scripts/reports unless a
+future task asks for a shared helper.
 
 Some historical helpers remain at root-level paths, especially `scripts/sweep_grid_policy.py`, because moving them would require broader import updates with no numerical benefit.

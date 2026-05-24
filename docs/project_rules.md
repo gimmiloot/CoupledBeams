@@ -98,6 +98,8 @@ artifacts or baseline models.
   old solvers, or the baseline FEM physical model.
 - Diagnostic conclusions must be labeled as diagnostic until backed by the
   required consistency checks and evidence.
+- Diagnostic results become article material only through the promotion
+  workflow in `docs/writing/article_workflow.md`.
 
 ## Consistency Checks for New Model Extensions
 
@@ -206,11 +208,18 @@ asks for FEM model changes.
 - `docs/theory/AGENTS.md` -- detailed theory-edit rules, source-of-truth
   priority, and formula-edit discipline.
 - `docs/theory/equations.tex` -- verified local theory formulas.
+- `docs/writing/article_workflow.md` -- diagnostic-to-article promotion
+  checklist, figure selection workflow, and TODO placeholder policy.
 - `docs/literature/source_index.md` -- source-specific warnings, including the
   known sign issue in `2003JSVb.pdf`.
 - `scripts/README.md` -- runnable script guide, branch-tracking conventions,
   FEM transform convention, and diagnostic command inventory.
+- `scripts/analysis/thickness_mismatch/README.md` -- thickness-mismatch script
+  audit, preferred diagnostic entry points, historical scripts, and future
+  wrapper/refactor TODOs.
 - `scripts/lib/README.md` -- internal helper responsibilities, including
   branch tracking and thickness-mismatch MAC diagnostics.
+- `paper_thickness_mismatch_timoshenko/README.md` -- skeleton and boundaries
+  for the planned thickness-mismatch / Timoshenko article.
 - `README.md` -- repository structure, baseline analytic/FEM entry points, and
   high-level source-of-truth notes.
