@@ -7,6 +7,10 @@ The goal is to keep the spectral-mechanism discussion separate from the main
 theory files and from the article draft. These notes are for assessment,
 terminology, candidate cases, and future evidence.
 
+For project-wide rules on branch identity, sorted-position metadata, and
+evidence required for strict veering or modal-exchange claims, see
+`../project_rules.md`.
+
 ## Files
 
 - `literature_assessment.md` -- short assessment of the relevant literature.

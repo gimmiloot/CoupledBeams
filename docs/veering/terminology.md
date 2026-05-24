@@ -1,5 +1,9 @@
 # Terminology
 
+For project-wide rules on descendant branch identity, sorted-position metadata,
+and evidence required for veering or modal-exchange claims, see
+`../project_rules.md`.
+
 ## Veering
 
 Working meaning: two nearby eigenfrequency branches approach as a parameter

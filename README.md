@@ -4,6 +4,10 @@ CoupledBeams is a research repository for frequency models and computations for 
 
 ## Project Layout
 
+- `docs/project_rules.md` -- global project rules for branch identity,
+  diagnostics, thin-rod applicability, model-extension checks, and FEM
+  comparison conventions.
+
 - `docs/theory/` — verified local theory, equations, assumptions, and theory notes.
 - `docs/literature/` — literature PDFs, source notes, and bibliography material.
 - `src/my_project/analytic/` — analytic Python programs for the coupled-beam frequency problem.

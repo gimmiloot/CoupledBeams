@@ -1,5 +1,8 @@
 # Assumptions
 
+For project-wide rules on source-of-truth priority, branch identity,
+diagnostic workflow, and model-extension checks, see `../project_rules.md`.
+
 Здесь фиксируются активные допущения и рабочие гипотезы проекта.
 
 ## Working Notes

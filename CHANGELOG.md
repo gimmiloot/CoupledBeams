@@ -1,5 +1,48 @@
 # CHANGELOG
 
+## 2026-05-24
+
+- Added three diagnostic-only thickness-mismatch plots for the beta-15,
+  epsilon-0.0025 eta=0.5 study: a descendant `Lambda(mu)` eta sweep for
+  `eta=-0.5, 0, 0.5`, an eta=0.5 analytic descendant vs FEM frequency
+  overlay, and an eta=0.5 descendant plot with clamped-supported isolated-rod
+  reference curves, all preserving the diameter-based applicability rule and
+  branch-descendant convention.
+- Added `docs/project_rules.md` as the central project-wide rules document and
+  linked it from the root README, theory assumptions, thickness-mismatch docs,
+  veering docs, and scripts helper guides.
+- Added a diagnostic-only large-eta thickness-mismatch `Lambda(mu)` plot for
+  `beta=15 deg`, `epsilon=0.0025`, and `eta=-0.5, 0, 0.5`, splitting tracked
+  branches into solid valid segments and dashed segments where the diameter
+  criterion `2r_i/l_i <= 0.1` is violated.
+- Added a diagnostic-only FEM check for the mass-preserving thickness-mismatch
+  model at `eta=0.5`, `beta=15 deg`, and `epsilon=0.0025`, comparing analytic
+  sorted/tracked `Lambda` values against a separate two-radius Euler-Bernoulli
+  frame FEM assembly with a coarse/refined mesh check and branch-5/6 shape MAC
+  diagnostics.
+- Added common thickness-mismatch helpers for the diameter-to-length validity
+  check and documented the diagnostic rule that curve segments must be dashed
+  with a warning/report when `2r_i/l_i > 0.1` for either rod.
+- Replaced nearest-frequency `Lambda(mu)` continuation in thickness-mismatch
+  diagnostics with analytic shape-MAC tracking plus low-MAC warnings,
+  added nearest-frequency disagreement warnings for the large-eta beta-15 plot,
+  track ten branches internally while plotting the first seven for the
+  large-eta beta-15 case, and updated the eta=0.5 FEM check to compare against
+  MAC-tracked analytic branches without changing the determinant, solvers, FEM
+  model, article files, or article figures.
+- Documented the thickness-mismatch branch convention that branch numbers are
+  descendant mode-shape identities while sorted positions are diagnostic
+  metadata, added suspicious-assignment flags for large sorted-position jumps,
+  and added a refined eta=0.5 branch-identity audit for descendants 5--7.
+- Added an eta=0.5 global thickness-mismatch spectrum overview diagnostic that
+  compares the first eight sorted roots with the first eight descendant
+  branches, plots accepted canonical sorted positions, records unresolved
+  candidate assignments, tracking warnings, and the diameter-based thin-rod
+  validity status, and writes CSV/PNG/Markdown outputs.
+- Updated thickness-mismatch MAC tracking so low-MAC, low-margin, or large-jump
+  candidate assignments remain unresolved diagnostics instead of changing the
+  accepted descendant identity or canonical sorted position.
+
 ## 2026-05-23
 
 - Added a diagnostic-only mass-preserving thickness-mismatch analytic model with

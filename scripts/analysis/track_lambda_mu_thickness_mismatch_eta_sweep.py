@@ -22,9 +22,9 @@ if str(SRC_ROOT) not in sys.path:
 from my_project.analytic.formulas_thickness_mismatch import find_first_n_roots_eta  # noqa: E402
 from my_project.analytic.solvers import find_first_n_roots  # noqa: E402
 from scripts.analysis.track_lambda_eta_thickness_mismatch import (  # noqa: E402
-    unique_nearest_assignment,
     write_csv,
 )
+from scripts.lib.thickness_mismatch_mac_tracking import track_mu_branches_shape_mac  # noqa: E402
 
 
 # =========================
@@ -41,6 +41,8 @@ NUM_TRACKED_BRANCHES = 6
 NUM_SORTED_ROOTS = 12
 ROOT_SCAN_STEP = 0.01
 ROOT_LMAX0 = 35.0
+NUM_SHAPE_SAMPLES = 401
+MAC_WARNING_THRESHOLD = 0.9
 
 OUTPUT_DIR = REPO_ROOT / "results"
 OUTPUT_TAG: str | None = None
@@ -48,7 +50,6 @@ SAVE_PNG = True
 SAVE_CSV = False
 SAVE_REPORT = False
 
-AMBIGUOUS_MARGIN_TOL = 1e-5
 MU_VALUES = np.round(np.arange(MU_MIN, MU_MAX + 0.5 * MU_STEP, MU_STEP), 10)
 
 TRACKED_FIELDNAMES = [
@@ -58,6 +59,24 @@ TRACKED_FIELDNAMES = [
     "mu",
     "branch_index_from_mu0",
     "Lambda_tracked",
+    "current_sorted_root_index",
+    "raw_mac_sorted_root_index",
+    "mac_to_previous",
+    "raw_mac_to_previous",
+    "second_best_mac",
+    "frequency_nearest_sorted_root_index",
+    "frequency_mac_disagreement",
+    "used_frequency_fallback",
+    "mac_margin",
+    "raw_mac_margin",
+    "assigned_from_previous_sorted_position",
+    "sorted_position_jump",
+    "raw_sorted_position_jump",
+    "low_mac",
+    "low_margin",
+    "large_mu_step",
+    "suspicious_assignment",
+    "requires_refined_check",
     "nearest_sorted_root_index",
     "nearest_sorted_Lambda",
     "abs_diff_to_nearest_sorted",
@@ -154,55 +173,72 @@ def row_for_tracked(
     }
 
 
+def adapt_mac_tracking_row(
+    row: dict[str, float | int | str],
+    *,
+    roots_by_mu: dict[float, np.ndarray],
+) -> dict[str, float | int | str]:
+    mu = float(row["mu"])
+    roots = roots_by_mu[mu]
+    current_idx = int(row["mac_sorted_root_index"])
+    value = float(row["Lambda_tracked"])
+    distances = np.abs(roots - value)
+    other_distances = np.delete(distances, current_idx - 1)
+    min_gap = float(np.min(other_distances)) if len(other_distances) else np.inf
+    frequency_nearest = int(row["nearest_sorted_root_index"])
+    return {
+        "beta_deg": BETA_DEG,
+        "epsilon": EPSILON,
+        "eta": float(row["eta"]),
+        "mu": mu,
+        "branch_index_from_mu0": int(row["branch_index_from_mu0"]),
+        "Lambda_tracked": value,
+        "current_sorted_root_index": current_idx,
+        "raw_mac_sorted_root_index": int(row["raw_mac_sorted_root_index"]),
+        "mac_to_previous": float(row["mac_to_previous"]),
+        "raw_mac_to_previous": float(row["raw_mac_to_previous"]),
+        "second_best_mac": float(row["second_best_mac"]),
+        "frequency_nearest_sorted_root_index": frequency_nearest,
+        "frequency_mac_disagreement": str(row["frequency_mac_disagreement"]),
+        "used_frequency_fallback": str(row["used_frequency_fallback"]),
+        "mac_margin": float(row["mac_margin"]),
+        "raw_mac_margin": float(row["raw_mac_margin"]),
+        "assigned_from_previous_sorted_position": int(row["assigned_from_previous_sorted_position"]),
+        "sorted_position_jump": int(row["sorted_position_jump"]),
+        "raw_sorted_position_jump": int(row["raw_sorted_position_jump"]),
+        "low_mac": str(row["low_mac"]),
+        "low_margin": str(row["low_margin"]),
+        "large_mu_step": str(row["large_mu_step"]),
+        "suspicious_assignment": str(row["suspicious_assignment"]),
+        "requires_refined_check": str(row["requires_refined_check"]),
+        # Backward-compatible report fields: this now means the MAC-tracked current sorted index.
+        "nearest_sorted_root_index": current_idx,
+        "nearest_sorted_Lambda": float(roots[current_idx - 1]),
+        "abs_diff_to_nearest_sorted": 0.0,
+        "tracking_step_status": str(row["tracking_step_status"]),
+        "min_gap_to_other_sorted_roots": min_gap,
+        "distance_from_previous": float(row["frequency_distance_from_previous"]),
+        "second_nearest_distance": float(row["frequency_second_nearest_distance"]),
+        "assignment_margin": float(row["frequency_assignment_margin"]),
+    }
+
+
 def track_one_eta(
     eta: float,
     roots_by_mu: dict[float, np.ndarray],
 ) -> tuple[list[dict[str, float | int | str]], np.ndarray]:
-    tracked = np.full((NUM_TRACKED_BRANCHES, len(MU_VALUES)), np.nan, dtype=float)
-    tracked[:, 0] = roots_by_mu[0.0][:NUM_TRACKED_BRANCHES]
-
-    rows: list[dict[str, float | int | str]] = []
-    for branch_idx, value in enumerate(tracked[:, 0], start=1):
-        rows.append(
-            row_for_tracked(
-                eta=eta,
-                mu=0.0,
-                branch_index=branch_idx,
-                value=float(value),
-                roots=roots_by_mu[0.0],
-                status="seed_mu0",
-                distance_from_previous=np.nan,
-                second_nearest_distance=np.nan,
-                assignment_margin=np.nan,
-            )
-        )
-
-    previous = tracked[:, 0].copy()
-    for col in range(1, len(MU_VALUES)):
-        mu = float(MU_VALUES[col])
-        roots = roots_by_mu[mu]
-        assignments = unique_nearest_assignment(previous, roots)
-        current = np.full(NUM_TRACKED_BRANCHES, np.nan, dtype=float)
-        for assignment in assignments:
-            value = float(roots[assignment.root_index - 1])
-            current[assignment.branch_index - 1] = value
-            status = "ok" if assignment.assignment_margin > AMBIGUOUS_MARGIN_TOL else "ambiguous"
-            rows.append(
-                row_for_tracked(
-                    eta=eta,
-                    mu=mu,
-                    branch_index=assignment.branch_index,
-                    value=value,
-                    roots=roots,
-                    status=status,
-                    distance_from_previous=assignment.distance_from_previous,
-                    second_nearest_distance=assignment.second_nearest_distance,
-                    assignment_margin=assignment.assignment_margin,
-                )
-            )
-        tracked[:, col] = current
-        previous = current
-
+    result = track_mu_branches_shape_mac(
+        beta_rad=float(np.deg2rad(BETA_DEG)),
+        epsilon=EPSILON,
+        eta=float(eta),
+        mu_values=MU_VALUES,
+        roots_by_mu=roots_by_mu,
+        num_tracked_branches=NUM_TRACKED_BRANCHES,
+        num_shape_samples=NUM_SHAPE_SAMPLES,
+        mac_warning_threshold=MAC_WARNING_THRESHOLD,
+    )
+    tracked = result.tracked
+    rows = [adapt_mac_tracking_row(row, roots_by_mu=roots_by_mu) for row in result.rows]
     rows.sort(key=lambda row: (float(row["mu"]), int(row["branch_index_from_mu0"])))
     return rows, tracked
 
@@ -415,7 +451,8 @@ def build_report(
         for row in tracked_rows
         if int(row["nearest_sorted_root_index"]) != int(row["branch_index_from_mu0"])
     ]
-    ambiguous = [row for row in tracked_rows if str(row["tracking_step_status"]) == "ambiguous"]
+    low_mac = [row for row in tracked_rows if "low_mac" in str(row["tracking_step_status"])]
+    frequency_warnings = [row for row in tracked_rows if str(row["frequency_mac_disagreement"]) == "yes"]
     close_rows = sorted(
         (row for row in tracked_rows if str(row["tracking_step_status"]) != "seed_mu0"),
         key=lambda row: float(row["min_gap_to_other_sorted_roots"]),
@@ -441,8 +478,11 @@ def build_report(
         "",
         "For each fixed eta, branches are seeded at mu=0 and continued to mu=0.9.",
         "Each step assigns previous branch values to current sorted candidate roots",
-        "by unique nearest-root matching. The tracking diagnostics record nearest sorted index,",
-        "distance to the previous point, assignment margin, and local root gap.",
+        "by maximizing the adjacent-step analytic shape MAC. Low-MAC assignments",
+        "are marked for review. Nearest-frequency assignment is retained only as",
+        "a warning diagnostic. The tracking",
+        "diagnostics record the current sorted index, raw MAC index, MAC value,",
+        "nearest-frequency assignment, and local root gap.",
         "",
         "## Outputs",
         "",
@@ -470,8 +510,9 @@ def build_report(
             f"branch/root={int(max_diff_row['branch_index'])}, "
             f"mu={float(max_diff_row['mu']):g}"
         ),
-        f"- rows where nearest sorted index differs from mu=0 branch index: {len(switches)}",
-        f"- ambiguous nearest-root assignments: {len(ambiguous)}",
+        f"- rows where MAC current sorted index differs from mu=0 branch index: {len(switches)}",
+        f"- low-MAC rows below threshold {MAC_WARNING_THRESHOLD:g}: {len(low_mac)}",
+        f"- nearest-frequency vs MAC disagreement rows: {len(frequency_warnings)}",
         "",
         "## Eta Sensitivity",
         "",
@@ -524,7 +565,7 @@ def build_report(
     lines.extend(format_table(jump_table))
 
     lines.extend(["", "Smallest local gaps to neighboring sorted roots:", ""])
-    gap_table = [["eta", "mu", "branch", "nearest sorted index", "min gap"]]
+    gap_table = [["eta", "mu", "branch", "MAC current sorted index", "min gap"]]
     for row in close_rows:
         gap_table.append(
             [
@@ -537,9 +578,9 @@ def build_report(
         )
     lines.extend(format_table(gap_table))
 
-    lines.extend(["", "## Suspected Sorted-Index Switches", ""])
+    lines.extend(["", "## MAC Sorted-Index Switches", ""])
     if switches:
-        switch_table = [["eta", "mu", "branch from mu=0", "nearest sorted index", "Lambda tracked"]]
+        switch_table = [["eta", "mu", "branch from mu=0", "MAC current sorted index", "Lambda tracked"]]
         for row in switches[:24]:
             switch_table.append(
                 [
@@ -557,20 +598,37 @@ def build_report(
     else:
         lines.append("No sorted-index switches were detected for the tracked branches on this mu grid.")
 
-    if ambiguous:
-        lines.extend(["", "## Ambiguous Assignments", ""])
-        ambiguous_table = [["eta", "mu", "branch", "assignment margin", "distance from previous"]]
-        for row in ambiguous[:24]:
-            ambiguous_table.append(
+    if low_mac:
+        lines.extend(["", "## Low-MAC Assignments", ""])
+        low_mac_table = [["eta", "mu", "branch", "status", "MAC", "raw MAC index"]]
+        for row in low_mac[:24]:
+            low_mac_table.append(
                 [
                     f"{float(row['eta']):g}",
                     f"{float(row['mu']):g}",
                     str(int(row["branch_index_from_mu0"])),
-                    f"{float(row['assignment_margin']):.6e}",
-                    f"{float(row['distance_from_previous']):.6e}",
+                    str(row["tracking_step_status"]),
+                    f"{float(row['mac_to_previous']):.6e}",
+                    str(int(row["raw_mac_sorted_root_index"])),
                 ]
             )
-        lines.extend(format_table(ambiguous_table))
+        lines.extend(format_table(low_mac_table))
+
+    if frequency_warnings:
+        lines.extend(["", "## Nearest-Frequency Disagreement Warnings", ""])
+        warning_table = [["eta", "mu", "branch", "MAC index", "nearest-frequency index", "MAC"]]
+        for row in frequency_warnings[:24]:
+            warning_table.append(
+                [
+                    f"{float(row['eta']):g}",
+                    f"{float(row['mu']):g}",
+                    str(int(row["branch_index_from_mu0"])),
+                    str(int(row["current_sorted_root_index"])),
+                    str(int(row["frequency_nearest_sorted_root_index"])),
+                    f"{float(row['mac_to_previous']):.6e}",
+                ]
+            )
+        lines.extend(format_table(warning_table))
 
     lines.extend(
         [
@@ -591,7 +649,8 @@ def build_report(
         "swap_max_rel_diff": float(swap["max_swap_rel_diff"]),
         "max_same_index_diff": float(max_diff_row["abs_diff"]),
         "switch_count": len(switches),
-        "ambiguous_count": len(ambiguous),
+        "low_mac_count": len(low_mac),
+        "frequency_warning_count": len(frequency_warnings),
         "top_sensitive_branch": int(top_sensitivity["branch_index"]),
         "top_sensitive_spread": float(top_sensitivity["max_eta_spread"]),
         "top_sensitive_mu": float(top_sensitivity["max_eta_spread_mu"]),
@@ -647,8 +706,9 @@ def main() -> dict[str, Path | float | int]:
     print(f"eta=0 max same-index old-root diff: {float(report['eta_zero_max_same_index_old_root_diff']):.6e}")
     print(f"swap symmetry sanity max abs diff: {float(report['swap_max_abs_diff']):.6e}")
     print(f"max same-index sorted-vs-tracked diff: {float(report['max_same_index_diff']):.6e}")
-    print(f"sorted-index switch rows: {int(report['switch_count'])}")
-    print(f"ambiguous nearest-root assignments: {int(report['ambiguous_count'])}")
+    print(f"MAC current-sorted-index switch rows: {int(report['switch_count'])}")
+    print(f"low-MAC assignment rows: {int(report['low_mac_count'])}")
+    print(f"nearest-frequency vs MAC disagreement rows: {int(report['frequency_warning_count'])}")
     print(
         "largest eta sensitivity: "
         f"branch={int(report['top_sensitive_branch'])}, "

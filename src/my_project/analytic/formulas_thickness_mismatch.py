@@ -41,6 +41,22 @@ def local_epsilons(epsilon: float, mu: float, eta: float) -> tuple[float, float]
     return float(epsilon) * factors.tau1, float(epsilon) * factors.tau2
 
 
+def thickness_to_length_ratios(epsilon: float, mu: float, eta: float) -> tuple[float, float]:
+    """Diameter-to-length ratios ``2*r_i/l_i`` for the eta diagnostic model."""
+    factors = thickness_mismatch_factors(mu, eta)
+    eps_f = float(epsilon)
+    ratio1 = 4.0 * eps_f * factors.tau1 / (1.0 - factors.mu)
+    ratio2 = 4.0 * eps_f * factors.tau2 / (1.0 + factors.mu)
+    return float(ratio1), float(ratio2)
+
+
+def thin_rod_validity(epsilon: float, mu: float, eta: float, limit: float = 0.1) -> bool:
+    """Return True when both rods satisfy the diameter criterion."""
+    ratio1, ratio2 = thickness_to_length_ratios(epsilon, mu, eta)
+    limit_f = float(limit)
+    return ratio1 <= limit_f and ratio2 <= limit_f
+
+
 def assemble_clamped_coupled_matrix_eta(
     Lambda: float,
     beta: float,
@@ -210,4 +226,6 @@ __all__ = [
     "find_roots_scan_bisect_eta",
     "local_epsilons",
     "thickness_mismatch_factors",
+    "thickness_to_length_ratios",
+    "thin_rod_validity",
 ]
