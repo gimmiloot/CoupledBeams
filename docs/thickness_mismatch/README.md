@@ -60,38 +60,24 @@ epsilon2 = epsilon tau2
 
 ## Branch and Mode Numbering Convention
 
-The project-wide convention is recorded in `../project_rules.md`: a branch is
-a descendant of a mode shape, while sorted position is diagnostic metadata. For
-fixed-eta thickness-mismatch `Lambda(mu)` diagnostics, the local tracking seed
-is usually `mu=0`.
-
-Low-MAC, low-margin, and large-jump assignments are unresolved diagnostic
-candidates until a refined local shape/MAC audit accepts them. They must not
-rename descendant branches or change canonical branch identity.
+For fixed-eta thickness-mismatch `Lambda(mu)` diagnostics, a branch means a
+descendant of a mode shape, usually seeded at `mu=0`. Sorted positions are
+diagnostic metadata only, and unresolved low-MAC or large-jump assignments do
+not rename descendant branches. See `../project_rules.md` for the
+project-wide rule.
 
 ## Thin-Rod Applicability Rule
 
-For all diagnostic plots in the thickness-mismatch study, the applicability of
-the thin-rod model is checked with the diameter-to-length ratio
+For the mass-preserving eta parameterization, the diameter-to-length ratios are
 
 ```text
-2*r_i/l_i <= 0.1,  i = 1, 2.
+2*r1/l1 = 4*epsilon*tau1/(1 - mu)
+2*r2/l2 = 4*epsilon*tau2/(1 + mu)
 ```
 
-Here `2*r_i` is the circular-section diameter. Do not replace this rule with
-the radius-to-length criterion `r_i/l_i <= 0.1`.
-
-In the mass-preserving eta parameterization this becomes
-
-```text
-thickness_ratio_1 = 2*r1/l1 = 4*epsilon*tau1/(1 - mu)
-thickness_ratio_2 = 2*r2/l2 = 4*epsilon*tau2/(1 + mu)
-```
-
-A plotted curve segment is valid and drawn solid only when both ratios are at
-or below `0.1`. If either ratio exceeds `0.1`, the segment is drawn dashed.
-Warning/report requirements are project-wide and live in
-`../project_rules.md`.
+Diagnostic plots draw segments solid only when both ratios satisfy the thin-rod
+diameter criterion, and dashed otherwise. See `../project_rules.md` for the
+project-wide rule.
 
 ## Isolated-Rod Reference Curves
 
@@ -241,13 +227,6 @@ and future wrapper/refactor TODOs, see
   model. It tracks branch 5 from `mu=0` separately for each configured eta,
   reconstructs the determinant null-vector shape, and writes diagnostic PNG
   panels only.
-
-Sorted root curves can be misleading near veering or close branch interactions:
-the sorted index can change its branch identity even when the continued branch
-varies smoothly. Tracking CSV files record the current sorted position as
-diagnostic metadata only; they do not redefine the descendant branch number.
-Any large sorted-position jump must be treated as a suspicious assignment until
-a refined local MAC audit supports it.
 
 ## Diagnostic Outputs
 

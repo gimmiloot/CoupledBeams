@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2026-05-25
+
+- Added project-wide Script Proliferation Control guidance, linked it from the
+  agent and script guides, and shortened duplicated thickness-mismatch script
+  and global-rule documentation without changing code, scripts, article files,
+  figures, determinants, solvers, results, or FEM model behavior.
+
 ## 2026-05-24
 
 - Added a conservative documentation cleanup for the diagnostic

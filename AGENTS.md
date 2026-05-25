@@ -13,6 +13,9 @@ Main components:
 - runnable scripts: `scripts/`
 - tests: `tests/`
 
+Before adding a new runnable script, follow the Script Proliferation Control
+rule in `docs/project_rules.md`.
+
 ## Source of truth
 
 When there is a conflict, use this priority:

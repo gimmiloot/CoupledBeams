@@ -8,6 +8,8 @@ The original root-level scripts remain in place because many scripts import each
 Project-wide rules for branch identity, diagnostic workflow, thin-rod
 applicability, model-extension checks, and FEM comparison conventions live in
 `../docs/project_rules.md`.
+New runnable scripts must also follow the Script Proliferation Control rule in
+that file: prefer parameters or presets over new one-case scripts.
 
 ## Branch identity and current sorted index
 
@@ -101,26 +103,23 @@ The coupled analytic curves, FEM markers, axes, labels, mu grid, and original FP
 
 ### Thickness-mismatch diagnostic model
 
-Use the detailed map in `scripts/analysis/thickness_mismatch/README.md` for
-the full audit of current entry points, historical scripts, wrappers/TODOs,
-outputs, and helper ownership. Thickness-specific formulas and diagnostic
-notes live in `../docs/thickness_mismatch/README.md`.
+Thickness-mismatch scripts implement a diagnostic-only eta model with
+mass-preserving radius factors. They do not replace the baseline equal-radius
+determinant, old solvers, FEM physical model, article files, or article
+figures.
 
-| Task | Preferred command | Outputs | Notes |
-| --- | --- | --- | --- |
-| Eta-zero and swap checks | `python scripts/analysis/check_thickness_mismatch_eta_zero_limit.py` | `results/thickness_mismatch_eta_zero_roots_check.csv`, `results/thickness_mismatch_swap_symmetry_check.csv` | Sanity checks for the diagnostic eta extension. |
-| Clean beta-15 descendant eta sweep | `python scripts/analysis/plot_lambda_mu_thickness_mismatch_beta15_eta_descendants.py` | `results/thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_m0p5_0_p0p5_descendants.*` | Current presentation-style descendant plot. |
-| Eta=0.5 global spectrum overview | `python scripts/analysis/plot_thickness_mismatch_eta_p0p5_global_spectrum.py` | `results/thickness_mismatch_eta_p0p5_beta15_global_spectrum_8modes.*` | Sorted roots, descendants, canonical sorted positions, and unresolved candidates. |
-| Refined branch identity audit | `python scripts/analysis/check_thickness_mismatch_branch_identity_eta_p0p5.py` | `results/thickness_mismatch_branch_identity_eta_p0p5_beta15_refined.*` | Local audit for descendants 5--7. |
-| Eta=0.5 FEM overlay | `python scripts/analysis/plot_thickness_mismatch_fem_comparison_eta_p0p5_beta15.py` | `results/thickness_mismatch_fem_comparison_beta15_eps0p0025_eta_p0p5.*` | Lightweight analytic-descendant vs FEM marker plot. |
-| Isolated-rod references | See `scripts/analysis/thickness_mismatch/README.md` | beta-15/beta-45 CS/CP and beta-45 CC/FF outputs | Reference grids are interpretation aids and must state their boundary conditions. |
+The full script map, detailed output list, helper ownership, compatibility
+wrappers, and historical/one-off diagnostics live in
+`scripts/analysis/thickness_mismatch/README.md`. Thickness-specific formulas
+and output notes live in `../docs/thickness_mismatch/README.md`.
 
-All thickness-mismatch diagnostics are diagnostic-only. They leave
-`src/my_project/analytic/formulas.py`, old solvers, the baseline FEM model,
-article files, and article figures unchanged. Branches are descendant mode
-shapes seeded at the script start point, usually `mu=0`; sorted positions are
-metadata only. Thin-rod applicability uses the diameter criterion
-`2*r_i/l_i <= 0.1` for each rod, not `r_i/l_i <= 0.1`.
+| Task | Preferred command | Use when |
+| --- | --- | --- |
+| Eta-zero and swap checks | `python scripts/analysis/check_thickness_mismatch_eta_zero_limit.py` | Sanity-checking the eta extension. |
+| Descendant eta sweep | `python scripts/analysis/plot_lambda_mu_thickness_mismatch_beta15_eta_descendants.py` | Building the current clean beta-15 descendant plot. |
+| Eta=0.5 global spectrum overview | `python scripts/analysis/plot_thickness_mismatch_eta_p0p5_global_spectrum.py` | Comparing sorted roots, descendants, and unresolved assignments. |
+| Refined branch identity audit | `python scripts/analysis/check_thickness_mismatch_branch_identity_eta_p0p5.py` | Checking descendants 5--7 on a refined local grid. |
+| Eta=0.5 FEM overlay | `python scripts/analysis/plot_thickness_mismatch_fem_comparison_eta_p0p5_beta15.py` | Making the lightweight analytic-descendant vs FEM marker comparison. |
 
 ### Fixed-beta analytic Lambda(mu) plot with fixed-fixed L=2 reference
 

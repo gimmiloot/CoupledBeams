@@ -101,6 +101,34 @@ artifacts or baseline models.
 - Diagnostic results become article material only through the promotion
   workflow in `docs/writing/article_workflow.md`.
 
+## Script Proliferation Control
+
+Do not create a new script for every parameter set, plot variant, or output
+path.
+
+If only `beta`, `mu`, `epsilon`, `eta`, the number of branches, the reference
+family, output path, FEM mesh, plotting style, or CSV/report generation changes,
+parameterize the existing script or add a documented preset instead.
+
+A new script is acceptable only when:
+
+- it introduces a genuinely new workflow;
+- the input/output contract changes;
+- it will be a stable reusable entry point;
+- merging it into an existing script would make the code unclear or unsafe.
+
+One-off exploratory scripts should eventually be handled in one of these ways:
+
+- documented as historical/one-off;
+- replaced by a parameterized entry point;
+- removed after a documented reproducible command exists.
+
+Every proposed new script should answer:
+
+1. why is this not a parameter or preset of an existing script?
+2. what helper does it reuse?
+3. is it article-facing, diagnostic-only, compatibility wrapper, or one-off?
+
 ## Consistency Checks for New Model Extensions
 
 New analytic model extensions must preserve the verified baseline unless the
@@ -213,7 +241,8 @@ asks for FEM model changes.
 - `docs/literature/source_index.md` -- source-specific warnings, including the
   known sign issue in `2003JSVb.pdf`.
 - `scripts/README.md` -- runnable script guide, branch-tracking conventions,
-  FEM transform convention, and diagnostic command inventory.
+  FEM transform convention, diagnostic command inventory, and links to script
+  proliferation rules.
 - `scripts/analysis/thickness_mismatch/README.md` -- thickness-mismatch script
   audit, preferred diagnostic entry points, historical scripts, and future
   wrapper/refactor TODOs.
