@@ -28,8 +28,12 @@ import numpy as np
 # dependencies.
 
 BETA_DEG_VALUES = [15.0, 45.0, 90.0]
-BETA_DEG = BETA_DEG_VALUES[0]
 EPSILON_VALUES = [0.025, 0.05]
+RUN_BETA_DEG_VALUES = [15.0]
+RUN_EPSILON_VALUES = [0.025, 0.05]
+PLANAR_CONSTRAINT = False
+RUN_PLANAR_CONSTRAINT_VALUES = [True]
+MESH_SIZE_FACTORS = [1.0]
 N_ANALYTIC_MODES = 6
 N_SOLID_MODES = 30
 L_SEGMENT = 1.0
@@ -60,6 +64,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 ANALYSIS_DIR = REPO_ROOT / "scripts" / "analysis"
 OUTPUT_DIR = REPO_ROOT / "results"
 SOLID_OUTPUT_DIR = OUTPUT_DIR / "solid_fem_coupled_equal_rods_point_joint"
+MESH_CONVERGENCE_OUTPUT_DIR = OUTPUT_DIR / "solid_fem_coupled_equal_rods_point_joint_mesh_convergence"
+PLANAR_OUTPUT_DIR = OUTPUT_DIR / "solid_fem_coupled_equal_rods_point_joint_planar"
 OUTPUT_GEOMETRY_AUDIT_CSV = OUTPUT_DIR / "coupled_equal_rods_point_joint_3d_solid_fem_geometry_audit.csv"
 OUTPUT_REPORT = OUTPUT_DIR / "coupled_equal_rods_point_joint_3d_solid_fem_report.md"
 OUTPUT_IN_PLANE_CSV = OUTPUT_DIR / "coupled_equal_rods_point_joint_3d_solid_fem_in_plane_comparison_by_beta.csv"
@@ -68,11 +74,24 @@ OUTPUT_SORTED_CSV = OUTPUT_DIR / "coupled_equal_rods_point_joint_3d_solid_fem_so
 OUTPUT_MAC_MATRIX_EB_CSV = OUTPUT_DIR / "coupled_equal_rods_point_joint_3d_solid_fem_mac_matrix_eb.csv"
 OUTPUT_MAC_MATRIX_TIMO_CSV = OUTPUT_DIR / "coupled_equal_rods_point_joint_3d_solid_fem_mac_matrix_timoshenko.csv"
 OUTPUT_MAC_MATCHES_CSV = OUTPUT_DIR / "coupled_equal_rods_point_joint_3d_solid_fem_mac_matches.csv"
+OUTPUT_MESH_CONVERGENCE_REPORT = OUTPUT_DIR / "coupled_equal_rods_point_joint_mesh_convergence_report.md"
+OUTPUT_MESH_CONVERGENCE_FREQUENCIES_CSV = OUTPUT_DIR / "coupled_equal_rods_point_joint_mesh_convergence_frequencies.csv"
+OUTPUT_MESH_CONVERGENCE_MAC_CSV = OUTPUT_DIR / "coupled_equal_rods_point_joint_mesh_convergence_mac.csv"
+OUTPUT_MESH_CONVERGENCE_SUMMARY_CSV = OUTPUT_DIR / "coupled_equal_rods_point_joint_mesh_convergence_summary.csv"
+OUTPUT_PLANAR_REPORT = OUTPUT_DIR / "coupled_equal_rods_point_joint_planar_3d_solid_fem_report.md"
+OUTPUT_PLANAR_SORTED_CSV = OUTPUT_DIR / "coupled_equal_rods_point_joint_planar_3d_solid_fem_sorted_comparison.csv"
+OUTPUT_PLANAR_MODE_METRICS_CSV = OUTPUT_DIR / "coupled_equal_rods_point_joint_planar_3d_solid_fem_mode_metrics.csv"
+OUTPUT_PLANAR_MAC_MATRIX_EB_CSV = OUTPUT_DIR / "coupled_equal_rods_point_joint_planar_3d_solid_fem_mac_matrix_eb.csv"
+OUTPUT_PLANAR_MAC_MATRIX_TIMO_CSV = OUTPUT_DIR / "coupled_equal_rods_point_joint_planar_3d_solid_fem_mac_matrix_timoshenko.csv"
+OUTPUT_PLANAR_MAC_MATCHES_CSV = OUTPUT_DIR / "coupled_equal_rods_point_joint_planar_3d_solid_fem_mac_matches.csv"
 FUSED_IN_PLANE_CSV = OUTPUT_DIR / "coupled_equal_rods_3d_solid_fem_in_plane_comparison_by_beta.csv"
 
 JOINT_REF_NODE_NAME = "JOINT_REF"
 JOINT_COUPLED_SET_NAME = "JOINT_COUPLED_ALL"
 RIGID_CONSTRAINT_METHOD = "*RIGID BODY, NSET=JOINT_COUPLED_ALL, REF NODE=<joint reference node>"
+PLANAR_SOLID_NODE_SET_NAME = "ALL_SOLID_NODES"
+PLANAR_INDEPENDENT_NODE_SET_NAME = "PLANAR_INDEPENDENT_SOLID_NODES"
+PLANAR_REFERENCE_FALLBACK_BOUNDARY = "JOINT_REF, 3, 5, 0"
 
 FRD_NUMBER_PATTERN = re.compile(r"[-+]?(?:\d+\.\d*|\.\d+|\d+)(?:[EeDd][-+]?\d+)?")
 
@@ -173,6 +192,11 @@ class CcxInputSummary:
     joint_ref_node_id: int
     constraint_method: str
     node_sets_present: bool
+    all_solid_node_count: int = 0
+    planar_independent_node_count: int = 0
+    planar_constraint: bool = False
+    planar_reference_fallback: bool = False
+    planar_mpc_compatible_fallback: bool = False
 
 
 @dataclass(frozen=True)
@@ -235,8 +259,89 @@ class SolidCenterlineShape:
     empty_slice_count: int
 
 
+@dataclass(frozen=True)
+class MeshConvergenceCaseResult:
+    beta_deg: float
+    epsilon: float
+    mesh_size_factor: float
+    paths: CasePaths
+    geometry_label: str
+    mesh_summary: MeshSummary | None
+    ccx_input: CcxInputSummary | None
+    calculix_result: CalculixResult | None
+    parse_result: ModeShapeParseResult | None
+    mode_metrics: tuple[ModeMetric, ...]
+    solid_centerline_shapes: tuple[SolidCenterlineShape, ...]
+    messages: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class PlanarCaseResult:
+    beta_deg: float
+    epsilon: float
+    paths: CasePaths
+    geometry_label: str
+    mesh_summary: MeshSummary | None
+    ccx_input: CcxInputSummary | None
+    calculix_result: CalculixResult | None
+    primary_calculix_result: CalculixResult | None
+    parse_result: ModeShapeParseResult | None
+    mode_metrics: tuple[ModeMetric, ...]
+    solid_centerline_shapes: tuple[SolidCenterlineShape, ...]
+    fallback_used: bool
+    messages: tuple[str, ...]
+
+
 def safe_float_token(value: float) -> str:
     return f"{float(value):.6g}".replace("-", "m").replace(".", "p")
+
+
+def selected_float_values(
+    all_values: Sequence[float],
+    run_values: Sequence[float] | None,
+    name: str,
+) -> tuple[float, ...]:
+    values = all_values if run_values is None else run_values
+    selected = tuple(float(value) for value in values)
+    if not selected:
+        raise ValueError(f"{name} must contain at least one value")
+    return selected
+
+
+def active_beta_deg_values() -> tuple[float, ...]:
+    return selected_float_values(BETA_DEG_VALUES, RUN_BETA_DEG_VALUES, "RUN_BETA_DEG_VALUES")
+
+
+def active_epsilon_values() -> tuple[float, ...]:
+    return selected_float_values(EPSILON_VALUES, RUN_EPSILON_VALUES, "RUN_EPSILON_VALUES")
+
+
+def active_planar_constraint_values() -> tuple[bool, ...]:
+    values = [PLANAR_CONSTRAINT] if RUN_PLANAR_CONSTRAINT_VALUES is None else RUN_PLANAR_CONSTRAINT_VALUES
+    selected = tuple(bool(value) for value in values)
+    if not selected:
+        raise ValueError("RUN_PLANAR_CONSTRAINT_VALUES must contain at least one value")
+    return selected
+
+
+def active_case_pairs() -> list[tuple[float, float]]:
+    return [(beta_deg, epsilon) for beta_deg in active_beta_deg_values() for epsilon in active_epsilon_values()]
+
+
+def active_mesh_size_factors() -> tuple[float, ...]:
+    factors = tuple(float(value) for value in MESH_SIZE_FACTORS)
+    if not factors:
+        raise ValueError("MESH_SIZE_FACTORS must contain at least one value")
+    return factors
+
+
+def mesh_convergence_enabled() -> bool:
+    factors = active_mesh_size_factors()
+    return len(factors) != 1 or abs(factors[0] - 1.0) > 1.0e-14
+
+
+def planar_diagnostic_enabled() -> bool:
+    return any(active_planar_constraint_values())
 
 
 def existing_executable(path_text: str | None) -> str | None:
@@ -519,10 +624,6 @@ def geometry_for_beta(beta_deg: float) -> Geometry:
     )
 
 
-def geometry() -> Geometry:
-    return geometry_for_beta(BETA_DEG)
-
-
 def radius_from_epsilon(epsilon: float) -> float:
     return 2.0 * float(epsilon) * L_SEGMENT
 
@@ -568,13 +669,21 @@ def thin_rod_valid(epsilon: float) -> bool:
     return diameter_to_segment_length(float(epsilon)) <= THICKNESS_RATIO_LIMIT + 1.0e-15
 
 
-def mesh_size_for_epsilon(epsilon: float) -> float:
+def mesh_size_for_epsilon(epsilon: float, mesh_size_factor: float = 1.0) -> float:
     radius = radius_from_epsilon(float(epsilon))
-    return min(L_SEGMENT / 40.0, radius / 2.0)
+    baseline_size = min(L_SEGMENT / 40.0, radius / 2.0)
+    return baseline_size * float(mesh_size_factor)
 
 
 def beta_token(beta_deg: float) -> str:
     return safe_float_token(float(beta_deg))
+
+
+def mesh_factor_token(mesh_size_factor: float) -> str:
+    text = f"{float(mesh_size_factor):.6g}"
+    if "." not in text and "e" not in text.lower():
+        text += ".0"
+    return text.replace("-", "m").replace(".", "p")
 
 
 def overlap_estimates(beta_deg: float, epsilon: float) -> tuple[float, float, float, float]:
@@ -587,10 +696,18 @@ def overlap_estimates(beta_deg: float, epsilon: float) -> tuple[float, float, fl
     return radius, sin_beta, overlap_length, overlap_length / L_SEGMENT
 
 
-def case_paths(beta_deg: float, epsilon: float) -> CasePaths:
+def case_paths(
+    beta_deg: float,
+    epsilon: float,
+    *,
+    output_root: Path = SOLID_OUTPUT_DIR,
+    mesh_size_factor: float | None = None,
+) -> CasePaths:
     beta = beta_token(float(beta_deg))
     token = safe_float_token(float(epsilon))
-    case_dir = SOLID_OUTPUT_DIR / f"beta_{beta}" / f"eps_{token}"
+    case_dir = output_root / f"beta_{beta}" / f"eps_{token}"
+    if mesh_size_factor is not None:
+        case_dir = case_dir / f"mesh_{mesh_factor_token(float(mesh_size_factor))}"
     stem = f"coupled_equal_rods_beta{beta}_eps{token}"
     return CasePaths(
         case_dir=case_dir,
@@ -606,10 +723,15 @@ def case_paths(beta_deg: float, epsilon: float) -> CasePaths:
     )
 
 
-def write_gmsh_geo(epsilon: float, paths: CasePaths) -> str:
+def write_gmsh_geo(
+    beta_deg: float,
+    epsilon: float,
+    paths: CasePaths,
+    mesh_size_factor: float = 1.0,
+) -> str:
     radius = radius_from_epsilon(float(epsilon))
-    mesh_size = mesh_size_for_epsilon(float(epsilon))
-    geom = geometry()
+    mesh_size = mesh_size_for_epsilon(float(epsilon), float(mesh_size_factor))
+    geom = geometry_for_beta(float(beta_deg))
     cos_b = math.cos(geom.beta_rad)
     sin_b = math.sin(geom.beta_rad)
     paths.case_dir.mkdir(parents=True, exist_ok=True)
@@ -617,7 +739,7 @@ def write_gmsh_geo(epsilon: float, paths: CasePaths) -> str:
     bbox = L_SEGMENT + 2.0 * radius
     paths.geo.write_text(
         f"""// Diagnostic-only two equal coupled rods solid mesh with separate cylinder volumes.
-// beta = {BETA_DEG:.17g} deg, epsilon = {float(epsilon):.17g}
+// beta = {float(beta_deg):.17g} deg, epsilon = {float(epsilon):.17g}, mesh_size_factor = {float(mesh_size_factor):.17g}
 SetFactory("OpenCASCADE");
 
 L = {L_SEGMENT:.17g};
@@ -679,8 +801,14 @@ def generate_mesh_with_gmsh_cli(paths: CasePaths, gmsh_exe: str) -> tuple[bool, 
     return True, "mesh generated successfully with Gmsh executable", tuple(messages)
 
 
-def generate_mesh(paths: CasePaths, epsilon: float, gmsh_exe: str) -> tuple[bool, str, str, tuple[str, ...]]:
-    geometry_label = write_gmsh_geo(float(epsilon), paths)
+def generate_mesh(
+    beta_deg: float,
+    epsilon: float,
+    paths: CasePaths,
+    gmsh_exe: str,
+    mesh_size_factor: float = 1.0,
+) -> tuple[bool, str, str, tuple[str, ...]]:
+    geometry_label = write_gmsh_geo(float(beta_deg), float(epsilon), paths, float(mesh_size_factor))
     ok, message, messages = generate_mesh_with_gmsh_cli(paths, gmsh_exe)
     return ok, message, geometry_label, messages
 
@@ -782,7 +910,7 @@ def connected_component_counts(mesh: MeshData) -> tuple[int, int]:
 def mesh_summary(beta_deg: float, epsilon: float, mesh: MeshData, gmsh_messages: Sequence[str]) -> MeshSummary:
     components, largest = connected_component_counts(mesh)
     radius, sin_beta, overlap_length, overlap_fraction = overlap_estimates(float(beta_deg), float(epsilon))
-    geom = geometry()
+    geom = geometry_for_beta(float(beta_deg))
     joint_zone_radius = 2.0 * radius
     joint_zone_nodes = {
         node_id for node_id, point in mesh.nodes.items() if norm(sub(point, geom.joint)) <= joint_zone_radius
@@ -824,8 +952,8 @@ def rod_assignment_cost(point: tuple[float, float, float], rod: RodFrame) -> flo
     return radial + outside
 
 
-def rod_node_memberships(mesh: MeshData) -> tuple[dict[int, set[int]], dict[int, int]]:
-    geom = geometry()
+def rod_node_memberships(beta_deg: float, mesh: MeshData) -> tuple[dict[int, set[int]], dict[int, int]]:
+    geom = geometry_for_beta(float(beta_deg))
     memberships: dict[int, set[int]] = {1: set(), 2: set()}
     element_counts: dict[int, int] = {1: 0, 2: 0}
     for connectivity in mesh.solid_elements.values():
@@ -846,11 +974,16 @@ def rod_node_memberships(mesh: MeshData) -> tuple[dict[int, set[int]], dict[int,
     return memberships, element_counts
 
 
-def coordinate_case_node_sets(mesh: MeshData, epsilon: float) -> tuple[list[int], list[int], list[int], list[int]]:
-    geom = geometry()
-    memberships, _element_counts = rod_node_memberships(mesh)
+def coordinate_case_node_sets(
+    beta_deg: float,
+    mesh: MeshData,
+    epsilon: float,
+    mesh_size_factor: float = 1.0,
+) -> tuple[list[int], list[int], list[int], list[int]]:
+    geom = geometry_for_beta(float(beta_deg))
+    memberships, _element_counts = rod_node_memberships(float(beta_deg), mesh)
     radius = radius_from_epsilon(float(epsilon))
-    plane_tol = max(mesh_size_for_epsilon(float(epsilon)) / 50.0, 1.0e-6)
+    plane_tol = max(mesh_size_for_epsilon(float(epsilon), float(mesh_size_factor)) / 50.0, 1.0e-6)
     radial_tol = 1.02 * radius + plane_tol
     rod1_nodes: list[int] = []
     rod2_nodes: list[int] = []
@@ -905,32 +1038,77 @@ def write_calculix_mesh_include(paths: CasePaths, mesh: MeshData) -> None:
     paths.ccx_mesh_inp.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def write_calculix_inputs(paths: CasePaths, beta_deg: float, epsilon: float, mesh: MeshData) -> CcxInputSummary:
-    rod1_nodes, rod2_nodes, rod1_inner_nodes, rod2_inner_nodes = coordinate_case_node_sets(mesh, float(epsilon))
+def write_calculix_inputs(
+    paths: CasePaths,
+    beta_deg: float,
+    epsilon: float,
+    mesh: MeshData,
+    mesh_size_factor: float = 1.0,
+    planar_constraint: bool = False,
+    planar_reference_fallback: bool = False,
+    planar_mpc_compatible_fallback: bool = False,
+) -> CcxInputSummary:
+    rod1_nodes, rod2_nodes, rod1_inner_nodes, rod2_inner_nodes = coordinate_case_node_sets(
+        float(beta_deg), mesh, float(epsilon), float(mesh_size_factor)
+    )
     joint_coupled_nodes = sorted(set(rod1_inner_nodes) | set(rod2_inner_nodes))
+    all_solid_nodes = sorted(mesh.nodes)
+    planar_independent_nodes = sorted(set(all_solid_nodes) - set(joint_coupled_nodes))
     joint_ref_node_id = max(mesh.nodes.keys(), default=0) + 1
     write_calculix_mesh_include(paths, mesh)
+    node_set_lines: list[str] = [
+        f"*NSET, NSET={JOINT_REF_NODE_NAME}",
+        f"{joint_ref_node_id}",
+        "*NSET, NSET=ROD1_OUTER_FIXED",
+        *format_id_lines(rod1_nodes),
+        "*NSET, NSET=ROD2_OUTER_FIXED",
+        *format_id_lines(rod2_nodes),
+        "*NSET, NSET=ROD1_INNER_COUPLED",
+        *format_id_lines(rod1_inner_nodes),
+        "*NSET, NSET=ROD2_INNER_COUPLED",
+        *format_id_lines(rod2_inner_nodes),
+        f"*NSET, NSET={JOINT_COUPLED_SET_NAME}",
+        *format_id_lines(joint_coupled_nodes),
+    ]
+    if planar_constraint:
+        node_set_lines.extend(
+            [
+                f"*NSET, NSET={PLANAR_SOLID_NODE_SET_NAME}",
+                *format_id_lines(all_solid_nodes),
+            ]
+        )
+    if planar_constraint and planar_mpc_compatible_fallback:
+        node_set_lines.extend(
+            [
+                f"*NSET, NSET={PLANAR_INDEPENDENT_NODE_SET_NAME}",
+                *format_id_lines(planar_independent_nodes),
+            ]
+        )
+    boundary_lines = ["*BOUNDARY"]
+    if planar_constraint:
+        planar_boundary_set = PLANAR_INDEPENDENT_NODE_SET_NAME if planar_mpc_compatible_fallback else PLANAR_SOLID_NODE_SET_NAME
+        boundary_lines.append(f"{planar_boundary_set}, 3, 3, 0")
+    if planar_reference_fallback or planar_mpc_compatible_fallback:
+        boundary_lines.append(PLANAR_REFERENCE_FALLBACK_BOUNDARY)
+    boundary_lines.extend(
+        [
+            "ROD1_OUTER_FIXED, 1, 3, 0",
+            "ROD2_OUTER_FIXED, 1, 3, 0",
+        ]
+    )
     paths.ccx_modal_inp.write_text(
         "\n".join(
             [
                 "** Diagnostic-only CalculiX modal input for two separate equal circular rods.",
                 "** Outer fixed and inner coupled node sets are generated from local rod coordinate projections.",
                 "** The inner end faces are tied to one shared rigid reference node.",
+                f"** Planar constraint active: {bool(planar_constraint)}.",
+                f"** Planar reference-node fallback active: {bool(planar_reference_fallback)}.",
+                f"** Planar MPC-compatible fallback active: {bool(planar_mpc_compatible_fallback)}.",
                 f"*INCLUDE, INPUT={paths.ccx_mesh_inp.name}",
                 "*NODE",
                 f"{joint_ref_node_id}, 0.0, 0.0, 0.0",
-                f"*NSET, NSET={JOINT_REF_NODE_NAME}",
-                f"{joint_ref_node_id}",
-                "*NSET, NSET=ROD1_OUTER_FIXED",
-                *format_id_lines(rod1_nodes),
-                "*NSET, NSET=ROD2_OUTER_FIXED",
-                *format_id_lines(rod2_nodes),
-                "*NSET, NSET=ROD1_INNER_COUPLED",
-                *format_id_lines(rod1_inner_nodes),
-                "*NSET, NSET=ROD2_INNER_COUPLED",
-                *format_id_lines(rod2_inner_nodes),
-                f"*NSET, NSET={JOINT_COUPLED_SET_NAME}",
-                *format_id_lines(joint_coupled_nodes),
+                *node_set_lines,
                 "*MATERIAL, NAME=MAT",
                 "*ELASTIC",
                 f"{E:.17g}, {NU:.17g}",
@@ -938,9 +1116,7 @@ def write_calculix_inputs(paths: CasePaths, beta_deg: float, epsilon: float, mes
                 f"{RHO:.17g}",
                 "*SOLID SECTION, ELSET=SOLID, MATERIAL=MAT",
                 f"*RIGID BODY, NSET={JOINT_COUPLED_SET_NAME}, REF NODE={joint_ref_node_id}",
-                "*BOUNDARY",
-                "ROD1_OUTER_FIXED, 1, 3, 0",
-                "ROD2_OUTER_FIXED, 1, 3, 0",
+                *boundary_lines,
                 "*STEP",
                 "*FREQUENCY",
                 f"{N_SOLID_MODES}",
@@ -965,6 +1141,11 @@ def write_calculix_inputs(paths: CasePaths, beta_deg: float, epsilon: float, mes
         joint_ref_node_id=joint_ref_node_id,
         constraint_method=RIGID_CONSTRAINT_METHOD.replace("<joint reference node>", str(joint_ref_node_id)),
         node_sets_present=bool(rod1_nodes and rod2_nodes and rod1_inner_nodes and rod2_inner_nodes),
+        all_solid_node_count=len(all_solid_nodes) if planar_constraint else 0,
+        planar_independent_node_count=len(planar_independent_nodes) if planar_mpc_compatible_fallback else 0,
+        planar_constraint=bool(planar_constraint),
+        planar_reference_fallback=bool(planar_reference_fallback),
+        planar_mpc_compatible_fallback=bool(planar_mpc_compatible_fallback),
     )
 
 
@@ -1145,8 +1326,12 @@ def parse_calculix_frd_mode_shapes(paths: CasePaths, beta_deg: float, epsilon: f
     )
 
 
-def assigned_rod(point: tuple[float, float, float], epsilon: float) -> tuple[int, float, float, float] | None:
-    geom = geometry()
+def assigned_rod(
+    beta_deg: float,
+    point: tuple[float, float, float],
+    epsilon: float,
+) -> tuple[int, float, float, float] | None:
+    geom = geometry_for_beta(float(beta_deg))
     radius = radius_from_epsilon(float(epsilon))
     candidates: list[tuple[float, int, float, float]] = []
     for rod_index, rod in ((1, geom.rod1), (2, geom.rod2)):
@@ -1193,7 +1378,7 @@ def compute_mode_metric(
     mesh: MeshData,
     mode_shape: dict[int, tuple[float, float, float]],
 ) -> ModeMetric | None:
-    geom = geometry()
+    geom = geometry_for_beta(float(beta_deg))
     total_energy = 0.0
     in_plane_energy = 0.0
     out_of_plane_energy = 0.0
@@ -1218,7 +1403,7 @@ def compute_mode_metric(
         out_of_plane_energy += uz * uz
         if norm(sub(point, geom.joint)) <= 1.5 * radius:
             joint_energy += local_total
-        assignment = assigned_rod(point, float(epsilon))
+        assignment = assigned_rod(float(beta_deg), point, float(epsilon))
         if assignment is None:
             parsed_count += 1
             continue
@@ -1344,11 +1529,12 @@ def fill_missing_slice_means(values: np.ndarray, counts: np.ndarray) -> tuple[np
 
 
 def solid_centerline_vector(
+    beta_deg: float,
     mesh: MeshData,
     mode_shape: dict[int, tuple[float, float, float]],
 ) -> tuple[np.ndarray, int, int]:
-    geom = geometry()
-    memberships, _element_counts = rod_node_memberships(mesh)
+    geom = geometry_for_beta(float(beta_deg))
+    memberships, _element_counts = rod_node_memberships(float(beta_deg), mesh)
     rod_vectors: list[np.ndarray] = []
     total_filled = 0
     total_empty = 0
@@ -1388,7 +1574,7 @@ def compute_solid_centerline_shapes(
         mode_shape = parse_result.mode_shapes.get(mode_index)
         if mode_shape is None:
             continue
-        vector, filled, empty = solid_centerline_vector(mesh, mode_shape)
+        vector, filled, empty = solid_centerline_vector(float(beta_deg), mesh, mode_shape)
         rows.append(
             SolidCenterlineShape(
                 beta_deg=float(beta_deg),
@@ -1405,7 +1591,7 @@ def compute_solid_centerline_shapes(
     return rows
 
 
-def load_analytic_module() -> ModuleType:
+def load_analytic_module(initial_beta_deg: float | None = None) -> ModuleType:
     module_path = ANALYSIS_DIR / "compare_coupled_equal_rods_eb_timoshenko.py"
     spec = importlib.util.spec_from_file_location("coupled_equal_rods_reference", module_path)
     if spec is None or spec.loader is None:
@@ -1413,7 +1599,7 @@ def load_analytic_module() -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    module.BETA_DEG = BETA_DEG
+    module.BETA_DEG = float(initial_beta_deg if initial_beta_deg is not None else active_beta_deg_values()[0])
     module.MU = MU
     module.N_MODES = N_ANALYTIC_MODES
     module.L_SEGMENT = L_SEGMENT
@@ -1424,12 +1610,14 @@ def load_analytic_module() -> ModuleType:
 
 
 def compute_analytic_rows() -> tuple[list[dict[str, object]], list[str]]:
-    reference = load_analytic_module()
+    beta_values = active_beta_deg_values()
+    epsilon_values = active_epsilon_values()
+    reference = load_analytic_module(beta_values[0])
     rows: list[dict[str, object]] = []
     warnings: list[str] = []
-    for beta_deg in BETA_DEG_VALUES:
+    for beta_deg in beta_values:
         reference.BETA_DEG = float(beta_deg)
-        for epsilon in EPSILON_VALUES:
+        for epsilon in epsilon_values:
             eb_values = reference.eb_roots(float(epsilon))
             timo_values, root_warnings = reference.timo_roots(float(epsilon), eb_values)
             warnings.extend(f"beta={float(beta_deg):g}, epsilon={float(epsilon):g}: {warning}" for warning in root_warnings)
@@ -1611,7 +1799,8 @@ def mac_strength(value: object) -> str:
 def build_analytic_shape_vectors(
     analytic_rows: Sequence[dict[str, object]],
 ) -> tuple[dict[tuple[float, float, str, int], tuple[np.ndarray, str]], list[str]]:
-    reference = load_analytic_module()
+    initial_beta = float(analytic_rows[0]["beta_deg"]) if analytic_rows else None
+    reference = load_analytic_module(initial_beta)
     vectors: dict[tuple[float, float, str, int], tuple[np.ndarray, str]] = {}
     warnings: list[str] = []
     for row in analytic_rows:
@@ -1641,39 +1830,41 @@ def build_mac_matrix_rows(
     for solid in solid_shapes:
         solid_by_case[(solid.beta_deg, solid.epsilon)].append(solid)
     rows_by_model: dict[str, list[dict[str, object]]] = {"EB": [], "Timoshenko": []}
-    for beta_deg in BETA_DEG_VALUES:
-        for epsilon in EPSILON_VALUES:
-            solids = sorted(solid_by_case.get((float(beta_deg), float(epsilon)), []), key=lambda item: item.solid_mode)
-            for mode in range(1, N_ANALYTIC_MODES + 1):
-                analytic = analytic_lookup[(float(beta_deg), float(epsilon), mode)]
-                for model, lambda_key in (("EB", "Lambda_EB"), ("Timoshenko", "Lambda_Timoshenko")):
-                    vector_note = analytic_vectors.get((float(beta_deg), float(epsilon), model, mode))
-                    if vector_note is None:
-                        continue
-                    analytic_vector, note = vector_note
-                    lambda_analytic = float(analytic[lambda_key])
-                    omega_analytic = project_omega(lambda_analytic, float(epsilon))
-                    for solid in solids:
-                        frequency_abs_diff = abs(float(solid.omega) - omega_analytic)
-                        frequency_rel_diff = (
-                            frequency_abs_diff / abs(omega_analytic) if abs(omega_analytic) > 1.0e-14 else float("nan")
-                        )
-                        rows_by_model[model].append(
-                            {
-                                "beta": float(beta_deg),
-                                "epsilon": float(epsilon),
-                                "solid_mode": solid.solid_mode,
-                                "solid_class": solid.classification,
-                                "analytic_model": model,
-                                "analytic_mode": mode,
-                                "Lambda_solid": solid.lambda_fem,
-                                "Lambda_analytic": lambda_analytic,
-                                "MAC": centerline_mac(solid.vector, analytic_vector),
-                                "frequency_abs_diff": frequency_abs_diff,
-                                "frequency_rel_diff": frequency_rel_diff,
-                                "analytic_shape_note": note,
-                            }
-                        )
+    case_pairs = sorted({(float(row["beta_deg"]), float(row["epsilon"])) for row in analytic_rows})
+    for beta_deg, epsilon in case_pairs:
+        solids = sorted(solid_by_case.get((float(beta_deg), float(epsilon)), []), key=lambda item: item.solid_mode)
+        for mode in range(1, N_ANALYTIC_MODES + 1):
+            analytic = analytic_lookup.get((float(beta_deg), float(epsilon), mode))
+            if analytic is None:
+                continue
+            for model, lambda_key in (("EB", "Lambda_EB"), ("Timoshenko", "Lambda_Timoshenko")):
+                vector_note = analytic_vectors.get((float(beta_deg), float(epsilon), model, mode))
+                if vector_note is None:
+                    continue
+                analytic_vector, note = vector_note
+                lambda_analytic = float(analytic[lambda_key])
+                omega_analytic = project_omega(lambda_analytic, float(epsilon))
+                for solid in solids:
+                    frequency_abs_diff = abs(float(solid.omega) - omega_analytic)
+                    frequency_rel_diff = (
+                        frequency_abs_diff / abs(omega_analytic) if abs(omega_analytic) > 1.0e-14 else float("nan")
+                    )
+                    rows_by_model[model].append(
+                        {
+                            "beta": float(beta_deg),
+                            "epsilon": float(epsilon),
+                            "solid_mode": solid.solid_mode,
+                            "solid_class": solid.classification,
+                            "analytic_model": model,
+                            "analytic_mode": mode,
+                            "Lambda_solid": solid.lambda_fem,
+                            "Lambda_analytic": lambda_analytic,
+                            "MAC": centerline_mac(solid.vector, analytic_vector),
+                            "frequency_abs_diff": frequency_abs_diff,
+                            "frequency_rel_diff": frequency_rel_diff,
+                            "analytic_shape_note": note,
+                        }
+                    )
     return rows_by_model["EB"], rows_by_model["Timoshenko"], warnings
 
 
@@ -1908,53 +2099,55 @@ def build_in_plane_comparison_rows(
     for metric in mode_metrics:
         if metric.classification == "in_plane_bending_like":
             metrics_by_case[(metric.beta_deg, metric.epsilon)].append(metric)
-    for beta_deg in BETA_DEG_VALUES:
-        for epsilon in EPSILON_VALUES:
-            key = (float(beta_deg), float(epsilon))
-            in_plane = sorted(metrics_by_case.get(key, []), key=lambda item: item.solid_mode)
-            for mode_index in range(1, N_ANALYTIC_MODES + 1):
-                analytic = lookup[(float(beta_deg), float(epsilon), mode_index)]
-                omega_c = float(analytic["Omega_cutoff"])
-                if mode_index <= len(in_plane):
-                    metric = in_plane[mode_index - 1]
-                    diff_eb = metric.lambda_fem - float(analytic["Lambda_EB"])
-                    diff_timo = metric.lambda_fem - float(analytic["Lambda_Timoshenko"])
-                    closer = "Timoshenko" if abs(diff_timo) < abs(diff_eb) else "Euler-Bernoulli"
-                    rows.append(
-                        {
-                            **analytic,
-                            "classified_in_plane_index": mode_index,
-                            "solid_mode": metric.solid_mode,
-                            "Omega_FEM": metric.omega,
-                            "Lambda_FEM": metric.lambda_fem,
-                            "Omega_FEM_over_cutoff": metric.omega / omega_c,
-                            "below_cutoff_FEM": metric.omega < omega_c,
-                            "FEM_minus_EB": diff_eb,
-                            "FEM_minus_Timoshenko": diff_timo,
-                            "closer_to": closer,
-                            "classification": metric.classification,
-                            "status": "classified_in_plane",
-                            "notes": metric.classification_note,
-                        }
-                    )
-                else:
-                    rows.append(
-                        {
-                            **analytic,
-                            "classified_in_plane_index": mode_index,
-                            "solid_mode": "",
-                            "Omega_FEM": "",
-                            "Lambda_FEM": "",
-                            "Omega_FEM_over_cutoff": "",
-                            "below_cutoff_FEM": "",
-                            "FEM_minus_EB": "",
-                            "FEM_minus_Timoshenko": "",
-                            "closer_to": "",
-                            "classification": "",
-                            "status": "not_classified",
-                            "notes": "not enough classified in-plane bending-like solid modes in requested solid spectrum",
-                        }
-                    )
+    case_pairs = sorted({(float(row["beta_deg"]), float(row["epsilon"])) for row in analytic_rows})
+    for beta_deg, epsilon in case_pairs:
+        key = (float(beta_deg), float(epsilon))
+        in_plane = sorted(metrics_by_case.get(key, []), key=lambda item: item.solid_mode)
+        for mode_index in range(1, N_ANALYTIC_MODES + 1):
+            analytic = lookup.get((float(beta_deg), float(epsilon), mode_index))
+            if analytic is None:
+                continue
+            omega_c = float(analytic["Omega_cutoff"])
+            if mode_index <= len(in_plane):
+                metric = in_plane[mode_index - 1]
+                diff_eb = metric.lambda_fem - float(analytic["Lambda_EB"])
+                diff_timo = metric.lambda_fem - float(analytic["Lambda_Timoshenko"])
+                closer = "Timoshenko" if abs(diff_timo) < abs(diff_eb) else "Euler-Bernoulli"
+                rows.append(
+                    {
+                        **analytic,
+                        "classified_in_plane_index": mode_index,
+                        "solid_mode": metric.solid_mode,
+                        "Omega_FEM": metric.omega,
+                        "Lambda_FEM": metric.lambda_fem,
+                        "Omega_FEM_over_cutoff": metric.omega / omega_c,
+                        "below_cutoff_FEM": metric.omega < omega_c,
+                        "FEM_minus_EB": diff_eb,
+                        "FEM_minus_Timoshenko": diff_timo,
+                        "closer_to": closer,
+                        "classification": metric.classification,
+                        "status": "classified_in_plane",
+                        "notes": metric.classification_note,
+                    }
+                )
+            else:
+                rows.append(
+                    {
+                        **analytic,
+                        "classified_in_plane_index": mode_index,
+                        "solid_mode": "",
+                        "Omega_FEM": "",
+                        "Lambda_FEM": "",
+                        "Omega_FEM_over_cutoff": "",
+                        "below_cutoff_FEM": "",
+                        "FEM_minus_EB": "",
+                        "FEM_minus_Timoshenko": "",
+                        "closer_to": "",
+                        "classification": "",
+                        "status": "not_classified",
+                        "notes": "not enough classified in-plane bending-like solid modes in requested solid spectrum",
+                    }
+                )
     return rows
 
 
@@ -1966,9 +2159,9 @@ def write_csv(path: Path, rows: Sequence[dict[str, object]], fieldnames: Sequenc
         writer.writerows(rows)
 
 
-def write_sorted_csv(rows: Sequence[dict[str, object]]) -> None:
+def write_sorted_csv(rows: Sequence[dict[str, object]], path: Path = OUTPUT_SORTED_CSV) -> None:
     write_csv(
-        OUTPUT_SORTED_CSV,
+        path,
         rows,
         [
             "beta_deg",
@@ -1996,7 +2189,7 @@ def write_sorted_csv(rows: Sequence[dict[str, object]]) -> None:
     )
 
 
-def write_mode_metrics_csv(rows: Sequence[ModeMetric]) -> None:
+def write_mode_metrics_csv(rows: Sequence[ModeMetric], path: Path = OUTPUT_MODE_METRICS_CSV) -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     fieldnames = [
         "beta_deg",
@@ -2018,7 +2211,7 @@ def write_mode_metrics_csv(rows: Sequence[ModeMetric]) -> None:
         "classification",
         "classification_note",
     ]
-    with OUTPUT_MODE_METRICS_CSV.open("w", newline="", encoding="utf-8") as handle:
+    with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
         for row in rows:
@@ -2147,9 +2340,9 @@ def write_mac_matrix_csv(path: Path, rows: Sequence[dict[str, object]]) -> None:
     )
 
 
-def write_mac_matches_csv(rows: Sequence[dict[str, object]]) -> None:
+def write_mac_matches_csv(rows: Sequence[dict[str, object]], path: Path = OUTPUT_MAC_MATCHES_CSV) -> None:
     write_csv(
-        OUTPUT_MAC_MATCHES_CSV,
+        path,
         rows,
         [
             "match_direction",
@@ -2183,6 +2376,1246 @@ def write_mac_matches_csv(rows: Sequence[dict[str, object]]) -> None:
     )
 
 
+def finite_number(value: object) -> float | None:
+    if value == "" or value is None:
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(number):
+        return None
+    return number
+
+
+def analytic_rows_for_case(
+    analytic_rows: Sequence[dict[str, object]],
+    beta_deg: float,
+    epsilon: float,
+) -> list[dict[str, object]]:
+    return [
+        row
+        for row in analytic_rows
+        if abs(float(row["beta_deg"]) - float(beta_deg)) <= 1.0e-12
+        and abs(float(row["epsilon"]) - float(epsilon)) <= 1.0e-12
+    ]
+
+
+def process_mesh_convergence_cases(
+    audit: ToolAudit,
+    constraint_audit: ConstraintCapabilityAudit,
+) -> tuple[list[MeshConvergenceCaseResult], list[str], str]:
+    results: list[MeshConvergenceCaseResult] = []
+    messages: list[str] = []
+    geometry_label = "not generated"
+    for beta_deg, epsilon in active_case_pairs():
+        for mesh_size_factor in active_mesh_size_factors():
+            case_label = (
+                f"beta={float(beta_deg):g}, epsilon={float(epsilon):g}, "
+                f"mesh_factor={float(mesh_size_factor):g}"
+            )
+            paths = case_paths(
+                float(beta_deg),
+                float(epsilon),
+                output_root=MESH_CONVERGENCE_OUTPUT_DIR,
+                mesh_size_factor=float(mesh_size_factor),
+            )
+            case_messages: list[str] = []
+            mesh_result: MeshSummary | None = None
+            ccx_input: CcxInputSummary | None = None
+            calculix_result: CalculixResult | None = None
+            parse_result: ModeShapeParseResult | None = None
+            metrics: list[ModeMetric] = []
+            solid_shapes: list[SolidCenterlineShape] = []
+
+            if not audit.gmsh_exe:
+                geometry_label = write_gmsh_geo(float(beta_deg), float(epsilon), paths, float(mesh_size_factor))
+                message = f"{case_label}: no Gmsh executable detected; wrote .geo only."
+                messages.append(message)
+                case_messages.append(message)
+                results.append(
+                    MeshConvergenceCaseResult(
+                        beta_deg=float(beta_deg),
+                        epsilon=float(epsilon),
+                        mesh_size_factor=float(mesh_size_factor),
+                        paths=paths,
+                        geometry_label=geometry_label,
+                        mesh_summary=None,
+                        ccx_input=None,
+                        calculix_result=None,
+                        parse_result=None,
+                        mode_metrics=(),
+                        solid_centerline_shapes=(),
+                        messages=tuple(case_messages),
+                    )
+                )
+                continue
+
+            mesh_ok, mesh_message, geometry_label, gmsh_messages = generate_mesh(
+                float(beta_deg), float(epsilon), paths, audit.gmsh_exe, float(mesh_size_factor)
+            )
+            message = f"{case_label}: {mesh_message}"
+            messages.append(message)
+            case_messages.append(message)
+            if gmsh_messages:
+                for item in gmsh_messages:
+                    gmsh_message = f"{case_label}: {item}"
+                    messages.append(gmsh_message)
+                    case_messages.append(gmsh_message)
+            if mesh_ok and paths.gmsh_inp.exists():
+                mesh = read_gmsh_inp_mesh_data(paths.gmsh_inp)
+                mesh_result = mesh_summary(float(beta_deg), float(epsilon), mesh, gmsh_messages)
+                ccx_input = write_calculix_inputs(
+                    paths,
+                    float(beta_deg),
+                    float(epsilon),
+                    mesh,
+                    float(mesh_size_factor),
+                )
+                node_message = (
+                    f"{case_label}: generated ROD1_OUTER_FIXED nodes={ccx_input.rod1_fixed_node_count}, "
+                    f"ROD2_OUTER_FIXED nodes={ccx_input.rod2_fixed_node_count}, "
+                    f"ROD1_INNER_COUPLED nodes={ccx_input.rod1_inner_node_count}, "
+                    f"ROD2_INNER_COUPLED nodes={ccx_input.rod2_inner_node_count}"
+                )
+                messages.append(node_message)
+                case_messages.append(node_message)
+                if not audit.ccx_exe:
+                    solver_message = f"{case_label}: CalculiX ccx not found; modal solve not run."
+                    messages.append(solver_message)
+                    case_messages.append(solver_message)
+                elif not constraint_audit.supported:
+                    solver_message = (
+                        f"{case_label}: rigid point-joint constraint capability was not confirmed; modal solve not run."
+                    )
+                    messages.append(solver_message)
+                    case_messages.append(solver_message)
+                else:
+                    calculix_result = run_calculix(paths, audit.ccx_exe, float(beta_deg), float(epsilon))
+                    solver_message = f"{case_label}: {calculix_result.message}"
+                    messages.append(solver_message)
+                    case_messages.append(solver_message)
+                    if calculix_result.success and calculix_result.parsed_omegas:
+                        metrics, parse_result = compute_mode_metrics(
+                            float(beta_deg), float(epsilon), paths, mesh, calculix_result.parsed_omegas
+                        )
+                        solid_shapes = compute_solid_centerline_shapes(
+                            float(beta_deg),
+                            float(epsilon),
+                            mesh,
+                            calculix_result.parsed_omegas,
+                            parse_result,
+                            metrics,
+                        )
+                        parse_message = f"{case_label}: {parse_result.message}"
+                        metric_message = f"{case_label}: computed {len(metrics)} mode-shape metric rows."
+                        messages.append(parse_message)
+                        messages.append(metric_message)
+                        case_messages.append(parse_message)
+                        case_messages.append(metric_message)
+
+            results.append(
+                MeshConvergenceCaseResult(
+                    beta_deg=float(beta_deg),
+                    epsilon=float(epsilon),
+                    mesh_size_factor=float(mesh_size_factor),
+                    paths=paths,
+                    geometry_label=geometry_label,
+                    mesh_summary=mesh_result,
+                    ccx_input=ccx_input,
+                    calculix_result=calculix_result,
+                    parse_result=parse_result,
+                    mode_metrics=tuple(metrics),
+                    solid_centerline_shapes=tuple(solid_shapes),
+                    messages=tuple(case_messages),
+                )
+            )
+    return results, messages, geometry_label
+
+
+def build_convergence_frequency_rows(
+    case_results: Sequence[MeshConvergenceCaseResult],
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for case in case_results:
+        result = case.calculix_result
+        if result is None or not result.parsed_omegas:
+            rows.append(
+                {
+                    "beta_deg": case.beta_deg,
+                    "epsilon": case.epsilon,
+                    "mesh_size_factor": case.mesh_size_factor,
+                    "solid_mode": "",
+                    "Omega_FEM": "",
+                    "Lambda_FEM": "",
+                    "calculix_success": False if result is None else result.success,
+                    "parse_source": "" if result is None else result.parse_source,
+                    "dat_path": "" if result is None else rel_path(result.dat_path),
+                    "notes": "no parsed frequencies",
+                }
+            )
+            continue
+        for mode_index, omega in enumerate(result.parsed_omegas[:N_SOLID_MODES], start=1):
+            rows.append(
+                {
+                    "beta_deg": case.beta_deg,
+                    "epsilon": case.epsilon,
+                    "mesh_size_factor": case.mesh_size_factor,
+                    "solid_mode": mode_index,
+                    "Omega_FEM": float(omega),
+                    "Lambda_FEM": lambda_fem_from_omega(float(omega), case.epsilon),
+                    "calculix_success": result.success,
+                    "parse_source": result.parse_source,
+                    "dat_path": rel_path(result.dat_path),
+                    "notes": "",
+                }
+            )
+    return rows
+
+
+def write_convergence_frequency_csv(rows: Sequence[dict[str, object]]) -> None:
+    write_csv(
+        OUTPUT_MESH_CONVERGENCE_FREQUENCIES_CSV,
+        rows,
+        [
+            "beta_deg",
+            "epsilon",
+            "mesh_size_factor",
+            "solid_mode",
+            "Omega_FEM",
+            "Lambda_FEM",
+            "calculix_success",
+            "parse_source",
+            "dat_path",
+            "notes",
+        ],
+    )
+
+
+def build_hungarian_assignment_rows(
+    mac_rows: Sequence[dict[str, object]],
+    beta_deg: float,
+    epsilon: float,
+    mesh_size_factor: float,
+) -> tuple[list[dict[str, object]], list[str]]:
+    try:
+        from scipy.optimize import linear_sum_assignment
+    except Exception as exc:
+        return [], [f"beta={beta_deg:g}, epsilon={epsilon:g}, mesh_factor={mesh_size_factor:g}: Hungarian assignment skipped because scipy.optimize.linear_sum_assignment is unavailable: {exc}"]
+
+    output_rows: list[dict[str, object]] = []
+    warnings: list[str] = []
+    assigned_by_model: dict[str, dict[int, dict[str, object]]] = defaultdict(dict)
+    analytic_lambdas: dict[int, dict[str, float]] = defaultdict(dict)
+
+    for model in ("EB", "Timoshenko"):
+        model_rows = [
+            row
+            for row in mac_rows
+            if str(row["analytic_model"]) == model and math.isfinite(float(row["MAC"]))
+        ]
+        if not model_rows:
+            continue
+        analytic_modes = list(range(1, N_ANALYTIC_MODES + 1))
+        solid_modes = sorted({int(row["solid_mode"]) for row in model_rows})
+        by_pair = {(int(row["analytic_mode"]), int(row["solid_mode"])): row for row in model_rows}
+        cost = np.full((len(analytic_modes), len(solid_modes)), 1.0e6, dtype=float)
+        for i, analytic_mode in enumerate(analytic_modes):
+            for j, solid_mode in enumerate(solid_modes):
+                row = by_pair.get((analytic_mode, solid_mode))
+                if row is not None:
+                    cost[i, j] = -float(row["MAC"])
+                    analytic_lambdas[analytic_mode][model] = float(row["Lambda_analytic"])
+        row_indices, col_indices = linear_sum_assignment(cost)
+        for i, j in zip(row_indices, col_indices):
+            analytic_mode = analytic_modes[int(i)]
+            solid_mode = solid_modes[int(j)]
+            row = by_pair.get((analytic_mode, solid_mode))
+            if row is None:
+                warnings.append(
+                    f"beta={beta_deg:g}, epsilon={epsilon:g}, mesh_factor={mesh_size_factor:g}, {model} mode={analytic_mode}: no finite MAC was available for Hungarian assignment."
+                )
+                continue
+            assigned_by_model[model][analytic_mode] = row
+            output_rows.append(
+                {
+                    "row_type": "hungarian_assignment",
+                    "assignment_method": "hungarian_cost_minus_mac",
+                    "beta": beta_deg,
+                    "epsilon": epsilon,
+                    "mesh_size_factor": mesh_size_factor,
+                    "analytic_model": model,
+                    "analytic_mode": analytic_mode,
+                    "best_solid_mode": int(row["solid_mode"]),
+                    "best_solid_class": row["solid_class"],
+                    "Lambda_solid": row["Lambda_solid"],
+                    "best_MAC": row["MAC"],
+                    "best_MAC_strength": mac_strength(row["MAC"]),
+                    "preferred_shape_model_by_MAC": "",
+                    "preferred_frequency_model_after_MAC": "",
+                    "best_EB_MAC": "",
+                    "best_Timo_MAC": "",
+                    "best_EB_Lambda": "",
+                    "best_Timo_Lambda": "",
+                    "best_EB_abs_freq_diff": "",
+                    "best_Timo_abs_freq_diff": "",
+                    "delta_Lambda_from_previous_mesh": "",
+                    "rel_delta_Lambda_from_previous_mesh": "",
+                    "delta_MAC_from_previous_mesh": "",
+                    "best_solid_mode_changed_warning": "",
+                    "duplicate_match_warning": "",
+                    "abs_diff_FEM_EB": "",
+                    "abs_diff_FEM_Timoshenko": "",
+                    "closer_to_EB_or_Timoshenko": "",
+                    "notes": "preliminary unique assignment; current convergence summary still uses best-MAC matching",
+                }
+            )
+
+    for analytic_mode in range(1, N_ANALYTIC_MODES + 1):
+        eb = assigned_by_model.get("EB", {}).get(analytic_mode)
+        timo = assigned_by_model.get("Timoshenko", {}).get(analytic_mode)
+        if eb is None and timo is None:
+            continue
+        eb_mac = float(eb["MAC"]) if eb is not None else float("nan")
+        timo_mac = float(timo["MAC"]) if timo is not None else float("nan")
+        preferred_model = "Timoshenko" if timo_mac > eb_mac else "EB"
+        chosen = timo if preferred_model == "Timoshenko" else eb
+        if chosen is None:
+            chosen = eb or timo
+        lambda_solid = float(chosen["Lambda_solid"])
+        lambda_eb = analytic_lambdas.get(analytic_mode, {}).get("EB", float("nan"))
+        lambda_timo = analytic_lambdas.get(analytic_mode, {}).get("Timoshenko", float("nan"))
+        omega_solid = project_omega(lambda_solid, epsilon)
+        eb_diff = abs(omega_solid - project_omega(lambda_eb, epsilon)) if math.isfinite(lambda_eb) else float("inf")
+        timo_diff = abs(omega_solid - project_omega(lambda_timo, epsilon)) if math.isfinite(lambda_timo) else float("inf")
+        output_rows.append(
+            {
+                "row_type": "hungarian_model_summary",
+                "assignment_method": "hungarian_better_model_mac",
+                "beta": beta_deg,
+                "epsilon": epsilon,
+                "mesh_size_factor": mesh_size_factor,
+                "analytic_model": "EB_vs_Timoshenko",
+                "analytic_mode": analytic_mode,
+                "best_solid_mode": int(chosen["solid_mode"]),
+                "best_solid_class": chosen["solid_class"],
+                "Lambda_solid": lambda_solid,
+                "best_MAC": chosen["MAC"],
+                "best_MAC_strength": mac_strength(chosen["MAC"]),
+                "preferred_shape_model_by_MAC": preferred_model,
+                "preferred_frequency_model_after_MAC": "Timoshenko" if timo_diff < eb_diff else "EB",
+                "best_EB_MAC": eb_mac if math.isfinite(eb_mac) else "",
+                "best_Timo_MAC": timo_mac if math.isfinite(timo_mac) else "",
+                "best_EB_Lambda": lambda_eb if math.isfinite(lambda_eb) else "",
+                "best_Timo_Lambda": lambda_timo if math.isfinite(lambda_timo) else "",
+                "best_EB_abs_freq_diff": eb_diff if math.isfinite(eb_diff) else "",
+                "best_Timo_abs_freq_diff": timo_diff if math.isfinite(timo_diff) else "",
+                "delta_Lambda_from_previous_mesh": "",
+                "rel_delta_Lambda_from_previous_mesh": "",
+                "delta_MAC_from_previous_mesh": "",
+                "best_solid_mode_changed_warning": "",
+                "duplicate_match_warning": "",
+                "abs_diff_FEM_EB": "",
+                "abs_diff_FEM_Timoshenko": "",
+                "closer_to_EB_or_Timoshenko": "",
+                "notes": "preliminary unique assignment summary",
+            }
+        )
+    return output_rows, warnings
+
+
+def build_convergence_mac_rows(
+    analytic_rows: Sequence[dict[str, object]],
+    case_results: Sequence[MeshConvergenceCaseResult],
+) -> tuple[list[dict[str, object]], list[str]]:
+    rows: list[dict[str, object]] = []
+    warnings: list[str] = []
+    factor_order = {factor: index for index, factor in enumerate(active_mesh_size_factors())}
+
+    for case in case_results:
+        if not case.solid_centerline_shapes:
+            continue
+        case_analytic = analytic_rows_for_case(analytic_rows, case.beta_deg, case.epsilon)
+        eb_rows, timo_rows, mac_warnings = build_mac_matrix_rows(case_analytic, case.solid_centerline_shapes)
+        warnings.extend(
+            f"beta={case.beta_deg:g}, epsilon={case.epsilon:g}, mesh_factor={case.mesh_size_factor:g}: {warning}"
+            for warning in mac_warnings
+        )
+        match_rows = build_mac_match_rows(eb_rows, timo_rows)
+        for match in match_rows:
+            if match.get("match_direction") == "analytic_mode_summary":
+                rows.append(
+                    {
+                        "row_type": "best_mac_model_summary",
+                        "assignment_method": "current_best_mac_with_preferred_classes",
+                        "beta": case.beta_deg,
+                        "epsilon": case.epsilon,
+                        "mesh_size_factor": case.mesh_size_factor,
+                        "analytic_model": match["analytic_model"],
+                        "analytic_mode": match["analytic_mode"],
+                        "best_solid_mode": match["best_solid_mode"],
+                        "best_solid_class": match["best_solid_class"],
+                        "Lambda_solid": match["Lambda_solid"],
+                        "best_MAC": match["best_MAC"],
+                        "best_MAC_strength": match["best_MAC_strength"],
+                        "preferred_shape_model_by_MAC": match["preferred_shape_model_by_MAC"],
+                        "preferred_frequency_model_after_MAC": match["preferred_frequency_model_after_MAC"],
+                        "best_EB_MAC": match["best_EB_MAC"],
+                        "best_Timo_MAC": match["best_Timo_MAC"],
+                        "best_EB_Lambda": match["best_EB_Lambda"],
+                        "best_Timo_Lambda": match["best_Timo_Lambda"],
+                        "best_EB_abs_freq_diff": match["best_EB_abs_freq_diff"],
+                        "best_Timo_abs_freq_diff": match["best_Timo_abs_freq_diff"],
+                        "delta_Lambda_from_previous_mesh": "",
+                        "rel_delta_Lambda_from_previous_mesh": "",
+                        "delta_MAC_from_previous_mesh": "",
+                        "best_solid_mode_changed_warning": "",
+                        "duplicate_match_warning": "",
+                        "abs_diff_FEM_EB": "",
+                        "abs_diff_FEM_Timoshenko": "",
+                        "closer_to_EB_or_Timoshenko": "",
+                        "notes": match["notes"],
+                    }
+                )
+            elif match.get("match_direction") == "analytic_to_solid" and match.get("duplicate_match_warning"):
+                rows.append(
+                    {
+                        "row_type": "duplicate_warning",
+                        "assignment_method": "current_best_mac_with_preferred_classes",
+                        "beta": case.beta_deg,
+                        "epsilon": case.epsilon,
+                        "mesh_size_factor": case.mesh_size_factor,
+                        "analytic_model": match["analytic_model"],
+                        "analytic_mode": match["analytic_mode"],
+                        "best_solid_mode": match["best_solid_mode"],
+                        "best_solid_class": match["best_solid_class"],
+                        "Lambda_solid": "",
+                        "best_MAC": match["best_MAC"],
+                        "best_MAC_strength": match["best_MAC_strength"],
+                        "preferred_shape_model_by_MAC": "",
+                        "preferred_frequency_model_after_MAC": "",
+                        "best_EB_MAC": "",
+                        "best_Timo_MAC": "",
+                        "best_EB_Lambda": "",
+                        "best_Timo_Lambda": "",
+                        "best_EB_abs_freq_diff": "",
+                        "best_Timo_abs_freq_diff": "",
+                        "delta_Lambda_from_previous_mesh": "",
+                        "rel_delta_Lambda_from_previous_mesh": "",
+                        "delta_MAC_from_previous_mesh": "",
+                        "best_solid_mode_changed_warning": "",
+                        "duplicate_match_warning": "duplicate",
+                        "abs_diff_FEM_EB": "",
+                        "abs_diff_FEM_Timoshenko": "",
+                        "closer_to_EB_or_Timoshenko": "",
+                        "notes": "duplicate best solid mode in raw analytic-to-solid matching",
+                    }
+                )
+                warnings.append(
+                    f"beta={case.beta_deg:g}, epsilon={case.epsilon:g}, mesh_factor={case.mesh_size_factor:g}: duplicate best solid mode {match['best_solid_mode']} for {match['analytic_model']} analytic mode {match['analytic_mode']}."
+                )
+        hungarian_rows, hungarian_warnings = build_hungarian_assignment_rows(
+            list(eb_rows) + list(timo_rows),
+            case.beta_deg,
+            case.epsilon,
+            case.mesh_size_factor,
+        )
+        rows.extend(hungarian_rows)
+        warnings.extend(hungarian_warnings)
+
+    best_rows = [row for row in rows if row["row_type"] == "best_mac_model_summary"]
+    grouped: dict[tuple[float, float, int], list[dict[str, object]]] = defaultdict(list)
+    for row in best_rows:
+        grouped[(float(row["beta"]), float(row["epsilon"]), int(row["analytic_mode"]))].append(row)
+
+    for group_rows in grouped.values():
+        group_rows.sort(key=lambda row: factor_order.get(float(row["mesh_size_factor"]), 10_000))
+        for index, row in enumerate(group_rows):
+            if index > 0:
+                previous = group_rows[index - 1]
+                current_lambda = finite_number(row["Lambda_solid"])
+                previous_lambda = finite_number(previous["Lambda_solid"])
+                if current_lambda is not None and previous_lambda is not None:
+                    delta_lambda = current_lambda - previous_lambda
+                    row["delta_Lambda_from_previous_mesh"] = delta_lambda
+                    row["rel_delta_Lambda_from_previous_mesh"] = (
+                        delta_lambda / abs(previous_lambda) if abs(previous_lambda) > 1.0e-14 else ""
+                    )
+                current_mac = finite_number(row["best_MAC"])
+                previous_mac = finite_number(previous["best_MAC"])
+                if current_mac is not None and previous_mac is not None:
+                    row["delta_MAC_from_previous_mesh"] = current_mac - previous_mac
+                if str(row["best_solid_mode"]) != str(previous["best_solid_mode"]):
+                    row["best_solid_mode_changed_warning"] = (
+                        f"changed from {previous['best_solid_mode']} to {row['best_solid_mode']}"
+                    )
+                    warnings.append(
+                        f"beta={float(row['beta']):g}, epsilon={float(row['epsilon']):g}, analytic mode={int(row['analytic_mode'])}: best solid mode changed from {previous['best_solid_mode']} to {row['best_solid_mode']} between mesh factors {float(previous['mesh_size_factor']):g} and {float(row['mesh_size_factor']):g}."
+                    )
+        if group_rows:
+            final_row = group_rows[-1]
+            eb_diff = finite_number(final_row["best_EB_abs_freq_diff"])
+            timo_diff = finite_number(final_row["best_Timo_abs_freq_diff"])
+            if eb_diff is not None:
+                final_row["abs_diff_FEM_EB"] = eb_diff
+            if timo_diff is not None:
+                final_row["abs_diff_FEM_Timoshenko"] = timo_diff
+            if eb_diff is not None and timo_diff is not None:
+                final_row["closer_to_EB_or_Timoshenko"] = "Timoshenko" if timo_diff < eb_diff else "EB"
+
+    return rows, sorted(set(warnings))
+
+
+def write_convergence_mac_csv(rows: Sequence[dict[str, object]]) -> None:
+    write_csv(
+        OUTPUT_MESH_CONVERGENCE_MAC_CSV,
+        rows,
+        [
+            "row_type",
+            "assignment_method",
+            "beta",
+            "epsilon",
+            "mesh_size_factor",
+            "analytic_model",
+            "analytic_mode",
+            "best_solid_mode",
+            "best_solid_class",
+            "Lambda_solid",
+            "best_MAC",
+            "best_MAC_strength",
+            "preferred_shape_model_by_MAC",
+            "preferred_frequency_model_after_MAC",
+            "best_EB_MAC",
+            "best_Timo_MAC",
+            "best_EB_Lambda",
+            "best_Timo_Lambda",
+            "best_EB_abs_freq_diff",
+            "best_Timo_abs_freq_diff",
+            "delta_Lambda_from_previous_mesh",
+            "rel_delta_Lambda_from_previous_mesh",
+            "delta_MAC_from_previous_mesh",
+            "best_solid_mode_changed_warning",
+            "duplicate_match_warning",
+            "abs_diff_FEM_EB",
+            "abs_diff_FEM_Timoshenko",
+            "closer_to_EB_or_Timoshenko",
+            "notes",
+        ],
+    )
+
+
+def build_convergence_summary_rows(
+    case_results: Sequence[MeshConvergenceCaseResult],
+    mac_rows: Sequence[dict[str, object]],
+) -> list[dict[str, object]]:
+    best_rows = [row for row in mac_rows if row.get("row_type") == "best_mac_model_summary"]
+    best_by_case: dict[tuple[float, float, float], list[dict[str, object]]] = defaultdict(list)
+    for row in best_rows:
+        best_by_case[(float(row["beta"]), float(row["epsilon"]), float(row["mesh_size_factor"]))].append(row)
+    duplicate_counts: dict[tuple[float, float, float], int] = defaultdict(int)
+    for row in mac_rows:
+        if row.get("row_type") == "duplicate_warning":
+            duplicate_counts[(float(row["beta"]), float(row["epsilon"]), float(row["mesh_size_factor"]))] += 1
+
+    completed_factor_by_case: dict[tuple[float, float], float] = {}
+    factor_order = {factor: index for index, factor in enumerate(active_mesh_size_factors())}
+    for beta_deg, epsilon, mesh_size_factor in best_by_case:
+        key = (beta_deg, epsilon)
+        current = completed_factor_by_case.get(key)
+        if current is None or factor_order.get(mesh_size_factor, -1) > factor_order.get(current, -1):
+            completed_factor_by_case[key] = mesh_size_factor
+
+    rows: list[dict[str, object]] = []
+    for case in sorted(case_results, key=lambda item: (item.beta_deg, item.epsilon, factor_order.get(item.mesh_size_factor, 10_000))):
+        key = (case.beta_deg, case.epsilon, case.mesh_size_factor)
+        case_best_rows = best_by_case.get(key, [])
+        strength_counts = {strength: 0 for strength in ("strong", "moderate", "weak", "missing")}
+        for row in case_best_rows:
+            strength_counts[str(row.get("best_MAC_strength", "missing"))] += 1
+        final_completed = completed_factor_by_case.get((case.beta_deg, case.epsilon)) == case.mesh_size_factor
+        final_rows = case_best_rows if final_completed else []
+        strong_final = [row for row in final_rows if row.get("best_MAC_strength") == "strong"]
+        moderate_final = [row for row in final_rows if row.get("best_MAC_strength") == "moderate"]
+        eligible_final = strong_final + moderate_final
+        rows.append(
+            {
+                "beta_deg": case.beta_deg,
+                "epsilon": case.epsilon,
+                "mesh_size_factor": case.mesh_size_factor,
+                "mesh_size": mesh_size_for_epsilon(case.epsilon, case.mesh_size_factor),
+                "node_count": "" if case.mesh_summary is None else case.mesh_summary.node_count,
+                "solid_element_count": "" if case.mesh_summary is None else case.mesh_summary.solid_element_count,
+                "connected_component_count": "" if case.mesh_summary is None else case.mesh_summary.connected_component_count,
+                "rod1_fixed_node_count": "" if case.ccx_input is None else case.ccx_input.rod1_fixed_node_count,
+                "rod2_fixed_node_count": "" if case.ccx_input is None else case.ccx_input.rod2_fixed_node_count,
+                "rod1_inner_node_count": "" if case.ccx_input is None else case.ccx_input.rod1_inner_node_count,
+                "rod2_inner_node_count": "" if case.ccx_input is None else case.ccx_input.rod2_inner_node_count,
+                "joint_coupled_node_count": "" if case.ccx_input is None else case.ccx_input.joint_coupled_node_count,
+                "calculix_status": "not_run" if case.calculix_result is None else ("success" if case.calculix_result.success else "failed"),
+                "parsed_frequency_count": 0 if case.calculix_result is None else len(case.calculix_result.parsed_omegas),
+                "strong_count": strength_counts["strong"],
+                "moderate_count": strength_counts["moderate"],
+                "weak_count": strength_counts["weak"],
+                "missing_count": strength_counts["missing"],
+                "duplicate_match_warning_count": duplicate_counts.get(key, 0),
+                "best_solid_mode_change_count": sum(1 for row in case_best_rows if row.get("best_solid_mode_changed_warning")),
+                "is_final_completed_mesh": final_completed,
+                "article_eligible_strong_count_final": len(strong_final),
+                "article_eligible_strong_or_moderate_count_final": len(eligible_final),
+                "weak_excluded_count_final": len([row for row in final_rows if row.get("best_MAC_strength") == "weak"]),
+                "final_strong_closer_to_Timoshenko": sum(1 for row in strong_final if row.get("closer_to_EB_or_Timoshenko") == "Timoshenko"),
+                "final_strong_closer_to_EB": sum(1 for row in strong_final if row.get("closer_to_EB_or_Timoshenko") == "EB"),
+                "final_strong_or_moderate_closer_to_Timoshenko": sum(1 for row in eligible_final if row.get("closer_to_EB_or_Timoshenko") == "Timoshenko"),
+                "final_strong_or_moderate_closer_to_EB": sum(1 for row in eligible_final if row.get("closer_to_EB_or_Timoshenko") == "EB"),
+                "case_dir": rel_path(case.paths.case_dir),
+            }
+        )
+    return rows
+
+
+def write_convergence_summary_csv(rows: Sequence[dict[str, object]]) -> None:
+    write_csv(
+        OUTPUT_MESH_CONVERGENCE_SUMMARY_CSV,
+        rows,
+        [
+            "beta_deg",
+            "epsilon",
+            "mesh_size_factor",
+            "mesh_size",
+            "node_count",
+            "solid_element_count",
+            "connected_component_count",
+            "rod1_fixed_node_count",
+            "rod2_fixed_node_count",
+            "rod1_inner_node_count",
+            "rod2_inner_node_count",
+            "joint_coupled_node_count",
+            "calculix_status",
+            "parsed_frequency_count",
+            "strong_count",
+            "moderate_count",
+            "weak_count",
+            "missing_count",
+            "duplicate_match_warning_count",
+            "best_solid_mode_change_count",
+            "is_final_completed_mesh",
+            "article_eligible_strong_count_final",
+            "article_eligible_strong_or_moderate_count_final",
+            "weak_excluded_count_final",
+            "final_strong_closer_to_Timoshenko",
+            "final_strong_closer_to_EB",
+            "final_strong_or_moderate_closer_to_Timoshenko",
+            "final_strong_or_moderate_closer_to_EB",
+            "case_dir",
+        ],
+    )
+
+
+def planar_reference_fallback_needed(result: CalculixResult | None) -> tuple[bool, str]:
+    if result is None:
+        return True, "primary planar solve did not produce a result object"
+    if not result.success:
+        return True, "primary planar solve failed"
+    if not result.parsed_omegas:
+        return True, "primary planar solve produced no parsed frequencies"
+    near_zero = [omega for omega in result.parsed_omegas[: min(6, len(result.parsed_omegas))] if abs(float(omega)) < 1.0e-6]
+    if near_zero:
+        return True, f"primary planar solve produced near-zero structural frequencies: {near_zero}"
+    return False, "primary planar solve succeeded without near-zero low modes"
+
+
+def copy_planar_attempt_outputs(paths: CasePaths, label: str) -> list[str]:
+    copied: list[str] = []
+    for path in (paths.ccx_stdout, paths.ccx_stderr, paths.ccx_dat, paths.ccx_frd):
+        if not path.exists():
+            continue
+        target = path.with_name(f"{path.stem}_{label}{path.suffix}")
+        shutil.copyfile(path, target)
+        copied.append(rel_path(target))
+    return copied
+
+
+def process_planar_cases(
+    audit: ToolAudit,
+    constraint_audit: ConstraintCapabilityAudit,
+) -> tuple[
+    dict[tuple[float, float], list[float]],
+    list[ModeMetric],
+    list[ModeShapeParseResult],
+    list[SolidCenterlineShape],
+    list[MeshSummary],
+    list[CcxInputSummary],
+    list[CalculixResult],
+    list[PlanarCaseResult],
+    list[str],
+    str,
+]:
+    fem_omegas_by_case: dict[tuple[float, float], list[float]] = {}
+    mode_metrics: list[ModeMetric] = []
+    parse_results: list[ModeShapeParseResult] = []
+    solid_centerline_shapes: list[SolidCenterlineShape] = []
+    mesh_summaries: list[MeshSummary] = []
+    ccx_inputs: list[CcxInputSummary] = []
+    calculix_results: list[CalculixResult] = []
+    planar_results: list[PlanarCaseResult] = []
+    messages: list[str] = []
+    geometry_label = "not generated"
+    mesh_size_factor = active_mesh_size_factors()[0]
+
+    for beta_deg, epsilon in active_case_pairs():
+        case_label = f"planar beta={float(beta_deg):g}, epsilon={float(epsilon):g}"
+        paths = case_paths(float(beta_deg), float(epsilon), output_root=PLANAR_OUTPUT_DIR)
+        case_messages: list[str] = []
+        mesh_result: MeshSummary | None = None
+        ccx_input: CcxInputSummary | None = None
+        result: CalculixResult | None = None
+        primary_result: CalculixResult | None = None
+        parse_result: ModeShapeParseResult | None = None
+        metrics: list[ModeMetric] = []
+        shapes: list[SolidCenterlineShape] = []
+        fallback_used = False
+
+        if not audit.gmsh_exe:
+            geometry_label = write_gmsh_geo(float(beta_deg), float(epsilon), paths, float(mesh_size_factor))
+            message = f"{case_label}: no Gmsh executable detected; wrote .geo only."
+            messages.append(message)
+            case_messages.append(message)
+            planar_results.append(
+                PlanarCaseResult(
+                    beta_deg=float(beta_deg),
+                    epsilon=float(epsilon),
+                    paths=paths,
+                    geometry_label=geometry_label,
+                    mesh_summary=None,
+                    ccx_input=None,
+                    calculix_result=None,
+                    primary_calculix_result=None,
+                    parse_result=None,
+                    mode_metrics=(),
+                    solid_centerline_shapes=(),
+                    fallback_used=False,
+                    messages=tuple(case_messages),
+                )
+            )
+            continue
+
+        mesh_ok, mesh_message, geometry_label, gmsh_messages = generate_mesh(
+            float(beta_deg), float(epsilon), paths, audit.gmsh_exe, float(mesh_size_factor)
+        )
+        message = f"{case_label}: {mesh_message}"
+        messages.append(message)
+        case_messages.append(message)
+        if gmsh_messages:
+            for item in gmsh_messages:
+                gmsh_message = f"{case_label}: {item}"
+                messages.append(gmsh_message)
+                case_messages.append(gmsh_message)
+        if mesh_ok and paths.gmsh_inp.exists():
+            mesh = read_gmsh_inp_mesh_data(paths.gmsh_inp)
+            mesh_result = mesh_summary(float(beta_deg), float(epsilon), mesh, gmsh_messages)
+            mesh_summaries.append(mesh_result)
+            ccx_input = write_calculix_inputs(
+                paths,
+                float(beta_deg),
+                float(epsilon),
+                mesh,
+                float(mesh_size_factor),
+                planar_constraint=True,
+                planar_reference_fallback=False,
+            )
+            ccx_inputs.append(ccx_input)
+            node_message = (
+                f"{case_label}: generated ALL_SOLID_NODES={ccx_input.all_solid_node_count}, "
+                f"ROD1_OUTER_FIXED={ccx_input.rod1_fixed_node_count}, "
+                f"ROD2_OUTER_FIXED={ccx_input.rod2_fixed_node_count}, "
+                f"ROD1_INNER_COUPLED={ccx_input.rod1_inner_node_count}, "
+                f"ROD2_INNER_COUPLED={ccx_input.rod2_inner_node_count}"
+            )
+            messages.append(node_message)
+            case_messages.append(node_message)
+            if not audit.ccx_exe:
+                solver_message = f"{case_label}: CalculiX ccx not found; modal solve not run."
+                messages.append(solver_message)
+                case_messages.append(solver_message)
+            elif not constraint_audit.supported:
+                solver_message = f"{case_label}: rigid point-joint constraint capability was not confirmed; modal solve not run."
+                messages.append(solver_message)
+                case_messages.append(solver_message)
+            else:
+                primary_result = run_calculix(paths, audit.ccx_exe, float(beta_deg), float(epsilon))
+                result = primary_result
+                calculix_results.append(primary_result)
+                primary_message = f"{case_label}: primary planar solve: {primary_result.message}"
+                messages.append(primary_message)
+                case_messages.append(primary_message)
+                needs_fallback, fallback_reason = planar_reference_fallback_needed(primary_result)
+                if needs_fallback:
+                    copied = copy_planar_attempt_outputs(paths, "primary_attempt")
+                    fallback_used = True
+                    fallback_message = (
+                        f"{case_label}: retrying with planar reference fallback `{PLANAR_REFERENCE_FALLBACK_BOUNDARY}`; "
+                        f"reason: {fallback_reason}; preserved primary files: {', '.join(copied) if copied else 'none'}"
+                    )
+                    messages.append(fallback_message)
+                    case_messages.append(fallback_message)
+                    ccx_input = write_calculix_inputs(
+                        paths,
+                        float(beta_deg),
+                        float(epsilon),
+                        mesh,
+                        float(mesh_size_factor),
+                        planar_constraint=True,
+                        planar_reference_fallback=True,
+                    )
+                    result = run_calculix(paths, audit.ccx_exe, float(beta_deg), float(epsilon))
+                    calculix_results.append(result)
+                    fallback_result_message = f"{case_label}: fallback planar solve: {result.message}"
+                    messages.append(fallback_result_message)
+                    case_messages.append(fallback_result_message)
+                    needs_mpc_fallback, mpc_fallback_reason = planar_reference_fallback_needed(result)
+                    if needs_mpc_fallback:
+                        copied_mpc = copy_planar_attempt_outputs(paths, "reference_fallback_attempt")
+                        mpc_message = (
+                            f"{case_label}: retrying with MPC-compatible planar fallback; "
+                            f"boundary uses `{PLANAR_INDEPENDENT_NODE_SET_NAME}, 3, 3, 0` plus "
+                            f"`{PLANAR_REFERENCE_FALLBACK_BOUNDARY}`; reason: {mpc_fallback_reason}; "
+                            f"preserved reference-fallback files: {', '.join(copied_mpc) if copied_mpc else 'none'}"
+                        )
+                        messages.append(mpc_message)
+                        case_messages.append(mpc_message)
+                        ccx_input = write_calculix_inputs(
+                            paths,
+                            float(beta_deg),
+                            float(epsilon),
+                            mesh,
+                            float(mesh_size_factor),
+                            planar_constraint=True,
+                            planar_reference_fallback=True,
+                            planar_mpc_compatible_fallback=True,
+                        )
+                        if ccx_inputs:
+                            ccx_inputs[-1] = ccx_input
+                        result = run_calculix(paths, audit.ccx_exe, float(beta_deg), float(epsilon))
+                        calculix_results.append(result)
+                        mpc_result_message = f"{case_label}: MPC-compatible planar solve: {result.message}"
+                        messages.append(mpc_result_message)
+                        case_messages.append(mpc_result_message)
+                else:
+                    no_fallback_message = f"{case_label}: reference-node fallback not needed; {fallback_reason}."
+                    messages.append(no_fallback_message)
+                    case_messages.append(no_fallback_message)
+
+                if result is not None and result.success and result.parsed_omegas:
+                    fem_omegas_by_case[(float(beta_deg), float(epsilon))] = list(result.parsed_omegas)
+                    metrics, parse_result = compute_mode_metrics(
+                        float(beta_deg), float(epsilon), paths, mesh, result.parsed_omegas
+                    )
+                    shapes = compute_solid_centerline_shapes(
+                        float(beta_deg), float(epsilon), mesh, result.parsed_omegas, parse_result, metrics
+                    )
+                    mode_metrics.extend(metrics)
+                    solid_centerline_shapes.extend(shapes)
+                    parse_results.append(parse_result)
+                    parse_message = f"{case_label}: {parse_result.message}"
+                    metric_message = f"{case_label}: computed {len(metrics)} mode-shape metric rows."
+                    messages.append(parse_message)
+                    messages.append(metric_message)
+                    case_messages.append(parse_message)
+                    case_messages.append(metric_message)
+
+        planar_results.append(
+            PlanarCaseResult(
+                beta_deg=float(beta_deg),
+                epsilon=float(epsilon),
+                paths=paths,
+                geometry_label=geometry_label,
+                mesh_summary=mesh_result,
+                ccx_input=ccx_input,
+                calculix_result=result,
+                primary_calculix_result=primary_result,
+                parse_result=parse_result,
+                mode_metrics=tuple(metrics),
+                solid_centerline_shapes=tuple(shapes),
+                fallback_used=fallback_used,
+                messages=tuple(case_messages),
+            )
+        )
+    return (
+        fem_omegas_by_case,
+        mode_metrics,
+        parse_results,
+        solid_centerline_shapes,
+        mesh_summaries,
+        ccx_inputs,
+        calculix_results,
+        planar_results,
+        messages,
+        geometry_label,
+    )
+
+
+def classification_count_text(metrics: Sequence[ModeMetric]) -> str:
+    if not metrics:
+        return "not available"
+    counts: dict[str, int] = defaultdict(int)
+    for metric in metrics:
+        counts[metric.classification] += 1
+    return ", ".join(f"{key}: {counts[key]}" for key in sorted(counts))
+
+
+def load_full_point_joint_metric_counts() -> dict[tuple[float, float], str]:
+    if not OUTPUT_MODE_METRICS_CSV.exists():
+        return {}
+    grouped: dict[tuple[float, float], list[str]] = defaultdict(list)
+    with OUTPUT_MODE_METRICS_CSV.open("r", newline="", encoding="utf-8") as handle:
+        for row in csv.DictReader(handle):
+            try:
+                key = (float(row["beta_deg"]), float(row["epsilon"]))
+            except (KeyError, ValueError):
+                continue
+            grouped[key].append(row.get("classification", ""))
+    output: dict[tuple[float, float], str] = {}
+    for key, classes in grouped.items():
+        counts: dict[str, int] = defaultdict(int)
+        for value in classes:
+            counts[value] += 1
+        output[key] = ", ".join(f"{name}: {counts[name]}" for name in sorted(counts))
+    return output
+
+
+def load_full_point_joint_mac_context() -> dict[tuple[float, float], dict[str, int]]:
+    context: dict[tuple[float, float], dict[str, int]] = {}
+    if OUTPUT_MESH_CONVERGENCE_MAC_CSV.exists():
+        grouped_rows: dict[tuple[float, float], list[dict[str, str]]] = defaultdict(list)
+        with OUTPUT_MESH_CONVERGENCE_MAC_CSV.open("r", newline="", encoding="utf-8") as handle:
+            for row in csv.DictReader(handle):
+                if row.get("row_type") != "best_mac_model_summary":
+                    continue
+                try:
+                    key = (float(row["beta"]), float(row["epsilon"]))
+                except (KeyError, ValueError):
+                    continue
+                grouped_rows[key].append(row)
+        for key, rows in grouped_rows.items():
+            rows_with_closeness = [row for row in rows if row.get("closer_to_EB_or_Timoshenko")]
+            if rows_with_closeness:
+                selected_rows = rows_with_closeness
+            else:
+                selected_rows = [
+                    row for row in rows if abs(float(row.get("mesh_size_factor", "nan")) - 1.0) <= 1.0e-12
+                ]
+            for row in selected_rows:
+                entry = context.setdefault(key, defaultdict(int))
+                entry[f"strength_{row.get('best_MAC_strength', 'missing')}"] += 1
+                if row.get("closer_to_EB_or_Timoshenko"):
+                    entry[f"closer_{row['closer_to_EB_or_Timoshenko']}"] += 1
+        return {key: dict(value) for key, value in context.items()}
+
+    if OUTPUT_MAC_MATCHES_CSV.exists():
+        with OUTPUT_MAC_MATCHES_CSV.open("r", newline="", encoding="utf-8") as handle:
+            for row in csv.DictReader(handle):
+                if row.get("match_direction") != "analytic_mode_summary":
+                    continue
+                try:
+                    key = (float(row["beta"]), float(row["epsilon"]))
+                except (KeyError, ValueError):
+                    continue
+                entry = context.setdefault(key, defaultdict(int))
+                entry[f"strength_{row.get('best_MAC_strength', 'missing')}"] += 1
+                if row.get("preferred_frequency_model_after_MAC"):
+                    entry[f"closer_{row['preferred_frequency_model_after_MAC']}"] += 1
+    return {key: dict(value) for key, value in context.items()}
+
+
+def planar_case_warning_lines(planar_results: Sequence[PlanarCaseResult]) -> list[str]:
+    lines: list[str] = []
+    for case in planar_results:
+        if case.fallback_used:
+            if case.ccx_input is not None and case.ccx_input.planar_mpc_compatible_fallback:
+                lines.append(
+                    f"- beta={case.beta_deg:g}, epsilon={case.epsilon:g}: MPC-compatible fallback used `{PLANAR_INDEPENDENT_NODE_SET_NAME}, 3, 3, 0` plus `{PLANAR_REFERENCE_FALLBACK_BOUNDARY}` after direct `ALL_SOLID_NODES` constraints conflicted with rigid-body MPC dependent nodes."
+                )
+            else:
+                lines.append(
+                    f"- beta={case.beta_deg:g}, epsilon={case.epsilon:g}: fallback `{PLANAR_REFERENCE_FALLBACK_BOUNDARY}` was used."
+                )
+        if case.calculix_result is None or not case.calculix_result.success:
+            lines.append(f"- beta={case.beta_deg:g}, epsilon={case.epsilon:g}: CalculiX did not complete successfully.")
+        if case.mode_metrics:
+            max_out = max(metric.out_of_plane_energy_fraction for metric in case.mode_metrics)
+            torsion_count = sum(1 for metric in case.mode_metrics if metric.classification == "torsion_like")
+            if max_out > 1.0e-8:
+                lines.append(
+                    f"- beta={case.beta_deg:g}, epsilon={case.epsilon:g}: max out-of-plane energy fraction is {max_out:.3e}, expected near zero under planar constraint."
+                )
+            if torsion_count:
+                lines.append(
+                    f"- beta={case.beta_deg:g}, epsilon={case.epsilon:g}: {torsion_count} torsion-like modes remain classified under planar constraint."
+                )
+    if not lines:
+        lines.append("- no planar-specific solver, out-of-plane, or torsion warnings")
+    return lines
+
+
+def write_planar_report(
+    *,
+    audit: ToolAudit,
+    constraint_audit: ConstraintCapabilityAudit,
+    analytic_warnings: Sequence[str],
+    planar_results: Sequence[PlanarCaseResult],
+    mesh_summaries: Sequence[MeshSummary],
+    ccx_inputs: Sequence[CcxInputSummary],
+    calculix_results: Sequence[CalculixResult],
+    mode_metrics: Sequence[ModeMetric],
+    sorted_rows: Sequence[dict[str, object]],
+    mac_match_rows: Sequence[dict[str, object]],
+    mac_warnings: Sequence[str],
+    messages: Sequence[str],
+) -> None:
+    summary_rows = [row for row in mac_match_rows if row.get("match_direction") == "analytic_mode_summary"]
+    full_metric_counts = load_full_point_joint_metric_counts()
+    full_mac_context = load_full_point_joint_mac_context()
+    planar_metrics_by_case: dict[tuple[float, float], list[ModeMetric]] = defaultdict(list)
+    for metric in mode_metrics:
+        planar_metrics_by_case[(metric.beta_deg, metric.epsilon)].append(metric)
+    planar_summary_by_case: dict[tuple[float, float], list[dict[str, object]]] = defaultdict(list)
+    for row in summary_rows:
+        planar_summary_by_case[(float(row["beta"]), float(row["epsilon"]))].append(row)
+
+    lines: list[str] = []
+    lines.append("# Coupled Equal Rods Point-Joint Planar-Constrained 3D Solid FEM Diagnostic")
+    lines.append("")
+    lines.append("Planar-constrained 3D FEM is a diagnostic check of the planar subspace corresponding to the 1D model. It is not a replacement for full 3D point-joint validation.")
+    lines.append("")
+    lines.append("No article file, paper_dorofeev_style file, article figure, old determinant, formulas.py, old solver, existing FEM physical model, fused workflow output, full point-joint output, or baseline result was changed by this planar diagnostic.")
+    lines.append("")
+    lines.append("## Purpose")
+    lines.append("")
+    lines.append("Check whether suppressing solid out-of-plane motion makes the 3D point-joint modes align more cleanly with the planar EB/Timoshenko one-dimensional references.")
+    lines.append("")
+    lines.append("## Parameters")
+    lines.append("")
+    lines.append(f"- active beta values: `{', '.join(f'{value:g}' for value in active_beta_deg_values())} deg`")
+    lines.append(f"- active epsilon values: `{', '.join(f'{value:g}' for value in active_epsilon_values())}`")
+    lines.append(f"- mesh size factors: `{', '.join(f'{value:g}' for value in active_mesh_size_factors())}`")
+    lines.append(f"- planar constraint values: `{', '.join(str(value) for value in active_planar_constraint_values())}`")
+    lines.append(f"- Gmsh executable: `{audit.gmsh_exe}`" if audit.gmsh_exe else "- Gmsh executable: not found")
+    lines.append(f"- CalculiX executable: `{audit.ccx_exe}`" if audit.ccx_exe else "- CalculiX executable: not found")
+    lines.append(f"- rigid constraint supported by local probe: `{constraint_audit.supported}`")
+    lines.append("")
+    lines.append("## Constraint Applied")
+    lines.append("")
+    lines.append(f"- primary planar constraint: `{PLANAR_SOLID_NODE_SET_NAME}, 3, 3, 0`")
+    lines.append("- outer fixed ends remain: `ROD1_OUTER_FIXED, 1, 3, 0` and `ROD2_OUTER_FIXED, 1, 3, 0`")
+    lines.append(f"- rigid point joint remains: `{RIGID_CONSTRAINT_METHOD}`")
+    lines.append(f"- first fallback, only if needed: `{PLANAR_REFERENCE_FALLBACK_BOUNDARY}`")
+    lines.append(f"- MPC-compatible fallback, only if the direct solid-node SPC conflicts with rigid-body dependent nodes: `{PLANAR_INDEPENDENT_NODE_SET_NAME}, 3, 3, 0` plus `{PLANAR_REFERENCE_FALLBACK_BOUNDARY}`")
+    lines.append("")
+    lines.append("## Mesh And Node Sets")
+    lines.append("")
+    lines.append("| epsilon | nodes | solid elems | ALL_SOLID_NODES | independent planar nodes | ROD1 fixed | ROD2 fixed | ROD1 inner | ROD2 inner | fallback used |")
+    lines.append("| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |")
+    fallback_by_case = {(case.beta_deg, case.epsilon): case.fallback_used for case in planar_results}
+    for summary in sorted(mesh_summaries, key=lambda item: (item.beta_deg, item.epsilon)):
+        ccx = next((item for item in ccx_inputs if item.beta_deg == summary.beta_deg and item.epsilon == summary.epsilon), None)
+        lines.append(
+            "| "
+            f"{summary.epsilon:g} | {summary.node_count} | {summary.solid_element_count} | "
+            f"{ccx.all_solid_node_count if ccx else '-'} | {ccx.planar_independent_node_count if ccx else '-'} | "
+            f"{ccx.rod1_fixed_node_count if ccx else '-'} | "
+            f"{ccx.rod2_fixed_node_count if ccx else '-'} | {ccx.rod1_inner_node_count if ccx else '-'} | "
+            f"{ccx.rod2_inner_node_count if ccx else '-'} | {fallback_by_case.get((summary.beta_deg, summary.epsilon), False)} |"
+        )
+    lines.append("")
+    lines.append("## CalculiX Status")
+    lines.append("")
+    lines.extend(markdown_calculix_lines(calculix_results))
+    lines.append("")
+    if analytic_warnings:
+        lines.append("Analytic/root-search warnings:")
+        for warning in analytic_warnings[:20]:
+            lines.append(f"- {warning}")
+        if len(analytic_warnings) > 20:
+            lines.append(f"- ... {len(analytic_warnings) - 20} more warnings")
+        lines.append("")
+    lines.append("## Classification")
+    lines.append("")
+    lines.append("| epsilon | planar classification counts | max out-of-plane energy | torsion-like count | previous full point-joint counts if available |")
+    lines.append("| ---: | --- | ---: | ---: | --- |")
+    for key in sorted(planar_metrics_by_case):
+        metrics = planar_metrics_by_case[key]
+        max_out = max((metric.out_of_plane_energy_fraction for metric in metrics), default=float("nan"))
+        torsion_count = sum(1 for metric in metrics if metric.classification == "torsion_like")
+        lines.append(
+            "| "
+            f"{key[1]:g} | {classification_count_text(metrics)} | {fmt(max_out, 4)} | {torsion_count} | "
+            f"{full_metric_counts.get(key, 'not available without recomputing full point-joint')} |"
+        )
+    lines.append("")
+    lines.append("## Sorted Comparison")
+    lines.append("")
+    lines.append("Sorted rows are preliminary and are not used for mode identity claims.")
+    lines.append("")
+    lines.append(markdown_sorted_table(sorted_rows))
+    lines.append("")
+    lines.append("## MAC-Like Matching")
+    lines.append("")
+    lines.append(markdown_mac_summary_table(mac_match_rows))
+    lines.append("")
+    lines.append("## MAC Counts And EB/Timoshenko Closeness")
+    lines.append("")
+    lines.append("| epsilon | strong | moderate | weak | closer Timoshenko | closer EB | previous full point-joint context |")
+    lines.append("| ---: | ---: | ---: | ---: | ---: | ---: | --- |")
+    for key in sorted(planar_summary_by_case):
+        rows = planar_summary_by_case[key]
+        strength_counts: dict[str, int] = defaultdict(int)
+        closer_counts: dict[str, int] = defaultdict(int)
+        for row in rows:
+            strength_counts[str(row.get("best_MAC_strength", "missing"))] += 1
+            closer_counts[str(row.get("preferred_frequency_model_after_MAC", ""))] += 1
+        full_context = full_mac_context.get(key)
+        if full_context:
+            full_text = (
+                f"strong={full_context.get('strength_strong', 0)}, "
+                f"moderate={full_context.get('strength_moderate', 0)}, "
+                f"weak={full_context.get('strength_weak', 0)}, "
+                f"Timo={full_context.get('closer_Timoshenko', 0)}, EB={full_context.get('closer_EB', 0)}"
+            )
+        else:
+            full_text = "not available without recomputing full point-joint"
+        lines.append(
+            "| "
+            f"{key[1]:g} | {strength_counts['strong']} | {strength_counts['moderate']} | {strength_counts['weak']} | "
+            f"{closer_counts['Timoshenko']} | {closer_counts['EB']} | {full_text} |"
+        )
+    lines.append("")
+    lines.append("## Interpretation")
+    lines.append("")
+    lines.extend(planar_case_warning_lines(planar_results))
+    for key in sorted(planar_summary_by_case):
+        rows = planar_summary_by_case[key]
+        metrics = planar_metrics_by_case.get(key, [])
+        planar_out_or_torsion = sum(
+            1
+            for metric in metrics
+            if metric.classification in {"out_of_plane_bending_like", "torsion_like"}
+        )
+        previous_counts = full_metric_counts.get(key, "")
+        if previous_counts and planar_out_or_torsion == 0 and (
+            "out_of_plane_bending_like" in previous_counts or "torsion_like" in previous_counts
+        ):
+            lines.append(
+                f"- epsilon={key[1]:g}: planar restriction removed the out-of-plane/torsion-like classified families present in the available full point-joint metric context."
+            )
+        eligible_best_modes = [
+            int(row["best_solid_mode"])
+            for row in rows
+            if row.get("best_MAC_strength") in {"strong", "moderate"} and str(row.get("best_solid_mode", "")).isdigit()
+        ]
+        if eligible_best_modes and max(eligible_best_modes) <= N_ANALYTIC_MODES:
+            lines.append(
+                f"- epsilon={key[1]:g}: strong/moderate planar MAC matches use only low sorted solid modes 1--{max(eligible_best_modes)}, which is cleaner than relying on interleaved full-3D mode families."
+            )
+        full_context = full_mac_context.get(key)
+        planar_strong_moderate = sum(1 for row in rows if row.get("best_MAC_strength") in {"strong", "moderate"})
+        planar_weak = sum(1 for row in rows if row.get("best_MAC_strength") == "weak")
+        if full_context:
+            full_strong_moderate = full_context.get("strength_strong", 0) + full_context.get("strength_moderate", 0)
+            full_weak = full_context.get("strength_weak", 0)
+            if planar_strong_moderate > full_strong_moderate or planar_weak < full_weak:
+                lines.append(
+                    f"- epsilon={key[1]:g}: planar restriction improves the MAC-strength summary relative to the available full point-joint context."
+                )
+            elif planar_strong_moderate == full_strong_moderate and planar_weak == full_weak:
+                lines.append(
+                    f"- epsilon={key[1]:g}: planar restriction leaves the MAC-strength summary essentially unchanged relative to the available full point-joint context."
+                )
+            else:
+                lines.append(
+                    f"- epsilon={key[1]:g}: planar restriction does not improve the available MAC-strength summary."
+                )
+        else:
+            lines.append(
+                f"- epsilon={key[1]:g}: full point-joint comparison context was not available, so improvement can only be judged qualitatively from the planar counts."
+            )
+    lines.append("- If planar-constrained agreement is cleaner, this supports the hypothesis that full 3D mismatch is partly due to interleaved out-of-plane, torsion, or solid cross-section families.")
+    lines.append("- If the planar diagnostic still has weak or ambiguous MAC rows, planar restriction alone does not explain the mismatch.")
+    lines.append("")
+    if mac_warnings:
+        lines.append("MAC/shape reconstruction warnings:")
+        for warning in mac_warnings[:20]:
+            lines.append(f"- {warning}")
+        if len(mac_warnings) > 20:
+            lines.append(f"- ... {len(mac_warnings) - 20} more warnings")
+        lines.append("")
+    lines.append("## Outputs")
+    lines.append("")
+    lines.append(f"- sorted comparison CSV: `{rel_path(OUTPUT_PLANAR_SORTED_CSV)}`")
+    lines.append(f"- mode metrics CSV: `{rel_path(OUTPUT_PLANAR_MODE_METRICS_CSV)}`")
+    lines.append(f"- EB centerline MAC matrix CSV: `{rel_path(OUTPUT_PLANAR_MAC_MATRIX_EB_CSV)}`")
+    lines.append(f"- Timoshenko centerline MAC matrix CSV: `{rel_path(OUTPUT_PLANAR_MAC_MATRIX_TIMO_CSV)}`")
+    lines.append(f"- MAC match summary CSV: `{rel_path(OUTPUT_PLANAR_MAC_MATCHES_CSV)}`")
+    lines.append(f"- report: `{rel_path(OUTPUT_PLANAR_REPORT)}`")
+    lines.append(f"- mesh/input/output directory: `{rel_path(PLANAR_OUTPUT_DIR)}`")
+    lines.append("")
+    lines.append("## Case Messages")
+    lines.append("")
+    for message in messages:
+        lines.append(f"- {message}")
+    lines.append("")
+    OUTPUT_PLANAR_REPORT.write_text("\n".join(lines), encoding="utf-8")
+
+
+def run_planar_diagnostic() -> int:
+    audit = audit_tools()
+    constraint_audit = audit_constraint_capability(audit)
+    analytic_rows, analytic_warnings = compute_analytic_rows()
+    (
+        fem_omegas_by_case,
+        mode_metrics,
+        _parse_results,
+        solid_centerline_shapes,
+        mesh_summaries,
+        ccx_inputs,
+        calculix_results,
+        planar_results,
+        messages,
+        _geometry_label,
+    ) = process_planar_cases(audit, constraint_audit)
+    sorted_rows = build_sorted_comparison_rows(analytic_rows, fem_omegas_by_case)
+    mac_eb_rows, mac_timo_rows, mac_warnings = build_mac_matrix_rows(analytic_rows, solid_centerline_shapes)
+    mac_match_rows = build_mac_match_rows(mac_eb_rows, mac_timo_rows)
+    write_sorted_csv(sorted_rows, OUTPUT_PLANAR_SORTED_CSV)
+    write_mode_metrics_csv(mode_metrics, OUTPUT_PLANAR_MODE_METRICS_CSV)
+    write_mac_matrix_csv(OUTPUT_PLANAR_MAC_MATRIX_EB_CSV, mac_eb_rows)
+    write_mac_matrix_csv(OUTPUT_PLANAR_MAC_MATRIX_TIMO_CSV, mac_timo_rows)
+    write_mac_matches_csv(mac_match_rows, OUTPUT_PLANAR_MAC_MATCHES_CSV)
+    write_planar_report(
+        audit=audit,
+        constraint_audit=constraint_audit,
+        analytic_warnings=analytic_warnings,
+        planar_results=planar_results,
+        mesh_summaries=mesh_summaries,
+        ccx_inputs=ccx_inputs,
+        calculix_results=calculix_results,
+        mode_metrics=mode_metrics,
+        sorted_rows=sorted_rows,
+        mac_match_rows=mac_match_rows,
+        mac_warnings=mac_warnings,
+        messages=messages,
+    )
+    print(f"wrote planar sorted comparison CSV: {OUTPUT_PLANAR_SORTED_CSV}")
+    print(f"wrote planar mode metrics CSV: {OUTPUT_PLANAR_MODE_METRICS_CSV}")
+    print(f"wrote planar EB MAC matrix CSV: {OUTPUT_PLANAR_MAC_MATRIX_EB_CSV}")
+    print(f"wrote planar Timoshenko MAC matrix CSV: {OUTPUT_PLANAR_MAC_MATRIX_TIMO_CSV}")
+    print(f"wrote planar MAC matches CSV: {OUTPUT_PLANAR_MAC_MATCHES_CSV}")
+    print(f"wrote planar report: {OUTPUT_PLANAR_REPORT}")
+    print(f"wrote planar mesh/input/output files under: {PLANAR_OUTPUT_DIR}")
+    if not any(result.success for result in calculix_results):
+        print("no planar 3D solid modal results computed; see report for missing tool or solver failure details")
+    return 0
+
+
 def process_cases(
     audit: ToolAudit,
     constraint_audit: ConstraintCapabilityAudit,
@@ -2197,7 +3630,6 @@ def process_cases(
     list[str],
     str,
 ]:
-    global BETA_DEG
     fem_omegas_by_case: dict[tuple[float, float], list[float]] = {}
     mode_metrics: list[ModeMetric] = []
     parse_results: list[ModeShapeParseResult] = []
@@ -2207,57 +3639,57 @@ def process_cases(
     calculix_results: list[CalculixResult] = []
     messages: list[str] = []
     geometry_label = "not generated"
-    for beta_deg in BETA_DEG_VALUES:
-        BETA_DEG = float(beta_deg)
-        for epsilon in EPSILON_VALUES:
-            case_label = f"beta={float(beta_deg):g}, epsilon={float(epsilon):g}"
-            paths = case_paths(float(beta_deg), float(epsilon))
-            if not audit.gmsh_exe:
-                write_gmsh_geo(float(epsilon), paths)
-                messages.append(f"{case_label}: no Gmsh executable detected; wrote .geo only.")
-                continue
-            mesh_ok, mesh_message, geometry_label, gmsh_messages = generate_mesh(paths, float(epsilon), audit.gmsh_exe)
-            messages.append(f"{case_label}: {mesh_message}")
-            if gmsh_messages:
-                messages.extend(f"{case_label}: {item}" for item in gmsh_messages)
-            if not mesh_ok or not paths.gmsh_inp.exists():
-                continue
-            mesh = read_gmsh_inp_mesh_data(paths.gmsh_inp)
-            mesh_summaries.append(mesh_summary(float(beta_deg), float(epsilon), mesh, gmsh_messages))
-            ccx_input = write_calculix_inputs(paths, float(beta_deg), float(epsilon), mesh)
-            ccx_inputs.append(ccx_input)
+    for beta_deg, epsilon in active_case_pairs():
+        case_label = f"beta={float(beta_deg):g}, epsilon={float(epsilon):g}"
+        paths = case_paths(float(beta_deg), float(epsilon))
+        if not audit.gmsh_exe:
+            write_gmsh_geo(float(beta_deg), float(epsilon), paths)
+            messages.append(f"{case_label}: no Gmsh executable detected; wrote .geo only.")
+            continue
+        mesh_ok, mesh_message, geometry_label, gmsh_messages = generate_mesh(
+            float(beta_deg), float(epsilon), paths, audit.gmsh_exe
+        )
+        messages.append(f"{case_label}: {mesh_message}")
+        if gmsh_messages:
+            messages.extend(f"{case_label}: {item}" for item in gmsh_messages)
+        if not mesh_ok or not paths.gmsh_inp.exists():
+            continue
+        mesh = read_gmsh_inp_mesh_data(paths.gmsh_inp)
+        mesh_summaries.append(mesh_summary(float(beta_deg), float(epsilon), mesh, gmsh_messages))
+        ccx_input = write_calculix_inputs(paths, float(beta_deg), float(epsilon), mesh)
+        ccx_inputs.append(ccx_input)
+        messages.append(
+            f"{case_label}: generated ROD1_OUTER_FIXED nodes={ccx_input.rod1_fixed_node_count}, "
+            f"ROD2_OUTER_FIXED nodes={ccx_input.rod2_fixed_node_count}, "
+            f"ROD1_INNER_COUPLED nodes={ccx_input.rod1_inner_node_count}, "
+            f"ROD2_INNER_COUPLED nodes={ccx_input.rod2_inner_node_count}"
+        )
+        if not audit.ccx_exe:
+            messages.append(f"{case_label}: CalculiX ccx not found; modal solve not run.")
+            continue
+        if not constraint_audit.supported:
             messages.append(
-                f"{case_label}: generated ROD1_OUTER_FIXED nodes={ccx_input.rod1_fixed_node_count}, "
-                f"ROD2_OUTER_FIXED nodes={ccx_input.rod2_fixed_node_count}, "
-                f"ROD1_INNER_COUPLED nodes={ccx_input.rod1_inner_node_count}, "
-                f"ROD2_INNER_COUPLED nodes={ccx_input.rod2_inner_node_count}"
+                f"{case_label}: rigid point-joint constraint capability was not confirmed; modal solve not run."
             )
-            if not audit.ccx_exe:
-                messages.append(f"{case_label}: CalculiX ccx not found; modal solve not run.")
-                continue
-            if not constraint_audit.supported:
-                messages.append(
-                    f"{case_label}: rigid point-joint constraint capability was not confirmed; modal solve not run."
+            continue
+        result = run_calculix(paths, audit.ccx_exe, float(beta_deg), float(epsilon))
+        calculix_results.append(result)
+        messages.append(f"{case_label}: {result.message}")
+        if result.success and result.parsed_omegas:
+            fem_omegas_by_case[(float(beta_deg), float(epsilon))] = list(result.parsed_omegas)
+            metrics, parse_result = compute_mode_metrics(
+                float(beta_deg), float(epsilon), paths, mesh, result.parsed_omegas
+            )
+            mode_metrics.extend(metrics)
+            parse_results.append(parse_result)
+            solid_centerline_shapes.extend(
+                compute_solid_centerline_shapes(
+                    float(beta_deg), float(epsilon), mesh, result.parsed_omegas, parse_result, metrics
                 )
-                continue
-            result = run_calculix(paths, audit.ccx_exe, float(beta_deg), float(epsilon))
-            calculix_results.append(result)
-            messages.append(f"{case_label}: {result.message}")
-            if result.success and result.parsed_omegas:
-                fem_omegas_by_case[(float(beta_deg), float(epsilon))] = list(result.parsed_omegas)
-                metrics, parse_result = compute_mode_metrics(
-                    float(beta_deg), float(epsilon), paths, mesh, result.parsed_omegas
-                )
-                mode_metrics.extend(metrics)
-                parse_results.append(parse_result)
-                solid_centerline_shapes.extend(
-                    compute_solid_centerline_shapes(
-                        float(beta_deg), float(epsilon), mesh, result.parsed_omegas, parse_result, metrics
-                    )
-                )
-                messages.append(f"{case_label}: {parse_result.message}")
-                if metrics:
-                    messages.append(f"{case_label}: computed {len(metrics)} mode-shape metric rows.")
+            )
+            messages.append(f"{case_label}: {parse_result.message}")
+            if metrics:
+                messages.append(f"{case_label}: computed {len(metrics)} mode-shape metric rows.")
     return (
         fem_omegas_by_case,
         mode_metrics,
@@ -2647,7 +4079,16 @@ def write_report(
     lines.append("")
     lines.append("## Geometry And Boundary Conditions")
     lines.append("")
-    lines.append(f"- beta values: `{', '.join(f'{value:g}' for value in BETA_DEG_VALUES)} deg`")
+    beta_values = active_beta_deg_values()
+    epsilon_values = active_epsilon_values()
+    mesh_size_factors = active_mesh_size_factors()
+    lines.append(f"- configured beta values: `{', '.join(f'{value:g}' for value in BETA_DEG_VALUES)} deg`")
+    lines.append(f"- active beta values: `{', '.join(f'{value:g}' for value in beta_values)} deg`")
+    lines.append(f"- configured epsilon values: `{', '.join(f'{value:g}' for value in EPSILON_VALUES)}`")
+    lines.append(f"- active epsilon values: `{', '.join(f'{value:g}' for value in epsilon_values)}`")
+    lines.append(f"- mesh size factors: `{', '.join(f'{value:g}' for value in mesh_size_factors)}`")
+    if RUN_BETA_DEG_VALUES is not None or RUN_EPSILON_VALUES is not None:
+        lines.append("- partial-run filters were active for this diagnostic run")
     lines.append(f"- mu: `{MU:g}`, eta: `{ETA:g}`, tau1=tau2=`1`")
     lines.append("- joint: `(0, 0, 0)`")
     lines.append("- rod 1 outer end: `(-L, 0, 0)`")
@@ -2669,7 +4110,7 @@ def write_report(
     lines.append("- diameter-to-segment-length ratio: `2r/L_segment = 4*epsilon`")
     lines.append(f"- thin-rod criterion: `4*epsilon <= {THICKNESS_RATIO_LIMIT:g}`")
     lines.append("")
-    invalid_eps = [epsilon for epsilon in EPSILON_VALUES if not thin_rod_valid(float(epsilon))]
+    invalid_eps = [epsilon for epsilon in epsilon_values if not thin_rod_valid(float(epsilon))]
     if invalid_eps:
         lines.append(f"Thin-rod warning: epsilon values outside the current criterion: {', '.join(f'{value:g}' for value in invalid_eps)}.")
     else:
@@ -2811,7 +4252,270 @@ def write_report(
     OUTPUT_REPORT.write_text("\n".join(lines), encoding="utf-8")
 
 
+def convergence_interpretation_lines(mac_rows: Sequence[dict[str, object]]) -> list[str]:
+    final_rows = [
+        row
+        for row in mac_rows
+        if row.get("row_type") == "best_mac_model_summary" and row.get("closer_to_EB_or_Timoshenko")
+    ]
+    if not final_rows:
+        return [
+            "- Mesh convergence could not be judged because no final-mesh MAC summary rows were produced.",
+            "- Further solver/debug work is required before article use.",
+        ]
+    eligible = [row for row in final_rows if row.get("best_MAC_strength") in {"strong", "moderate"}]
+    strong = [row for row in final_rows if row.get("best_MAC_strength") == "strong"]
+    if not eligible:
+        return [
+            "- No final-mesh rows reached moderate or strong MAC quality.",
+            "- The coupled point-joint FEM data are not article-ready; improve mode identification before interpreting frequency closeness.",
+        ]
+
+    stable_rows = []
+    unstable_rows = []
+    for row in eligible:
+        rel_delta = finite_number(row.get("rel_delta_Lambda_from_previous_mesh"))
+        delta_mac = finite_number(row.get("delta_MAC_from_previous_mesh"))
+        mode_changed = bool(row.get("best_solid_mode_changed_warning"))
+        stable = (
+            rel_delta is not None
+            and abs(rel_delta) <= 0.02
+            and delta_mac is not None
+            and abs(delta_mac) <= 0.05
+            and not mode_changed
+        )
+        (stable_rows if stable else unstable_rows).append(row)
+
+    lines = [
+        f"- Final completed mesh rows: {len(final_rows)} analytic-mode summaries; strong={len(strong)}, moderate={len([row for row in final_rows if row.get('best_MAC_strength') == 'moderate'])}, weak={len([row for row in final_rows if row.get('best_MAC_strength') == 'weak'])}.",
+        f"- Stability screen for strong/moderate rows used `|rel_delta_Lambda| <= 0.02`, `|delta_MAC| <= 0.05`, and no best-solid-mode change across the final refinement step.",
+        f"- Stable strong/moderate rows by that screen: {len(stable_rows)}/{len(eligible)}.",
+    ]
+    if unstable_rows:
+        labels = ", ".join(
+            f"eps={float(row['epsilon']):g} mode={int(row['analytic_mode'])}"
+            for row in unstable_rows[:12]
+        )
+        lines.append(f"- Rows needing further review/refinement: {labels}.")
+        if len(unstable_rows) > 12:
+            lines.append(f"- ... plus {len(unstable_rows) - 12} more rows.")
+        lines.append("- Do not treat the coupled point-joint FEM validation as article-ready for the unstable or weak rows.")
+    else:
+        lines.append("- The strong/moderate rows passing this screen are plausible article-candidate diagnostics, but still need visual mode-shape inspection and unique-assignment review before article use.")
+    return lines
+
+
+def write_mesh_convergence_report(
+    *,
+    audit: ToolAudit,
+    constraint_audit: ConstraintCapabilityAudit,
+    analytic_warnings: Sequence[str],
+    case_results: Sequence[MeshConvergenceCaseResult],
+    frequency_rows: Sequence[dict[str, object]],
+    mac_rows: Sequence[dict[str, object]],
+    summary_rows: Sequence[dict[str, object]],
+    convergence_warnings: Sequence[str],
+    messages: Sequence[str],
+) -> None:
+    best_rows = [row for row in mac_rows if row.get("row_type") == "best_mac_model_summary"]
+    duplicate_rows = [row for row in mac_rows if row.get("row_type") == "duplicate_warning"]
+    hungarian_rows = [row for row in mac_rows if str(row.get("row_type", "")).startswith("hungarian")]
+    lines: list[str] = []
+    lines.append("# Coupled Equal Rods Point-Joint Mesh Convergence Diagnostic")
+    lines.append("")
+    lines.append("Diagnostic only. This report checks stability of 3D solid FEM frequencies and centerline MAC-like mode matching under mesh refinement. It is not an article-level validation claim.")
+    lines.append("")
+    lines.append("No article file, paper_dorofeev_style file, article figure, old determinant, formulas.py, old solver, existing FEM physical model, fused workflow output, or baseline result was changed by this convergence workflow.")
+    lines.append("")
+    lines.append("## Purpose")
+    lines.append("")
+    lines.append("Assess whether the point-joint 3D solid FEM workflow is stable enough under mesh refinement to support later article-candidate validation rows. The success criterion is FEM+MAC stability, not whether either one-dimensional model wins a frequency-closeness count.")
+    lines.append("")
+    lines.append("## Parameters")
+    lines.append("")
+    lines.append(f"- active beta values: `{', '.join(f'{value:g}' for value in active_beta_deg_values())} deg`")
+    lines.append(f"- active epsilon values: `{', '.join(f'{value:g}' for value in active_epsilon_values())}`")
+    lines.append(f"- mesh size factors: `{', '.join(f'{value:g}' for value in active_mesh_size_factors())}`")
+    lines.append("- factor > 1 is coarser; factor = 1 is the previous baseline mesh size; factor < 1 is finer")
+    lines.append(f"- Gmsh executable: `{audit.gmsh_exe}`" if audit.gmsh_exe else "- Gmsh executable: not found")
+    lines.append(f"- CalculiX executable: `{audit.ccx_exe}`" if audit.ccx_exe else "- CalculiX executable: not found")
+    lines.append(f"- rigid constraint supported by local probe: `{constraint_audit.supported}`")
+    lines.append(f"- output directory: `{rel_path(MESH_CONVERGENCE_OUTPUT_DIR)}`")
+    lines.append("")
+    if analytic_warnings:
+        lines.append("Analytic/root-search warnings:")
+        for warning in analytic_warnings[:20]:
+            lines.append(f"- {warning}")
+        if len(analytic_warnings) > 20:
+            lines.append(f"- ... {len(analytic_warnings) - 20} more")
+        lines.append("")
+    lines.append("## Mesh Summary")
+    lines.append("")
+    lines.append("| epsilon | mesh factor | mesh size | nodes | solid elems | components | ROD1 fixed | ROD2 fixed | ROD1 inner | ROD2 inner | joint coupled |")
+    lines.append("| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
+    for row in summary_rows:
+        lines.append(
+            "| "
+            f"{fmt(row['epsilon'])} | {fmt(row['mesh_size_factor'])} | {fmt(row['mesh_size'])} | "
+            f"{fmt(row['node_count'])} | {fmt(row['solid_element_count'])} | {fmt(row['connected_component_count'])} | "
+            f"{fmt(row['rod1_fixed_node_count'])} | {fmt(row['rod2_fixed_node_count'])} | "
+            f"{fmt(row['rod1_inner_node_count'])} | {fmt(row['rod2_inner_node_count'])} | "
+            f"{fmt(row['joint_coupled_node_count'])} |"
+        )
+    lines.append("")
+    lines.append("## CalculiX Status")
+    lines.append("")
+    lines.append("| epsilon | mesh factor | status | parsed frequencies | case directory |")
+    lines.append("| ---: | ---: | --- | ---: | --- |")
+    for row in summary_rows:
+        lines.append(
+            "| "
+            f"{fmt(row['epsilon'])} | {fmt(row['mesh_size_factor'])} | {row['calculix_status']} | "
+            f"{fmt(row['parsed_frequency_count'])} | `{row['case_dir']}` |"
+        )
+    lines.append("")
+    lines.append("## Frequency Convergence")
+    lines.append("")
+    lines.append("The CSV stores all parsed solid modes up to the requested 30 modes. The table below shows the first six sorted solid modes only; sorted mode number is not used as branch identity.")
+    lines.append("")
+    lines.append("| epsilon | mesh factor | sorted solid mode | Omega_FEM | Lambda_FEM |")
+    lines.append("| ---: | ---: | ---: | ---: | ---: |")
+    for row in frequency_rows:
+        mode = finite_number(row.get("solid_mode"))
+        if mode is None or int(mode) > 6:
+            continue
+        lines.append(
+            "| "
+            f"{fmt(row['epsilon'])} | {fmt(row['mesh_size_factor'])} | {int(mode)} | "
+            f"{fmt(row['Omega_FEM'])} | {fmt(row['Lambda_FEM'])} |"
+        )
+    lines.append("")
+    lines.append("## MAC Convergence")
+    lines.append("")
+    lines.append("The convergence comparison below is analytic-mode-centered and uses the current best-MAC matching summary. Preliminary Hungarian unique-assignment rows are written to the MAC CSV separately.")
+    lines.append("")
+    lines.append("| epsilon | mesh factor | analytic mode | best solid | MAC | strength | Lambda_solid | dLambda prev | rel dLambda prev | dMAC prev | freq closer | warning |")
+    lines.append("| ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: | ---: | ---: | --- | --- |")
+    for row in best_rows:
+        lines.append(
+            "| "
+            f"{fmt(row['epsilon'])} | {fmt(row['mesh_size_factor'])} | {fmt(row['analytic_mode'])} | "
+            f"{fmt(row['best_solid_mode'])} | {fmt(row['best_MAC'], 4)} | {row['best_MAC_strength']} | "
+            f"{fmt(row['Lambda_solid'])} | {fmt(row['delta_Lambda_from_previous_mesh'], 4)} | "
+            f"{fmt(row['rel_delta_Lambda_from_previous_mesh'], 4)} | {fmt(row['delta_MAC_from_previous_mesh'], 4)} | "
+            f"{row['closer_to_EB_or_Timoshenko'] if row['closer_to_EB_or_Timoshenko'] else '-'} | "
+            f"{row['best_solid_mode_changed_warning'] if row['best_solid_mode_changed_warning'] else '-'} |"
+        )
+    lines.append("")
+    lines.append("## Article-Eligible Summary")
+    lines.append("")
+    lines.append("MAC strength thresholds: strong `MAC >= 0.8`; moderate `0.5 <= MAC < 0.8`; weak `MAC < 0.5`. Strong rows are the primary article candidates; moderate rows are separated and need manual review.")
+    lines.append("")
+    lines.append("| epsilon | final mesh factor | strong | moderate | weak excluded | strong closer Timo | strong closer EB | strong/mod closer Timo | strong/mod closer EB |")
+    lines.append("| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
+    for row in summary_rows:
+        if not row["is_final_completed_mesh"]:
+            continue
+        lines.append(
+            "| "
+            f"{fmt(row['epsilon'])} | {fmt(row['mesh_size_factor'])} | "
+            f"{fmt(row['article_eligible_strong_count_final'])} | "
+            f"{fmt(int(row['article_eligible_strong_or_moderate_count_final']) - int(row['article_eligible_strong_count_final']))} | "
+            f"{fmt(row['weak_excluded_count_final'])} | "
+            f"{fmt(row['final_strong_closer_to_Timoshenko'])} | {fmt(row['final_strong_closer_to_EB'])} | "
+            f"{fmt(row['final_strong_or_moderate_closer_to_Timoshenko'])} | "
+            f"{fmt(row['final_strong_or_moderate_closer_to_EB'])} |"
+        )
+    lines.append("")
+    lines.append("## Warnings")
+    lines.append("")
+    solver_failures = [
+        case
+        for case in case_results
+        if case.calculix_result is None or not case.calculix_result.success
+    ]
+    if solver_failures:
+        lines.append("Solver failures or skipped solves:")
+        for case in solver_failures:
+            status = "not_run" if case.calculix_result is None else case.calculix_result.message
+            lines.append(
+                f"- beta={case.beta_deg:g}, epsilon={case.epsilon:g}, mesh_factor={case.mesh_size_factor:g}: {status}"
+            )
+    else:
+        lines.append("- solver failures: none")
+    weak_rows = [row for row in best_rows if row.get("best_MAC_strength") == "weak"]
+    lines.append(f"- weak best-MAC analytic-mode rows: {len(weak_rows)}")
+    lines.append(f"- duplicate raw best-solid-mode warnings: {len(duplicate_rows)}")
+    changed_rows = [row for row in best_rows if row.get("best_solid_mode_changed_warning")]
+    lines.append(f"- best-solid-mode changes between mesh levels: {len(changed_rows)}")
+    lines.append(f"- preliminary Hungarian assignment rows written: {len(hungarian_rows)}")
+    if convergence_warnings:
+        for warning in convergence_warnings[:40]:
+            lines.append(f"- {warning}")
+        if len(convergence_warnings) > 40:
+            lines.append(f"- ... {len(convergence_warnings) - 40} more warnings")
+    lines.append("")
+    lines.append("## Interpretation")
+    lines.append("")
+    lines.extend(convergence_interpretation_lines(mac_rows))
+    lines.append("")
+    lines.append("## Next Recommended Step")
+    lines.append("")
+    lines.append("Review the final-mesh strong and moderate rows visually, especially any rows with best-solid-mode changes or weak duplicate context. If the unstable rows matter for the article table, run an additional finer mesh level before using them.")
+    lines.append("")
+    lines.append("## Outputs")
+    lines.append("")
+    lines.append(f"- convergence report: `{rel_path(OUTPUT_MESH_CONVERGENCE_REPORT)}`")
+    lines.append(f"- frequency CSV: `{rel_path(OUTPUT_MESH_CONVERGENCE_FREQUENCIES_CSV)}`")
+    lines.append(f"- MAC/convergence CSV: `{rel_path(OUTPUT_MESH_CONVERGENCE_MAC_CSV)}`")
+    lines.append(f"- summary CSV: `{rel_path(OUTPUT_MESH_CONVERGENCE_SUMMARY_CSV)}`")
+    lines.append(f"- mesh/input/output directory: `{rel_path(MESH_CONVERGENCE_OUTPUT_DIR)}`")
+    lines.append("")
+    lines.append("## Case Messages")
+    lines.append("")
+    for message in messages:
+        lines.append(f"- {message}")
+    lines.append("")
+    OUTPUT_MESH_CONVERGENCE_REPORT.write_text("\n".join(lines), encoding="utf-8")
+
+
+def run_mesh_convergence() -> int:
+    audit = audit_tools()
+    constraint_audit = audit_constraint_capability(audit)
+    analytic_rows, analytic_warnings = compute_analytic_rows()
+    case_results, messages, _geometry_label = process_mesh_convergence_cases(audit, constraint_audit)
+    frequency_rows = build_convergence_frequency_rows(case_results)
+    mac_rows, convergence_warnings = build_convergence_mac_rows(analytic_rows, case_results)
+    summary_rows = build_convergence_summary_rows(case_results, mac_rows)
+    write_convergence_frequency_csv(frequency_rows)
+    write_convergence_mac_csv(mac_rows)
+    write_convergence_summary_csv(summary_rows)
+    write_mesh_convergence_report(
+        audit=audit,
+        constraint_audit=constraint_audit,
+        analytic_warnings=analytic_warnings,
+        case_results=case_results,
+        frequency_rows=frequency_rows,
+        mac_rows=mac_rows,
+        summary_rows=summary_rows,
+        convergence_warnings=convergence_warnings,
+        messages=messages,
+    )
+    print(f"wrote mesh convergence frequency CSV: {OUTPUT_MESH_CONVERGENCE_FREQUENCIES_CSV}")
+    print(f"wrote mesh convergence MAC CSV: {OUTPUT_MESH_CONVERGENCE_MAC_CSV}")
+    print(f"wrote mesh convergence summary CSV: {OUTPUT_MESH_CONVERGENCE_SUMMARY_CSV}")
+    print(f"wrote mesh convergence report: {OUTPUT_MESH_CONVERGENCE_REPORT}")
+    print(f"wrote mesh/input/output files under: {MESH_CONVERGENCE_OUTPUT_DIR}")
+    if not any(case.calculix_result is not None and case.calculix_result.success for case in case_results):
+        print("no 3D solid modal results computed; see convergence report for missing tool or solver failure details")
+    return 0
+
+
 def main() -> int:
+    if mesh_convergence_enabled():
+        return run_mesh_convergence()
+    if planar_diagnostic_enabled():
+        return run_planar_diagnostic()
     audit = audit_tools()
     constraint_audit = audit_constraint_capability(audit)
     analytic_rows, analytic_warnings = compute_analytic_rows()

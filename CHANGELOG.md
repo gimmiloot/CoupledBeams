@@ -2,6 +2,36 @@
 
 ## 2026-05-26
 
+- Added a diagnostic-only `mu=0` sanity audit for the equal-thickness
+  `beta=15 deg`, `epsilon=0.01`, `eta=0` EB/Timoshenko/planar-FEM overlay,
+  documenting the current variable-length Timoshenko formulas, checking
+  `Lambda_FEM=sqrt(Omega/epsilon)`, auditing point-joint planar constraints,
+  and comparing sorted/MAC-order planar 3D solid modes against analytic and
+  1D EB frame-FEM references without changing the FEM model.
+- Corrected the diagnostic-only equal-thickness `Lambda(mu)` plot at
+  `beta=15 deg`, `epsilon=0.01`, and `eta=0`, writing new corrected outputs
+  with a denser FEM `mu` grid, separate EB diameter and Timoshenko cut-off
+  applicability audits, mesh-quality/MAC-based FEM point exclusions, and
+  large-discrepancy diagnostics without changing article or baseline outputs.
+- Added a diagnostic-only `Lambda(mu)` plot script for identical coupled
+  circular rods at `beta=15 deg`, `epsilon=0.01`, and `eta=0`, combining EB
+  and Timoshenko descendant branches with sparse planar point-joint 3D solid
+  FEM points and reporting MAC matching, thin-rod applicability, and EB-vs-
+  Timoshenko closeness without changing article or baseline outputs.
+- Added a separate diagnostic-only planar-constrained mode for the point-joint
+  coupled-rods 3D solid FEM workflow, writing planar-specific report, sorted
+  comparison, mode metrics, MAC matrices, and MAC match outputs; the run uses
+  an explicitly reported MPC-compatible fallback for CalculiX rigid-body
+  dependent nodes and does not replace the full 3D validation benchmark.
+- Implemented a separate diagnostic-only mesh-convergence mode for the
+  point-joint coupled-rods 3D solid FEM workflow, running beta=15 at
+  `epsilon=0.025,0.05` over mesh factors `1.5,1.0,0.75`, writing separate
+  convergence report/frequency/MAC/summary outputs with preliminary Hungarian
+  assignment rows while leaving baseline and fused outputs untouched.
+- Refactored the diagnostic-only point-joint coupled-rods 3D solid FEM workflow
+  to pass `beta_deg` explicitly through geometry-dependent helpers, added
+  optional partial-run beta/epsilon filters, and documented the rerun controls
+  without changing the physical FEM model or fused/article workflows.
 - Added a thickness-mismatch FEM validation status document and short index
   links documenting the current 3D solid FEM validation state, article-ready
   roadmap, and candidate figure guidance without recalculating code or results.
