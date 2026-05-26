@@ -4,6 +4,10 @@
 
 Citation keys синхронизированы с `docs/literature/bibliography.bib`.
 
+См. также отдельную заметку по новым источникам для Timoshenko theory, shear
+coefficient и circular rods:
+`docs/literature/timoshenko_shear_sources.md`.
+
 ## `tao_2023_wave_coupled_beams`
 - PDF: `docs/literature/pdf/Wave-basedin-planevibrationanalysisofmultiplecoupledbeamstructureswitharbitraryconnectionangleandelastic__boundaryrestraints.pdf`
 - Тип: статья.
@@ -129,12 +133,13 @@ Citation keys синхронизированы с `docs/literature/bibliography.
 
 ## `ratazzi_2013_internal_elastic_hinge`
 - PDF: `docs/literature/pdf/работа2.pdf`
+- Additional local copy from the Timoshenko/shear-source import: `docs/literature/pdf/A2-4.pdf`
 - Тип: статья.
 - Роль: основной.
 - Что важно для CoupledBeams: exact free in-plane vibrations for two orthogonal beam members with an internal elastic hinge and elastic boundary conditions; очень близко к задаче о joint flexibility and connection angle.
 - Обозначения: internal elastic hinge flexibility, boundary stiffnesses, Euler--Bernoulli assumption, Hamilton principle, separation of variables.
-- Критично смотреть: постановку через Hamilton's principle, derivation of the exact frequency equation, and comparison with FEM/experiment; для короткой статьи полезен весь текст pp. 1--10.
-- Метаданные: DOI и article ID извлечены надёжно.
+- Критично смотреть: постановку через Hamilton's principle, derivation of the exact frequency equation, and comparison with FEM/experiment; для короткой статьи полезен весь текст Article ID 624658, 9 pages.
+- Метаданные: DOI и article ID извлечены надёжно; локальный `A2-4.pdf` пишет "9 pages", поэтому страницу/объём перед внешним цитированием лучше держать как Article ID 624658, 9 pages.
 
 ## `shayna_2022_rod_systems_localized_features`
 - PDF: `docs/literature/pdf/Диссертация_Шайна_Е.А..pdf`
@@ -162,3 +167,66 @@ Citation keys синхронизированы с `docs/literature/bibliography.
 - Обозначения: dimensionless variables, coupling angle, thickness parameter, frequency equation, axial and transverse vibrations of rods; exact symbol names уже стоит поднимать из опубликованной версии.
 - Критично смотреть: весь текст pp. 73--81; особенно введение, безразмерную постановку, условия сопряжения, частотное уравнение и асимптотики для малого угла.
 - Метаданные: local PDF похож на draft build, но библиографические поля проверены по официальному выпуску журнала.
+
+## `kramer_2024_plane_frames_timoshenko`
+- PDF: `docs/literature/pdf/A2-1.pdf`
+- Тип: статья.
+- Роль: основной для Timoshenko/frame-направления.
+- Что важно для CoupledBeams: modern plane-frame formulation based on Timoshenko-Ehrenfest beam theory, useful for future coupled-beam/frame assembly and for keeping axial/transverse frame DOFs explicit.
+- Обозначения: density, `E`, `G`, area `A`, inertia `I`, Timoshenko-Ehrenfest shear coefficient; the paper uses `k = 5/6` for a rectangular cross-section.
+- Критично смотреть: Sec. 2 governing equations and frame structure, boundary/interface conditions, numerical assembly technique, and shifted/deflated Newton solution.
+- Метаданные: recovered from local PDF XMP; circular-rod coefficient source: no.
+
+## `howson_1973_axially_loaded_timoshenko_frames`
+- PDF: `docs/literature/pdf/A2-2.pdf`
+- Тип: статья.
+- Роль: основной historical frame/Timoshenko reference.
+- Что важно для CoupledBeams: dynamic stiffness method for plane frames whose members include axial load, rotary inertia, and shear deflection; useful as a benchmark for Timoshenko members in frames.
+- Обозначения: dynamic stiffness matrix, axial load, rotary inertia, shear deflection, parameters `p`, `r`, and `s` in the title-page abstract.
+- Критично смотреть: title-page abstract, dynamic member stiffness derivation, and H-frame theory/experiment comparison.
+- Метаданные: recovered from scanned first page; DOI not found in the local PDF.
+
+## `gladwell_1964_vibration_frames`
+- PDF: `docs/literature/pdf/A2-3.pdf`
+- Тип: статья.
+- Роль: вспомогательный frame-background source.
+- Что важно для CoupledBeams: early method for free vibration of plane frames using assumed modes and Rayleigh--Ritz style matrix formulation; useful for frame-method history, not for Timoshenko shear correction.
+- Обозначения: assumed modes, inertia and stability matrices, rectangular plane frames.
+- Критично смотреть: discussion of frame-vibration methods and the comparison against exact solutions.
+- Метаданные: recovered from scanned first page and PDF metadata PII; DOI not found in the local PDF.
+
+## `diaz_de_anda_2012_timoshenko_predictions`
+- PDF: `docs/literature/pdf/Т1.pdf`
+- Тип: статья.
+- Роль: основной для experimental validation, critical frequency, and second Timoshenko spectrum.
+- Что важно для CoupledBeams: experimental study of Timoshenko beam theory predictions for cylindrical rods and rectangular beams, with 3-D FEM comparison; useful for deciding the safe diagnostic frequency range of future Timoshenko corrections.
+- Обозначения: Timoshenko shear coefficient, critical frequency `f_c`, first/second TBT spectra, cylindrical rods, rectangular beams, free-free boundary conditions.
+- Критично смотреть: abstract, Sec. 2 Timoshenko beam theory, experimental/FEM comparisons, and conclusions on the second spectrum and valid range.
+- Метаданные: recovered from local PDF XMP/title page; DOI `10.1016/j.jsv.2012.07.041`.
+
+## `diaz_de_anda_2005_locally_periodic_timoshenko_rod`
+- PDF: `docs/literature/pdf/Т2.pdf`
+- Тип: статья.
+- Роль: основной для circular/cylindrical rods and baseline circular shear coefficient.
+- Что важно для CoupledBeams: locally periodic aluminum rods of circular cross-section are modeled with Timoshenko beam theory and a transfer matrix method, then compared with EMAT measurements.
+- Обозначения: Timoshenko shear coefficient `k`, transfer matrix, unit cells, circular rods, EMAT measurements; the local PDF gives `k = (6 + 12*nu + 6*nu^2)/(7 + 12*nu + 4*nu^2)` and uses `k = 0.925` for `nu = 0.3`.
+- Критично смотреть: Sec. II transfer matrix method, the coefficient choice near Fig. 6, and the experiment/theory comparison.
+- Метаданные: recovered from local PDF title page; DOI `10.1121/1.1880732`.
+
+## `franco_villafane_2014_best_shear_coefficient`
+- PDF: `docs/literature/pdf/Т3.pdf`
+- Тип: arXiv/preprint.
+- Роль: основной для non-uniqueness, best-fit shear coefficient, and critical-frequency caution.
+- Что важно для CoupledBeams: explicitly treats the shear coefficient as an adjustment/modeling parameter and compares one-coefficient, two-coefficient, below-critical, and above-critical choices against experimental data.
+- Обозначения: `kappa`, `kappa_1`, `kappa_3`, critical frequency `f_c`, best-fit coefficients, first/second TBT spectra.
+- Критично смотреть: introduction on coefficient non-consensus, Table 1 of coefficient choices, and conclusions about different coefficients below/above `f_c`.
+- Метаданные: local PDF is arXiv:1405.4885v2, submitted to Elsevier May 26, 2014; DOI not found in the local PDF.
+
+## `stephen_2002_check_timoshenko_accuracy`
+- PDF: `docs/literature/pdf/Т4.pdf`
+- Тип: статья.
+- Роль: основной caution source for shear-coefficient accuracy and second-spectrum interpretation.
+- Что важно для CoupledBeams: short note on why the Timoshenko shear coefficient is not a unique universal constant, with discussion of Cowper, Hutchinson, two-coefficient theory, and second-spectrum behavior.
+- Обозначения: shear coefficient, wavelength/beam-depth ratio, Rayleigh surface wave limit, second spectrum.
+- Критично смотреть: introduction, coefficient comparison, comments on the second spectrum, and references to Cowper/Hutchinson.
+- Метаданные: recovered from local PDF metadata/title text; DOI not found in the local PDF.

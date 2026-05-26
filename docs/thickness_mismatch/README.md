@@ -7,6 +7,9 @@ workflow and does not replace the baseline equal-radius determinant.
 For project-wide rules on branch identity, thin-rod applicability, diagnostic
 workflow, and consistency checks, see `../project_rules.md`.
 
+FEM validation status and roadmap are tracked in
+`docs/thickness_mismatch/fem_validation_status.md`.
+
 ## Parameters Held Fixed
 
 - The total length is fixed: `l1 + l2 = 2 l`.
@@ -227,6 +230,10 @@ and future wrapper/refactor TODOs, see
   model. It tracks branch 5 from `mu=0` separately for each configured eta,
   reconstructs the determinant null-vector shape, and writes diagnostic PNG
   panels only.
+- `scripts/analysis/plot_thickness_mismatch_branch_shapes_vs_eta.py` overlays
+  one tracked descendant shape for several eta values on the same axes at each
+  target `mu`, using fixed-eta shape-MAC tracking from `mu=0` and the same
+  determinant null-vector reconstruction helpers.
 
 ## Diagnostic Outputs
 

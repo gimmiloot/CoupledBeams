@@ -10,5 +10,13 @@ article material.
 - Applicability plots showing dashed regions where `2*r_i/l_i > 0.1`.
 - Branch-identity audits for close interactions in descendants 5--7.
 
+## FEM validation candidates
+
+- Single-rod EB/Timoshenko/3D FEM bending-doublet comparison is a strong
+  candidate.
+- Coupled point-joint FEM validation is not yet article-ready.
+- Use coupled point-joint FEM only after mesh convergence and MAC assignment
+  are improved.
+
 For each promoted figure, record the source script, parameters, warning status,
 normalization, and branch identity convention.

@@ -1,7 +1,81 @@
 # CHANGELOG
 
+## 2026-05-26
+
+- Added a thickness-mismatch FEM validation status document and short index
+  links documenting the current 3D solid FEM validation state, article-ready
+  roadmap, and candidate figure guidance without recalculating code or results.
+- Extended the diagnostic-only point-joint 3D solid FEM workflow with
+  centerline MAC-like shape matching between parsed CalculiX solid modes and
+  EB/Timoshenko analytic mode reconstructions, writing EB/Timoshenko MAC
+  matrices, match summaries, duplicate/low-MAC warnings, and a report section
+  that prioritizes shape matching over simple classified-mode order.
+- Added a diagnostic-only point-joint 3D solid FEM workflow for coupled equal
+  rods using two separate cylinder meshes, a shared CalculiX rigid reference
+  node for the inner end faces, a local `*RIGID BODY` capability probe, modal
+  runs/classification by beta, and high-level comparison against the previous
+  fused-cylinder diagnostic outputs without changing those fused outputs.
+- Generalized the diagnostic-only coupled equal-rods 3D solid FEM workflow with
+  a multi-beta sweep (`15`, `45`, `90` degrees), fused-joint overlap geometry
+  audit, connected-mesh and fixed-node-set summaries, classified in-plane
+  comparison by beta, and aggregate cut-off/thin-rod reporting while leaving
+  the beta=15-specific workflow and existing outputs intact.
+- Added a diagnostic-only beta=15 equal-coupled-rods 3D solid FEM workflow
+  using portable Gmsh/CalculiX resolution, fused-cylinder mesh generation,
+  coordinate-derived outer fixed node sets, CalculiX modal runs, `.frd`
+  mode-shape classification, sorted and classified in-plane comparison CSVs,
+  cut-off checks, and thin-rod applicability reporting.
+- Added diagnostic-only post-processing for the single fixed-fixed circular-rod
+  3D solid FEM workflow: CalculiX `.frd` displacement mode parsing, nodal
+  slice-based mode-shape metrics, bending/axial/torsion-like classification,
+  classified bending-doublet pairing, and separate mode-metric/doublet CSVs.
+- Extended the diagnostic-only single fixed-fixed circular-rod 3D solid FEM
+  workflow with portable CalculiX resolution through `CCX_EXE`, coordinate-
+  derived fixed-end node sets, sanitized CalculiX modal inputs, actual ccx
+  modal runs when available, and preliminary EB/Timoshenko/3D solid comparison
+  output.
+- Added mesh sanity summaries to the diagnostic-only single fixed-fixed
+  circular-rod 3D solid FEM workflow, reporting node/solid-element counts,
+  bounding boxes, inferred dimensions, end-face physical-group detection, and
+  captured Gmsh warning/error lines before any CalculiX modal solve is used.
+- Updated the diagnostic-only single fixed-fixed circular-rod 3D solid FEM
+  workflow to resolve a portable Gmsh executable through `GMSH_EXE`, a
+  user-editable script default, or PATH, reporting the resolved path/version
+  and generating meshes without requiring a system PATH change.
+- Added a diagnostic-only single fixed-fixed circular-rod 3D solid FEM workflow
+  seed with local Gmsh/CalculiX/Code_Aster/Salome-Meca audit notes, optional
+  Gmsh and CalculiX input generation, one-rod EB/Timoshenko reference
+  comparison rows, and graceful no-solver reporting without making any
+  external solver a project dependency.
+- Extended the diagnostic-only single-rod and coupled equal-rod Timoshenko
+  comparison scripts with cut-off frequency columns and report warnings,
+  added a small coupled equal-rod kappa sensitivity CSV/report section, and
+  documented that the current Timoshenko diagnostic changes only the flexural
+  part while keeping the axial force law classical.
+
 ## 2026-05-25
 
+- Added a diagnostic-only coupled equal-radius circular-rod comparison between
+  the existing Euler--Bernoulli determinant and a trial explicit-function
+  Timoshenko model at `beta=15 deg`, `mu=0`, and `eta=0`, with CSV/PNG/Markdown
+  outputs, sorted-frequency warnings, the circular shear coefficient, and
+  thin-rod validity marking without changing article files, figures,
+  determinants, old solvers, formulas.py, baseline results, or the FEM model.
+- Added a diagnostic-only single fixed-fixed circular-rod comparison between
+  Euler--Bernoulli and exact state-space Timoshenko beam frequencies, including
+  CSV/PNG/Markdown outputs, the Diaz-de-Anda circular shear coefficient, and
+  thin-rod validity warnings without changing article files, figures,
+  determinants, old solvers, formulas.py, results baselines, or the FEM model.
+- Added local Timoshenko/shear-coefficient literature integration notes for
+  eight imported PDFs, including circular-rod coefficient selection, critical
+  frequency/second-spectrum cautions, frame-oriented Timoshenko sources, and
+  bibliography/source-index updates without changing code, article files,
+  figures, solvers, determinants, FEM model, or results.
+- Added a parameterized diagnostic-only thickness-mismatch branch-shape overlay
+  script for comparing descendant analytic mode shapes across eta values at
+  selected mu points, reusing the eta determinant, analytic reconstruction
+  helpers, and shape-MAC descendant tracking without changing article files,
+  figures, old determinants, old solvers, results, or the FEM model.
 - Added project-wide Script Proliferation Control guidance, linked it from the
   agent and script guides, and shortened duplicated thickness-mismatch script
   and global-rule documentation without changing code, scripts, article files,
