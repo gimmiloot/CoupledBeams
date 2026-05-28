@@ -10,6 +10,11 @@ workflow, and consistency checks, see `../project_rules.md`.
 FEM validation status and roadmap are tracked in
 `docs/thickness_mismatch/fem_validation_status.md`.
 
+The current rigid-joint `Lambda(mu)` EB/Timoshenko/3D FEM diagnostic plots are
+listed in `docs/thickness_mismatch/fem_validation_status.md`. They use the
+full rigid end-face 3D FEM model as an independent engineering benchmark, not
+as a tuned replica of the ideal one-dimensional point joint.
+
 ## Parameters Held Fixed
 
 - The total length is fixed: `l1 + l2 = 2 l`.
@@ -139,6 +144,47 @@ axial force:   tau_i^2
 At `eta = 0`, `tau1 = tau2 = 1`, and the new determinant is expected to reduce
 directly to the baseline equal-radius determinant.
 
+## Tau-Aware Timoshenko Diagnostic
+
+The variable-length Timoshenko diagnostic now has an explicit tau-aware eta
+path in `scripts/lib/variable_length_timoshenko.py`. For each arm it uses
+
+```text
+r_i = r0*tau_i
+A_i = A0*tau_i^2
+I_i = I0*tau_i^4
+K_i = kappa*G*A_i
+m_i = rho*A_i
+j_i = rho*I_i
+```
+
+The frequency normalization remains `Omega = epsilon*Lambda^2`, based on the
+reference radius `r0`. The bending basis for each arm is computed from its own
+Timoshenko characteristic equation using `B_i = E*I_i`, `K_i`, `m_i`, and
+`j_i`; in the Euler--Bernoulli limit this gives the expected
+`Lambda/sqrt(tau_i)` bending wave-number scaling. The axial basis keeps
+`theta = epsilon*Lambda^2`, while tau enters the axial force row through
+`N_i = E*A_i*u_i'`.
+
+The eta=0 variable-length Timoshenko path is diagnostic-verified by
+`results/variable_length_timoshenko_limits_audit.md`. The tau-aware eta!=0 path
+is diagnostic-verified only for the sorted-root checks in
+`results/variable_length_thickness_timoshenko_limits_audit.md`: eta=0
+regression, eta-to-zero continuity, rod-swap symmetry, the `epsilon -> 0`
+Euler--Bernoulli thickness-mismatch limit, and beta=0 straight composite-rod
+behavior. Descendant branch identity, energy plots, and eta!=0 FEM validation
+remain separate.
+
+The diagnostic energy-partition audit
+`scripts/analysis/audit_timoshenko_energy_partition_beta15_eps0p01_eta0_eta0p5.py`
+uses the same tau-aware Timoshenko helper to reconstruct descendant mode shapes
+and integrate per-rod bending, shear, and axial potential-energy fractions for
+`beta=15 deg`, `epsilon=0.01`, `eta=0,0.5`, and `mu=0..0.9`. Its outputs in
+`results/timoshenko_energy_partition_beta15_eps0p01_eta0_eta0p5.*` are
+diagnostic-only and should be used to explain why EB/Timoshenko frequencies can
+remain close even when the EB diameter criterion fails locally. It is not FEM
+validation and does not promote high-frequency or cutoff-near rows.
+
 ## Symmetry Expectation
 
 Exchanging the two rods corresponds to simultaneous sign reversal
@@ -161,6 +207,13 @@ and future wrapper/refactor TODOs, see
   `det_eta(Lambda, beta, mu, epsilon, eta)` and local root scanning helpers.
 - `scripts/analysis/check_thickness_mismatch_eta_zero_limit.py` checks mass
   conservation, the `eta = 0` determinant/root limit, and swap symmetry.
+- `scripts/analysis/audit_variable_length_thickness_timoshenko_limits.py`
+  checks the tau-aware variable-length Timoshenko diagnostic for eta!=0
+  sorted-root limits and symmetries against the existing EB eta determinant.
+- `scripts/analysis/audit_timoshenko_energy_partition_beta15_eps0p01_eta0_eta0p5.py`
+  reconstructs tau-aware Timoshenko descendants and writes diagnostic-only
+  per-rod bending, shear, axial, and EB/Timoshenko difference summaries for
+  `beta=15 deg`, `epsilon=0.01`, and `eta=0,0.5`.
 - `scripts/analysis/plot_lambda_eta_thickness_mismatch.py` writes initial
   diagnostic plots and CSVs for `Lambda(eta)` and an optional `Lambda(mu)`
   eta-sweep.
@@ -241,6 +294,12 @@ The first diagnostic run writes:
 
 - `results/thickness_mismatch_eta_zero_roots_check.csv`
 - `results/thickness_mismatch_swap_symmetry_check.csv`
+- `results/variable_length_thickness_timoshenko_limits_audit.csv`
+- `results/variable_length_thickness_timoshenko_limits_audit.md`
+- `results/timoshenko_energy_partition_beta15_eps0p01_eta0_eta0p5.csv`
+- `results/timoshenko_energy_partition_beta15_eps0p01_eta0_eta0p5_report.md`
+- `results/timoshenko_energy_partition_beta15_eps0p01_eta0_eta0p5_shear_fraction.png`
+- `results/timoshenko_energy_partition_beta15_eps0p01_eta0_eta0p5_rod_energy_fraction.png`
 - `results/thickness_mismatch_lambda_eta_beta15_eps0p0025.png`
 - `results/thickness_mismatch_lambda_eta_beta15_eps0p0025.csv`
 - `results/thickness_mismatch_lambda_mu_beta15_eps0p0025_eta_sweep.png`

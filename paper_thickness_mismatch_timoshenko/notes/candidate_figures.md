@@ -18,5 +18,17 @@ article material.
 - Use coupled point-joint FEM only after mesh convergence and MAC assignment
   are improved.
 
+## Rigid-joint Lambda(mu) comparison
+
+Candidate diagnostic figure set: three `Lambda(mu)` plots for
+`epsilon = 0.01, 0.025, 0.05` at `beta = 15 deg` and `eta = 0`.
+They show Euler--Bernoulli descendant curves, Timoshenko descendant curves,
+and full rigid end-face 3D FEM points.
+
+Possible future article use requires mesh convergence, representative
+mode-shape review, and a reviewed MAC assignment policy. These plots are not
+final article figures yet, and the PNGs should not be copied into article
+figure directories at this stage.
+
 For each promoted figure, record the source script, parameters, warning status,
 normalization, and branch identity convention.

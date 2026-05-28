@@ -1,5 +1,93 @@
 # CHANGELOG
 
+## 2026-05-28
+
+- Documented the full rigid end-face `Lambda(mu)` EB/Timoshenko/3D FEM
+  diagnostic plots as the current main comparative visualization along `mu`,
+  recording that the non-tuned 3D engineering joint supports the trend that
+  Timoshenko improves agreement as thickness increases while remaining
+  diagnostic-only pending mesh convergence and mode-shape review. No
+  calculations, Gmsh/CalculiX runs, or result regenerations were performed.
+- Added a diagnostic-only full rigid end-face `Lambda(mu)` epsilon sweep for
+  equal-thickness coupled rods at `beta=15 deg`, `eta=0`, and
+  `epsilon=0.01,0.025,0.05`, writing three separate EB/Timoshenko/3D-FEM PNGs,
+  one combined CSV, one Markdown report, and isolated FEM outputs under
+  `results/solid_fem_rigid_joint_equal_thickness_beta15_lambda_mu/`. The
+  workflow uses descendant analytic branches, a 16-point FEM `mu` grid, the
+  full rigid end-face joint with no planar constraint or patch tuning, and
+  MAC-based filtering that keeps weak, ambiguous, and duplicate matches out of
+  the main plots while preserving them in the CSV/report.
+- Added a diagnostic-only equal-thickness rigid-joint frequency trend plot for
+  `beta=15 deg`, `mu=0`, `eta=0`, and `epsilon=0.01,0.025,0.05`, consuming
+  the existing full rigid end-face 3D FEM thickness-trend CSV without rerunning
+  Gmsh/CalculiX. The plot-data CSV, PNG, and report show EB/Timoshenko
+  analytic frequencies with MAC-eligible 3D FEM points for the first six
+  branches, record weak-MAC exclusions, and keep EB diameter applicability
+  separate from the Timoshenko cut-off.
+- Added a diagnostic-only rigid end-face 3D FEM thickness-trend audit for
+  `beta=15 deg`, `mu=0`, `eta=0`, and
+  `epsilon=0.005,0.01,0.025,0.05`, writing isolated full rigid end-face
+  point-joint Gmsh/CalculiX outputs under
+  `results/solid_fem_rigid_joint_thickness_trend/` plus CSV/Markdown/PNG
+  summaries. The audit uses no planar constraint, fused volume, patch
+  coupling, or fitted parameter; strong/moderate MAC rows show the mean
+  Timoshenko/EB error ratio decreasing from about `1.005` at `epsilon=0.005`
+  to about `0.621` at `epsilon=0.05`, while leaving mesh convergence and
+  visual mode review pending.
+- Added a diagnostic-only 3D FEM joint-constraint bracketing audit for
+  `epsilon=0.01`, `mu=0`, `eta=0`, and `beta=0,15,45,90 deg`, writing
+  isolated Gmsh/CalculiX outputs under
+  `results/solid_fem_joint_constraint_bracketing_audit/` plus CSV/Markdown
+  summaries. The study keeps the rigid-end-face and central-patch probes,
+  adds translation-only central/average equation probes, a
+  rotation-clamped-reference bracket, and a two-reference-node constraint
+  attempt; it records that this is not patch-radius calibration, classifies
+  translation-only probes as too soft, the rotation clamp as incompatible with
+  the analytic free point-joint rotation, and `center_patch_0p5` as diagnostic
+  promising but not article-ready.
+- Added a diagnostic-only 3D FEM joint-coupling-model audit for
+  `epsilon=0.01`, `mu=0`, `eta=0`, and `beta=0,15,45,90 deg`, writing
+  isolated Gmsh/CalculiX outputs under
+  `results/solid_fem_joint_coupling_models_audit/` plus CSV/Markdown
+  summaries comparing full rigid end-face coupling with `0.25*r` and
+  `0.5*r` central rigid patches. The `0.5*r` patch is recorded as the current
+  best diagnostic candidate, while no tested model is promoted to article-ready
+  validation.
+- Added a diagnostic-only 3D FEM point-joint discrepancy isolation audit for
+  `beta=15 deg`, `mu=0`, `eta=0`, and `epsilon=0.01`, writing isolated
+  Gmsh/CalculiX outputs under
+  `results/solid_fem_point_joint_mu0_eps0p01_audit/` plus CSV/Markdown
+  summaries comparing the current planar-constrained point-joint, full
+  point-joint without planar constraints, and a straight two-half-rod
+  point-joint sanity case without changing article files, old determinants,
+  `formulas.py`, old solvers, existing FEM physical models, baseline results,
+  or presentation figures.
+- Added a diagnostic-only tau-aware Timoshenko energy partition audit for
+  coupled rods at `beta=15 deg`, `epsilon=0.01`, and `eta=0,0.5`, writing
+  CSV/Markdown/PNG outputs that track descendants by beta-then-mu shape MAC,
+  integrate per-rod bending/shear/axial energy fractions, record EB diameter
+  and Timoshenko cutoff margins, and compare matching EB descendants without
+  changing article files, old determinants, `formulas.py`, old solvers, FEM
+  models, Gmsh/CalculiX workflows, baseline results, or presentation figures.
+
+## 2026-05-27
+
+- Extended the diagnostic-only variable-length Timoshenko helper with explicit
+  tau-aware `eta != 0` section scaling and added a sorted-root thickness-
+  mismatch audit that verifies eta=0 regression, eta-to-zero continuity,
+  `(mu, eta) -> (-mu, -eta)` swap symmetry, the `epsilon -> 0`
+  Euler--Bernoulli thickness-mismatch limit, and beta=0 straight composite-rod
+  behavior, writing CSV/Markdown outputs without changing article files, old
+  determinants, `formulas.py`, old solvers, FEM models, baseline results, or
+  presentation figures.
+- Added a diagnostic-only variable-length Timoshenko limit audit with a small
+  reusable helper, writing CSV/Markdown outputs that verify `eta=0` sorted-root
+  checks for `mu=0` consistency against the older equal-rods Timoshenko
+  diagnostic, the `epsilon -> 0` Euler--Bernoulli limit, and `beta=0`
+  straight-rod `mu`-invariance without changing article files, old
+  determinants, `formulas.py`, old solvers, FEM models, baseline results, or
+  presentation figures.
+
 ## 2026-05-26
 
 - Added a diagnostic-only `mu=0` sanity audit for the equal-thickness
