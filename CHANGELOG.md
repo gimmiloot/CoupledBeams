@@ -2,6 +2,15 @@
 
 ## 2026-05-28
 
+- Added a diagnostic-only eta=0.5, epsilon=0.0025, beta=15 deg
+  `Lambda(mu)` crossing audit for the thickness-mismatch EB determinant. The
+  new script writes CSV/Markdown/PNG outputs, checks the first seven
+  descendant branches on a 901-point mu grid, separates descendant-branch
+  sign changes from sorted-position metadata, and reports no true descendant
+  crossings or sorted-position swaps while flagging the closest finite-gap
+  interactions as tracking-suspected rather than physical crossings. No
+  article files, article figures, old determinant, solvers, FEM model, or
+  baseline results were changed.
 - Documented the full rigid end-face `Lambda(mu)` EB/Timoshenko/3D FEM
   diagnostic plots as the current main comparative visualization along `mu`,
   recording that the non-tuned 3D engineering joint supports the trend that
