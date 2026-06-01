@@ -1,5 +1,108 @@
 # CHANGELOG
 
+## 2026-06-01
+
+- Added an analytic-only selected-eta `Lambda(beta)` descendant plotting audit
+  for the thickness-mismatch model at `epsilon=0.0025`, `mu=0`, and
+  `eta=-0.016,-0.004,-0.002,0.002,0.004,0.016`. The new 2x3 plotter solves
+  the first 14 sorted roots on a `0..90 deg` beta grid with `0.1 deg` spacing,
+  tracks the first eight descendants from `beta=0` by shape-MAC continuation,
+  and displays descendants 1--6 without using naive sorted-root plotting.
+  Near-degenerate best-MAC steps are accepted and recorded as diagnostics
+  instead of forcing a sorted-root fallback, and the generated report records
+  no spike artifacts in the plotted curves. No Timoshenko, FEM, Gmsh,
+  CalculiX, article files, old determinants, old solvers, or baseline results
+  were changed.
+- Added an analytic-only Euler-Bernoulli eta scan for first-six
+  sorted-position rearrangement in the thickness-mismatch model at
+  `epsilon=0.0025`, `mu=0`, `eta=-0.5..0.5`, and `beta=0..90 deg`. The new
+  script tracks descendants seeded at `beta=0`, classifies rearrangement when
+  any descendant among 1..6 changes sorted position over beta, writes
+  per-eta/beta/descendant CSV rows, eta summary CSV, Markdown report, and
+  diagnostic PNG maps. On the evaluated grid, `|eta| >= 0.018` has no first-six
+  rearrangement, `0.002 <= |eta| <= 0.016` shows clean rearrangement involving
+  descendants 1--4, and the exact `eta=0` equal-thickness case is marked
+  tracking-unreliable with pairwise sorted-position exchanges. No Timoshenko,
+  FEM, Gmsh, CalculiX, article files, old determinants, old solvers, or
+  baseline results were changed.
+- Added an analytic-only Euler-Bernoulli thickness-mismatch `Lambda(beta)`
+  sorted/descendant identity audit at `epsilon=0.0025`, `mu=0`, and
+  `eta=0.5`, with an eta=0 comparison. The new script seeds descendants at
+  `beta=0`, `mu=0`, tracks the first eight branches by the existing
+  shape-MAC reconstruction, solves the first 14 sorted roots on a
+  `0..90 deg` grid with `0.1 deg` spacing, and writes CSV/Markdown/PNG
+  diagnostics. The audit finds that at `beta=15 deg`, `eta=0.5`, sorted 5 is
+  descendant 5, not descendant 6, while eta=0 keeps sorted 5 as descendant 6;
+  no FEM, Gmsh, CalculiX, article files, old determinants, old solvers, or
+  baseline results were changed.
+- Added the corrected analytic-only descendant-5 eta=0.5 veering shape set
+  at the six previously selected near-approach points. The new wrapper reads
+  `desc6_veering_points.csv` only for the fixed `mu` values, pair labels,
+  ranks, and local gaps, reconstructs descendant 5 shapes through the existing
+  thickness-mismatch shape plotter, writes a separate desc5 output directory
+  with six PNGs plus CSV/Markdown metadata, and records that descendant 5 is
+  sorted position 5 at all six points. The descendant-6 outputs are retained
+  separately, and no article files, old determinants, old solvers, FEM model,
+  Gmsh/CalculiX workflow, or baseline results were changed.
+
+## 2026-05-31
+
+- Added an analytic-only descendant-6 veering localization audit for the six
+  already selected eta=0.5 mode-shape points. The new script reads
+  `desc6_veering_points.csv`, keeps the existing mu selections, reconstructs
+  tracked descendant 6 through the existing Euler-Bernoulli
+  thickness-mismatch shape workflow, and writes rod-wise displacement, slope,
+  curvature, and tau-weighted bending-energy fractions to CSV/Markdown. The
+  audit identifies displacement localization at all six points, while
+  tau-weighted bending energy is mixed for two near-5/6 points, and it does
+  not touch TASK 1 outputs, article files, `paper_dorofeev_style`, old
+  determinants, `formulas.py`, old solvers, Gmsh/CalculiX workflows, baseline
+  results, or FEM physical models.
+- Added the analytic-only descendant-6 eta=0.5 veering-shape TASK 2
+  wrapper. The new script reuses the existing crossing audit and
+  branch-shape plotter, recomputes dense sorted adjacent gaps on the
+  `mu=0..0.9` grid with step `0.001`, selects three distinct local minima
+  each for sorted pairs 4-5 and 5-6, writes six ranked descendant-6 mode-shape
+  PNGs plus CSV/Markdown metadata, and leaves the earlier descendant-5 TASK 1
+  outputs untouched. The workflow remains Euler-Bernoulli analytic-only and
+  does not modify article files, `paper_dorofeev_style`, old determinants,
+  `formulas.py`, old solvers, Gmsh/CalculiX workflows, or FEM physical
+  models.
+- Extended the thickness-mismatch branch-shape eta overlay script with compact
+  diagnostic output folders, optional named plot stems/titles, aggregate
+  CSV/Markdown summaries, and veering-point metadata sourced from the existing
+  crossing audit. Generated analytic-only Euler-Bernoulli mode-shape outputs
+  for descendant 5 at `beta=15 deg`, `epsilon=0.0025`,
+  `eta=-0.5,0,0.5`, and `mu=0..0.8` in steps of `0.1`, plus descendant 6
+  eta=0.5 shapes at the existing near-4/5 and near-5/6 audit points
+  `mu=0.379` and `mu=0.716`. The new diagnostics keep descendant identity
+  separate from sorted-position metadata, record tracking warnings and local
+  gaps in CSV/Markdown, and do not modify article files, article figures,
+  old determinants, `formulas.py`, old solvers, Gmsh/CalculiX workflows, FEM
+  physical models, or baseline FEM results.
+- Generated the clean analytic-only thickness-mismatch EB descendant
+  `Lambda(mu)` plot for `beta=7.5 deg`, `epsilon=0.0025`, and
+  `eta=-0.5,0,0.5`, using the parameterized descendant plotter with the
+  historical beta=15 style. The new run writes PNG, Markdown report, full
+  tracking CSV, and warning-only CSV outputs; it keeps descendant branch
+  identity shape-MAC based, applies the `2*r_i/l_i <= 0.1` dashed split only
+  to EB thin-rod validity, and adds a report-only comparison with the existing
+  beta=15 diagnostic without rerunning beta=15. No article files,
+  `paper_dorofeev_style`, old determinants, `formulas.py`, old solvers, FEM
+  physical models, baseline outputs, Gmsh, CalculiX, or 3D FEM tasks were
+  changed or rerun.
+- Parameterized the clean thickness-mismatch EB descendant `Lambda(mu)`
+  eta-sweep plotter so `--betas` writes one presentation-style PNG and
+  Markdown report per beta angle while preserving the historical beta=15
+  default path. Generated analytic-only outputs for `beta=0,30,45,60 deg`,
+  `epsilon=0.0025`, `eta=-0.5,0,0.5`, `mu=0..0.9` with step `0.005`,
+  first six plotted descendants, shape-MAC descendant identity, thin-rod
+  dashed segments from `2*r_i/l_i <= 0.1`, and no tracking-warning markers or
+  vertical guide lines. The reports include thin-rod violations, tracking
+  ambiguity counts, and close-approach diagnostics. No article files,
+  `paper_dorofeev_style`, old determinants, old solvers, FEM physical models,
+  or 3D FEM tasks were changed or rerun.
+
 ## 2026-05-28
 
 - Added a diagnostic-only eta=0.5, epsilon=0.0025, beta=15 deg

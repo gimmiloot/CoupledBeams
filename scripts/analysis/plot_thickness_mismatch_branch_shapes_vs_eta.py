@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 from dataclasses import dataclass
 from pathlib import Path
 import sys
@@ -151,6 +152,19 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--normalize", choices=("max-full", "max-transverse", "none"), default=DEFAULT_NORMALIZE)
     parser.add_argument("--dpi", type=int, default=DEFAULT_DPI)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--compact-filenames", action="store_true")
+    parser.add_argument("--plot-stems", nargs="+", default=None)
+    parser.add_argument("--plot-titles", nargs="+", default=None)
+    parser.add_argument("--summary-csv", type=Path, default=None)
+    parser.add_argument("--summary-report", type=Path, default=None)
+    parser.add_argument("--skip-per-mu-reports", action="store_true")
+    parser.add_argument("--summary-kind", choices=("mu-sweep", "veering"), default="mu-sweep")
+    parser.add_argument("--veering-pairs", nargs="+", default=None)
+    parser.add_argument(
+        "--gap-audit-csv",
+        type=Path,
+        default=REPO_ROOT / "results" / "eta0p5_eps0p0025_beta15_lambda_mu_crossing_audit.csv",
+    )
     return parser.parse_args(argv)
 
 
@@ -165,9 +179,21 @@ def validate_args(args: argparse.Namespace) -> None:
         raise ValueError("This diagnostic tracks from mu=0 and expects non-negative target mu values.")
     if not args.etas:
         raise ValueError("At least one eta value is required.")
+    if args.plot_stems is not None and len(args.plot_stems) != len(args.mus):
+        raise ValueError("--plot-stems length must match --mus length.")
+    if args.plot_titles is not None and len(args.plot_titles) != len(args.mus):
+        raise ValueError("--plot-titles length must match --mus length.")
+    if args.veering_pairs is not None and len(args.veering_pairs) != len(args.mus):
+        raise ValueError("--veering-pairs length must match --mus length.")
 
 
-def output_png_path(args: argparse.Namespace, mu: float) -> Path:
+def output_png_path(args: argparse.Namespace, mu: float, *, plot_index: int | None = None) -> Path:
+    if args.plot_stems is not None:
+        if plot_index is None:
+            raise ValueError("plot_index is required with --plot-stems.")
+        return Path(args.output_dir) / f"{args.plot_stems[int(plot_index)]}.png"
+    if bool(args.compact_filenames):
+        return Path(args.output_dir) / f"desc{int(args.branch_index)}_mu{mu_token(float(mu))}.png"
     return Path(args.output_dir) / (
         f"thickness_mismatch_shapes_branch{int(args.branch_index)}_"
         f"beta{number_token(float(args.beta_deg))}_"
@@ -176,7 +202,13 @@ def output_png_path(args: argparse.Namespace, mu: float) -> Path:
     )
 
 
-def output_report_path(args: argparse.Namespace, mu: float) -> Path:
+def output_report_path(args: argparse.Namespace, mu: float, *, plot_index: int | None = None) -> Path:
+    if args.plot_stems is not None:
+        if plot_index is None:
+            raise ValueError("plot_index is required with --plot-stems.")
+        return Path(args.output_dir) / f"{args.plot_stems[int(plot_index)]}_report.md"
+    if bool(args.compact_filenames):
+        return Path(args.output_dir) / f"desc{int(args.branch_index)}_mu{mu_token(float(mu))}_report.md"
     return Path(args.output_dir) / (
         f"thickness_mismatch_shapes_branch{int(args.branch_index)}_"
         f"beta{number_token(float(args.beta_deg))}_"
@@ -408,8 +440,16 @@ def shared_axis_limits(
     )
 
 
-def plot_cases_for_mu(args: argparse.Namespace, mu: float, cases: Sequence[ShapeCase], s_norm: np.ndarray) -> Path:
-    output = output_png_path(args, float(mu))
+def plot_cases_for_mu(
+    args: argparse.Namespace,
+    mu: float,
+    cases: Sequence[ShapeCase],
+    s_norm: np.ndarray,
+    *,
+    plot_index: int | None = None,
+    title_override: str | None = None,
+) -> Path:
+    output = output_png_path(args, float(mu), plot_index=plot_index)
     output.parent.mkdir(parents=True, exist_ok=True)
     beta_rad = float(np.deg2rad(float(args.beta_deg)))
     x_left_base, y_left_base, x_right_base, y_right_base = base_coordinates(args, s_norm, beta_rad=beta_rad, mu=mu)
@@ -440,12 +480,16 @@ def plot_cases_for_mu(args: argparse.Namespace, mu: float, cases: Sequence[Shape
     ax.set_ylabel("y")
     ax.grid(True, color="0.88", linewidth=0.6)
     ax.legend(loc="best", fontsize=8, frameon=False)
-    ax.set_title(
-        rf"Thickness mismatch descendant {int(args.branch_index)}: "
-        rf"$\beta={float(args.beta_deg):g}^\circ$, "
-        rf"$\epsilon={float(args.epsilon):g}$, $\mu={float(mu):g}$",
-        fontsize=11,
+    title = (
+        title_override
+        if title_override is not None
+        else (
+            rf"Thickness mismatch descendant {int(args.branch_index)}: "
+            rf"$\beta={float(args.beta_deg):g}^\circ$, "
+            rf"$\epsilon={float(args.epsilon):g}$, $\mu={float(mu):g}$"
+        )
     )
+    ax.set_title(title, fontsize=11)
     fig.tight_layout()
     fig.savefig(output, dpi=int(args.dpi), bbox_inches="tight")
     plt.close(fig)
@@ -469,8 +513,9 @@ def write_report(
     cases: Sequence[ShapeCase],
     tracking_rows_by_eta: dict[float, list[dict[str, float | int | str]]],
     output_png: Path,
+    plot_index: int | None = None,
 ) -> Path:
-    report_path = output_report_path(args, float(mu))
+    report_path = output_report_path(args, float(mu), plot_index=plot_index)
     report_path.parent.mkdir(parents=True, exist_ok=True)
     lines = [
         f"# Thickness-Mismatch Branch {int(args.branch_index)} Shapes vs Eta",
@@ -581,6 +626,187 @@ def write_report(
     return report_path
 
 
+def summary_output_path(args: argparse.Namespace, value: Path | None, default_name: str) -> Path:
+    path = Path(value) if value is not None else Path(default_name)
+    if path.is_absolute():
+        return path
+    return Path(args.output_dir) / path
+
+
+def tracking_row_has_warning(row: dict[str, float | int | str]) -> bool:
+    return bool(tracking_warning_rows([row]))
+
+
+def tracking_mac_text(row: dict[str, float | int | str]) -> str:
+    for key in ("accepted_mac_to_previous", "diagnostic_candidate_mac_to_previous", "mac_to_previous"):
+        value = row.get(key, "")
+        try:
+            value_f = float(value)
+        except (TypeError, ValueError):
+            continue
+        if np.isfinite(value_f):
+            return f"{value_f:.10g}"
+    return ""
+
+
+def load_gap_audit(path: Path) -> dict[str, dict[str, str]]:
+    if not Path(path).exists():
+        return {}
+    with Path(path).open("r", newline="", encoding="utf-8") as handle:
+        return {str(row["pair"]): row for row in csv.DictReader(handle)}
+
+
+def build_summary_rows(
+    args: argparse.Namespace,
+    *,
+    target_mus: Sequence[float],
+    shape_cases_by_mu: dict[float, list[ShapeCase]],
+    tracking_cases: dict[float, dict[float, TrackingCase]],
+    plot_paths: dict[float, Path],
+) -> list[dict[str, str]]:
+    rows: list[dict[str, str]] = []
+    veering_pairs = list(args.veering_pairs or [])
+    gap_rows = load_gap_audit(Path(args.gap_audit_csv)) if args.summary_kind == "veering" else {}
+    for mu_index, mu in enumerate(target_mus):
+        pair = veering_pairs[mu_index] if mu_index < len(veering_pairs) else ""
+        gap_row = gap_rows.get(pair, {})
+        for case in shape_cases_by_mu[float(mu)]:
+            tracking_row = tracking_cases[float(case.eta)][float(mu)].tracking_row
+            common = {
+                "eta": f"{case.eta:g}",
+                "mu": f"{float(mu):g}",
+                "descendant_id": str(int(args.branch_index)),
+                "lambda": f"{case.Lambda:.10g}",
+                "sorted_position": str(case.current_sorted_index),
+                "tracking_mac": tracking_mac_text(tracking_row),
+                "tracking_warning": "yes" if tracking_row_has_warning(tracking_row) else "no",
+                "tracking_status": case.tracking_step_status,
+                "thickness_ratio_1": f"{case.thickness_ratio_1:.10g}",
+                "thickness_ratio_2": f"{case.thickness_ratio_2:.10g}",
+                "thin_rod_valid": "yes"
+                if case.thickness_ratio_1 <= float(args.thickness_ratio_limit)
+                and case.thickness_ratio_2 <= float(args.thickness_ratio_limit)
+                else "no",
+                "plot_file": display_path(plot_paths[float(mu)]),
+            }
+            if args.summary_kind == "veering":
+                rows.append(
+                    {
+                        "veering_case": pair,
+                        **common,
+                        "lambda_desc6": common["lambda"],
+                        "nearest_sorted_pair": pair,
+                        "local_gap": str(gap_row.get("abs_gap", "")),
+                        "local_gap_mu": str(gap_row.get("mu_candidate", "")),
+                        "gap_tracking_status": str(gap_row.get("tracking_status", "")),
+                    }
+                )
+            else:
+                rows.append(common)
+    return rows
+
+
+def write_summary_csv(path: Path, rows: list[dict[str, str]]) -> None:
+    if not rows:
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames: list[str] = []
+    seen: set[str] = set()
+    for row in rows:
+        for key in row:
+            if key not in seen:
+                seen.add(key)
+                fieldnames.append(key)
+    with path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def write_summary_report(
+    args: argparse.Namespace,
+    *,
+    target_mus: Sequence[float],
+    summary_rows: list[dict[str, str]],
+    plot_paths: dict[float, Path],
+    csv_path: Path,
+    report_path: Path,
+) -> Path:
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        f"# Thickness-Mismatch Descendant {int(args.branch_index)} Mode-Shape Diagnostic",
+        "",
+        "## Parameters",
+        "",
+        f"- beta: {float(args.beta_deg):g} deg",
+        f"- epsilon: {float(args.epsilon):g}",
+        f"- eta values: {', '.join(f'{float(value):g}' for value in args.etas)}",
+        f"- mu values: {', '.join(f'{float(value):g}' for value in target_mus)}",
+        f"- descendant id: {int(args.branch_index)}",
+        f"- tracking: adjacent-step analytic shape MAC from `mu=0`; sorted position is metadata only",
+        f"- summary CSV: `{display_path(csv_path)}`",
+        "",
+        "This is an analytic-only Euler-Bernoulli thickness-mismatch diagnostic.",
+        "It does not add Timoshenko curves, FEM markers, Gmsh, CalculiX, or 3D FEM runs.",
+        "",
+        "## Generated Plots",
+        "",
+    ]
+    for mu in target_mus:
+        lines.append(f"- mu={float(mu):g}: `{display_path(plot_paths[float(mu)])}`")
+
+    warning_rows = [row for row in summary_rows if row.get("tracking_warning") == "yes"]
+    lines.extend(["", "## Tracking And Sorted-Position Summary", ""])
+    lines.append(f"- tracking warning rows in summary: {len(warning_rows)}")
+    for eta in args.etas:
+        eta_rows = [row for row in summary_rows if row.get("eta") == f"{float(eta):g}"]
+        positions = sorted({row["sorted_position"] for row in eta_rows}, key=lambda value: int(value))
+        eta_warnings = [row for row in eta_rows if row.get("tracking_warning") == "yes"]
+        lines.append(
+            f"- eta={float(eta):g}: sorted positions for descendant {int(args.branch_index)} = "
+            f"{', '.join(positions)}; warnings={len(eta_warnings)}"
+        )
+
+    lines.extend(["", "## Thin-Rod Criterion", ""])
+    lines.append(f"- criterion: `2*r_i/l_i <= {float(args.thickness_ratio_limit):g}` for both rods")
+    thin_rod_violations = [row for row in summary_rows if row.get("thin_rod_valid") == "no"]
+    if thin_rod_violations:
+        lines.append(f"- WARNING: {len(thin_rod_violations)} plotted case(s) violate the criterion:")
+        for row in thin_rod_violations:
+            lines.append(
+                f"  - mu={row['mu']}, eta={row['eta']}: "
+                f"2*r1/l1={row['thickness_ratio_1']}, 2*r2/l2={row['thickness_ratio_2']}"
+            )
+    else:
+        lines.append("- no violations in the plotted cases.")
+
+    if args.summary_kind == "veering":
+        gap_rows = load_gap_audit(Path(args.gap_audit_csv))
+        lines.extend(["", "## Selected Near-Interaction Points", ""])
+        for idx, mu in enumerate(target_mus):
+            pair = args.veering_pairs[idx] if args.veering_pairs and idx < len(args.veering_pairs) else ""
+            gap_row = gap_rows.get(pair, {})
+            row_matches = [row for row in summary_rows if np.isclose(float(row["mu"]), float(mu))]
+            sorted_positions = ", ".join(row["sorted_position"] for row in row_matches)
+            warning_text = "yes" if any(row.get("tracking_warning") == "yes" for row in row_matches) else "no"
+            lines.append(
+                f"- {pair}: selected mu={float(mu):g}, local gap={gap_row.get('abs_gap', '')}, "
+                f"audit mu={gap_row.get('mu_candidate', '')}, descendant sorted position={sorted_positions}, "
+                f"tracking warning={warning_text}, audit status={gap_row.get('tracking_status', '')}"
+            )
+    lines.extend(
+        [
+            "",
+            "This diagnostic writes only results files. It does not modify article",
+            "files, article figures, the old determinant, `src/my_project/analytic/formulas.py`,",
+            "old solvers, Gmsh/CalculiX workflows, or the FEM physical model.",
+            "",
+        ]
+    )
+    report_path.write_text("\n".join(lines), encoding="utf-8")
+    return report_path
+
+
 def build_cases_by_mu(
     args: argparse.Namespace,
     tracking_cases: dict[float, dict[float, TrackingCase]],
@@ -608,26 +834,43 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
     s_norm = np.linspace(0.0, 1.0, int(args.num_shape_samples), dtype=float)
 
     outputs: list[Path] = []
+    plot_paths_by_mu: dict[float, Path] = {}
     reports: list[Path] = []
     print("Thickness-mismatch branch-shape diagnostic")
     print(
         f"branch={int(args.branch_index)}, beta={float(args.beta_deg):g} deg, "
         f"epsilon={float(args.epsilon):g}, etas={', '.join(f'{eta:g}' for eta in eta_values)}"
     )
-    for mu in target_mus:
+    for plot_index, mu in enumerate(target_mus):
         cases = shape_cases_by_mu[float(mu)]
-        output_png = plot_cases_for_mu(args, float(mu), cases, s_norm)
-        report = write_report(
+        title_override = (
+            str(args.plot_titles[plot_index])
+            if args.plot_titles is not None and plot_index < len(args.plot_titles)
+            else None
+        )
+        output_png = plot_cases_for_mu(
             args,
-            mu=float(mu),
-            cases=cases,
-            tracking_rows_by_eta=tracking_rows_by_eta,
-            output_png=output_png,
+            float(mu),
+            cases,
+            s_norm,
+            plot_index=plot_index,
+            title_override=title_override,
         )
         outputs.append(output_png)
-        reports.append(report)
+        plot_paths_by_mu[float(mu)] = output_png
+        if not bool(args.skip_per_mu_reports):
+            report = write_report(
+                args,
+                mu=float(mu),
+                cases=cases,
+                tracking_rows_by_eta=tracking_rows_by_eta,
+                output_png=output_png,
+                plot_index=plot_index,
+            )
+            reports.append(report)
         print(f"saved shape PNG for mu={float(mu):g}: {output_png}")
-        print(f"saved report for mu={float(mu):g}: {report}")
+        if not bool(args.skip_per_mu_reports):
+            print(f"saved report for mu={float(mu):g}: {reports[-1]}")
         for case in cases:
             valid = (
                 case.thickness_ratio_1 <= float(args.thickness_ratio_limit)
@@ -641,7 +884,36 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
                 f"2*r2/l2={case.thickness_ratio_2:.6g}, {status}"
             )
 
-    return {"png": outputs, "reports": reports}
+    summary_csv = summary_output_path(
+        args,
+        args.summary_csv,
+        f"desc{int(args.branch_index)}_{args.summary_kind.replace('-', '_')}_summary.csv",
+    )
+    summary_report = summary_output_path(
+        args,
+        args.summary_report,
+        f"desc{int(args.branch_index)}_{args.summary_kind.replace('-', '_')}_report.md",
+    )
+    summary_rows = build_summary_rows(
+        args,
+        target_mus=target_mus,
+        shape_cases_by_mu=shape_cases_by_mu,
+        tracking_cases=tracking_cases,
+        plot_paths=plot_paths_by_mu,
+    )
+    write_summary_csv(summary_csv, summary_rows)
+    write_summary_report(
+        args,
+        target_mus=target_mus,
+        summary_rows=summary_rows,
+        plot_paths=plot_paths_by_mu,
+        csv_path=summary_csv,
+        report_path=summary_report,
+    )
+    print(f"saved summary CSV: {summary_csv}")
+    print(f"saved summary report: {summary_report}")
+
+    return {"png": outputs, "reports": reports, "summary_csv": summary_csv, "summary_report": summary_report}
 
 
 if __name__ == "__main__":
