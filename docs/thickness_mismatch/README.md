@@ -10,6 +10,10 @@ workflow, and consistency checks, see `../project_rules.md`.
 FEM validation status and roadmap are tracked in
 `docs/thickness_mismatch/fem_validation_status.md`.
 
+Frequency-crossing positive-gap status for the diagnostic EB
+thickness-mismatch model is tracked in
+`docs/thickness_mismatch/frequency_crossing_verification_status.md`.
+
 The current rigid-joint `Lambda(mu)` EB/Timoshenko/3D FEM diagnostic plots are
 listed in `docs/thickness_mismatch/fem_validation_status.md`. They use the
 full rigid end-face 3D FEM model as an independent engineering benchmark, not

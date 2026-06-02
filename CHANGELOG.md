@@ -1,7 +1,83 @@
 # CHANGELOG
 
+## 2026-06-02
+
+- Documented the strict positive-gap verification status for `eta=0`,
+  `mu>0` and tested `eta!=0` crossing checks in a dedicated
+  thickness-mismatch status note. The status document records source outputs,
+  resolved-positive-gap conclusions, safe/unsafe wording, and article-facing
+  caution text without rerunning calculations or touching FEM/Gmsh/CalculiX
+  workflows, article files, old determinants, old solvers, or baseline
+  results.
+- Added a strict analytic-only eta-parameter positive-gap verification audit
+  for the thickness-mismatch Euler-Bernoulli determinant at `epsilon=0.0025`.
+  The new diagnostic checks eta scans for the requested beta/mu slices, beta
+  scans at selected eta values, and mu scans at selected beta/eta values while
+  solving the first 14 sorted roots and auditing adjacent sorted pairs 1-2
+  through 6-7. It separates eigenvalue-gap classification from descendant
+  label tracking, applies local strict root repairs where the default sign scan
+  misses close roots, and refines the special windows near `mu=0.15864`,
+  `0.379`, and `0.716`. Current results resolve positive sorted gaps for all
+  tested cases, find no true crossing and no unresolved possible crossing, and
+  identify the smallest eta-nonzero gap as about `4.0747e-4` at `beta=5 deg`,
+  `eta=0.5`, `mu=0.158647`, sorted pair 1-2. No article files, article
+  figures, old determinants, old solvers, FEM model, Gmsh/CalculiX workflow,
+  or baseline results were changed.
+- Added a strict analytic-only eta=0 positive-mu gap verification audit for
+  `epsilon=0.0025`, `beta=0..90 deg`, and `mu=1e-6..0.9`. The new diagnostic
+  checks adjacent sorted-root gaps for pairs 1-2 through 6-7, refines local
+  gap minima in beta, compares default and strict root-scan settings, records
+  determinant residual diagnostics, and separates eigenvalue/coalescence
+  evidence from descendant-label tracking. Current results resolve positive
+  gaps for all 19 tested positive `mu` values, find no true sorted-root
+  crossing, identify the smallest gap as about `1.314e-4` at `mu=1e-6`,
+  `beta=13.308 deg`, pair 5-6, and treat small-mu descendant swaps as
+  numerically fragile label tracking rather than true crossings. No article
+  files, article figures, old determinants, old solvers, FEM model,
+  Gmsh/CalculiX workflow, or baseline results were changed.
+- Added a targeted analytic-only `Lambda(beta)` rearrangement check for
+  `mu=0.001`, `0.002`, and `0.003` at `eta=0`, `epsilon=0.0025`, and
+  `beta=0..90 deg`. The new diagnostic reuses the eta=0 mu-scan root solving
+  and shape-MAC descendant tracking, refines the beta step to `0.1 deg`, writes
+  one PNG per mu plus combined CSV/Markdown outputs under `results/`, and
+  reports no reproducible first-six sorted-position rearrangement, no real
+  crossings, and no isolated spike artifacts in these three local checks. The
+  earlier narrow `0.001 <= mu <= 0.002` coarse-grid signal should therefore be
+  treated as grid/tracking-sensitive diagnostic evidence unless confirmed by a
+  stricter localized subspace/root-coalescence analysis. No article files,
+  article figures, old determinants, old solvers, FEM model, Gmsh/CalculiX
+  workflow, or baseline results were changed.
+- Added an analytic-only `mu` scan rearrangement audit at `eta=0`,
+  `epsilon=0.0025`, and `beta=0..90 deg` for the first six descendants. The
+  new diagnostic solves the first 14 sorted roots, tracks the first eight
+  descendants over beta, classifies first-six sorted-position rearrangement
+  with `beta_min_check` robustness checks at `0.5`, `1`, and `2 deg`, writes
+  CSV/Markdown/PNG outputs under `results/`, and reports that the only
+  grid-resolved true rearrangement interval is `0.001 <= mu <= 0.002`; `mu=0`
+  remains tracking-unreliable and `0.003 <= mu <= 0.9` has no rearrangement.
+  No article files, article figures, old determinants, old solvers, FEM model,
+  Gmsh/CalculiX workflow, or baseline results were changed.
+
 ## 2026-06-01
 
+- Added a focused analytic-only article-figure crossing audit for
+  `beta=5 deg`, `epsilon=0.0025`, `eta=0.5`, and `mu=0..0.9`. The new
+  diagnostic script checks descendant branches 1 and 2 separately from sorted
+  roots, refines the apparent article crossing with a `1e-5` local mu step and
+  fine root scan, and writes CSV/Markdown/PNG outputs showing a finite positive
+  gap rather than a real crossing. The current article figure was identified
+  as misleading because its coarse descendant tracking accepted a false
+  desc1/desc2 swap; no article files, old determinants, old solvers, FEM model,
+  Gmsh/CalculiX workflow, or baseline results were changed.
+- Added an ignored local article workspace for the planned
+  thickness-mismatch coupled-rods article under
+  `paper_thickness_mismatch_article/`, copied the user-provided cp1251
+  `main.tex` into it without semantic edits, and added an article-oriented
+  analytic Euler-Bernoulli `Lambda(mu)` plotting script for descendant
+  branches. The new workspace is listed in `.gitignore`; generated article
+  figures/data remain local and ignored by git. No old article files,
+  `paper_dorofeev_style`, old determinants, old solvers, FEM models, Gmsh,
+  CalculiX, baseline results, or diagnostic `results/` outputs were changed.
 - Added an analytic-only selected-eta `Lambda(beta)` descendant plotting audit
   for the thickness-mismatch model at `epsilon=0.0025`, `mu=0`, and
   `eta=-0.016,-0.004,-0.002,0.002,0.004,0.016`. The new 2x3 plotter solves
