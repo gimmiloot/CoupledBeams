@@ -2,6 +2,20 @@
 
 ## 2026-06-04
 
+- Added an analytic-only diagnostic `Lambda(beta)` map comparing the in-plane
+  EB subsystem against the out-of-plane EB plus Saint-Venant torsion subsystem
+  with solid/dashed sorted-frequency curves, CSV-first root output, spike audit
+  segmentation, per-case PNGs, an overview PNG, and a Markdown report under
+  `results/in_plane_vs_out_of_plane_lambda_beta/`. This plotting workflow does
+  not use descendant tracking, FEM, Gmsh, CalculiX, article artifacts, or
+  determinant changes.
+- Added a diagnostic-only coupled-angle 3D FEM smoke wrapper for the single
+  equal-thickness case `beta=15 deg`, `mu=0.3`, `eta=0`, using variable-length
+  fused cylinders while reusing the existing Gmsh/CalculiX extraction helpers.
+  It writes analytic-union, raw FEM, sorted-index, nearest-frequency, and report
+  outputs under `results/full_spectrum_analytic_vs_3d_fem/coupled_mu0p3_eta0_beta15/`
+  without changing analytic determinants, production FEM workflows, old
+  solvers, or article artifacts.
 - Added a straight-uniform fixed-fixed cylinder 3D FEM mesh-convergence audit
   for the recovered low-mode smoke baseline, varying only the existing Gmsh
   mesh size controls and writing summary/mode CSVs plus a Markdown report under
