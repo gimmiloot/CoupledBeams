@@ -1,7 +1,93 @@
 # CHANGELOG
 
+## 2026-06-03
+
+- Added `scripts/analysis/plot_mode_shapes_eta_beta_scan_sorted_modes.py`
+  for diagnostic-only fixed sorted-index eta beta-scan mode-shape plots. The
+  script reuses the existing eta root/shape helpers, selects sorted modes 2 and
+  3 independently at each beta without descendant tracking, applies the
+  default `short-rod-up` visual sign convention to the plotted eigenvectors,
+  and writes a dedicated PNG/CSV output folder plus sorted 2-3 gap diagnostics
+  without touching article files, FEM/Gmsh/CalculiX, old determinants, old
+  solvers, or baseline results.
+- Added `scripts/analysis/audit_mode_shape_branch2_beta_transition_eta0p1_mu0p3.py`
+  for a diagnostic-only sorted-gap audit of the apparent descendant-2
+  sorted-index change in the eta=0.1, mu=0.3 mode-shape beta scan. The audit
+  reuses eta sorted roots and shape-MAC descendant tracking, writes refined
+  sorted-gap/tracking/MAC CSV, PNG, and Markdown outputs under `results/`, and
+  reports a resolved positive sorted 2-3 gap with local tracking ambiguity
+  rather than a frequency crossing, without touching article files,
+  FEM/Gmsh/CalculiX, old determinants, old solvers, or baseline results.
+- Added `scripts/analysis/plot_mode_shapes_eta_beta_scan.py`, a
+  diagnostic-only analytic Euler-Bernoulli thickness-mismatch mode-shape
+  beta-scan entry point. It reuses the existing eta determinant/root solver and
+  thickness-mismatch MAC shape helpers to track one descendant branch from
+  `beta=0` at fixed `eta` and `mu`, reconstructs determinant-nullspace
+  coefficients, and writes per-beta PNGs, a contact-sheet PNG, and a summary
+  CSV under `results/` without touching article files, FEM/Gmsh/CalculiX, old
+  determinants, old solvers, or baseline results.
+
 ## 2026-06-02
 
+- Extended the single-beam-reference diagnostic `Lambda(mu)` plotter to style
+  reference curves by the actual thin/thick rod role instead of by rod number,
+  so `eta=0.5` correctly treats rod 2 as the long/thick rod. Generated new
+  diagnostic-only sorted-frequency PNG/CSV outputs for `eta=-0.5, beta=15 deg`
+  and for `eta=0.5, beta=0,5,10,15 deg`, all at `epsilon=0.0025`, without
+  changing the reference formula, determinant, solvers, FEM/Gmsh/CalculiX, or
+  article workspace.
+- Updated the eta=-0.5 single-beam-reference diagnostic `Lambda(mu)` plotter
+  so the default PNGs use a coupled-spectrum y-axis zoom and clip only the
+  plotted reference segments to that visible range. The CSV output still keeps
+  the full unclipped CP/FP and CC/FF reference curves, and `--full-scale-refs`
+  writes separate `_fullscale.png` diagnostics when the full reference scale is
+  needed.
+- Added a diagnostic-only sorted `Lambda(mu)` plotter for the
+  thickness-mismatch EB model at `eta=-0.5`, `epsilon=0.0025`, and
+  `beta=0,5,10 deg`. The script writes one PNG and CSV per beta under
+  `results/`, uses sorted coupled roots from the eta determinant, and overlays
+  non-horizontal CP/FP and CC/FF single-rod references computed as
+  `Lambda_ref = alpha*sqrt(tau_i)/L_i` for the short/thick and long/thin rods,
+  without touching article files, FEM/Gmsh/CalculiX, old determinants, old
+  solvers, or baseline results.
+- Added a concise interpretation note for the eta/mu/beta global diagnostic
+  trends, based only on the existing post-processing CSVs. The note records
+  the diagnostic scope, sorted-frequency limitations, selected numerical
+  summaries by `mu` and eta sign, pair-transition intervals, beta-at-minimum
+  histogram, cautious interpretation, and explicit "do not claim yet" limits
+  without recomputing roots, generating heatmaps, running local refinement,
+  running strict positive-gap verification, or touching protected article/FEM
+  workflows.
+- Added a CSV-only global trend post-processor for the diagnostic eta/mu/beta
+  sorted-frequency maps. The new script reads the existing generated
+  `diagnostic_eta_mu_beta_*` CSV files without recomputing roots, local
+  candidate refinement, strict positive-gap verification, FEM/Gmsh/CalculiX,
+  or article figure generation. It writes by-mu and by-eta quantile summaries,
+  eta-sign and paired-asymmetry summaries, pair-transition percentages,
+  beta-at-minimum histograms, branch-sensitivity dominance rows, low-order
+  surrogate fits, eight diagnostic PNG plots, and a Markdown report. Current
+  post-processing finds `mu` is the stronger global driver of `g_min`,
+  `S_mean`, and `S_mean_rel` by one-variable quadratic R2; median `g_min`
+  increases with `mu`, median beta sensitivity decreases with `mu`, dominant
+  gap pairs migrate with `mu`, `beta_at_g_min` concentrates most in
+  `10..15 deg`, absolute sensitivity is most often branch 6 dominated, and
+  relative sensitivity is most often branch 1 dominated. These outputs remain
+  descriptive global diagnostics, not crossing/no-crossing proof.
+- Added a diagnostic-only sorted-frequency eta/mu/beta mapping script for the
+  thickness-mismatch Euler-Bernoulli determinant at `epsilon=0.0025`. The new
+  script writes `Lambda(eta)` data at `beta=0`, `mu=0`, 18 sorted
+  `Lambda(beta)` slice PNGs for `mu=0.1,0.2,0.3` and
+  `eta=+-0.1,+-0.2,+-0.3`, a slice CSV, six eta-mu heatmaps, a heatmap CSV,
+  and a Markdown report. The heatmap run used the recorded fallback grid
+  `eta` step `0.025`, `mu` step `0.05`, `beta` step `1 deg`, solving the
+  first 10 sorted roots; it found the smallest diagnostic gap
+  `g_min=0.00838632600513` at `eta=0.5`, `mu=0.35`, `beta=23 deg`, sorted
+  pair 6-7, and the largest `S_mean`/`S_max` location at `eta=-0.3`,
+  `mu=0.6`. The report records no solver warnings or missing roots and keeps
+  all close approaches as diagnostic candidates requiring strict local gap
+  verification before article claims. No article files, article figures,
+  `main.tex`, old determinant, old solvers, FEM model, Gmsh/CalculiX workflow,
+  or baseline results were changed.
 - Documented the strict positive-gap verification status for `eta=0`,
   `mu>0` and tested `eta!=0` crossing checks in a dedicated
   thickness-mismatch status note. The status document records source outputs,

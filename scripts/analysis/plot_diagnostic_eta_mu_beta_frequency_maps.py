@@ -896,7 +896,7 @@ def write_report(
         f"- location: {row_summary(min_gap)}",
         f"- lower Lambda: `{number_text(min_gap['_lambda_lower_float'])}`",
         f"- upper Lambda: `{number_text(min_gap['_lambda_upper_float'])}`",
-        f"- near symmetric eta≈0, mu≈0 by one-grid-step criterion: `{'yes' if near_symmetric else 'no'}`",
+        f"- near symmetric eta~0, mu~0 by one-grid-step criterion: `{'yes' if near_symmetric else 'no'}`",
         "",
         "Smallest gap candidates:",
         "",
