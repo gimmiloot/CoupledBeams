@@ -13,9 +13,9 @@ live in `../../../docs/project_rules.md`.
 The current positive-gap status for frequency-crossing checks is summarized in
 `../../../docs/thickness_mismatch/frequency_crossing_verification_status.md`.
 
-The out-of-plane EB + Saint-Venant torsion subsystem is currently documented
-and covered by lightweight determinant sanity tests only; it is not yet part of
-the plotting or scanning workflows listed here.
+The out-of-plane EB + Saint-Venant torsion subsystem is documented, covered by
+lightweight determinant sanity tests, and now has a diagnostic 1D EB+torsion
+FEM validation audit listed below.
 
 ## Directory Scaffold
 
@@ -97,6 +97,7 @@ python scripts/analysis/thickness_mismatch/shapes/plot_beta_scan.py \
 
 | Task | Preferred command | Compatibility or historical scripts | Main outputs | Notes |
 | --- | --- | --- | --- | --- |
+| Out-of-plane EB+torsion analytic vs 1D FEM validation | `python scripts/analysis/thickness_mismatch/audits/compare_out_of_plane_analytic_vs_1d_fem.py` | none | `results/out_of_plane_fem_validation/out_of_plane_analytic_vs_1d_fem_comparison.csv`, `results/out_of_plane_fem_validation/out_of_plane_analytic_vs_1d_fem_convergence.csv`, `results/out_of_plane_fem_validation/out_of_plane_analytic_vs_1d_fem_report.md` | Diagnostic-only sorted-frequency validation for the out-of-plane determinant against an independent one-dimensional Euler--Bernoulli plus Saint-Venant torsion FEM. It checks determinant signs, joint coupling, and Lambda scaling within the same continuum model; it does not implement or run 3D FEM and does not use descendant tracking. |
 | Single fixed-fixed rod EB/Timoshenko check | `python scripts/analysis/compare_single_rod_eb_timoshenko.py` | none | `results/single_rod_fixed_fixed_eb_timoshenko_frequencies.csv`, `results/single_rod_fixed_fixed_eb_timoshenko_lambda_vs_epsilon.png`, `results/single_rod_fixed_fixed_eb_timoshenko_report.md` | Preferred diagnostic for the one-rod Timoshenko check before coupled-beam use; parameterized by epsilon list and marked with the `2r/L <= 0.1` thin-rod criterion. |
 | Single fixed-fixed rod 3D solid FEM workflow | `python scripts/analysis/solid_fem_single_rod_fixed_fixed.py` | optional `GMSH_EXE`, `CCX_EXE` | `docs/thickness_mismatch/solid_fem_audit.md`, `results/single_rod_fixed_fixed_3d_solid_fem_report.md`, `results/single_rod_fixed_fixed_3d_solid_fem_comparison.csv`, `results/single_rod_fixed_fixed_3d_solid_fem_mode_metrics.csv`, `results/single_rod_fixed_fixed_3d_solid_fem_bending_doublet_comparison.csv`, `results/solid_fem_single_rod/` | Diagnostic-only external solid-FEM workflow seed. Writes Gmsh/CalculiX input templates, builds fixed-end node sets for ccx, parses `.frd` displacement modes when available, classifies bending/axial/torsion-like modes, and compares classified bending doublets against the one-rod EB/Timoshenko references; external solvers remain optional. |
 | Coupled equal rods multi-beta 3D solid FEM workflow | `python scripts/analysis/solid_fem_coupled_equal_rods.py` | `solid_fem_coupled_equal_rods_beta15.py` remains for reproducing the original beta=15 diagnostic outputs | `results/coupled_equal_rods_3d_solid_fem_report.md`, `results/coupled_equal_rods_3d_solid_fem_geometry_audit.csv`, `results/coupled_equal_rods_3d_solid_fem_sorted_comparison_by_beta.csv`, `results/coupled_equal_rods_3d_solid_fem_mode_metrics_by_beta.csv`, `results/coupled_equal_rods_3d_solid_fem_in_plane_comparison_by_beta.csv`, `results/solid_fem_coupled_equal_rods/` | Diagnostic-only beta sweep for equal rods at `beta=15,45,90 deg`, `mu=0`, `eta=0`; audits fused-joint overlap using `r/sin(beta)`, keeps coordinate-derived outer fixed node sets, parses `.frd` mode shapes, and compares classified in-plane solid modes with beta-specific EB/Timoshenko sorted references. |

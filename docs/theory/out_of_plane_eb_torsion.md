@@ -32,7 +32,44 @@ The in-plane problem uses bending plus axial motion, with variables such as
 torsion, with variables `z_i` and `psi_i`. In the ideal linear planar model,
 these two subsystems are independent.
 
-## 2. Local Coordinate Convention
+## 2. Rigid-Frame Decomposition Motivation
+
+This split is consistent with the general theory of Euler--Bernoulli beam
+frames with rigid joints. Berkolaiko and Ettehad, "Three dimensional elastic
+beam frames: rigid joint conditions in variational and differential
+formulation", arXiv:2104.01275v2 (2021), state that for planar
+Euler--Bernoulli frames the operator decomposes into two independent
+subsystems: one coupling out-of-plane displacement with angular/torsional
+displacement, and one coupling in-plane displacement with axial displacement.
+
+Thus the local split used here,
+
+```text
+in-plane subsystem:      (w_i, u_i)
+out-of-plane subsystem:  (z_i, psi_i)
+```
+
+is not a heuristic assumption; it is the standard linear decomposition for an
+ideal planar rigid-joint frame. Conversely, a scalar out-of-plane-only model
+using only `z_i` is generally incomplete for a rigid-joint frame, because
+out-of-plane displacement is coupled to angular/torsional displacement in
+non-trivial structures.
+
+The invariant rigid-joint conditions are vector conditions:
+
+```text
+equality of joint displacement vectors
+equality of joint rotation vectors
+force balance
+moment balance
+```
+
+The scalar signs in this note appear only after projecting those vector
+conditions onto the chosen local bases. The signs below follow specifically
+from `e_z` downward, `t_i` directed from clamp to joint, and
+`n_i = e_z x t_i`.
+
+## 3. Local Coordinate Convention
 
 The coordinate convention is part of the model and must not be changed without
 a separate theory/code consistency audit.
@@ -76,7 +113,7 @@ beta = 90 deg:
     n_2 = -t_1
 ```
 
-## 3. Rotation and Moment Vector Convention
+## 4. Rotation and Moment Vector Convention
 
 The joint rotation vector on rod `i` is decomposed as:
 
@@ -104,7 +141,7 @@ m_i . delta theta_i = T_i delta psi_i + M_i delta phi_i
 
 This is the basic consistency check for the component signs.
 
-## 4. Joint Conditions in Force Variables
+## 5. Joint Conditions in Force Variables
 
 At the joint, the force-variable conditions are:
 
@@ -134,7 +171,7 @@ The variables `phi` and `psi` are not balanced like independent scalar
 forces: they are components of one and the same joint rotation vector.
 Similarly, `M` and `T` are components of one and the same moment vector.
 
-## 5. Relation to Derivatives of z and psi
+## 6. Relation to Derivatives of z and psi
 
 Use dimensional arc coordinate `s_i` from clamp to joint.
 
@@ -165,7 +202,7 @@ choice. Classical Euler--Bernoulli bending theory uses displacement, rotation,
 bending moment, and shear force as boundary quantities; this convention is one
 consistent orientation of those quantities.
 
-## 6. Dimensionless Variables and Solution Ansatz
+## 7. Dimensionless Variables and Solution Ansatz
 
 Use:
 
@@ -207,7 +244,7 @@ The unknown vector is:
 X = (A_1, B_1, A_2, B_2, P_1, P_2)^T
 ```
 
-## 7. Arguments alpha_i and gamma_i
+## 8. Arguments alpha_i and gamma_i
 
 For bending:
 
@@ -237,7 +274,19 @@ gamma_i = sqrt(2(1 + nu)) epsilon Lambda^2 L_i
 For circular rods, `gamma_i` does not contain `tau_i`, because torsional
 stiffness and polar inertia both scale as `r_i^4`.
 
-## 8. Thickness Factors
+The formula `G = E/(2(1+nu))` requires `nu > -1`, so that `G > 0`. For
+ordinary stable isotropic 3D materials one usually has `-1 < nu < 1/2`. The
+current implementation validates the mathematical requirement needed for
+positive `G`; typical physical calculations should still use the usual
+physical range.
+
+The torsion model assumes circular homogeneous rods and Saint-Venant torsion
+without warping effects or additional distributed rotational inertia. For
+non-circular sections, open thin-walled sections, warping torsion, added fluid
+inertia, or non-ideal 3D joints, `gamma_i` and/or torsional moment scaling may
+need to be modified.
+
+## 9. Thickness Factors
 
 Reuse the existing mass-preserving thickness-mismatch factors:
 
@@ -277,7 +326,7 @@ chi_T = 2 epsilon sqrt(G/E)
       = 2 epsilon / sqrt(2(1 + nu))
 ```
 
-## 9. Compact Determinant Form
+## 10. Compact Determinant Form
 
 Define joint values:
 
@@ -342,7 +391,32 @@ det M_perp = 0
 The full expanded `6x6` matrix is intentionally not repeated here. The compact
 block definitions above are the preferred source for avoiding sign mistakes.
 
-## 10. beta=0 Checks
+## 11. Independent 1D FEM Validation
+
+The determinant is checked against a separate one-dimensional finite element
+discretization of the same out-of-plane subsystem. That validation model uses
+Euler--Bernoulli Hermite bending for `z_i`, Saint-Venant torsion for `psi_i`,
+the same `phi_i = -z_{i,s}` convention, and the same vector rigid-joint
+compatibility conditions before reducing the matrices.
+
+This comparison validates signs, coupling conditions, nondimensional scaling,
+and determinant assembly within the same continuum model. It is not a
+substitute for full 3D FEM. A 3D FEM comparison will test additional effects
+and may legitimately differ because of joint geometry, shear and rotary
+inertia, possible warping, Poisson effects, mesh sensitivity, and possible
+mixing between in-plane and out-of-plane modes if the model is not perfectly
+symmetric.
+
+The diagnostic entry point is:
+
+```text
+python scripts/analysis/thickness_mismatch/audits/compare_out_of_plane_analytic_vs_1d_fem.py
+```
+
+It writes diagnostic-only CSV and Markdown outputs under
+`results/out_of_plane_fem_validation/`.
+
+## 12. beta=0 Checks
 
 At `beta=0`, the system splits into a bending block and a torsion block. The
 bending equations, up to nonzero row scalings used in determinant assembly,

@@ -2,6 +2,19 @@
 
 ## 2026-06-04
 
+- Extended the out-of-plane 1D FEM validation with a targeted beta=0,
+  eta=0 torsion-block root check and FEM bending/torsion stiffness-energy
+  fractions in the diagnostic comparison CSV/report, without changing the
+  determinant or running 3D FEM.
+- Added an independent one-dimensional out-of-plane Euler--Bernoulli plus
+  Saint-Venant torsion FEM validation layer, an out-of-plane determinant root
+  scanner, a diagnostic analytic-vs-1D-FEM audit script with CSV/Markdown
+  outputs, and focused tests for element symmetry, reduced-matrix definiteness,
+  beta=0 straight-beam bending/torsion limits, and a small analytic-vs-FEM
+  smoke comparison. This does not implement or run 3D FEM.
+- Strengthened the out-of-plane Euler--Bernoulli plus Saint-Venant torsion
+  theory note with rigid-joint frame literature context, and added tests for
+  eta=0 factor reduction and invalid eta/Poisson parameters.
 - Added the standalone out-of-plane Euler--Bernoulli plus Saint-Venant torsion
   theory note, determinant assembly module, and lightweight sanity tests for
   the coordinate convention, beta=0 bending/torsion block split, and eta=0

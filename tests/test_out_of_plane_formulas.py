@@ -18,6 +18,7 @@ from my_project.analytic.formulas_out_of_plane import (  # noqa: E402
     assemble_out_of_plane_matrix,
     det_out_of_plane,
     fixed_fixed_bending_roots_total_length_two,
+    out_of_plane_factors,
     torsion_roots_uniform_eta0_beta0,
 )
 
@@ -122,6 +123,31 @@ class OutOfPlaneFormulaTest(unittest.TestCase):
         rhs = abs(float(np.linalg.det(bending) * np.linalg.det(torsion)))
         self.assertAlmostEqual(lhs, rhs, delta=1e-10 * max(1.0, lhs, rhs))
 
+    def test_eta_zero_out_of_plane_factors_are_unity(self) -> None:
+        for mu in (0.0, 0.3, -0.4):
+            with self.subTest(mu=mu):
+                factors = out_of_plane_factors(
+                    Lambda=2.7,
+                    beta=0.2,
+                    mu=mu,
+                    epsilon=0.0025,
+                    eta=0.0,
+                    poisson=0.3,
+                )
+                for name in (
+                    "tau1",
+                    "tau2",
+                    "a1",
+                    "a2",
+                    "b1",
+                    "b2",
+                    "c1",
+                    "c2",
+                    "e1",
+                    "e2",
+                ):
+                    self.assertAlmostEqual(getattr(factors, name), 1.0, delta=1e-15)
+
     def test_eta0_beta0_bending_known_roots(self) -> None:
         roots = fixed_fixed_bending_roots_total_length_two()
         for mu in (0.0, 0.3, 0.7):
@@ -188,6 +214,36 @@ class OutOfPlaneFormulaTest(unittest.TestCase):
                 )
 
         self.assertTrue(any(value > 1e-12 for value in values))
+
+    def test_invalid_eta_values_are_rejected(self) -> None:
+        valid = dict(Lambda=2.0, beta=0.0, mu=0.0, epsilon=0.0025, poisson=0.3)
+        for eta in (1.0, -1.0, 1.2):
+            params = dict(valid, eta=eta)
+            with self.subTest(eta=eta):
+                with self.assertRaises(ValueError):
+                    assemble_out_of_plane_matrix(**params)
+
+    def test_invalid_poisson_values_are_rejected(self) -> None:
+        valid = dict(Lambda=2.0, beta=0.0, mu=0.0, epsilon=0.0025, eta=0.0)
+        for poisson in (-1.0, -1.2):
+            params = dict(valid, poisson=poisson)
+            with self.subTest(poisson=poisson):
+                with self.assertRaises(ValueError):
+                    assemble_out_of_plane_matrix(**params)
+
+    def test_valid_poisson_ratio_produces_finite_torsion_factors(self) -> None:
+        factors = out_of_plane_factors(
+            Lambda=2.0,
+            beta=0.0,
+            mu=0.2,
+            epsilon=0.0025,
+            eta=0.1,
+            poisson=0.3,
+        )
+
+        for value in (factors.gamma1, factors.gamma2, factors.chi_T):
+            self.assertTrue(math.isfinite(value))
+            self.assertGreater(value, 0.0)
 
     def test_invalid_parameters_are_rejected(self) -> None:
         valid = dict(Lambda=2.0, beta=0.0, mu=0.0, epsilon=0.0025, eta=0.0, poisson=0.3)
