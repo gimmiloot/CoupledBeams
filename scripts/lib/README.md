@@ -34,3 +34,6 @@ normalization notes remain local to the corresponding scripts/reports unless a
 future task asks for a shared helper.
 
 Some historical helpers remain at root-level paths, especially `scripts/sweep_grid_policy.py`, because moving them would require broader import updates with no numerical benefit.
+
+Lightweight tests can be run with `python -m unittest discover -s tests`.
+`pytest` is optional when it is available in the active interpreter.

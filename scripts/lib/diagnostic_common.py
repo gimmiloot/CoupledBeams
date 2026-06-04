@@ -30,6 +30,8 @@ def inclusive_grid(start: float, stop: float, step: float, *, step_name: str = "
     step_f = float(step)
     if step_f <= 0.0:
         raise ValueError(f"{step_name} must be positive.")
+    if stop_f < start_f:
+        raise ValueError(f"{step_name} stop must be greater than or equal to start.")
     values = np.arange(start_f, stop_f + 0.5 * step_f, step_f, dtype=float)
     if values.size == 0:
         values = np.array([start_f, stop_f], dtype=float)

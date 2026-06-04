@@ -2,6 +2,23 @@
 
 ## 2026-06-04
 
+- Added the standalone out-of-plane Euler--Bernoulli plus Saint-Venant torsion
+  theory note, determinant assembly module, and lightweight sanity tests for
+  the coordinate convention, beta=0 bending/torsion block split, and eta=0
+  clamped-clamped/torsion root checks. This does not alter the existing
+  in-plane determinant, solvers, article workspace, FEM workflows, or baseline
+  results.
+- Integrated four newly added literature PDFs into the local source index and
+  bibliography: Li et al. 2012 on two beams coupled at an arbitrary angle,
+  Berkolaiko--Ettehad 2022 on 3D elastic beam-frame joint conditions,
+  Zheltkov--Chan 2008 on spatial rod-system spectra, and Pavlov 2019 on
+  free/forced vibrations of rod packages. No theory formulas, determinants,
+  solvers, FEM workflows, or baseline results were changed.
+- Tightened `scripts/lib/diagnostic_common.py` inclusive-grid validation so
+  descending ranges are rejected explicitly, added focused unit tests for the
+  diagnostic helper utilities, and documented the local `unittest` discovery
+  command. No scientific formulas, determinants, root solvers, plotting logic,
+  or outputs were changed.
 - Added a minimal thickness-mismatch diagnostic scaffold under
   `scripts/analysis/thickness_mismatch/` with role folders for maps, shapes,
   audits, `Lambda(mu)` plots, and post-processing. Existing flat

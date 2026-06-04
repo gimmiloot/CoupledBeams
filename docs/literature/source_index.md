@@ -45,6 +45,25 @@ coefficient и circular rods:
 - Замечание по корректности: в printed finite-beam matrix `T` формулы `(39)` знаки у beam-2 bending block в первых двух кинематических строках не согласуются с конечномерным аналогом условий `(10)--(11)`. В manuscript напечатано `(+,+,-,-)` для членов `\sin k_2L_2 \cos\alpha`, `\sinh k_2L_2 \cos\alpha`, `\sin k_2L_2 \sin\alpha`, `\sinh k_2L_2 \sin\alpha`, тогда как после переноса кинематических условий в левую часть получается противоположный sign pattern `(-,-,+,+)`. При переписывании determinant эти четыре элемента нужно проверять вручную.
 - Метаданные: страница DOI и авторский архив подтверждают библиографию; локальный PDF не является издательским финальным layout.
 
+## `li_2012_two_beams_arbitrary_angle`
+- PDF: `docs/literature/pdf/s0894-91662960007-x.pdf`
+- Тип: статья.
+- Роль: основной, прямой источник по двум сопряженным балкам.
+- Что важно для CoupledBeams: free vibrations of two beams elastically coupled at an arbitrary angle; directly relevant to coupling-angle geometry, elastic coupling at the joint, and comparison language for the two-beam determinant line.
+- Обозначения: coupled beams, arbitrary angle, elastic coupling, free vibrations; exact symbols should be checked against the PDF before importing notation.
+- Критично смотреть: abstract/introduction, model formulation for the two elastically coupled beams, boundary/joint conditions, numerical examples over connection angle; pp. 61--72.
+- Метаданные: recovered from local PDF XMP; DOI `10.1016/S0894-9166(12)60007-X`.
+
+## `berkolaiko_2022_3d_elastic_beam_frames`
+- PDF: `docs/literature/pdf/2104.01275v2.pdf`
+- Тип: arXiv/preprint and journal article.
+- Роль: вспомогательный для 3D frame/joint formulation.
+- Что важно для CoupledBeams: rigorous variational/differential formulation of 3D elastic beam frames with rigid joint conditions; useful if the project later audits joint conditions or extends from planar rods to spatial frames.
+- Обозначения: 3D elastic beam frames, rigid joint conditions, variational formulation, differential formulation; do not import notation into the current verified planar determinant without an explicit theory audit.
+- Критично смотреть: abstract/introduction and sections deriving rigid joint conditions in variational and differential form.
+- Замечание по применимости: spatial/frame formulation, not a replacement for the current Euler--Bernoulli two-rod determinant.
+- Метаданные: local PDF is arXiv:2104.01275v2; DOI `10.1111/sapm.12485`.
+
 ## `nair_1973_quasi_degeneracies`
 - PDF: `docs/literature/pdf/nair1973.pdf`
 - Тип: статья.
@@ -121,6 +140,24 @@ coefficient и circular rods:
 - Обозначения: в OCR видны длины двух участков и постановка через контактную пружину; точная система символов требует ручной сверки с исходным PDF.
 - Критично смотреть: весь короткий текст; особенно постановку контактной пружины, вывод уравнений свободных колебаний и описание геометрии излома.
 - Метаданные: `NEEDS_CHECK` — автор, номер выпуска и страницы пока восстановлены только по OCR.
+
+## `zheltkov_chan_2008_spatial_rod_spectrum`
+- PDF: `docs/literature/pdf/opredelenie-spektra-svobodnyh-kolebaniy-prostranstvennoy-sistemy-pryamyh-odnorodnyh-sterzhney.pdf`
+- Тип: статья.
+- Роль: вспомогательный/близкий по пространственным стержневым системам.
+- Что важно для CoupledBeams: determination of free-vibration spectrum for a spatial system of straight homogeneous rods; useful background for multi-rod spectral equations and spatial rod-system boundary/joint setup.
+- Обозначения: spatial system of straight homogeneous rods, free-vibration spectrum; exact symbols require manual PDF reading because local metadata is only a CyberLeninka wrapper.
+- Критично смотреть: постановку пространственной стержневой системы и вывод спектрального условия; pp. 58--65.
+- Метаданные: `NEEDS_CHECK` -- bibliographic fields inferred from filename/local CyberLeninka metadata and secondary search; verify author initials and journal record before external citation.
+
+## `pavlov_2019_rod_package_vibrations`
+- PDF: `docs/literature/pdf/Dissertatsiya-Pavlov-A.M.pdf`
+- Тип: диссертация.
+- Роль: вспомогательный для пакетов стержней, симметрии и forced/free vibration background.
+- Что важно для CoupledBeams: собственные и вынужденные колебания пакета стержней; useful for interpreting rod bundles/packages, modal classification, and symmetry-based decomposition when moving beyond two rods.
+- Обозначения: rod package, free and forced vibrations, symmetry/classification language; exact notation should not be imported into the current model without targeted reading.
+- Критично смотреть: title/abstract/introduction and chapters on free-vibration classification of rod packages; local PDF metadata gives specialty 01.02.04.
+- Метаданные: `NEEDS_CHECK` -- author/title/specialty decoded from local PDF metadata; verify official defense organization and page count before external citation.
 
 ## `obradovic_2020_planar_serial_frames`
 - PDF: `docs/literature/pdf/работа1.pdf`

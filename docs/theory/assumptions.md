@@ -7,6 +7,16 @@ diagnostic workflow, and model-extension checks, see `../project_rules.md`.
 
 ## Working Notes
 
+## Out-of-plane EB + Saint-Venant torsion
+
+- The out-of-plane subsystem is treated as a separate linear model for a
+  planar two-beam system: Euler--Bernoulli out-of-plane bending plus
+  Saint-Venant torsion. It is independent of the existing in-plane
+  bending/axial subsystem in the ideal linear planar setting. Its coordinate
+  convention is fixed in `docs/theory/out_of_plane_eb_torsion.md`: `e_z`
+  points downward, `t_i` runs from clamp to joint, `n_i=e_z x t_i`, and
+  tangent vectors must be written as `t_i` rather than `tau_i`.
+
 ## Diagnostic thickness mismatch
 
 - The mass-preserving thickness-mismatch model with

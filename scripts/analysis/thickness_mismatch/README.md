@@ -13,6 +13,10 @@ live in `../../../docs/project_rules.md`.
 The current positive-gap status for frequency-crossing checks is summarized in
 `../../../docs/thickness_mismatch/frequency_crossing_verification_status.md`.
 
+The out-of-plane EB + Saint-Venant torsion subsystem is currently documented
+and covered by lightweight determinant sanity tests only; it is not yet part of
+the plotting or scanning workflows listed here.
+
 ## Directory Scaffold
 
 New thickness-mismatch diagnostic scripts should be added under this directory
