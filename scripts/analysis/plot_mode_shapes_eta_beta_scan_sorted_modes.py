@@ -36,6 +36,7 @@ DEFAULT_EPSILON = 0.0025
 DEFAULT_BETA_START = 0.0
 DEFAULT_BETA_END = 15.0
 DEFAULT_BETA_STEP = 1.0
+SMOKE_OUTPUT_DIR = REPO_ROOT / "results" / "_smoke"
 DEFAULT_SORTED_MODES = (2, 3)
 DEFAULT_NUM_SORTED_ROOTS = 8
 DEFAULT_ROOT_SCAN_STEP = 0.01
@@ -155,6 +156,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--dpi", type=int, default=DEFAULT_DPI)
     parser.add_argument("--grid-columns", type=int, default=DEFAULT_GRID_COLUMNS)
     parser.add_argument(
+        "--smoke",
+        action="store_true",
+        help="Use a tiny beta grid for wiring checks and write default outputs under results/_smoke/.",
+    )
+    parser.add_argument(
         "--sign-normalization",
         choices=("none", "short-rod-up"),
         default=DEFAULT_SIGN_NORMALIZATION,
@@ -164,13 +170,24 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         ),
     )
     args = parser.parse_args(list(sys.argv[1:] if argv is None else argv))
+    if bool(args.smoke):
+        apply_smoke_defaults(args)
     validate_args(args)
+    args.sorted_modes = tuple(int(value) for value in args.sorted_modes)
     if args.output_dir is None:
-        args.output_dir = default_output_dir(args)
+        default_dir = default_output_dir(args)
+        args.output_dir = SMOKE_OUTPUT_DIR / default_dir.name if bool(args.smoke) else default_dir
     else:
         args.output_dir = resolve_repo_path(args.output_dir)
-    args.sorted_modes = tuple(int(value) for value in args.sorted_modes)
     return args
+
+
+def apply_smoke_defaults(args: argparse.Namespace) -> None:
+    args.beta_start = 0.0
+    args.beta_end = 5.0
+    args.beta_step = 5.0
+    args.num_shape_samples = min(int(args.num_shape_samples), 81)
+    args.num_sorted_roots = max(max(int(value) for value in args.sorted_modes) + 1, min(int(args.num_sorted_roots), 4))
 
 
 def validate_args(args: argparse.Namespace) -> None:

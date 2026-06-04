@@ -7,6 +7,11 @@ Project-wide branch identity and diagnostic-tracking rules are summarized in
 
 - `analytic_branch_tracking.py` is the source-of-truth helper for analytic branch identity. It tracks branches in memory from `beta = 0`, `mu = 0` for each `epsilon`, separates stable `branch_id` from `current_sorted_index`, and treats low-MAC assignments as non-canonical unless a diagnostic caller explicitly allows them.
 - `analytic_coupled_rods_shapes.py` provides determinant-nullspace reconstruction, endpoint diagnostics, normalization, and analytic arm-energy utilities used by analytic shape and tracking diagnostics.
+- `diagnostic_common.py` provides small non-scientific utilities for diagnostic
+  scripts: filename-safe number tokens, compact number text, inclusive grids,
+  output-directory creation, finite-value coercion, CSV row writing, and simple
+  float-list parsing. It must not own formulas, determinant entries, or root
+  selection policy.
 - `thickness_mismatch_mac_tracking.py` provides diagnostic-only analytic shape
   reconstruction and adjacent-step MAC tracking for the mass-preserving
   thickness-mismatch eta model. It keeps nearest-frequency assignment only as a

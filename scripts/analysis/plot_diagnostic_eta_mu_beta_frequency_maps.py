@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import argparse
-import csv
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 import os
 import sys
-from typing import Iterable, Sequence
+from typing import Sequence
 
 import matplotlib
 
@@ -27,9 +26,17 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from my_project.analytic.formulas_thickness_mismatch import find_first_n_roots_eta  # noqa: E402
+from scripts.lib.diagnostic_common import (  # noqa: E402
+    inclusive_grid,
+    number_text,
+    number_token,
+    write_dict_rows_csv,
+)
 
 
-RESULTS_DIR = REPO_ROOT / "results"
+DEFAULT_RESULTS_DIR = REPO_ROOT / "results"
+SMOKE_RESULTS_DIR = DEFAULT_RESULTS_DIR / "_smoke"
+RESULTS_DIR = DEFAULT_RESULTS_DIR
 SCRIPT_RELATIVE = SCRIPT_PATH.relative_to(REPO_ROOT)
 
 DEFAULT_EPSILON = 0.0025
@@ -66,6 +73,28 @@ HEATMAP_PAIR_G_MIN_PNG = RESULTS_DIR / "diagnostic_heatmap_pair_at_g_min_eta_mu_
 HEATMAP_S_MEAN_PNG = RESULTS_DIR / "diagnostic_heatmap_S_mean_eta_mu_eps0p0025.png"
 HEATMAP_S_MAX_PNG = RESULTS_DIR / "diagnostic_heatmap_S_max_eta_mu_eps0p0025.png"
 HEATMAP_S_MEAN_REL_PNG = RESULTS_DIR / "diagnostic_heatmap_S_mean_rel_eta_mu_eps0p0025.png"
+
+
+def use_results_dir(results_dir: Path) -> None:
+    global RESULTS_DIR
+    global LAMBDA_ETA_PNG, LAMBDA_ETA_CSV, LAMBDA_BETA_CSV, LAMBDA_BETA_OVERVIEW_PNG
+    global HEATMAP_CSV, HEATMAP_REPORT
+    global HEATMAP_G_MIN_PNG, HEATMAP_BETA_G_MIN_PNG, HEATMAP_PAIR_G_MIN_PNG
+    global HEATMAP_S_MEAN_PNG, HEATMAP_S_MAX_PNG, HEATMAP_S_MEAN_REL_PNG
+
+    RESULTS_DIR = Path(results_dir)
+    LAMBDA_ETA_PNG = RESULTS_DIR / "diagnostic_lambda_eta_beta0_mu0_eps0p0025.png"
+    LAMBDA_ETA_CSV = RESULTS_DIR / "diagnostic_lambda_eta_beta0_mu0_eps0p0025.csv"
+    LAMBDA_BETA_CSV = RESULTS_DIR / "diagnostic_lambda_beta_eps0p0025_mu_eta_slices.csv"
+    LAMBDA_BETA_OVERVIEW_PNG = RESULTS_DIR / "diagnostic_lambda_beta_eps0p0025_mu_eta_grid_overview.png"
+    HEATMAP_CSV = RESULTS_DIR / "diagnostic_eta_mu_beta_heatmap_metrics_eps0p0025.csv"
+    HEATMAP_REPORT = RESULTS_DIR / "diagnostic_eta_mu_beta_heatmap_metrics_eps0p0025_report.md"
+    HEATMAP_G_MIN_PNG = RESULTS_DIR / "diagnostic_heatmap_g_min_eta_mu_eps0p0025.png"
+    HEATMAP_BETA_G_MIN_PNG = RESULTS_DIR / "diagnostic_heatmap_beta_at_g_min_eta_mu_eps0p0025.png"
+    HEATMAP_PAIR_G_MIN_PNG = RESULTS_DIR / "diagnostic_heatmap_pair_at_g_min_eta_mu_eps0p0025.png"
+    HEATMAP_S_MEAN_PNG = RESULTS_DIR / "diagnostic_heatmap_S_mean_eta_mu_eps0p0025.png"
+    HEATMAP_S_MAX_PNG = RESULTS_DIR / "diagnostic_heatmap_S_max_eta_mu_eps0p0025.png"
+    HEATMAP_S_MEAN_REL_PNG = RESULTS_DIR / "diagnostic_heatmap_S_mean_rel_eta_mu_eps0p0025.png"
 
 LAMBDA_ETA_FIELDNAMES = [
     "eta",
@@ -124,41 +153,8 @@ class RootSolve:
     note: str
 
 
-def number_token(value: float) -> str:
-    return f"{float(value):.10g}".replace("-", "m").replace(".", "p")
-
-
-def number_text(value: float | int | str | None) -> str:
-    if value is None:
-        return ""
-    if isinstance(value, str):
-        return value
-    value_f = float(value)
-    if not np.isfinite(value_f):
-        return ""
-    return f"{value_f:.12g}"
-
-
 def pair_label(pair_index: int) -> str:
     return f"{int(pair_index)}-{int(pair_index) + 1}"
-
-
-def inclusive_grid(start: float, stop: float, step: float) -> np.ndarray:
-    start_f = float(start)
-    stop_f = float(stop)
-    step_f = float(step)
-    if step_f <= 0.0:
-        raise ValueError("grid step must be positive")
-    values = np.arange(start_f, stop_f + 0.5 * step_f, step_f, dtype=float)
-    if values.size == 0:
-        values = np.array([start_f, stop_f], dtype=float)
-    if abs(float(values[0]) - start_f) > 1.0e-12:
-        values = np.insert(values, 0, start_f)
-    if abs(float(values[-1]) - stop_f) > 1.0e-12:
-        values = np.append(values, stop_f)
-    values[0] = start_f
-    values[-1] = stop_f
-    return np.unique(np.round(values, 12))
 
 
 def solve_roots(
@@ -198,15 +194,6 @@ def solve_roots(
         warning_count += 1
         notes.append(f"missing {missing} roots at beta={float(beta_deg):g}")
     return RootSolve(roots=roots[: int(n_roots)], warning_count=warning_count, missing_root_count=missing, note="; ".join(notes))
-
-
-def write_csv(path: Path, fieldnames: Sequence[str], rows: Iterable[dict[str, object]]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(fieldnames), extrasaction="ignore")
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(row)
 
 
 def roots_grid_for_parameter_scan(
@@ -1010,13 +997,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--smoke",
         action="store_true",
-        help="Use a tiny grid for wiring checks. Smoke outputs use the same file names.",
+        help="Use a tiny grid for wiring checks and write outputs under results/_smoke/.",
     )
     return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str] | None = None) -> dict[str, object]:
     args = parse_args(argv)
+    use_results_dir(SMOKE_RESULTS_DIR if bool(args.smoke) else DEFAULT_RESULTS_DIR)
     epsilon = float(args.epsilon)
     root_scan_step = float(args.root_scan_step)
     root_lmax0 = float(args.root_lmax0)
@@ -1051,7 +1039,7 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
         root_scan_step=root_scan_step,
         root_lmax0=root_lmax0,
     )
-    write_csv(LAMBDA_ETA_CSV, LAMBDA_ETA_FIELDNAMES, lambda_eta_rows)
+    write_dict_rows_csv(LAMBDA_ETA_CSV, lambda_eta_rows, LAMBDA_ETA_FIELDNAMES)
     plot_lambda_eta(lambda_eta_values, lambda_eta_roots, LAMBDA_ETA_PNG, epsilon=epsilon)
     print(f"saved Lambda(eta): {LAMBDA_ETA_PNG}")
 
@@ -1063,7 +1051,7 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
             root_lmax0=root_lmax0,
         )
     )
-    write_csv(LAMBDA_BETA_CSV, LAMBDA_BETA_FIELDNAMES, lambda_beta_rows)
+    write_dict_rows_csv(LAMBDA_BETA_CSV, lambda_beta_rows, LAMBDA_BETA_FIELDNAMES)
     for (mu, eta), roots in lambda_beta_grids.items():
         output = lambda_beta_png_path(mu, eta)
         plot_lambda_beta_case(slice_beta_values, roots, output, epsilon=epsilon, mu=mu, eta=eta)
@@ -1089,7 +1077,7 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
         root_lmax0=root_lmax0,
         workers=workers,
     )
-    write_csv(HEATMAP_CSV, HEATMAP_FIELDNAMES, heatmap_rows)
+    write_dict_rows_csv(HEATMAP_CSV, heatmap_rows, HEATMAP_FIELDNAMES)
     plot_heatmaps(heatmap_rows, heatmap_eta_values, heatmap_mu_values)
     write_report(
         heatmap_rows=heatmap_rows,

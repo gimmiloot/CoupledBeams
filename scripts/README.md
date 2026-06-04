@@ -115,6 +115,20 @@ and output notes live in `../docs/thickness_mismatch/README.md`. The
 positive-gap status for crossing checks is summarized in
 `../docs/thickness_mismatch/frequency_crossing_verification_status.md`.
 
+New thickness-mismatch diagnostic entry points should be placed under
+`scripts/analysis/thickness_mismatch/` by role: `maps/`, `shapes/`, `audits/`,
+`lambda_mu/`, or `postprocess/`. Existing flat paths in `scripts/analysis/`
+remain supported; future migrations should leave thin wrappers at old command
+paths.
+
+Every thickness-mismatch diagnostic must state whether it selects sorted
+frequencies or descendant branches. Sorted frequencies are for spectral maps
+and gap metrics; descendant branches are for tracking modal character.
+
+Heavy diagnostic scripts should provide `--smoke` or document `--quick` as the
+smoke mode. Smoke runs use tiny grids and write under `results/_smoke/` or
+`results/smoke/` so ordinary diagnostic outputs are not overwritten.
+
 | Task | Preferred command | Use when |
 | --- | --- | --- |
 | Eta-zero and swap checks | `python scripts/analysis/check_thickness_mismatch_eta_zero_limit.py` | Sanity-checking the eta extension. |

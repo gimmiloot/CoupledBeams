@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import argparse
-import csv
 from pathlib import Path
 import sys
-from typing import Iterable, Sequence
+from typing import Sequence
 
 import matplotlib
 
@@ -29,6 +28,12 @@ from my_project.analytic.formulas_thickness_mismatch import (  # noqa: E402
     thickness_mismatch_factors,
 )
 from my_project.analytic.solvers import fixed_fixed_lambdas  # noqa: E402
+from scripts.lib.diagnostic_common import (  # noqa: E402
+    inclusive_grid,
+    number_text as diagnostic_number_text,
+    number_token,
+    write_dict_rows_csv,
+)
 
 
 DEFAULT_EPSILON = 0.0025
@@ -40,6 +45,7 @@ DEFAULT_MU_STEP = 0.005
 DEFAULT_NUM_MODES = 6
 DEFAULT_NUM_REF_MODES = 6
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "results"
+SMOKE_OUTPUT_DIR = DEFAULT_OUTPUT_DIR / "_smoke"
 DEFAULT_ROOT_SCAN_STEP = 0.02
 DEFAULT_ROOT_LMAX0 = 35.0
 DEFAULT_Y_MARGIN = 1.15
@@ -84,35 +90,8 @@ REFERENCE_STYLE_TEMPLATES = {
 }
 
 
-def number_token(value: float) -> str:
-    return f"{float(value):.10g}".replace("-", "m").replace(".", "p")
-
-
 def number_text(value: float | int | str | None) -> str:
-    if value is None:
-        return ""
-    if isinstance(value, str):
-        return value
-    value_f = float(value)
-    if not np.isfinite(value_f):
-        return "nan"
-    return f"{value_f:.12g}"
-
-
-def inclusive_grid(start: float, stop: float, step: float) -> np.ndarray:
-    start_f = float(start)
-    stop_f = float(stop)
-    step_f = float(step)
-    if step_f <= 0.0:
-        raise ValueError("mu step must be positive.")
-    values = np.arange(start_f, stop_f + 0.5 * step_f, step_f, dtype=float)
-    if values.size == 0:
-        values = np.array([start_f], dtype=float)
-    if abs(float(values[-1]) - stop_f) > 1.0e-10:
-        values = np.append(values, stop_f)
-    values[0] = start_f
-    values[-1] = stop_f
-    return np.unique(np.round(values, 12))
+    return diagnostic_number_text(value, nonfinite_text="nan")
 
 
 def resolve_output_dir(path: str | Path) -> Path:
@@ -323,14 +302,6 @@ def reference_rows(
                     }
                 )
     return rows
-
-
-def write_csv(path: Path, rows: Iterable[dict[str, object]]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=CSV_FIELDNAMES, extrasaction="ignore")
-        writer.writeheader()
-        writer.writerows(rows)
 
 
 def finite_max(values: np.ndarray, label: str) -> float:
@@ -550,7 +521,7 @@ def run_case(
             references=references,
         )
     )
-    write_csv(csv_path, rows)
+    write_dict_rows_csv(csv_path, rows, CSV_FIELDNAMES)
     plot_stats = plot_beta_case(
         output_path=png_path,
         beta_deg=beta_deg,
@@ -614,6 +585,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--num-modes", type=int, default=DEFAULT_NUM_MODES)
     parser.add_argument("--num-ref-modes", type=int, default=DEFAULT_NUM_REF_MODES)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument(
+        "--smoke",
+        action="store_true",
+        help="Use a tiny grid for wiring checks and write default outputs under results/_smoke/.",
+    )
     parser.add_argument("--show", action="store_true")
     parser.add_argument("--root-scan-step", type=float, default=DEFAULT_ROOT_SCAN_STEP)
     parser.add_argument("--root-lmax0", type=float, default=DEFAULT_ROOT_LMAX0)
@@ -639,11 +615,24 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def apply_smoke_defaults(args: argparse.Namespace) -> None:
+    args.betas = [0.0, 5.0]
+    args.mu_min = 0.0
+    args.mu_max = 0.1
+    args.mu_step = 0.1
+    args.num_modes = min(int(args.num_modes), 3)
+    args.num_ref_modes = min(int(args.num_ref_modes), 3)
+    if Path(args.output_dir) == DEFAULT_OUTPUT_DIR:
+        args.output_dir = SMOKE_OUTPUT_DIR
+
+
 def main(argv: Sequence[str] | None = None) -> list[dict[str, object]]:
     args = parse_args(argv)
+    if bool(args.smoke):
+        apply_smoke_defaults(args)
     epsilon = float(args.epsilon)
     eta = float(args.eta)
-    mu_values = inclusive_grid(args.mu_min, args.mu_max, args.mu_step)
+    mu_values = inclusive_grid(args.mu_min, args.mu_max, args.mu_step, step_name="mu step")
     validate_parameters(
         epsilon=epsilon,
         eta=eta,
@@ -654,6 +643,8 @@ def main(argv: Sequence[str] | None = None) -> list[dict[str, object]]:
     output_dir = resolve_output_dir(args.output_dir)
 
     print("diagnostic Lambda(mu) with single-beam references")
+    if bool(args.smoke):
+        print(f"smoke mode: outputs under {resolve_output_dir(args.output_dir)}")
     print(
         f"epsilon={epsilon:g}, eta={eta:g}, "
         f"mu={float(mu_values[0]):g}..{float(mu_values[-1]):g} step={float(args.mu_step):g}"

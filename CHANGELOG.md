@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 2026-06-04
+
+- Added a minimal thickness-mismatch diagnostic scaffold under
+  `scripts/analysis/thickness_mismatch/` with role folders for maps, shapes,
+  audits, `Lambda(mu)` plots, and post-processing. Existing flat
+  `scripts/analysis/` entry points were not moved.
+- Added `scripts/lib/diagnostic_common.py` for non-scientific diagnostic
+  utilities and migrated only duplicated naming/grid/CSV plumbing in two recent
+  scripts. Determinants, formulas, root-finding logic, and mode-shape
+  reconstruction were not changed.
+- Added or normalized `--smoke` support for the eta-mu-beta map,
+  single-beam-reference `Lambda(mu)` plot, descendant mode-shape beta scan, and
+  fixed sorted-mode beta scan so smoke outputs go under `results/_smoke/`.
+- Added lightweight tests for the thickness-mismatch analytic layer and
+  import-only diagnostic script entry-point checks.
+
 ## 2026-06-03
 
 - Added `scripts/analysis/plot_mode_shapes_eta_beta_scan_sorted_modes.py`

@@ -13,6 +13,82 @@ live in `../../../docs/project_rules.md`.
 The current positive-gap status for frequency-crossing checks is summarized in
 `../../../docs/thickness_mismatch/frequency_crossing_verification_status.md`.
 
+## Directory Scaffold
+
+New thickness-mismatch diagnostic scripts should be added under this directory
+by diagnostic role:
+
+```text
+maps/
+  eta-mu-beta frequency maps, heatmaps, sensitivity maps
+
+shapes/
+  mode-shape plotting, sorted-mode shapes, descendant-branch shapes
+
+audits/
+  local checks, sorted-vs-descendant audits, gap checks
+
+lambda_mu/
+  Lambda(mu) diagnostic plots, single-rod spectra overlays
+
+postprocess/
+  CSV-only summaries and global trend analysis
+```
+
+Existing flat scripts in `scripts/analysis/` remain supported for
+compatibility. Future migration should use thin wrappers at the old paths, not
+breaking moves.
+
+Diagnostic scripts must explicitly state whether they use sorted frequencies
+or descendant branches. Sorted frequencies are used for spectral maps and gap
+metrics; descendant branches are used for tracking modal character.
+
+## Smoke Mode Convention
+
+Heavy diagnostic entry points should support `--smoke` or document an existing
+`--quick` mode as the smoke mode. Smoke mode means a tiny grid, very fast
+runtime, output under `results/_smoke/` or `results/smoke/`, and no overwrite
+of normal diagnostic outputs unless a future script explicitly implements and
+requires `--force`.
+
+The current eta-mu-beta map, sorted `Lambda(mu)` reference plot, descendant
+mode-shape beta scan, and fixed sorted-mode beta scan all expose `--smoke`.
+
+## Mode-Shape Refactor TODO
+
+`plot_mode_shapes_eta_beta_scan.py` and
+`plot_mode_shapes_eta_beta_scan_sorted_modes.py` should eventually become one
+parameterized entry point with `selection = sorted | descendant`. Shared
+functionality to extract later includes beta grid construction, root solving,
+coefficient extraction, geometry reconstruction, sign normalization,
+grid/contact-sheet plotting, and CSV summary writing.
+
+Example future descendant command:
+
+```bash
+python scripts/analysis/thickness_mismatch/shapes/plot_beta_scan.py \
+  --eta 0.1 \
+  --mu 0.3 \
+  --epsilon 0.0025 \
+  --beta-start 0 \
+  --beta-end 11 \
+  --selection descendant \
+  --branch 2
+```
+
+Example future sorted-frequency command:
+
+```bash
+python scripts/analysis/thickness_mismatch/shapes/plot_beta_scan.py \
+  --eta 0.1 \
+  --mu 0.3 \
+  --epsilon 0.0025 \
+  --beta-start 0 \
+  --beta-end 15 \
+  --selection sorted \
+  --sorted-modes 2 3
+```
+
 ## Preferred Entry Points
 
 | Task | Preferred command | Compatibility or historical scripts | Main outputs | Notes |

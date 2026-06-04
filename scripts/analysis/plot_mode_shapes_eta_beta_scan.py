@@ -49,6 +49,7 @@ DEFAULT_BETA_END = 11.0
 DEFAULT_BETA_STEP = 1.0
 DEFAULT_BRANCH = 2
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "results"
+SMOKE_OUTPUT_DIR = DEFAULT_OUTPUT_DIR / "_smoke"
 
 DEFAULT_NUM_TRACKED_BRANCHES = 8
 DEFAULT_NUM_SORTED_ROOTS = 12
@@ -243,10 +244,28 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--normalize", choices=("max-full", "max-transverse", "none"), default=DEFAULT_NORMALIZE)
     parser.add_argument("--dpi", type=int, default=DEFAULT_DPI)
     parser.add_argument("--grid-columns", type=int, default=DEFAULT_GRID_COLUMNS)
+    parser.add_argument(
+        "--smoke",
+        action="store_true",
+        help="Use a tiny beta grid for wiring checks and write default outputs under results/_smoke/.",
+    )
     args = parser.parse_args(list(sys.argv[1:] if argv is None else argv))
+    if bool(args.smoke):
+        apply_smoke_defaults(args)
     validate_args(args)
     args.output_dir = resolve_repo_path(args.output_dir)
     return args
+
+
+def apply_smoke_defaults(args: argparse.Namespace) -> None:
+    args.beta_start = 0.0
+    args.beta_end = 5.0
+    args.beta_step = 5.0
+    args.num_shape_samples = min(int(args.num_shape_samples), 81)
+    args.num_tracked_branches = max(int(args.branch), min(int(args.num_tracked_branches), 4))
+    args.num_sorted_roots = max(int(args.num_tracked_branches), min(int(args.num_sorted_roots), 5))
+    if Path(args.output_dir) == DEFAULT_OUTPUT_DIR:
+        args.output_dir = SMOKE_OUTPUT_DIR
 
 
 def validate_args(args: argparse.Namespace) -> None:
