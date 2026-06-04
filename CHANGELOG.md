@@ -2,6 +2,36 @@
 
 ## 2026-06-04
 
+- Added a straight-uniform fixed-fixed cylinder 3D FEM mesh-convergence audit
+  for the recovered low-mode smoke baseline, varying only the existing Gmsh
+  mesh size controls and writing summary/mode CSVs plus a Markdown report under
+  `results/full_spectrum_analytic_vs_3d_fem/straight_uniform_mesh_convergence/`.
+  The audit keeps the scope to beta=0, mu=0, eta=0 and does not touch analytic
+  formulas or production FEM workflows.
+- Added a raw extraction audit for the straight-uniform 3D FEM smoke case,
+  including direct CalculiX frequency-table parsing, parser-inclusion CSV,
+  nearest-frequency diagnostic matching, and a Markdown report documenting the
+  current missing-low-mode issue without changing analytic formulas or
+  production FEM workflows.
+- Added a straight-uniform full-spectrum 3D FEM smoke wrapper under the
+  thickness-mismatch audits folder, writing only to
+  `results/full_spectrum_analytic_vs_3d_fem/smoke_straight_uniform/` and
+  reusing existing fixed-fixed straight-cylinder Gmsh/CalculiX helpers without
+  modifying production FEM workflows. Also kept the out-of-plane
+  `Lambda(beta)` map script as a documented diagnostic entry point instead of
+  leaving it as an orphan.
+- Added diagnostic-only out-of-plane mode-character beta maps that use the
+  independent 1D EB+torsion FEM stiffness-energy split to report bending and
+  torsion fractions, plus an experimental analytic full-spectrum
+  in-plane/out-of-plane union scaffold for future 3D FEM comparison. The new
+  full-spectrum scaffold supports analytic-only smoke runs with 3D FEM skipped
+  and does not modify or run production Gmsh/CalculiX workflows.
+- Added a diagnostic-only out-of-plane Euler--Bernoulli plus Saint-Venant
+  torsion sorted `Lambda(beta)` map script under the thickness-mismatch
+  scaffold, with low/extended eta-panel PNGs, sorted-root CSV, adjacent
+  sorted-gap summary CSV/PNG, overview PNG, and Markdown report. The workflow
+  uses sorted roots only and does not run descendant tracking, crossing
+  verification, article plotting, or 3D FEM.
 - Extended the out-of-plane 1D FEM validation with a targeted beta=0,
   eta=0 torsion-block root check and FEM bending/torsion stiffness-energy
   fractions in the diagnostic comparison CSV/report, without changing the

@@ -416,6 +416,27 @@ python scripts/analysis/thickness_mismatch/audits/compare_out_of_plane_analytic_
 It writes diagnostic-only CSV and Markdown outputs under
 `results/out_of_plane_fem_validation/`.
 
+A separate mode-character diagnostic uses the same 1D FEM matrices to record
+bending and torsion stiffness-energy fractions for sorted out-of-plane roots:
+
+```text
+python scripts/analysis/thickness_mismatch/maps/plot_out_of_plane_mode_character_beta.py
+```
+
+This is only a sorted-spectrum character diagnostic. It does not define
+descendant branch identity and does not replace a full 3D FEM comparison.
+
+An experimental full-spectrum scaffold combines the in-plane Euler--Bernoulli
+thickness-mismatch sorted roots with these out-of-plane sorted roots:
+
+```text
+python scripts/analysis/thickness_mismatch/audits/compare_full_spectrum_analytic_vs_3d_fem.py --smoke --skip-3d-fem
+```
+
+That scaffold is analytic-first and records the boundary to existing 3D FEM
+workflows; running or modifying those 3D workflows is a separate validation
+task.
+
 ## 12. beta=0 Checks
 
 At `beta=0`, the system splits into a bending block and a torsion block. The
