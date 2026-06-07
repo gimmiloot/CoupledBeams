@@ -1,5 +1,80 @@
 # CHANGELOG
 
+## 2026-06-07
+
+- Prepared article-oriented PNG spectral figures in the ignored
+  `paper_thickness_mismatch_article/` workspace. The local article
+  `Lambda(mu)` generator now overlays dashed isolated single-rod CP/FP and
+  CC/FF bending references with
+  `Lambda_ref=alpha*sqrt(tau_i)/L_i` while restoring the pre-reference
+  system-curve y-limits, writes matching reference CSVs, and exports PNG only.
+  Added a local article `Lambda(beta)`/`Lambda(eta)` generator for the
+  requested `epsilon=0.0025` cases, using shape-MAC visual continuation for
+  the equal-rod `mu=0, eta=0` beta sweep so colors do not swap at real
+  crossings. No analytic formulas, determinants, root solvers, FEM/3D FEM,
+  Gmsh/CalculiX workflows, old solvers, or baseline results were changed.
+- Densified the dashed isolated single-rod reference grids in the local
+  `paper_thickness_mismatch_article/` `Lambda(mu)` PNG workflow. The article
+  generator now scans more CP/FP and CC/FF reference modes and plots those
+  entering the pre-existing visible y-window, while preserving the
+  system-curve x/y limits and continuing to export PNG only. The requested
+  beta=15 cases received the additional long/short reference modes; no
+  analytic formulas, determinants, root solvers, FEM/3D FEM, Gmsh/CalculiX,
+  old solvers, or baseline results were changed.
+- Densified the local article `Lambda(eta)` PNG at `beta=90 deg`, `mu=0.3`,
+  and `epsilon=0.0025` with the same visible-window single-rod reference
+  selection rule, increasing the plotted CP/FP and CC/FF dashed reference
+  curves while preserving the existing x/y limits and formula scaling.
+- Added a diagnostic-only beta=90 `Lambda(eta)` mu scan for the in-plane
+  Euler-Bernoulli thickness-mismatch model at `epsilon=0.0025`, covering
+  `mu=0,0.3,0.6` on `eta=-0.5..0.5` with sorted system frequencies and
+  isolated-rod CP/FP and CC/FF bending references. The workflow writes
+  per-mu sorted-system, reference, nearest-match, all-candidate,
+  branch-family summary, readable/full PNG, and Markdown outputs plus a
+  combined mu summary under
+  `results/lambda_eta_beta90_mu_scan_single_rod_refs/`. The readable plots
+  use the fixed range `0 <= Lambda <= 13`; full-range plots and CSV data
+  remain unclipped.
+- Added a diagnostic-only fixed-parameter in-plane mode-shape workflow for
+  the first six sorted roots at `beta=90 deg`, `epsilon=0.0025`, `mu=0.3`,
+  and `eta=0.1`. The script writes six individual PNGs, a 2x3 grid PNG, a
+  summary CSV, and a Markdown report under
+  `results/in_plane_mode_shapes_beta90_mu0p3_eta0p1_first6/`, using
+  sorted-frequency selection only and a visualization-only short-rod-up sign
+  normalization.
+- Added a diagnostic-only audit for the dashed isolated-rod reference curves.
+  The audit inspects the beta=90 single-rod reference plotting/comparison
+  scripts, recomputes generated reference CSV rows from
+  `Lambda_ref=alpha*sqrt(tau_i)/L_i`, records eta-sign length/thickness label
+  logic, checks CP/FP and CC/FF alpha-root characteristic residuals, and writes
+  CSV/Markdown outputs under `results/single_rod_reference_audit/`. No
+  analytic formulas, determinants, old solvers, FEM/3D FEM workflows, article
+  artifacts, or baseline results were changed.
+
+## 2026-06-06
+
+- Added a generalized diagnostic-only beta=90 eta-scan `Lambda(mu)` map for
+  the in-plane Euler-Bernoulli thickness-mismatch model at
+  `epsilon=0.0025`, covering `eta=0.1,0,-0.1` and mu-dependent isolated-rod
+  CP/FP and CC/FF bending references. The workflow writes per-eta
+  sorted-system, reference, nearest-match, all-candidate, branch-family
+  summary, readable/full PNG, and Markdown outputs plus a combined eta summary
+  under `results/lambda_mu_beta90_eta_scan_single_rod_refs/`. The readable
+  plots now default to the fixed range `0 <= Lambda <= 13`, with CLI options
+  for fixed limits and an adaptive-y opt-in, so high short-rod references do
+  not force the scale; full-range plots and CSV data remain unclipped. The
+  workflow uses no descendant tracking, FEM/3D FEM, axial references, crossing
+  claims, strict gap verification, article artifacts, determinant changes, or
+  old-solver changes.
+- Added a diagnostic-only beta=90 in-plane sorted-frequency audit comparing
+  the first coupled EB thickness-mismatch roots against isolated-rod CP/FP and
+  CC/FF bending references for `epsilon=0.0025`, `mu=0.3`, and `eta=0.1`.
+  The script writes summary, all-candidate, reference, Markdown, and optional
+  PNG outputs under
+  `results/beta90_in_plane_single_rod_reference_comparison/` without changing
+  analytic formulas, old solvers, FEM workflows, article artifacts, or
+  baseline results.
+
 ## 2026-06-04
 
 - Added an analytic-only diagnostic `Lambda(beta)` map comparing the in-plane
