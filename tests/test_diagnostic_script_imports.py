@@ -19,6 +19,9 @@ class DiagnosticScriptImportTest(unittest.TestCase):
             "scripts.analysis.plot_lambda_mu_eta_m0p5_with_single_beam_refs",
             "scripts.analysis.plot_mode_shapes_eta_beta_scan",
             "scripts.analysis.plot_mode_shapes_eta_beta_scan_sorted_modes",
+            "scripts.analysis.thickness_mismatch.maps.plot_eb_vs_timoshenko_lambda_beta_cases",
+            "scripts.analysis.thickness_mismatch.maps.plot_eb_vs_timoshenko_lambda_mu_cases",
+            "scripts.analysis.thickness_mismatch.audits.audit_longitudinal_suspect_modes_eb_timo",
         ]
         for module_name in modules:
             with self.subTest(module=module_name):

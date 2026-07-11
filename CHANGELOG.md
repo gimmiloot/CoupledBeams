@@ -1,5 +1,116 @@
 # CHANGELOG
 
+## 2026-07-11
+
+- Added a diagnostic-only EB/Timoshenko longitudinal-character audit for the
+  beta=45 deg, eta=0 sorted `Lambda(mu)` suspect modes `epsilon=0.03`
+  sorted 5 and `epsilon=0.05` sorted 4. The new audit script reuses existing
+  sorted EB/Timoshenko CSVs when available, reconstructs analytic in-plane
+  EB and Timoshenko mode shapes, computes axial, bending, Timoshenko shear,
+  and displacement fractions, writes suspect/control/shape-summary CSVs,
+  individual and grid PNGs, and a Russian TeX/PDF report under
+  `results/eb_vs_timoshenko_longitudinal_suspect_modes/`. No analytic
+  formulas, determinants, root solvers, Timoshenko shear coefficient/k',
+  descendant tracking, FEM/3D FEM/Gmsh/CalculiX workflows, article files, old
+  solvers, or baseline results were changed.
+- Fixed the diagnostic audit's Timoshenko mode-shape visualization by adding
+  an explicit joint-continuity audit at `rod1 x=+l1` and `rod2 x=-l2` and by
+  plotting rod-2 Timoshenko displacements with the same sign convention used
+  by the coupling matrix. The audit now writes
+  `timoshenko_joint_continuity_audit.csv`, blocks invalid Timoshenko plots when
+  the normalized kinematic gap exceeds `1e-6`, and regenerates the Russian
+  TeX/PDF report with the joint audit summary. Energy fractions and analytic
+  formulas/determinants/root solvers/k' remain unchanged.
+
+## 2026-07-09
+
+- Extended the diagnostic-only sorted in-plane `Lambda(mu)` EB/Timoshenko
+  workflow for the requested `beta=45 deg`, `eta=0`, epsilon scan
+  `0.005,0.01,0.02,0.03,0.04` over `mu=0..0.7` at default step `0.005`.
+  The existing map script now accepts `--beta-deg`, uses the beta45 eta0
+  epsilon-scan output folder and filename stem by default, writes the
+  requested per-epsilon PNG/CSV pairs plus overview PNG, summary CSV,
+  spike-audit CSV, timing CSV, cache NPZ, and Markdown report, and keeps the
+  existing cache, plot-only, continuation-assisted Timoshenko solve, local mu
+  refinement, dense retry, and local SVD recovery behavior. No analytic
+  formulas, determinants, unknown ordering, root solvers, Timoshenko shear
+  coefficient/k', single-rod reference curves, descendant tracking, FEM/3D
+  FEM/Gmsh/CalculiX workflows, article files, or baseline results were
+  changed.
+
+## 2026-07-06
+
+- Added a diagnostic-only sorted in-plane `Lambda(beta)` EB/Timoshenko
+  comparison workflow for six `(mu, eta, epsilon)` cases. The new map script
+  reuses the existing Euler-Bernoulli thickness-mismatch root helper and the
+  existing variable-length Timoshenko helper, writes six per-case PNG/CSV
+  pairs plus summary CSV, overview PNG, and Markdown report under
+  `results/eb_vs_timoshenko_lambda_beta_cases/`, and records root warnings,
+  raw/plot spike audit rows, retry-fixed points, and post-cleanup NaN counts.
+  The diagnostic plotting layer now uses local beta refinement in the
+  `epsilon=0.05` spike windows, dense retry scans, and row-normalized
+  smallest-singular-value recovery for missed near-multiple roots; raw roots
+  remain in CSV output. No analytic formulas, determinants, root solvers,
+  Timoshenko shear coefficient, FEM/Gmsh/CalculiX workflows, article
+  workspace, article figures, old solvers, or baseline results were changed.
+- Optimized the same EB/Timoshenko `Lambda(beta)` diagnostic workflow with
+  reproducible root caches under
+  `results/eb_vs_timoshenko_lambda_beta_cases/cache/`, plot-only
+  regeneration, selected-case CLI filters, timing CSV output, and a
+  continuation-style Timoshenko computation mode guarded by sorted global
+  anchor solves in the known spike windows. CSV/PNG/report regeneration can
+  now reuse cached roots without recomputing determinants or running local
+  recovery, while the plotted data remain sorted frequencies rather than
+  descendant branches.
+- Added a diagnostic-only sorted in-plane `Lambda(mu)` EB/Timoshenko
+  comparison workflow for `beta=15,45 deg`, `eta=0`, and
+  `epsilon=0.0025,0.05` over `mu=0..0.7`. The new map script reuses the
+  existing EB/Timoshenko diagnostic solve wrappers, writes four per-case
+  PNG/CSV pairs plus overview PNG, summary CSV, spike audit CSV, timing CSV,
+  cache NPZ, and Markdown report under
+  `results/eb_vs_timoshenko_lambda_mu_cases/`, and keeps single-rod
+  references, descendant tracking, FEM/3D FEM, article outputs, determinant
+  formulas, root solvers, and the Timoshenko shear coefficient untouched.
+
+## 2026-07-05
+
+- Added a diagnostic-only Gmsh + CalculiX environment smoke check for the
+  straight fixed-fixed cylinder at `beta=0`, `mu=0`, `eta=0`, and
+  `epsilon=0.02`. The wrapper reuses the existing single-rod 3D solid FEM
+  helpers, accepts explicit `--gmsh-exe` and `--ccx-exe` paths, writes solver
+  logs and CSV/Markdown outputs under
+  `results/_smoke/3d_fem_environment_check/`, and parses the CalculiX
+  RAD/TIME frequency table with `Lambda=sqrt(omega/epsilon)`. No analytic
+  formulas, determinants, old solvers, article workspace, article figures,
+  baseline results, beta scans, or coupled-angle 3D FEM cases were changed.
+- Added a diagnostic-only straight stepped-cylinder EB/Timoshenko/3D FEM
+  validation wrapper for `beta=0`, `mu=0.5`, `eta=0.1`, and
+  `epsilon=0.0025,0.01,0.05`. The workflow creates a fused coaxial
+  two-radius Gmsh geometry, reuses the existing fixed-fixed straight-cylinder
+  CalculiX helpers, parses the RAD/TIME frequency table with
+  `Lambda=sqrt(omega/epsilon)`, classifies bending-related solid modes, writes
+  analytic/raw-FEM/mode-by-mode/pair-average CSVs, per-epsilon PNGs, a
+  combined PNG, and a Markdown report under
+  `results/eb_vs_timoshenko_3d_validation/stepped_beta0_mu0p5_eta0p1/`. No
+  analytic formulas, determinants, root solvers, Timoshenko shear coefficient,
+  old solvers, article workspace, article figures, baseline results, beta
+  scans, or coupled-angle 3D FEM cases were changed.
+- Added a one-step mesh-refinement diagnostic for the stepped-cylinder
+  `epsilon=0.01` case, comparing pair-averaged 3D FEM bending frequencies at
+  `h=0.008` and `h=0.006`. The closer-model classification is unchanged, so
+  `epsilon=0.01` is marked as the clean comparison case, while `epsilon=0.05`
+  remains stress diagnostic only.
+- Added a diagnostic-only straight uniform beta=0 EB/Timoshenko/3D FEM wrapper
+  for `mu=0`, `eta=0`, and default `epsilon=0.05`. The wrapper reuses the
+  existing single-cylinder fixed-fixed Gmsh + CalculiX helpers, reports both
+  first-8 sorted low-spectrum and bending-doublet pair-average comparisons,
+  supports optional `--also-run-eps0p1` stress testing, and writes CSV/PNG/MD
+  outputs under
+  `results/eb_vs_timoshenko_3d_validation/uniform_beta0_eps0p05/`. No analytic
+  formulas, determinants, root solvers, Timoshenko shear coefficient, old
+  solvers, article workspace, article figures, baseline results, beta scans,
+  stepped-cylinder 3D FEM cases, or coupled-angle 3D FEM cases were changed.
+
 ## 2026-06-07
 
 - Prepared article-oriented PNG spectral figures in the ignored
