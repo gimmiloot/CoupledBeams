@@ -57,6 +57,10 @@ from scripts.lib.analytic_coupled_rods_shapes import (  # noqa: E402
     reconstruct_analytic_components,
     unique_sorted_roots,
 )
+from scripts.lib.in_plane_shape_geometry import (  # noqa: E402
+    eb_rod1_local_fields_to_display as rod1_local_fields_to_display,
+    eb_rod2_local_fields_to_display as rod2_local_fields_to_display,
+)
 
 
 PLOT_KINDS = ("full", "transverse", "components")
@@ -223,11 +227,17 @@ def base_coordinates(
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     _, left_length, right_length = arm_lengths(mu_value=mu_value, l_total=l_total)
     xi = np.asarray(s_norm, dtype=float)
-    x_left = left_length * xi
-    y_left = np.zeros_like(x_left)
-    x_right = left_length + right_length * xi * float(np.cos(beta_rad))
-    y_right = right_length * xi * float(np.sin(beta_rad))
-    return x_left, y_left, x_right, y_right
+    left = rod1_local_fields_to_display(left_length * xi, 0.0 * xi, 0.0 * xi, scale=0.0)
+    right = rod2_local_fields_to_display(
+        -right_length + right_length * xi,
+        0.0 * xi,
+        0.0 * xi,
+        l2=right_length,
+        x_joint=left_length,
+        beta_deg=float(np.rad2deg(beta_rad)),
+        scale=0.0,
+    )
+    return left.x0, left.y0, right.x0, right.y0
 
 
 def deformed_coordinates(
@@ -240,15 +250,8 @@ def deformed_coordinates(
     mode_scale: float,
     plot_kind: str,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    x_left, y_left, x_right, y_right = base_coordinates(
-        s_norm=s_norm,
-        beta_rad=beta_rad,
-        mu_value=mu_value,
-        l_total=l_total,
-    )
-    tangent_right = np.array([float(np.cos(beta_rad)), float(np.sin(beta_rad))], dtype=float)
-    normal_right = np.array([-float(np.sin(beta_rad)), float(np.cos(beta_rad))], dtype=float)
-
+    _, left_length, right_length = arm_lengths(mu_value=mu_value, l_total=l_total)
+    xi = np.asarray(s_norm, dtype=float)
     u_left = np.asarray(components["u_left"], dtype=float)
     w_left = np.asarray(components["w_left"], dtype=float)
     u_right = np.asarray(components["u_right"], dtype=float)
@@ -257,12 +260,17 @@ def deformed_coordinates(
     if plot_kind == "transverse":
         u_left = np.zeros_like(u_left)
         u_right = np.zeros_like(u_right)
-
-    x_left_def = x_left + float(mode_scale) * u_left
-    y_left_def = y_left + float(mode_scale) * w_left
-    x_right_def = x_right + float(mode_scale) * (u_right * tangent_right[0] + w_right * normal_right[0])
-    y_right_def = y_right + float(mode_scale) * (u_right * tangent_right[1] + w_right * normal_right[1])
-    return x_left, y_left, x_right, y_right, x_left_def, y_left_def, x_right_def, y_right_def
+    left = rod1_local_fields_to_display(left_length * xi, u_left, w_left, scale=mode_scale)
+    right = rod2_local_fields_to_display(
+        -right_length + right_length * xi,
+        u_right,
+        w_right,
+        l2=right_length,
+        x_joint=left_length,
+        beta_deg=float(np.rad2deg(beta_rad)),
+        scale=mode_scale,
+    )
+    return left.x0, left.y0, right.x0, right.y0, left.x, left.y, right.x, right.y
 
 
 def geometry_axis_limits(arrays: Sequence[np.ndarray]) -> tuple[tuple[float, float], tuple[float, float]]:

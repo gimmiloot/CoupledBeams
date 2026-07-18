@@ -1,5 +1,83 @@
 # CHANGELOG
 
+## 2026-07-15
+
+- Corrected the display-only local-to-Cartesian mapping used by Timoshenko
+  global centerline and displacement-vector plots. Determinant-frame
+  transverse components are now reflected through `t1=(1,0)`, `n1=(0,-1)`,
+  `t2=(cos(beta),sin(beta))`, and `n2=(sin(beta),-cos(beta))`; EB plotting uses
+  its explicit opposite determinant transverse sign so the two theories share
+  one physical display geometry. Added `scripts/lib/in_plane_shape_geometry.py`,
+  orthonormal/pure-component/thin-limit display-MAC regression tests, corrected
+  thin-limit and epsilon=0.03 grids/vector fields, and report warnings that
+  invalidate older Timoshenko global plots while preserving local fields,
+  frequencies, null-vector checks, and energy fractions. Analytic formulas,
+  determinants, root solvers, k', FEM/3D FEM/Gmsh/CalculiX workflows, article
+  files, and baseline results were not changed.
+- Added a focused diagnostic-only Timoshenko thin-limit shape-bug audit for
+  `epsilon=0.0025`, `beta=45 deg`, `eta=0`, `mu=0,0.2,0.4,0.6`, and sorted
+  modes 4-6. It writes beta-unit, EB/Timoshenko field-MAC, null-vector, and
+  clamp/joint/matrix residual audits plus EB, Timoshenko, and paired
+  full-centerline grids. The audit found no degrees/radians, root-selection,
+  null-vector, or field-reconstruction failure; it isolated a rod-2 plotting
+  frame inconsistency between the displayed `+beta` base geometry and the
+  determinant-consistent Timoshenko displacement transform. Existing shape
+  callers now use explicit `beta_deg`/`beta_rad` local names. Formulas,
+  determinants, root solvers, k', FEM/3D FEM/Gmsh/CalculiX workflows,
+  descendant tracking, article files, old solvers, and baseline results remain
+  untouched.
+- Added a diagnostic-only Timoshenko modes 4-6 shape-diagnostics workflow under
+  `results/timoshenko_mode_shape_diagnostics/`. The new audit writes
+  component-balanced MAC diagnostics, EB/Timoshenko energy fractions,
+  Timoshenko reconstruction checks, per-component grids, displacement-vector
+  field grids, and a conservative full-centerline secondary view for
+  `epsilon=0.03`, `beta=45 deg`, `eta=0`, and `mu=0,0.2,0.4,0.6`. It reuses
+  existing sorted analytic EB/Timoshenko reconstruction helpers and the
+  corrected Timoshenko plotting transform; formulas, determinants, root
+  solvers, k', descendant tracking, FEM/3D FEM/Gmsh/CalculiX workflows,
+  article files, old solvers, and baseline results remain untouched.
+- Added a diagnostic-only Timoshenko modes 4-6 visualization audit for
+  `epsilon=0.03`, `beta=45 deg`, `eta=0`, and `mu=0,0.2,0.4,0.6`. The new
+  audit writes pairwise field-similarity diagnostics, component-first grids,
+  annotated full-centerline plots, a transverse-amplified diagnostic view, and
+  a Markdown interpretation report under
+  `results/timoshenko_shape_construction_audit/`. It reuses the existing
+  sorted analytic Timoshenko reconstruction helpers and corrected plotting
+  transform; formulas, determinants, root solvers, k', descendant tracking,
+  FEM/3D FEM/Gmsh/CalculiX workflows, article files, old solvers, and
+  baseline results remain untouched.
+- Added a diagnostic-only EB/Timoshenko full-displacement shape plotting
+  workflow for `epsilon=0.03`, `beta=45 deg`, `eta=0`, sorted modes 4-6, and
+  `mu=0,0.2,0.4,0.6`. The new script writes separate EB and Timoshenko grids,
+  a combined comparison grid, individual full-centerline PNGs, scale/fallback
+  summary CSVs, a regularity audit CSV, and a Markdown report under
+  `results/eb_timo_mode_shapes_eps0p03_beta45_eta0_modes4_6/`. It reuses the
+  existing sorted analytic EB/Timoshenko reconstruction helpers and corrected
+  Timoshenko plotting transform; formulas, determinants, root solvers, k',
+  descendant tracking, FEM/3D FEM/Gmsh/CalculiX workflows, article files, old
+  solvers, and baseline results remain untouched.
+- Added the fixed deformation-scale choice check to the Timoshenko
+  shape-construction audit. The audit now accepts
+  `--deformation-scale-fraction`, writes a per-shape scale-check CSV, creates
+  fixed-scale `scale0p08` full-centerline grids, creates `scale0p05` fallback
+  grids only for failed shapes, records final/fallback scale fields in the
+  summary CSV, and documents the chosen visualization scale in the report.
+  This remains visualization-only: sorted frequencies, energy fractions,
+  formulas, determinants, root solvers, k', descendant tracking, FEM/3D
+  FEM/Gmsh/CalculiX workflows, article files, old solvers, and baseline
+  results were not changed.
+- Added a focused diagnostic-only Timoshenko shape-construction audit for the
+  beta=45 deg, eta=0 sorted control and suspect modes. The new script writes
+  corrected full/transverse centerline plots, Timoshenko component grids,
+  fixed-scale sensitivity grids, point-order and plotted-curve regularity
+  diagnostics, plotting-gap diagnostics, a joint-continuity CSV, a shape
+  summary CSV, and a Markdown report under
+  `results/timoshenko_shape_construction_audit/`. It reuses existing sorted
+  analytic EB/Timoshenko helpers and keeps formulas, determinants, root
+  solvers, the Timoshenko shear coefficient/k', descendant tracking,
+  FEM/3D FEM/Gmsh/CalculiX workflows, article files, old solvers, and
+  baseline results untouched.
+
 ## 2026-07-11
 
 - Added a diagnostic-only EB/Timoshenko longitudinal-character audit for the

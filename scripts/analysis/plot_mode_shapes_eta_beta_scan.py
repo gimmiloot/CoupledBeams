@@ -33,6 +33,7 @@ from scripts.lib.analytic_coupled_rods_shapes import (  # noqa: E402
     analytic_null_vector,
     normalize_components,
 )
+from scripts.lib import in_plane_shape_geometry as DISPLAY  # noqa: E402
 from scripts.lib.thickness_mismatch_mac_tracking import (  # noqa: E402
     analytic_shape_vectors_for_roots,
     mac_assignment,
@@ -676,13 +677,21 @@ def base_coordinates(
     beta_deg: float,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     left_length, right_length = arm_lengths(args)
-    beta_rad = float(np.deg2rad(float(beta_deg)))
     xi = np.asarray(s_norm, dtype=float)
-    x_left = left_length * xi
-    y_left = np.zeros_like(x_left)
-    x_right = left_length + right_length * xi * np.cos(beta_rad)
-    y_right = right_length * xi * np.sin(beta_rad)
-    return x_left, y_left, x_right, y_right
+    x1_grid = left_length * xi
+    x2_grid = -right_length + right_length * xi
+    zeros = np.zeros_like(xi)
+    rod1 = DISPLAY.eb_rod1_local_fields_to_display(x1_grid, zeros, zeros, scale=0.0)
+    rod2 = DISPLAY.eb_rod2_local_fields_to_display(
+        x2_grid,
+        zeros,
+        zeros,
+        l2=right_length,
+        x_joint=left_length,
+        beta_deg=float(beta_deg),
+        scale=0.0,
+    )
+    return rod1.x_base, rod1.y_base, rod2.x_base, rod2.y_base
 
 
 def deformed_coordinates(
@@ -692,19 +701,28 @@ def deformed_coordinates(
     *,
     beta_deg: float,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    x_left, y_left, x_right, y_right = base_coordinates(args, s_norm, beta_deg=beta_deg)
-    beta_rad = float(np.deg2rad(float(beta_deg)))
-    tangent_right = np.array([np.cos(beta_rad), np.sin(beta_rad)], dtype=float)
-    normal_right = np.array([-np.sin(beta_rad), np.cos(beta_rad)], dtype=float)
+    left_length, right_length = arm_lengths(args)
+    xi = np.asarray(s_norm, dtype=float)
     u_left = np.asarray(components["u_left"], dtype=float)
     w_left = np.asarray(components["w_left"], dtype=float)
     u_right = np.asarray(components["u_right"], dtype=float)
     w_right = np.asarray(components["w_right"], dtype=float)
-    x_left_def = x_left + float(args.mode_scale) * u_left
-    y_left_def = y_left + float(args.mode_scale) * w_left
-    x_right_def = x_right + float(args.mode_scale) * (u_right * tangent_right[0] + w_right * normal_right[0])
-    y_right_def = y_right + float(args.mode_scale) * (u_right * tangent_right[1] + w_right * normal_right[1])
-    return x_left_def, y_left_def, x_right_def, y_right_def
+    rod1 = DISPLAY.eb_rod1_local_fields_to_display(
+        left_length * xi,
+        u_left,
+        w_left,
+        scale=float(args.mode_scale),
+    )
+    rod2 = DISPLAY.eb_rod2_local_fields_to_display(
+        -right_length + right_length * xi,
+        u_right,
+        w_right,
+        l2=right_length,
+        x_joint=left_length,
+        beta_deg=float(beta_deg),
+        scale=float(args.mode_scale),
+    )
+    return rod1.x_deformed, rod1.y_deformed, rod2.x_deformed, rod2.y_deformed
 
 
 def shared_axis_limits(

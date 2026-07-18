@@ -32,6 +32,7 @@ from my_project.analytic.formulas_thickness_mismatch import (  # noqa: E402
 from scripts.analysis.thickness_mismatch.maps import (  # noqa: E402
     plot_eb_vs_timoshenko_lambda_beta_cases as beta_workflow,
 )
+from scripts.lib import in_plane_shape_geometry as DISPLAY  # noqa: E402
 from scripts.lib import variable_length_timoshenko as TIMO  # noqa: E402
 from scripts.lib.analytic_coupled_rods_shapes import analytic_null_vector  # noqa: E402
 
@@ -623,9 +624,9 @@ def timo_joint_continuity_row(
 ) -> dict[str, object]:
     rod1 = fields["rod1"]
     rod2 = fields["rod2"]
-    beta = np.deg2rad(float(beta_deg))
-    cb = float(np.cos(beta))
-    sb = float(np.sin(beta))
+    beta_rad = np.deg2rad(float(beta_deg))
+    cb = float(np.cos(beta_rad))
+    sb = float(np.sin(beta_rad))
 
     # Timoshenko coupling rows are written at rod1 x=+l1 and rod2 x=-l2.
     i1 = -1
@@ -975,7 +976,7 @@ def timo_mode_diagnostic(
         f"smallest_singular_value={mode.smallest_singular_value:.6g}; "
         f"singular_value_ratio={mode.singular_value_ratio:.6g}; "
         f"joint_kinematic_gap={float(joint_row['max_abs_kinematic_gap']):.6g}; "
-        "right-rod plot transform follows Timoshenko coupling convention; "
+        "right-rod plot transform uses the reflected display basis; "
         "sorted frequency, no descendant tracking"
     )
     row = energy_row(
@@ -1104,13 +1105,21 @@ def build_control_rows(args: argparse.Namespace, provider: RootProvider) -> list
 
 def base_coordinates(mu: float, beta_deg: float, n_points: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     l1, l2 = TIMO.segment_lengths(float(mu))
-    xi = np.linspace(0.0, 1.0, int(n_points), dtype=float)
-    beta = np.deg2rad(float(beta_deg))
-    x_left = l1 * xi
-    y_left = np.zeros_like(x_left)
-    x_right = l1 + l2 * xi * np.cos(beta)
-    y_right = l2 * xi * np.sin(beta)
-    return x_left, y_left, x_right, y_right
+    x1_grid = np.linspace(0.0, l1, int(n_points), dtype=float)
+    x2_grid = np.linspace(-l2, 0.0, int(n_points), dtype=float)
+    zeros1 = np.zeros_like(x1_grid)
+    zeros2 = np.zeros_like(x2_grid)
+    rod1_curve = DISPLAY.rod1_local_fields_to_display(x1_grid, zeros1, zeros1, scale=0.0)
+    rod2_curve = DISPLAY.rod2_local_fields_to_display(
+        x2_grid,
+        zeros2,
+        zeros2,
+        l2=l2,
+        x_joint=l1,
+        beta_deg=float(beta_deg),
+        scale=0.0,
+    )
+    return rod1_curve.x_base, rod1_curve.y_base, rod2_curve.x_base, rod2_curve.y_base
 
 
 def local_in_plane_fields_to_global_geometry(
@@ -1125,30 +1134,38 @@ def local_in_plane_fields_to_global_geometry(
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     u_arr = np.asarray(u, dtype=float)
     w_arr = np.asarray(w, dtype=float)
-    xi = np.linspace(0.0, 1.0, len(u_arr), dtype=float)
     l1, l2 = TIMO.segment_lengths(float(mu))
-    beta = np.deg2rad(float(beta_deg))
-    cb = float(np.cos(beta))
-    sb = float(np.sin(beta))
+    rod1_mapper = (
+        DISPLAY.eb_rod1_local_fields_to_display
+        if model == MODEL_EB
+        else DISPLAY.rod1_local_fields_to_display
+    )
+    rod2_mapper = (
+        DISPLAY.eb_rod2_local_fields_to_display
+        if model == MODEL_EB
+        else DISPLAY.rod2_local_fields_to_display
+    )
 
     if int(rod) == 1:
-        x_base = l1 * xi
-        y_base = np.zeros_like(x_base)
-        disp_x = u_arr
-        disp_y = w_arr
+        curve = rod1_mapper(
+            np.linspace(0.0, l1, len(u_arr), dtype=float),
+            u_arr,
+            w_arr,
+            scale=float(deformation_scale),
+        )
     elif int(rod) == 2:
-        x_base = l1 + l2 * xi * cb
-        y_base = l2 * xi * sb
-        if str(model) == MODEL_TIMO:
-            # Timoshenko rod-2 fields are evaluated with the coupling convention at x2=-l2.
-            disp_x = cb * u_arr + sb * w_arr
-            disp_y = -sb * u_arr + cb * w_arr
-        else:
-            disp_x = cb * u_arr - sb * w_arr
-            disp_y = sb * u_arr + cb * w_arr
+        curve = rod2_mapper(
+            np.linspace(-l2, 0.0, len(u_arr), dtype=float),
+            u_arr,
+            w_arr,
+            l2=l2,
+            x_joint=l1,
+            beta_deg=float(beta_deg),
+            scale=float(deformation_scale),
+        )
     else:
         raise ValueError("rod must be 1 or 2")
-    return x_base, y_base, x_base + float(deformation_scale) * disp_x, y_base + float(deformation_scale) * disp_y
+    return curve.x_base, curve.y_base, curve.x_deformed, curve.y_deformed
 
 
 def deformed_coordinates(
@@ -1574,9 +1591,14 @@ def write_tex_report(
             "Timoshenko-форм: правый стержень отображался в глобальные координаты как обычная "
             "tangent/normal пара. Для коэффициентов стержня 2, используемых в матрице сопряжения "
             r"при \(x_2=-l_2\), нужно применять преобразование "
-            r"$U_2=c u_2+s w_2$, $W_2=-s u_2+c w_2$. "
+            r"The determinant relation $u_1=c u_2+s w_2$, $w_1=-s u_2+c w_2$ must not be used directly as Cartesian display components. "
+            r"The corrected display mapping is $dX_1=u_1$, $dY_1=-w_1$, $dX_2=c u_2+s w_2$, $dY_2=s u_2-c w_2$. "
             "Старые Timoshenko PNG с разрывом в узле не используются как физическое "
             "свидетельство; новые графики принимаются только после проверки совместимости стыка."
+        ),
+        (
+            "This display-only correction invalidates all older Timoshenko global centerline and vector-field PNGs from this workflow for physical interpretation. "
+            "The local fields, frequencies, null vectors, joint residuals, and energy fractions remain valid; formulas, determinants, root solvers, and k' are unchanged."
         ),
         (
             "Энергетические доли пересчитаны теми же выражениями, что и раньше. "

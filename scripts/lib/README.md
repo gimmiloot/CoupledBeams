@@ -7,6 +7,13 @@ Project-wide branch identity and diagnostic-tracking rules are summarized in
 
 - `analytic_branch_tracking.py` is the source-of-truth helper for analytic branch identity. It tracks branches in memory from `beta = 0`, `mu = 0` for each `epsilon`, separates stable `branch_id` from `current_sorted_index`, and treats low-MAC assignments as non-canonical unless a diagnostic caller explicitly allows them.
 - `analytic_coupled_rods_shapes.py` provides determinant-nullspace reconstruction, endpoint diagnostics, normalization, and analytic arm-energy utilities used by analytic shape and tracking diagnostics.
+- `in_plane_shape_geometry.py` is the shared display-only geometry helper for
+  in-plane analytic mode shapes. It keeps determinant components separate from
+  Cartesian plotting coordinates, provides the reflected Timoshenko bases
+  `t1=(1,0)`, `n1=(0,-1)`, `t2=(cos(beta),sin(beta))`,
+  `n2=(sin(beta),-cos(beta))`, and exposes the equivalent EB mapping for EB's
+  opposite transverse-field sign convention. It must not own coupling
+  equations, determinant transforms, root selection, or mode reconstruction.
 - `diagnostic_common.py` provides small non-scientific utilities for diagnostic
   scripts: filename-safe number tokens, compact number text, inclusive grids,
   output-directory creation, finite-value coercion, CSV row writing, and simple

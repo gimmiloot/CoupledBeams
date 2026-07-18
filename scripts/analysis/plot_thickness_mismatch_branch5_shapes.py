@@ -30,6 +30,10 @@ from scripts.lib.analytic_coupled_rods_shapes import (  # noqa: E402
     analytic_null_vector,
     normalize_components,
 )
+from scripts.lib.in_plane_shape_geometry import (  # noqa: E402
+    eb_rod1_local_fields_to_display as rod1_local_fields_to_display,
+    eb_rod2_local_fields_to_display as rod2_local_fields_to_display,
+)
 
 
 # =========================
@@ -251,11 +255,17 @@ def arm_lengths(mu: float) -> tuple[float, float]:
 def base_coordinates(s_norm: np.ndarray, *, beta_rad: float, mu: float) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     left_length, right_length = arm_lengths(float(mu))
     xi = np.asarray(s_norm, dtype=float)
-    x_left = left_length * xi
-    y_left = np.zeros_like(x_left)
-    x_right = left_length + right_length * xi * np.cos(beta_rad)
-    y_right = right_length * xi * np.sin(beta_rad)
-    return x_left, y_left, x_right, y_right
+    left = rod1_local_fields_to_display(left_length * xi, 0.0 * xi, 0.0 * xi, scale=0.0)
+    right = rod2_local_fields_to_display(
+        -right_length + right_length * xi,
+        0.0 * xi,
+        0.0 * xi,
+        l2=right_length,
+        x_joint=left_length,
+        beta_deg=float(np.rad2deg(beta_rad)),
+        scale=0.0,
+    )
+    return left.x0, left.y0, right.x0, right.y0
 
 
 def deformed_coordinates(
@@ -265,18 +275,23 @@ def deformed_coordinates(
     beta_rad: float,
     mu: float,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    x_left, y_left, x_right, y_right = base_coordinates(s_norm, beta_rad=beta_rad, mu=mu)
-    tangent_right = np.array([np.cos(beta_rad), np.sin(beta_rad)], dtype=float)
-    normal_right = np.array([-np.sin(beta_rad), np.cos(beta_rad)], dtype=float)
+    left_length, right_length = arm_lengths(float(mu))
+    xi = np.asarray(s_norm, dtype=float)
     u_left = np.asarray(components["u_left"], dtype=float)
     w_left = np.asarray(components["w_left"], dtype=float)
     u_right = np.asarray(components["u_right"], dtype=float)
     w_right = np.asarray(components["w_right"], dtype=float)
-    x_left_def = x_left + MODE_SCALE * u_left
-    y_left_def = y_left + MODE_SCALE * w_left
-    x_right_def = x_right + MODE_SCALE * (u_right * tangent_right[0] + w_right * normal_right[0])
-    y_right_def = y_right + MODE_SCALE * (u_right * tangent_right[1] + w_right * normal_right[1])
-    return x_left_def, y_left_def, x_right_def, y_right_def
+    left = rod1_local_fields_to_display(left_length * xi, u_left, w_left, scale=MODE_SCALE)
+    right = rod2_local_fields_to_display(
+        -right_length + right_length * xi,
+        u_right,
+        w_right,
+        l2=right_length,
+        x_joint=left_length,
+        beta_deg=float(np.rad2deg(beta_rad)),
+        scale=MODE_SCALE,
+    )
+    return left.x, left.y, right.x, right.y
 
 
 def shared_axis_limits(cases: Sequence[ShapeCase], s_norm: np.ndarray, *, beta_rad: float, mu: float) -> tuple[tuple[float, float], tuple[float, float]]:

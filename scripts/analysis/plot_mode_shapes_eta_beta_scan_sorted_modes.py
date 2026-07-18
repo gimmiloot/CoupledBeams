@@ -27,6 +27,7 @@ if str(SRC_ROOT) not in sys.path:
 from my_project.analytic.formulas_thickness_mismatch import assemble_clamped_coupled_matrix_eta  # noqa: E402
 from scripts.analysis import plot_mode_shapes_eta_beta_scan as shape_scan  # noqa: E402
 from scripts.lib.analytic_coupled_rods_shapes import analytic_null_vector  # noqa: E402
+from scripts.lib import in_plane_shape_geometry as DISPLAY  # noqa: E402
 from scripts.lib.thickness_mismatch_mac_tracking import mac_value, reconstruct_components_eta  # noqa: E402
 
 
@@ -342,11 +343,15 @@ def short_rod_global_vertical_deformation(
     short_rod: int,
 ) -> np.ndarray:
     if int(short_rod) == 1:
-        return np.asarray(components["w_left"], dtype=float)
-    beta_rad = float(np.deg2rad(float(beta_deg)))
+        _dx, dy = DISPLAY.eb_rod1_local_displacement_to_display(
+            np.asarray(components["u_left"], dtype=float),
+            np.asarray(components["w_left"], dtype=float),
+        )
+        return dy
     u_right = np.asarray(components["u_right"], dtype=float)
     w_right = np.asarray(components["w_right"], dtype=float)
-    return u_right * np.sin(beta_rad) + w_right * np.cos(beta_rad)
+    _dx, dy = DISPLAY.eb_rod2_local_displacement_to_display(u_right, w_right, beta_deg=float(beta_deg))
+    return dy
 
 
 def short_rod_reference_value(

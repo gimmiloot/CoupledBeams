@@ -31,6 +31,7 @@ from my_project.analytic.formulas_thickness_mismatch import (  # noqa: E402
 )
 from scripts.analysis import plot_mode_shapes_eta_beta_scan as shape_scan  # noqa: E402
 from scripts.lib.analytic_coupled_rods_shapes import analytic_null_vector  # noqa: E402
+from scripts.lib import in_plane_shape_geometry as DISPLAY  # noqa: E402
 from scripts.lib.thickness_mismatch_mac_tracking import reconstruct_components_eta  # noqa: E402
 
 
@@ -326,11 +327,14 @@ def global_vertical_components(
     *,
     beta_deg: float,
 ) -> tuple[np.ndarray, np.ndarray]:
-    beta_rad = float(np.deg2rad(float(beta_deg)))
-    left_vertical = np.asarray(components["w_left"], dtype=float)
-    right_vertical = (
-        np.asarray(components["u_right"], dtype=float) * np.sin(beta_rad)
-        + np.asarray(components["w_right"], dtype=float) * np.cos(beta_rad)
+    _left_horizontal, left_vertical = DISPLAY.eb_rod1_local_displacement_to_display(
+        np.asarray(components["u_left"], dtype=float),
+        np.asarray(components["w_left"], dtype=float),
+    )
+    _right_horizontal, right_vertical = DISPLAY.eb_rod2_local_displacement_to_display(
+        np.asarray(components["u_right"], dtype=float),
+        np.asarray(components["w_right"], dtype=float),
+        beta_deg=float(beta_deg),
     )
     return left_vertical, right_vertical
 

@@ -22,6 +22,11 @@ class DiagnosticScriptImportTest(unittest.TestCase):
             "scripts.analysis.thickness_mismatch.maps.plot_eb_vs_timoshenko_lambda_beta_cases",
             "scripts.analysis.thickness_mismatch.maps.plot_eb_vs_timoshenko_lambda_mu_cases",
             "scripts.analysis.thickness_mismatch.audits.audit_longitudinal_suspect_modes_eb_timo",
+            "scripts.analysis.thickness_mismatch.audits.audit_timoshenko_modes_4_6_shape_diagnostics",
+            "scripts.analysis.thickness_mismatch.audits.audit_timoshenko_shape_bug_thin_limit",
+            "scripts.analysis.thickness_mismatch.audits.audit_timoshenko_shape_construction",
+            "scripts.analysis.thickness_mismatch.audits.audit_timoshenko_modes456_visualization",
+            "scripts.analysis.thickness_mismatch.shapes.plot_eb_timo_full_mode_shapes_eps0p03_beta45_eta0_modes4_6",
         ]
         for module_name in modules:
             with self.subTest(module=module_name):
