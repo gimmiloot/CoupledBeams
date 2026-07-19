@@ -1,5 +1,54 @@
 # CHANGELOG
 
+## 2026-07-19
+
+- Added a diagnostic-only Stage-1 universal-parameter post-process at
+  `scripts/analysis/thickness_mismatch/audits/analyze_universal_eb_validity_parameters_stage1.py`.
+  It consumes the completed Stage-1 physical-branch CSV/cache outputs,
+  reconstructs EB modes from saved `Lambda_EB` values, computes
+  `Pi_EB = Pi_shear + Pi_rotary` from EB shear/rotary estimates, compares
+  `epsilon_max`, `chi_max`, `chi_eff`, and `Pi_EB` with log-fit,
+  threshold-classification, false-safe/false-unsafe, and leave-one-mu-out
+  diagnostics, and writes `universal_parameter_*` CSV/PNG/Markdown outputs
+  under `results/eb_validity_vs_timoshenko_stage1/`. Added
+  `tests/test_universal_eb_validity_parameters.py` and registered the
+  post-process in the diagnostic import smoke test. No roots were recomputed
+  in the post-process run; analytic formulas, determinants, root solvers, the
+  Timoshenko shear coefficient k', branch identities, FEM/3D FEM/Gmsh/CalculiX
+  workflows, article workspaces, and baseline results were not changed.
+
+- Added the diagnostic-only Stage-1 EB applicability audit relative to the
+  in-plane Timoshenko model at `beta=45 deg`, `eta=0`. The new script
+  `scripts/analysis/thickness_mismatch/audits/audit_eb_validity_vs_timoshenko_stage1.py`
+  scans the requested `mu` and `epsilon_0` grids, keeps sorted-spectrum and
+  physical-branch comparisons separate, computes `delta_f` from squared
+  `Lambda`, energy classifications, local thickness/slenderness and chi
+  metrics, refines 10% branchwise threshold brackets, writes root cache files
+  under `results/eb_validity_vs_timoshenko_stage1/cache/`, and generates the
+  required CSV/PNG/Markdown diagnostics. Added
+  `tests/test_eb_validity_metrics.py` and registered the new script in the
+  diagnostic import smoke test. Updated the thickness-mismatch script map.
+  Analytic formulas, determinants, root solvers, Timoshenko shear coefficient
+  k', FEM/3D FEM/Gmsh/CalculiX workflows, article workspaces, and baseline
+  results were not changed.
+
+## 2026-07-18
+
+- Generalized the diagnostic-only EB/Timoshenko full in-plane mode-shape
+  plotting entrypoint so it accepts `--epsilon`, `--mode-indices`,
+  `--mu-values`, `--clean-style`, and `--output-dir`. The workflow now writes
+  clean model grids and an optional combined EB-vs-Timoshenko grid under
+  `results/eb_timo_clean_mode_shapes/`, uses one common fixed deformation
+  scale per epsilon set after corrected-display regularity checks, records
+  final sign factors and plotted-joint gaps in one merged summary CSV, and
+  updates one short Markdown report. The scale policy now checks
+  `0.08 -> 0.05 -> 0.02` and keeps the chosen scale common across the whole
+  EB+Timoshenko epsilon set. It reuses the existing sorted analytic
+  EB/Timoshenko reconstruction helpers and `scripts/lib/in_plane_shape_geometry.py`;
+  formulas, determinants, root solvers, local mode fields, frequencies, k',
+  descendant tracking, FEM/3D FEM/Gmsh/CalculiX workflows, article files, old
+  solvers, and baseline results were not changed.
+
 ## 2026-07-15
 
 - Corrected the display-only local-to-Cartesian mapping used by Timoshenko
