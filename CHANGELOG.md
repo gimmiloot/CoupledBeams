@@ -2,6 +2,22 @@
 
 ## 2026-07-19
 
+- Added the diagnostic-only fixed-epsilon EB applicability geometry scan at
+  `scripts/analysis/thickness_mismatch/audits/audit_eb_validity_fixed_epsilon_geometry_scan.py`.
+  It scans `epsilon_0=0.02` over the requested `beta`, `mu`, and `eta` grid,
+  keeps sorted-spectrum rows separate from per-point homologous EB/Timoshenko
+  mode matches, uses mass-weighted local `[u,w]` MAC plus one-to-one assignment
+  and close-cluster subspace diagnostics, computes EB-only `Theta_max_EB` and
+  `Pi_EB` predictors, writes the requested CSV/PNG/Markdown outputs under
+  `results/eb_validity_fixed_epsilon_geometry_scan/`, and supports cache reuse,
+  smoke mode, plot-only regeneration, grid overrides, and optional local
+  Timoshenko benchmarking. Added
+  `tests/test_eb_validity_fixed_epsilon_scan.py` and registered the script in
+  the diagnostic import smoke test. Updated the thickness-mismatch script map.
+  Analytic formulas, determinants, root solvers, the Timoshenko shear
+  coefficient k', FEM/3D FEM/Gmsh/CalculiX workflows, article workspaces, and
+  baseline results were not changed.
+
 - Added a diagnostic-only Stage-1 universal-parameter post-process at
   `scripts/analysis/thickness_mismatch/audits/analyze_universal_eb_validity_parameters_stage1.py`.
   It consumes the completed Stage-1 physical-branch CSV/cache outputs,

@@ -22,6 +22,7 @@ class DiagnosticScriptImportTest(unittest.TestCase):
             "scripts.analysis.thickness_mismatch.maps.plot_eb_vs_timoshenko_lambda_beta_cases",
             "scripts.analysis.thickness_mismatch.maps.plot_eb_vs_timoshenko_lambda_mu_cases",
             "scripts.analysis.thickness_mismatch.audits.analyze_universal_eb_validity_parameters_stage1",
+            "scripts.analysis.thickness_mismatch.audits.audit_eb_validity_fixed_epsilon_geometry_scan",
             "scripts.analysis.thickness_mismatch.audits.audit_longitudinal_suspect_modes_eb_timo",
             "scripts.analysis.thickness_mismatch.audits.audit_eb_validity_vs_timoshenko_stage1",
             "scripts.analysis.thickness_mismatch.audits.audit_timoshenko_modes_4_6_shape_diagnostics",
