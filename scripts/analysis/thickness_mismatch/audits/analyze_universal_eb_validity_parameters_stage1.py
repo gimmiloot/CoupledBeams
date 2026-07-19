@@ -901,6 +901,10 @@ def write_report(
         f"- Longitudinal/mixed rows: `{len(subgroup_rows(mode_rows, 'longitudinal_mixed'))}`",
         f"- Leave-one-mu-out rows: `{len(cv_rows)}`",
         "",
+        "For this Stage-1 grid `eta=0`, hence `tau_1=tau_2=1` and `chi_eff` is numerically "
+        "identical to `chi_max`. Their equality here should not be read as evidence that the two "
+        "definitions remain identical in an eta scan.",
+        "",
         "## Answers",
         "",
         f"1. Best collapse for bending-dominated modes by log-fit R2: `{row_text(bending_best, 'R2')}`.",
