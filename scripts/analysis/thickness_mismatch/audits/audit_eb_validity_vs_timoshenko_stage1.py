@@ -137,12 +137,18 @@ SUMMARY_FIELDS = [
     "epsilon_1",
     "epsilon_2",
     "epsilon_max",
+    "target_mode_count",
     "N5_sorted_consecutive",
     "N10_sorted_consecutive",
     "N15_sorted_consecutive",
     "n_pass_5_among_first8",
     "n_pass_10_among_first8",
     "n_pass_15_among_first8",
+    "n_pass_5_among_firstK",
+    "n_pass_10_among_firstK",
+    "n_pass_15_among_firstK",
+    "max_delta_f_firstK",
+    "mean_delta_f_firstK",
     "pass_pattern_5",
     "pass_pattern_10",
     "pass_pattern_15",
@@ -150,6 +156,7 @@ SUMMARY_FIELDS = [
     "N10_bending_consecutive",
     "N15_bending_consecutive",
     "n_bending_pass_10_among_first8",
+    "n_bending_pass_10_among_firstK",
     "first_failed_sorted_index_10",
     "first_failed_branch_id_10",
     "first_failed_delta_f_10",
@@ -635,6 +642,32 @@ def pass_pattern(deltas: Sequence[float], threshold: float) -> str:
 
 def count_passes(deltas: Sequence[float], threshold: float) -> int:
     return sum(1 for value in deltas if pass_bool(float(value), float(threshold)))
+
+
+def k_aware_sorted_summary_fields(
+    deltas: Sequence[float],
+    *,
+    target_mode_count: int,
+) -> dict[str, object]:
+    target = [float(value) for value in deltas[: int(target_mode_count)]]
+    legacy_first8 = target[:8]
+    return {
+        "target_mode_count": int(target_mode_count),
+        "N5_sorted_consecutive": consecutive_pass_count(target, 0.05),
+        "N10_sorted_consecutive": consecutive_pass_count(target, 0.10),
+        "N15_sorted_consecutive": consecutive_pass_count(target, 0.15),
+        "n_pass_5_among_first8": count_passes(legacy_first8, 0.05),
+        "n_pass_10_among_first8": count_passes(legacy_first8, 0.10),
+        "n_pass_15_among_first8": count_passes(legacy_first8, 0.15),
+        "n_pass_5_among_firstK": count_passes(target, 0.05),
+        "n_pass_10_among_firstK": count_passes(target, 0.10),
+        "n_pass_15_among_firstK": count_passes(target, 0.15),
+        "max_delta_f_firstK": max(target) if target else float("nan"),
+        "mean_delta_f_firstK": float(np.mean(target)) if target else float("nan"),
+        "pass_pattern_5": pass_pattern(target, 0.05),
+        "pass_pattern_10": pass_pattern(target, 0.10),
+        "pass_pattern_15": pass_pattern(target, 0.15),
+    }
 
 
 def local_thickness_parameters(epsilon_0: float, mu: float, eta: float) -> dict[str, float]:
@@ -1149,15 +1182,10 @@ def summary_for_point(
         "epsilon_1": local["epsilon_1"],
         "epsilon_2": local["epsilon_2"],
         "epsilon_max": local["epsilon_max"],
-        "N5_sorted_consecutive": consecutive_pass_count(sorted_deltas, 0.05),
-        "N10_sorted_consecutive": consecutive_pass_count(sorted_deltas, 0.10),
-        "N15_sorted_consecutive": consecutive_pass_count(sorted_deltas, 0.15),
-        "n_pass_5_among_first8": count_passes(sorted_deltas, 0.05),
-        "n_pass_10_among_first8": count_passes(sorted_deltas, 0.10),
-        "n_pass_15_among_first8": count_passes(sorted_deltas, 0.15),
-        "pass_pattern_5": pass_pattern(sorted_deltas, 0.05),
-        "pass_pattern_10": pass_pattern(sorted_deltas, 0.10),
-        "pass_pattern_15": pass_pattern(sorted_deltas, 0.15),
+        **k_aware_sorted_summary_fields(
+            sorted_deltas,
+            target_mode_count=args.n_reported_modes,
+        ),
     }
 
     bending_rows = [
@@ -1167,12 +1195,22 @@ def summary_for_point(
     ]
     bending_rows.sort(key=lambda row: finite_float(row, "Lambda_Timo"))
     bending_deltas = [finite_float(row, "delta_f") for row in bending_rows]
+    legacy_bending_rows = [
+        row
+        for row in physical_rows
+        if str(row.get("Timo_classification", "")) == "bending_dominated"
+        and str(row.get("branch_id", "")).startswith("base_branch_")
+        and int(str(row["branch_id"]).rsplit("_", 1)[-1]) <= 8
+    ]
+    legacy_bending_rows.sort(key=lambda row: finite_float(row, "Lambda_Timo"))
+    legacy_bending_deltas = [finite_float(row, "delta_f") for row in legacy_bending_rows]
     summary.update(
         {
             "N5_bending_consecutive": consecutive_pass_count(bending_deltas, 0.05),
             "N10_bending_consecutive": consecutive_pass_count(bending_deltas, 0.10),
             "N15_bending_consecutive": consecutive_pass_count(bending_deltas, 0.15),
-            "n_bending_pass_10_among_first8": count_passes(bending_deltas, 0.10),
+            "n_bending_pass_10_among_first8": count_passes(legacy_bending_deltas, 0.10),
+            "n_bending_pass_10_among_firstK": count_passes(bending_deltas, 0.10),
         }
     )
 
@@ -1804,7 +1842,14 @@ def plot_delta_curves(
         and abs(finite_float(row, "mu") - float(mu)) <= 1.0e-12
     ]
     fig, ax = plt.subplots(figsize=(9.0, 5.4), constrained_layout=True)
-    for branch_index in range(1, DEFAULT_N_REPORTED_MODES + 1):
+    branch_indices = sorted(
+        {
+            int(str(row.get("branch_id", "")).rsplit("_", 1)[-1])
+            for row in rows
+            if str(row.get("branch_id", "")).startswith("base_branch_")
+        }
+    )
+    for branch_index in branch_indices:
         branch_id = f"base_branch_{branch_index}"
         branch_rows = [row for row in rows if str(row.get("branch_id", "")) == branch_id]
         if not branch_rows:
@@ -2012,7 +2057,7 @@ def write_report(
         "- `bias_f = (Lambda_EB^2 - Lambda_Timo^2) / Lambda_Timo^2`; positive values mean EB is higher than Timoshenko.",
         "- `delta_f_symmetric` is saved for diagnostics, while the 10% criterion uses the Timoshenko denominator.",
         "- Sorted-spectrum comparison compares EB sorted index `k` to Timoshenko sorted index `k`.",
-        "- Physical-branch comparison seeds `base_branch_1..base_branch_8` at `epsilon_0=0.0025` and continues EB and Timoshenko branches separately by shape MAC over candidate roots.",
+        f"- Physical-branch comparison seeds `base_branch_1..base_branch_{args.n_reported_modes}` at `epsilon_0=0.0025` and continues EB and Timoshenko branches separately by shape MAC over candidate roots.",
         "",
         "## Parameter Grid",
         "",
@@ -2037,7 +2082,7 @@ def write_report(
         "",
         "## Longitudinal-Mode Caveat",
         "",
-        "A longitudinal-dominated mode can pass the 10% criterion after a neighboring bending-dominated mode has already failed because Timoshenko shear and rotary-inertia corrections mainly affect bending/shear kinematics. Therefore the report stores both `N10_sorted_consecutive` and `n_pass_10_among_first8`, plus a pass pattern such as `Y,Y,N,Y`.",
+        "A longitudinal-dominated mode can pass the 10% criterion after a neighboring bending-dominated mode has already failed because Timoshenko shear and rotary-inertia corrections mainly affect bending/shear kinematics. Therefore the report stores `N10_sorted_consecutive`, the legacy `n_pass_10_among_first8`, the K-aware `n_pass_10_among_firstK`, and a pass pattern such as `Y,Y,N,Y`.",
         "",
         f"Nonconsecutive pass patterns with a later pass after a failure: `{len(long_or_mixed_pass_after_fail)}` rows.",
         "",
@@ -2151,6 +2196,58 @@ def write_outputs(
     return [*csv_paths, *plot_paths], report
 
 
+def warnings_from_saved_audits(
+    mode_rows: Sequence[dict[str, object] | dict[str, str]],
+    tracking_rows: Sequence[dict[str, object] | dict[str, str]],
+) -> list[str]:
+    warnings: list[str] = []
+    physical_rows = [
+        row
+        for row in mode_rows
+        if str(row.get("comparison_type", "")) == "physical_branch"
+    ]
+    for mu in sorted({finite_float(row, "mu") for row in physical_rows}):
+        mu_rows = [
+            row
+            for row in physical_rows
+            if abs(finite_float(row, "mu") - mu) <= 1.0e-12
+        ]
+        epsilon_values = [
+            finite_float(row, "epsilon_0")
+            for row in mu_rows
+            if isfinite(finite_float(row, "epsilon_0"))
+        ]
+        if not epsilon_values:
+            continue
+        epsilon_min = min(epsilon_values)
+        for row in mu_rows:
+            if abs(finite_float(row, "epsilon_0") - epsilon_min) > 1.0e-12:
+                continue
+            eb_index = int(finite_float(row, "eb_sorted_index"))
+            timo_index = int(finite_float(row, "timo_sorted_index"))
+            if eb_index != timo_index:
+                warnings.append(
+                    f"base EB/Timoshenko branch pairing for mu={mu:g}, {row.get('branch_id', '')}: "
+                    f"EB sorted {eb_index} matched Timoshenko sorted {timo_index}"
+                )
+            mode_warning = str(row.get("tracking_warning", "")).strip()
+            if mode_warning:
+                warnings.append(
+                    f"saved physical-branch warning for mu={mu:g}, {row.get('branch_id', '')}: "
+                    f"{mode_warning}"
+                )
+    for row in tracking_rows:
+        warning = str(row.get("warning", "")).strip()
+        if not warning:
+            continue
+        warnings.append(
+            f"{row.get('model', '')} tracking warning mu={finite_float(row, 'mu'):g}, "
+            f"{row.get('branch_id', '')}, eps {finite_float(row, 'epsilon_prev'):g}->"
+            f"{finite_float(row, 'epsilon_current'):g}: {warning}"
+        )
+    return list(dict.fromkeys(warnings))
+
+
 def plot_only_outputs(args: Args) -> tuple[list[Path], Path]:
     output_dir = args.output_dir
     mode_rows = read_csv(output_dir / "eb_timo_mode_level_metrics.csv")
@@ -2175,7 +2272,7 @@ def plot_only_outputs(args: Args) -> tuple[list[Path], Path]:
         tracking_rows=tracking_rows,
         threshold_rows=threshold_rows,
         chi_fit_rows=chi_fit_rows,
-        warnings=[],
+        warnings=warnings_from_saved_audits(mode_rows, tracking_rows),
         plot_paths=plot_paths,
     )
     timing_path = write_csv(

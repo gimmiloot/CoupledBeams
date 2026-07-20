@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## 2026-07-20
+
+- Added the CSV-first K=10 EB safe-spectrum-prefix certification entry point at
+  `scripts/analysis/thickness_mismatch/postprocess/analyze_eb_safe_prefix_certification.py`.
+  It validates complete sorted source geometries, reconstructs canonical EB-only
+  `Pi`, chi, Theta, energy, and adjacent-gap indicators from saved EB roots,
+  calibrates nested Rules A--D on train geometries only, evaluates cross-source
+  and leave-one-parameter folds, and writes mode, geometry, calibration,
+  prediction, validation, exclusion, overlap, predictor-consistency,
+  operation-count, and Markdown report outputs. Added 25 targeted tests plus
+  import-smoke registration. Source applicability summaries now add K-aware
+  fields while preserving legacy `first8` semantics and unchanged defaults.
+  Analytic formulas, determinants, root solvers and tolerances, the Timoshenko
+  shear coefficient, FEM models, numerical baselines, and article workspaces
+  were not changed.
+
+- Added the documentation-only EB safe-spectrum-prefix research plan for a
+  future `K = 10` sorted-frequency certificate, including formal false-safe
+  definitions, existing EB-only candidate indicators, complete-geometry
+  validation splits, quality metrics, and algorithmic operation-count policy.
+  Linked the plan from the thickness-mismatch documentation and script map and
+  recorded the adopted direction in the project journal. That planning-only
+  change did not alter code, formulas, determinants, root solvers, the
+  Timoshenko shear coefficient, FEM models, numerical results, or article
+  workspaces.
+
 ## 2026-07-19
 
 - Added the diagnostic-only fixed-epsilon EB applicability geometry scan at

@@ -5,17 +5,16 @@ circular rods with different radii. It is separate from the current article
 workflow and does not replace the baseline equal-radius determinant.
 
 For project-wide rules on branch identity, thin-rod applicability, diagnostic
-workflow, and consistency checks, see `../project_rules.md`.
+workflow, and consistency checks, see the [project rules](../project_rules.md).
 
-FEM validation status and roadmap are tracked in
-`docs/thickness_mismatch/fem_validation_status.md`.
+Current diagnostic plans and status notes:
 
-Frequency-crossing positive-gap status for the diagnostic EB
-thickness-mismatch model is tracked in
-`docs/thickness_mismatch/frequency_crossing_verification_status.md`.
+- [FEM validation status and roadmap](fem_validation_status.md);
+- [EB safe-spectrum-prefix research plan](eb_safe_spectrum_prefix_research_plan.md);
+- [frequency-crossing positive-gap verification status](frequency_crossing_verification_status.md).
 
 The current rigid-joint `Lambda(mu)` EB/Timoshenko/3D FEM diagnostic plots are
-listed in `docs/thickness_mismatch/fem_validation_status.md`. They use the
+listed in the [FEM validation status](fem_validation_status.md). They use the
 full rigid end-face 3D FEM model as an independent engineering benchmark, not
 as a tuned replica of the ideal one-dimensional point joint.
 

@@ -186,9 +186,11 @@ POINT_SUMMARY_FIELDS = [
     "beta_deg",
     "mu",
     "eta",
+    "target_mode_count",
     "N10_sorted_consecutive",
     "pass_pattern_10",
     "n_pass_10_among_first8",
+    "n_pass_10_among_firstK",
     "N10_current_bending",
     "n_bending_pass_10",
     "reliable_individual_count",
@@ -201,6 +203,8 @@ POINT_SUMMARY_FIELDS = [
     "matched_cluster_count",
     "max_delta_f_first8",
     "mean_delta_f_first8",
+    "max_delta_f_firstK",
+    "mean_delta_f_firstK",
     "notes",
 ]
 
@@ -598,6 +602,26 @@ def pass_pattern(deltas: Sequence[float], threshold: float = MAIN_THRESHOLD) -> 
 
 def count_passes(deltas: Sequence[float], threshold: float = MAIN_THRESHOLD) -> int:
     return sum(1 for value in deltas if pass_bool(float(value), threshold))
+
+
+def k_aware_point_summary_fields(
+    deltas: Sequence[float],
+    *,
+    target_mode_count: int,
+) -> dict[str, object]:
+    target = [float(value) for value in deltas[: int(target_mode_count)]]
+    legacy_first8 = target[:8]
+    return {
+        "target_mode_count": int(target_mode_count),
+        "N10_sorted_consecutive": consecutive_pass_count(target),
+        "pass_pattern_10": pass_pattern(target),
+        "n_pass_10_among_first8": count_passes(legacy_first8),
+        "n_pass_10_among_firstK": count_passes(target),
+        "max_delta_f_first8": max(legacy_first8) if legacy_first8 else float("nan"),
+        "mean_delta_f_first8": float(np.mean(legacy_first8)) if legacy_first8 else float("nan"),
+        "max_delta_f_firstK": max(target) if target else float("nan"),
+        "mean_delta_f_firstK": float(np.mean(target)) if target else float("nan"),
+    }
 
 
 def classify_energy(model: str, axial_fraction: float, bending_fraction: float, shear_fraction: float) -> str:
@@ -1745,9 +1769,10 @@ def point_products(
         "beta_deg": beta_deg,
         "mu": mu,
         "eta": eta,
-        "N10_sorted_consecutive": consecutive_pass_count(sorted_deltas),
-        "pass_pattern_10": pass_pattern(sorted_deltas),
-        "n_pass_10_among_first8": count_passes(sorted_deltas),
+        **k_aware_point_summary_fields(
+            sorted_deltas,
+            target_mode_count=args.n_reported_modes,
+        ),
         "N10_current_bending": consecutive_pass_count(bending_deltas),
         "n_bending_pass_10": count_passes(bending_deltas),
         "reliable_individual_count": sum(1 for row in rows if row["matching_status"] == "reliable_individual"),
@@ -1758,8 +1783,6 @@ def point_products(
         "cluster_count_EB": len(set(eb_clusters.values())),
         "cluster_count_Timo": len(set(timo_clusters.values())),
         "matched_cluster_count": len(cluster_rows),
-        "max_delta_f_first8": max(sorted_deltas) if sorted_deltas else float("nan"),
-        "mean_delta_f_first8": float(np.mean(sorted_deltas)) if sorted_deltas else float("nan"),
         "notes": "current bending metric uses current Timoshenko sorted energy classification",
     }
     local_rows = (
@@ -2420,6 +2443,12 @@ def runtime_rows(runtime: RuntimeTracker, *, point_count: int, mode_rows: Sequen
 
 def plot_n10_heatmaps(output_dir: Path, point_rows: Sequence[dict[str, object]]) -> list[Path]:
     paths: list[Path] = []
+    target_counts = [
+        int(finite_float(row, "target_mode_count"))
+        for row in point_rows
+        if isfinite(finite_float(row, "target_mode_count"))
+    ]
+    color_max = max(target_counts, default=DEFAULT_N_REPORTED_MODES)
     for eta in sorted({finite_float(row, "eta") for row in point_rows}):
         subset = [row for row in point_rows if abs(finite_float(row, "eta") - eta) <= 1.0e-12]
         betas = sorted({finite_float(row, "beta_deg") for row in subset})
@@ -2430,7 +2459,7 @@ def plot_n10_heatmaps(output_dir: Path, point_rows: Sequence[dict[str, object]])
             j = betas.index(finite_float(row, "beta_deg"))
             data[i, j] = finite_float(row, "N10_sorted_consecutive")
         fig, ax = plt.subplots(figsize=(8.0, 5.2), constrained_layout=True)
-        im = ax.imshow(data, origin="lower", aspect="auto", vmin=0, vmax=DEFAULT_N_REPORTED_MODES)
+        im = ax.imshow(data, origin="lower", aspect="auto", vmin=0, vmax=color_max)
         ax.set_xticks(range(len(betas)))
         ax.set_xticklabels([f"{value:g}" for value in betas])
         ax.set_yticks(range(len(mus)))
@@ -2555,11 +2584,16 @@ def plot_false_safe_coverage(output_dir: Path, fit_rows: Sequence[dict[str, obje
     return path
 
 
-def plot_delta_beta_selected(output_dir: Path, mode_rows: Sequence[dict[str, object]]) -> Path:
+def plot_delta_beta_selected(
+    output_dir: Path,
+    mode_rows: Sequence[dict[str, object]],
+    *,
+    n_reported_modes: int,
+) -> Path:
     rows = [
         row for row in mode_rows
         if row.get("comparison_type") == "homologous_mode"
-        and int(finite_float(row, "eb_sorted_index")) <= 8
+        and int(finite_float(row, "eb_sorted_index")) <= int(n_reported_modes)
         and any(abs(finite_float(row, "mu") - value) <= 1.0e-12 for value in (0.0, 0.3, 0.7))
         and any(abs(finite_float(row, "eta") - value) <= 1.0e-12 for value in (-0.1, 0.0, 0.1))
     ]
@@ -2568,7 +2602,7 @@ def plot_delta_beta_selected(output_dir: Path, mode_rows: Sequence[dict[str, obj
         for j, eta in enumerate((-0.1, 0.0, 0.1)):
             ax = axes[i, j]
             subset = [row for row in rows if abs(finite_float(row, "mu") - mu) <= 1.0e-12 and abs(finite_float(row, "eta") - eta) <= 1.0e-12]
-            for mode in range(1, 9):
+            for mode in range(1, int(n_reported_modes) + 1):
                 mrows = sorted([row for row in subset if int(finite_float(row, "eb_sorted_index")) == mode], key=lambda row: finite_float(row, "beta_deg"))
                 if mrows:
                     ax.plot([finite_float(row, "beta_deg") for row in mrows], [finite_float(row, "delta_f") for row in mrows], lw=1.0)
@@ -2620,8 +2654,15 @@ def generate_plots(
     scalar_fits: dict[tuple[str, str], dict[str, float]],
     threshold_rows: Sequence[dict[str, object]],
     cv_rows: Sequence[dict[str, object]],
+    n_reported_modes: int,
 ) -> list[Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
+    summary_mode_counts = [
+        int(finite_float(row, "target_mode_count"))
+        for row in point_rows
+        if isfinite(finite_float(row, "target_mode_count"))
+    ]
+    plot_mode_count = max(summary_mode_counts, default=int(n_reported_modes))
     paths = plot_n10_heatmaps(output_dir, point_rows)
     paths.extend(
         [
@@ -2629,7 +2670,11 @@ def generate_plots(
             plot_residual_beta(output_dir, mode_rows, scalar_fits),
             plot_threshold_beta_eta(output_dir, threshold_rows),
             plot_false_safe_coverage(output_dir, fit_rows),
-            plot_delta_beta_selected(output_dir, mode_rows),
+            plot_delta_beta_selected(
+                output_dir,
+                mode_rows,
+                n_reported_modes=plot_mode_count,
+            ),
             plot_reduced_vs_raw_cv(output_dir, cv_rows),
         ]
     )
@@ -2847,6 +2892,7 @@ def write_outputs(
         scalar_fits=scalar_fits,
         threshold_rows=threshold_rows,
         cv_rows=cv_rows,
+        n_reported_modes=args.n_reported_modes,
     )
     report = write_report(
         args.output_dir,
@@ -2879,6 +2925,7 @@ def plot_only(args: Args) -> tuple[list[Path], Path]:
         scalar_fits=scalar_fits,
         threshold_rows=threshold_rows,
         cv_rows=cv_rows,
+        n_reported_modes=args.n_reported_modes,
     )
     runtime = runtime_from_cost_csv(args.output_dir / "fixed_epsilon_runtime_costs.csv", args.cache_dir)
     local_path = args.output_dir / "local_timo_correction_benchmark.csv"
