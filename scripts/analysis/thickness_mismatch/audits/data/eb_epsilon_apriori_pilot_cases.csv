@@ -1,0 +1,22 @@
+case_id,epsilon_0,beta_deg,mu,eta,case_groups,notes
+B01,0.010,0,0,0,baseline_reference,baseline epsilon reference line
+B02,0.015,0,0,0,baseline_reference,baseline epsilon reference line
+B03,0.020,0,0,0,baseline_reference;fixed_epsilon_0p02_block,shared baseline and fixed-epsilon case
+B04,0.025,0,0,0,baseline_reference,baseline epsilon reference line
+B05,0.030,0,0,0,baseline_reference,baseline epsilon reference line
+B06,0.040,0,0,0,baseline_reference,baseline epsilon reference line
+B07,0.050,0,0,0,baseline_reference,baseline epsilon reference line
+G01,0.020,0,0.5,0,fixed_epsilon_0p02_block,fixed epsilon geometry block
+G02,0.020,0,0.7,0,fixed_epsilon_0p02_block,fixed epsilon geometry block
+G03,0.020,45,0,0,fixed_epsilon_0p02_block;matched_epsilon_max_0p02,fixed epsilon and matched local-thickness case
+G04,0.020,45,0.5,0,fixed_epsilon_0p02_block;matched_epsilon_max_0p04;eta_sign_triplet;eta_sign_triplet_center,fixed epsilon matched local-thickness and eta-center case
+G05,0.020,45,0.7,0,fixed_epsilon_0p02_block,fixed epsilon geometry block
+G06,0.020,90,0,0,fixed_epsilon_0p02_block,fixed epsilon geometry block
+G07,0.020,90,0.5,0,fixed_epsilon_0p02_block,fixed epsilon geometry block
+G08,0.020,90,0.7,0,fixed_epsilon_0p02_block,fixed epsilon geometry block
+H01,0.020,45,0.5,-0.1,eta_sign_triplet,negative eta member
+H02,0.020,45,0.5,0.1,eta_sign_triplet,positive eta member
+M01,0.010,45,0.5,0,matched_epsilon_max_0p02,matched local-thickness case
+M02,0.006,45,0.7,0,matched_epsilon_max_0p02,matched local-thickness case
+M03,0.040,45,0,0,matched_epsilon_max_0p04,matched local-thickness case
+M04,0.012,45,0.7,0,matched_epsilon_max_0p04,matched local-thickness case

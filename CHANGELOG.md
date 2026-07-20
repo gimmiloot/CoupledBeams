@@ -2,6 +2,19 @@
 
 ## 2026-07-20
 
+- Added and executed the manifest-driven 21-geometry `K = 10` EB epsilon
+  a-priori pilot. The new source runner reuses the existing EB/Timoshenko root,
+  cache, mode, predictor, MAC, cluster, boundary, and local-thickness helpers;
+  the separate CSV-only postprocessor compares exact `epsilon_0` and
+  `epsilon_max` prefix rules with production Rules A--D and the new Rule A-gap,
+  audits complete-geometry folds, matched local-thickness groups, operation
+  scopes, and 8/16/32 candidate-grid convergence, and writes compact
+  CSV/PNG/Markdown outputs under `results/eb_epsilon_apriori_pilot/`. Added 25
+  targeted tests and import-smoke coverage. All 21 points completed without
+  root or candidate-boundary warnings. Formulas, determinants, root solvers and
+  tolerances, the Timoshenko shear coefficient, FEM models, article workspaces,
+  and production Stage-1/fixed-epsilon grids were not changed or run.
+
 - Added the CSV-first K=10 EB safe-spectrum-prefix certification entry point at
   `scripts/analysis/thickness_mismatch/postprocess/analyze_eb_safe_prefix_certification.py`.
   It validates complete sorted source geometries, reconstructs canonical EB-only

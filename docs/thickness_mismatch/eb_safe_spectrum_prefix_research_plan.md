@@ -23,6 +23,7 @@ source applicability workflows, reconstructs canonical EB-only predictors
 from saved `Lambda_EB` values, and implements:
 
 - Rule A: one `Pi_EB` limit;
+- Rule A-gap: Rule A plus the complete-cluster adjacent EB gap guard;
 - Rule B: separate `Pi_shear_EB` and `Pi_rotary_EB` limits;
 - Rule C: Rule B plus a complete-cluster adjacent EB spectral-gap guard;
 - Rule D: Rule C plus the EB-only `mixed` modal-character guard.
@@ -42,12 +43,63 @@ claims:
   candidate-root margins;
 - review held-out false-safe cases, conservative loss, and cluster triggers on
   those complete datasets;
-- decide whether Rules A--D retain enough safe frequencies before introducing
+- decide whether Rules A--D and the Rule A-gap ablation retain enough safe frequencies before introducing
   any new physical composite criterion;
 - extend evidence beyond the two current parameter slices only after the
   complete K=10 results have been reviewed;
 - add source root-operation counters later if this can be done without changing
   solver behavior.
+
+## Geometry-Only Epsilon Pilot
+
+A deliberately small geometry-only pilot was implemented and run on
+`2026-07-20` through the manifest-driven source runner
+[`run_eb_epsilon_apriori_pilot.py`](../../scripts/analysis/thickness_mismatch/audits/run_eb_epsilon_apriori_pilot.py)
+and the CSV-only postprocessor
+[`analyze_eb_epsilon_apriori_pilot.py`](../../scripts/analysis/thickness_mismatch/postprocess/analyze_eb_epsilon_apriori_pilot.py).
+The fixed manifest contains 21 selected geometries and compares two candidate
+pre-solution indicators:
+
+- `epsilon_0`, which is available directly from the base geometry;
+- `epsilon_max`, computed through the verified local-thickness helper.
+
+Both quantities remain possible low-cost screening variables, not replacements
+for the EB-based certificate. The pilot kept the sorted `K = 10` target,
+calibrated ten exact finite-observation thresholds for each geometry-only rule,
+used an explicit predictor-domain fallback to `N_hat = 0`, and compared those
+rules with Rules A--D plus a `Pi_EB`/spectral-gap ablation, Rule A-gap. The
+production threshold candidate search now gives priority to the running prefix
+extrema that actually control certification decisions.
+
+All 21 geometries completed without root or candidate-boundary warnings. On
+the baseline-reference transfer to the 14 non-baseline cases, the observed
+results were:
+
+| rule | false-safe geometries | retained safe EB frequencies | mean conservative loss | X-domain fallbacks |
+|---|---:|---:|---:|---:|
+| E0-ref | 0 | 0.7863 | 1.786 | 1 |
+| Emax-ref | 0 | 0.4017 | 5.000 | 3 |
+| Rule A | 0 | 0.8803 | 1.000 | 0 |
+| Rule A-gap | 0 | 0.7179 | 2.357 | 0 |
+| Rule B | 0 | 0.6752 | 2.714 | 0 |
+| Rule C | 0 | 0.6752 | 2.714 | 0 |
+| Rule D | 0 | 0.3504 | 5.429 | 0 |
+
+The two matched-`epsilon_max` triplets had `N_true` ranges of two and six
+modes, respectively. Thus `epsilon_max` did not collapse the selected pilot
+geometries to a common safe prefix, and it performed worse than `epsilon_0` as
+the transferred baseline indicator. Across the broader repeated held-out fold
+evaluations, calibrated geometry-only rules produced observed false-safe cases.
+In addition, many reduced searches for Rules A-gap through D changed between
+the 16- and 32-candidate grids. Those rules therefore retain an explicit
+calibration-convergence caveat in this pilot.
+
+The current diagnostic recommendation is to retain a cascade rather than
+replace the EB certificate: geometry-only screening may be tested as an early
+conservative fallback, followed by EB frequencies and gaps, EB-only Pi guards,
+and Timoshenko for the uncertified suffix. Any decision to promote `epsilon_0`
+or `epsilon_max` requires a larger held-out geometry design. Zero observed
+false-safe on these selected finite cases is not a continuous-domain guarantee.
 
 ## Engineering Objective
 
@@ -209,6 +261,8 @@ The recommended next stage is the following.
    for nested rule families:
 
    - **Rule A:** `Pi_EB <= threshold`.
+   - **Rule A-gap:** Rule A plus the minimum adjacent EB sorted spectral-gap
+     guard.
    - **Rule B:** `Pi_shear_EB <= threshold_s` and
      `Pi_rotary_EB <= threshold_r`.
    - **Rule C:** Rule B plus a minimum adjacent EB sorted spectral-gap guard.

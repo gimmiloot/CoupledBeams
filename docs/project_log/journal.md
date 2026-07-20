@@ -4,6 +4,21 @@
 
 ## 2026-07-20
 
+- Completed the selected 21-geometry `K = 10` epsilon a-priori pilot for the
+  safe-spectrum-prefix direction. The manifest-driven runner reused the
+  existing EB/Timoshenko root, shape, predictor, MAC, cluster, cache, and local
+  thickness helpers; all 21 points completed without root or candidate-boundary
+  warnings. The CSV-only analysis compared baseline and fold-calibrated
+  `epsilon_0`/`epsilon_max` rules with Rules A--D and Rule A-gap. On the 14-case
+  baseline transfer, E0-ref retained 0.7863 of usable EB frequencies with zero
+  observed false-safe, versus 0.4017 for Emax-ref; Rule A retained 0.8803. The
+  two matched-`epsilon_max` triplets still spanned two and six `N_true` modes,
+  and calibrated geometry-only rules produced false-safe cases across the
+  broader repeated held-out folds. Reduced EB-rule searches also showed
+  substantial 16-to-32 grid sensitivity. The pilot therefore supports further
+  cascade testing, not replacement of the EB-based certificate or a universal
+  guarantee.
+
 - Adopted the `K = 10` safe-spectrum-prefix certification objective: solve the
   first ten sorted Euler--Bernoulli frequencies, use EB-only modal indicators
   to select a conservative prefix `N_hat`, and compute frequencies

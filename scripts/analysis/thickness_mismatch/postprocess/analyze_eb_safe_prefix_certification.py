@@ -46,7 +46,7 @@ PREDICTOR_CONSISTENCY_TOLERANCE = 1.0e-8
 
 SOURCE_STAGE1 = "stage1"
 SOURCE_FIXED = "fixed_epsilon"
-RULES = ("Rule_A", "Rule_B", "Rule_C", "Rule_D")
+RULES = ("Rule_A", "Rule_A_gap", "Rule_B", "Rule_C", "Rule_D")
 
 MODE_AUDIT_FIELDS = [
     "source_dataset",
@@ -1062,6 +1062,12 @@ def close_cluster_members(
         if isfinite(gap) and gap < float(gap_min):
             blocked.add(int(left["sorted_index"]))
             blocked.add(int(right["sorted_index"]))
+    if ordered:
+        if operations is not None:
+            operations.scalar_predictor_comparisons += 1
+        right_guard = finite_float(ordered[-1], "gap_right_EB")
+        if isfinite(right_guard) and right_guard < float(gap_min):
+            blocked.add(int(ordered[-1]["sorted_index"]))
     return blocked
 
 
@@ -1077,7 +1083,7 @@ def predict_safe_prefix(
     ordered = sorted(modes, key=lambda row: int(row["sorted_index"]))
     blocked = (
         close_cluster_members(ordered, float(thresholds.get("gap_min", 0.0)), operations=operations)
-        if rule in {"Rule_C", "Rule_D"}
+        if rule in {"Rule_A_gap", "Rule_C", "Rule_D"}
         else set()
     )
     count = 0
@@ -1089,11 +1095,15 @@ def predict_safe_prefix(
         index = int(mode["sorted_index"])
         passes = True
         reason = ""
-        if rule == "Rule_A":
+        if rule in {"Rule_A", "Rule_A_gap"}:
             if operations is not None:
                 operations.scalar_predictor_comparisons += 1
             passes = finite_float(mode, "Pi_EB") <= float(thresholds["T_pi"])
             reason = "Pi_EB_limit"
+            if passes and rule == "Rule_A_gap" and index in blocked:
+                passes = False
+                reason = "close_EB_cluster_guard"
+                cluster_triggered = True
         else:
             if operations is not None:
                 operations.scalar_predictor_comparisons += 2
@@ -1141,6 +1151,24 @@ def predictor_boundary_values(records: Sequence[GeometryRecord], field_name: str
     return values
 
 
+def prefix_extrema_values(
+    records: Sequence[GeometryRecord],
+    field_name: str,
+    *,
+    use_minimum: bool = False,
+) -> list[float]:
+    values: set[float] = set()
+    for record in records:
+        running: list[float] = []
+        for mode in sorted(record.modes, key=lambda row: int(row["sorted_index"])):
+            value = finite_float(mode, field_name)
+            if isfinite(value):
+                running.append(value)
+            if running:
+                values.add(min(running) if use_minimum else max(running))
+    return sorted(values)
+
+
 def deterministic_candidate_axis(
     values: Sequence[float],
     *,
@@ -1157,7 +1185,7 @@ def deterministic_candidate_axis(
     if finite_values:
         selected.add(finite_values[0])
         selected.add(finite_values[-1])
-    for value in priority_values:
+    for value in sorted({float(item) for item in priority_values if isfinite(float(item))}):
         value_f = float(value)
         if value_f in finite_set:
             selected.add(value_f)
@@ -1186,32 +1214,55 @@ def threshold_candidate_axes(
     if rule == "Rule_A":
         values = sorted({finite_float(mode, "Pi_EB") for mode in modes if isfinite(finite_float(mode, "Pi_EB"))})
         return {"T_pi": [float("-inf"), *values]}, True
-    shear, shear_exact = deterministic_candidate_axis(
-        [finite_float(mode, "Pi_shear_EB") for mode in modes],
-        max_candidates=int(max_candidates_per_axis),
-        include_negative_infinity=True,
-        priority_values=predictor_boundary_values(records, "Pi_shear_EB"),
-    )
-    rotary, rotary_exact = deterministic_candidate_axis(
-        [finite_float(mode, "Pi_rotary_EB") for mode in modes],
-        max_candidates=int(max_candidates_per_axis),
-        include_negative_infinity=True,
-        priority_values=predictor_boundary_values(records, "Pi_rotary_EB"),
-    )
-    axes = {"T_shear": shear, "T_rotary": rotary}
-    exact = shear_exact and rotary_exact
-    if rule in {"Rule_C", "Rule_D"}:
+    if rule == "Rule_A_gap":
+        total, total_exact = deterministic_candidate_axis(
+            [finite_float(mode, "Pi_EB") for mode in modes],
+            max_candidates=int(max_candidates_per_axis),
+            include_negative_infinity=True,
+            priority_values=[
+                *predictor_boundary_values(records, "Pi_EB"),
+                *prefix_extrema_values(records, "Pi_EB"),
+            ],
+        )
+        axes = {"T_pi": total}
+        exact = total_exact
+    else:
+        shear, shear_exact = deterministic_candidate_axis(
+            [finite_float(mode, "Pi_shear_EB") for mode in modes],
+            max_candidates=int(max_candidates_per_axis),
+            include_negative_infinity=True,
+            priority_values=[
+                *predictor_boundary_values(records, "Pi_shear_EB"),
+                *prefix_extrema_values(records, "Pi_shear_EB"),
+            ],
+        )
+        rotary, rotary_exact = deterministic_candidate_axis(
+            [finite_float(mode, "Pi_rotary_EB") for mode in modes],
+            max_candidates=int(max_candidates_per_axis),
+            include_negative_infinity=True,
+            priority_values=[
+                *predictor_boundary_values(records, "Pi_rotary_EB"),
+                *prefix_extrema_values(records, "Pi_rotary_EB"),
+            ],
+        )
+        axes = {"T_shear": shear, "T_rotary": rotary}
+        exact = shear_exact and rotary_exact
+    if rule in {"Rule_A_gap", "Rule_C", "Rule_D"}:
         raw_gaps = [
             finite_float(mode, "gap_right_EB")
             for mode in modes
             if isfinite(finite_float(mode, "gap_right_EB"))
         ]
         gap_candidates = [0.0, *[float(np.nextafter(value, math.inf)) for value in raw_gaps]]
+        priority_gaps = [
+            float(np.nextafter(value, math.inf))
+            for value in prefix_extrema_values(records, "gap_EB", use_minimum=True)
+        ]
         gap_axis, gap_exact = deterministic_candidate_axis(
             gap_candidates,
             max_candidates=int(max_candidates_per_axis),
             include_negative_infinity=False,
-            priority_values=(),
+            priority_values=priority_gaps,
         )
         axes["gap_min"] = gap_axis
         exact = exact and gap_exact
@@ -1221,6 +1272,8 @@ def threshold_candidate_axes(
 def conservative_threshold_key(rule: str, thresholds: Mapping[str, float]) -> tuple[float, ...]:
     if rule == "Rule_A":
         return (float(thresholds["T_pi"]),)
+    if rule == "Rule_A_gap":
+        return (float(thresholds["T_pi"]), -float(thresholds.get("gap_min", 0.0)))
     if rule == "Rule_B":
         return (float(thresholds["T_shear"]), float(thresholds["T_rotary"]))
     return (
@@ -1237,7 +1290,7 @@ def threshold_is_more_conservative(
 ) -> bool:
     if rule == "Rule_A":
         return float(candidate["T_pi"]) < float(reference["T_pi"])
-    upper_names = ("T_shear", "T_rotary")
+    upper_names = ("T_pi",) if rule == "Rule_A_gap" else ("T_shear", "T_rotary")
     weakly_tighter = all(
         float(candidate[name]) <= float(reference[name])
         for name in upper_names
@@ -1246,7 +1299,7 @@ def threshold_is_more_conservative(
         float(candidate[name]) < float(reference[name])
         for name in upper_names
     )
-    if rule in {"Rule_C", "Rule_D"}:
+    if rule in {"Rule_A_gap", "Rule_C", "Rule_D"}:
         weakly_tighter = weakly_tighter and float(candidate["gap_min"]) >= float(reference["gap_min"])
         strictly_tighter = strictly_tighter or float(candidate["gap_min"]) > float(reference["gap_min"])
     return weakly_tighter and strictly_tighter
@@ -1760,7 +1813,7 @@ def best_current_rule(
         return "none", "no held-out predictions are available"
     zero_false_safe = [row for row in rows if finite_float(row, "false_safe_geometry_count") == 0.0]
     candidates = zero_false_safe if zero_false_safe else rows
-    complexity = {"Rule_A": 1, "Rule_B": 2, "Rule_C": 3, "Rule_D": 4}
+    complexity = {"Rule_A": 1, "Rule_A_gap": 2, "Rule_B": 2, "Rule_C": 3, "Rule_D": 4}
     operation_cost: Counter[str] = Counter()
     for row in operation_rows:
         if row.get("scope") != "fold_rule" or row.get("split_kind") == "combined_in_sample":
@@ -1890,6 +1943,7 @@ def write_report(
             "## Candidate Rules",
             "",
             "- Rule A applies one total `Pi_EB` upper limit.",
+            "- Rule A-gap applies the same total `Pi_EB` limit plus the adjacent sorted EB gap guard.",
             "- Rule B applies separate EB shear and rotary upper limits.",
             "- Rule C adds an adjacent sorted EB gap guard and blocks complete close clusters.",
             "- Rule D adds the EB-only `mixed` modal-character guard to Rule C.",
@@ -2073,6 +2127,7 @@ def write_report(
         [
             "",
             pi_assessment,
+            comparison_sentence("Rule_A", "Rule_A_gap", "Adjacent EB gap ablation (Rule A to Rule A-gap)"),
             comparison_sentence("Rule_A", "Rule_B", "Separate shear/rotary limits (Rule A to Rule B)"),
             comparison_sentence("Rule_B", "Rule_C", "Adjacent EB gap guard (Rule B to Rule C)"),
             comparison_sentence("Rule_C", "Rule_D", "EB-only modal-character guard (Rule C to Rule D)"),
