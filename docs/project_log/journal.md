@@ -2,6 +2,32 @@
 
 Здесь ведётся рабочий журнал проекта: этапы, решения и важные исследовательские заметки.
 
+## 2026-07-21
+
+- Completed research step 2, the refined straight homogeneous epsilon
+  baseline at `(beta,mu,eta)=(0,0,0)`, with `K=10`, a `0.005..0.060`
+  computational buffer, mandatory midpoint screening, adaptive
+  crossing/order/cluster refinement, and independent force-recompute checks.
+  Prefix 1 remains safe through `epsilon=0.060`; verified conservative
+  first-loss endpoints for prefixes 2--10 are `0.049140625`, `0.037009766`,
+  `0.029705078`, `0.022800781`, `0.015929688` for prefixes 6--9, and
+  `0.015624023` for prefix 10. All nine finite crossings are inside the
+  primary `0.010..0.050` range and pass the larger-candidate verification.
+  The analytic axial plus fixed-fixed-bending EB union agrees with the resolved
+  baseline general 6x6 spectrum to `1.30e-9` maximum absolute error.
+
+- Kept first loss separate from later behavior: the baseline audit records 13
+  unsafe-to-safe re-entries, 13 later safe-to-unsafe returns, 55 family reorder
+  events, and 703 evaluated points with individual late passes. A local
+  near-crossing omission is recovered only through existing general-6x6
+  sign/SVD helpers in analytic-guided disjoint windows; no formula,
+  determinant, global solver setting, or production root convention changed.
+  The separate mu-invariance audit retains 8 unresolved high-mode
+  epsilon/mu points at `mu=0.7/0.9`; `N_true` and EB family ordering remain
+  equal, but wrapper-level first-12 mu-invariance is not claimed until that
+  numerical conditioning issue is resolved. Step 3 geometry search was not
+  implemented or run.
+
 ## 2026-07-20
 
 - Completed the selected 21-geometry `K = 10` epsilon a-priori pilot for the

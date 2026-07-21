@@ -101,6 +101,86 @@ and Timoshenko for the uncertified suffix. Any decision to promote `epsilon_0`
 or `epsilon_max` requires a larger held-out geometry design. Zero observed
 false-safe on these selected finite cases is not a continuous-domain guarantee.
 
+## Refined Straight-System Epsilon Baseline
+
+Research step 2 was implemented and run on `2026-07-21` through the stable
+diagnostic entry point
+[`audit_eb_epsilon_baseline_thresholds.py`](../../scripts/analysis/thickness_mismatch/audits/audit_eb_epsilon_baseline_thresholds.py).
+It is restricted to the straight homogeneous system
+`(beta, mu, eta) = (0, 0, 0)` and uses the dimensional-frequency discrepancy
+based on squared `Lambda`. For every prefix `n=1,...,10`, it evaluates
+
+\[
+\Delta_n(\epsilon)=\max_{1\leq k\leq n}\delta_{f,k}(\epsilon)
+\]
+
+and defines first loss by the first increasing-`epsilon` transition from
+`Delta_n <= 0.10` to `Delta_n > 0.10`. Equality remains on the safe side. The
+reported `epsilon_certified_n` is the verified safe lower bracket endpoint,
+not the midpoint estimate. If first loss is not reached, the certified value
+is only the right-censored last verified scan point; it is not an estimate of
+the unknown crossing.
+
+The full run used a `0.0005` coarse step on `0.005..0.060`, screened the
+midpoint of every coarse interval, refined all detected order/cluster/threshold
+events, kept the first 12 sorted roots for quality control, and independently
+recomputed every critical bracket with cache disabled and an EB candidate
+margin of 24. The resulting straight-system thresholds are:
+
+| prefix n | status | epsilon_certified_n | epsilon_star_estimate | trigger |
+|---:|---|---:|---:|---|
+| 1 | not reached through 0.060 | 0.060000000 | -- | -- |
+| 2 | resolved | 0.049140625 | 0.049141113 | sorted 2, EB bending |
+| 3 | resolved | 0.037009766 | 0.037010254 | sorted 3, EB bending |
+| 4 | resolved | 0.029705078 | 0.029705566 | sorted 4, EB bending |
+| 5 | resolved | 0.022800781 | 0.022801270 | sorted 5, EB axial |
+| 6 | resolved | 0.015929688 | 0.015930176 | sorted 6, EB axial |
+| 7 | resolved | 0.015929688 | 0.015930176 | sorted 7, EB bending |
+| 8 | resolved | 0.015929688 | 0.015930176 | sorted 7, EB bending |
+| 9 | resolved | 0.015929688 | 0.015930176 | sorted 7, EB bending |
+| 10 | resolved | 0.015624023 | 0.015624512 | sorted 10, EB axial |
+
+Prefixes 6--9 form one simultaneous transition group within the requested
+epsilon tolerance. All nine finite first-loss estimates lie in the primary
+range `0.010..0.050`; prefix 1 is instead certified only through the upper
+buffer endpoint. Independent force-recompute verification passed for all nine
+critical brackets. Later behavior remains separate from first loss: the scan
+recorded 13 unsafe-to-safe re-entries, 13 subsequent safe-to-unsafe returns,
+55 family reorder events, and 703 evaluated points with at least one individual
+late pass. None of these increases the conservative certificate.
+
+The baseline `mu=0` root-quality audit is fully resolved. Its independent EB
+analytic union, formed from
+`Lambda_axial,m=sqrt(m*pi/(2*epsilon))` and the existing fixed-fixed bending
+helper with `cosh(2 Lambda) cos(2 Lambda)=1`, agrees with the general 6x6 EB
+spectrum to maximum absolute error `1.30e-9`; the maximum axial-family errors
+are `3.55e-15` for EB and `1.23e-11` for Timoshenko. Near an axial/bending
+cluster, the audit uses analytic roots only to identify disjoint local windows;
+added roots must still be returned and singular-value-confirmed by the existing
+general-6x6 sign/SVD helpers. No production root values are replaced by the
+analytic reference.
+
+The separate artificial-joint-location audit retains an important numerical
+caveat. `N_true` and EB family ordering agree for all checked `mu`, but the
+existing first-12 general scan has high-mode discrepancies at `mu=0.7` and
+`mu=0.9` (8 unresolved epsilon/mu quality points and 141 failing per-root
+comparison rows, including 12 Timoshenko family-order rows at `mu=0.9`). These
+points do not enter the `mu=0` thresholds. They prevent a stronger claim of
+wrapper-level first-12 mu-invariance and should be investigated as a targeted
+numerical-conditioning task without changing frozen mathematics silently.
+
+The straight baseline defines
+
+```text
+N_certified_0(epsilon) = max { n : epsilon <= epsilon_certified_n }
+```
+
+only over the scanned buffer. It is not a global lower envelope over `beta`,
+`mu`, or `eta`. Research step 3 remains pending: a future targeted geometry
+search should probe the recorded `epsilon_near_n = 0.999 epsilon_star_n` and
+`epsilon_buffer_n = 0.99 epsilon_star_n` values, while keeping first loss
+distinct from re-entry and retaining the unresolved-mu numerical caveat.
+
 ## Engineering Objective
 
 For each complete system parameter point, first solve the Euler--Bernoulli

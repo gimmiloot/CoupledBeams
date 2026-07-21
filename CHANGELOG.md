@@ -1,5 +1,33 @@
 # CHANGELOG
 
+## 2026-07-21
+
+- Added and executed the stable research-step-2 straight-system epsilon
+  baseline audit at
+  `scripts/analysis/thickness_mismatch/audits/audit_eb_epsilon_baseline_thresholds.py`.
+  It reuses the existing general EB/Timoshenko root/cache workflows, scans
+  `epsilon=0.005..0.060` for `(beta,mu,eta)=(0,0,0)`, computes the first ten
+  squared-Lambda dimensional-frequency discrepancies and running prefix
+  maxima, refines conservative first-loss brackets, records re-entry,
+  late-pass, family-order, cluster, multiplicity, quality, and operation
+  diagnostics, independently audits the straight-rod axial/fixed-fixed EB
+  spectrum, and force-recomputes critical brackets with a larger candidate
+  margin. The workflow writes nine CSVs, one Markdown report, six PNGs, and
+  supports smoke/cache/force-recompute/plot-only modes. Added 34 targeted tests
+  plus import-smoke registration.
+
+- The completed baseline has no unresolved `mu=0` points. Prefix 1 is
+  right-censored safe through `epsilon=0.060`; all nine first-loss brackets for
+  prefixes 2--10 pass independent verification, with prefixes 6--9 sharing one
+  simultaneous transition. The separate mu-invariance audit retains 8
+  unresolved high-mode epsilon/mu points at `mu=0.7/0.9`, so those scan-level
+  first-12 discrepancies are reported rather than hidden and are excluded from
+  threshold construction. Updated the safe-spectrum research plan,
+  thickness-mismatch script map, and project journal. Analytic formulas,
+  determinants, shared root solvers and global tolerances, the Timoshenko shear
+  coefficient, FEM/3D FEM workflows, article workspaces, and the repository
+  root README were not changed; research step 3 was not implemented or run.
+
 ## 2026-07-20
 
 - Added and executed the manifest-driven 21-geometry `K = 10` EB epsilon
