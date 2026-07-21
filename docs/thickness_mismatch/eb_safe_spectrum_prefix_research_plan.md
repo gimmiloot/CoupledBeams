@@ -103,6 +103,8 @@ false-safe on these selected finite cases is not a continuous-domain guarantee.
 
 ## Refined Straight-System Epsilon Baseline
 
+### Straight-baseline close-root correction
+
 Research step 2 was implemented and run on `2026-07-21` through the stable
 diagnostic entry point
 [`audit_eb_epsilon_baseline_thresholds.py`](../../scripts/analysis/thickness_mismatch/audits/audit_eb_epsilon_baseline_thresholds.py).
@@ -121,11 +123,30 @@ not the midpoint estimate. If first loss is not reached, the certified value
 is only the right-censored last verified scan point; it is not an estimate of
 the unknown crossing.
 
-The full run used a `0.0005` coarse step on `0.005..0.060`, screened the
-midpoint of every coarse interval, refined all detected order/cluster/threshold
-events, kept the first 12 sorted roots for quality control, and independently
-recomputed every critical bracket with cache disabled and an EB candidate
-margin of 24. The resulting straight-system thresholds are:
+The original step-2 run used the general 6x6 determinant sign scan as its
+Timoshenko production spectrum. That scan can miss two close simple roots of
+different families when both fall inside one `Lambda=0.01` interval and leave
+the same endpoint sign. Therefore its prefix-5 through prefix-10 thresholds
+are superseded. The original files and cache remain under
+`legacy_pre_factorized_root_fix/` and
+`cache_legacy_pre_factorized_root_fix/` for provenance only.
+
+The corrected source `factorized_straight_spectrum_v2` uses an exact
+special-limit factorization of the unchanged matrix. With unknown ordering
+`(A1,B1,P1,A2,B2,P2)`, bending uses rows/columns
+`[0,2,3,4]/[0,1,3,4]` and axial motion uses `[1,5]/[2,5]`. The EB source is
+the exact axial plus fixed-fixed EB bending union; the Timoshenko source is the
+same exact axial family plus roots of the extracted 4x4 bending block found by
+sign changes and complementary SVD minima. Cross-family duplicates are kept;
+only numerical duplicates inside one family are merged. The raw general 6x6
+scan remains an independent completeness audit and the production mechanism
+outside this special straight homogeneous limit.
+
+The corrected full run used a `0.0005` coarse step on `0.005..0.060`, screened
+the midpoint of every coarse interval, refined all detected
+order/cluster/threshold events, kept the first 12 sorted roots for quality
+control, and independently force-recomputed every critical bracket. The
+resulting straight-system thresholds are:
 
 | prefix n | status | epsilon_certified_n | epsilon_star_estimate | trigger |
 |---:|---|---:|---:|---|
@@ -133,41 +154,33 @@ margin of 24. The resulting straight-system thresholds are:
 | 2 | resolved | 0.049140625 | 0.049141113 | sorted 2, EB bending |
 | 3 | resolved | 0.037009766 | 0.037010254 | sorted 3, EB bending |
 | 4 | resolved | 0.029705078 | 0.029705566 | sorted 4, EB bending |
-| 5 | resolved | 0.022800781 | 0.022801270 | sorted 5, EB axial |
-| 6 | resolved | 0.015929688 | 0.015930176 | sorted 6, EB axial |
-| 7 | resolved | 0.015929688 | 0.015930176 | sorted 7, EB bending |
-| 8 | resolved | 0.015929688 | 0.015930176 | sorted 7, EB bending |
-| 9 | resolved | 0.015929688 | 0.015930176 | sorted 7, EB bending |
-| 10 | resolved | 0.015624023 | 0.015624512 | sorted 10, EB axial |
+| 5 | resolved | 0.029705078 | 0.029705566 | sorted 4, EB bending |
+| 6 | resolved | 0.024823242 | 0.024823730 | sorted 6, EB bending |
+| 7 | resolved | 0.021326172 | 0.021326660 | sorted 7, EB bending |
+| 8 | resolved | 0.018695312 | 0.018695801 | sorted 8, EB bending |
+| 9 | resolved | 0.016643555 | 0.016644043 | sorted 9, EB bending |
+| 10 | resolved | 0.016643555 | 0.016644043 | sorted 9, EB bending |
 
-Prefixes 6--9 form one simultaneous transition group within the requested
-epsilon tolerance. All nine finite first-loss estimates lie in the primary
+Prefixes 4--5 and 9--10 form simultaneous transition groups within the
+requested epsilon tolerance. All nine finite first-loss estimates lie in the primary
 range `0.010..0.050`; prefix 1 is instead certified only through the upper
 buffer endpoint. Independent force-recompute verification passed for all nine
 critical brackets. Later behavior remains separate from first loss: the scan
-recorded 13 unsafe-to-safe re-entries, 13 subsequent safe-to-unsafe returns,
-55 family reorder events, and 703 evaluated points with at least one individual
+recorded four unsafe-to-safe re-entries, four subsequent safe-to-unsafe returns,
+53 family reorder events, and 721 evaluated points with at least one individual
 late pass. None of these increases the conservative certificate.
 
-The baseline `mu=0` root-quality audit is fully resolved. Its independent EB
-analytic union, formed from
-`Lambda_axial,m=sqrt(m*pi/(2*epsilon))` and the existing fixed-fixed bending
-helper with `cosh(2 Lambda) cos(2 Lambda)=1`, agrees with the general 6x6 EB
-spectrum to maximum absolute error `1.30e-9`; the maximum axial-family errors
-are `3.55e-15` for EB and `1.23e-11` for Timoshenko. Near an axial/bending
-cluster, the audit uses analytic roots only to identify disjoint local windows;
-added roots must still be returned and singular-value-confirmed by the existing
-general-6x6 sign/SVD helpers. No production root values are replaced by the
-analytic reference.
-
-The separate artificial-joint-location audit retains an important numerical
-caveat. `N_true` and EB family ordering agree for all checked `mu`, but the
-existing first-12 general scan has high-mode discrepancies at `mu=0.7` and
-`mu=0.9` (8 unresolved epsilon/mu quality points and 141 failing per-root
-comparison rows, including 12 Timoshenko family-order rows at `mu=0.9`). These
-points do not enter the `mu=0` thresholds. They prevent a stronger claim of
-wrapper-level first-12 mu-invariance and should be investigated as a targeted
-numerical-conditioning task without changing frozen mathematics silently.
+All 1004 corrected quality rows are resolved. The factorized-spectrum audit
+has 23592/23592 passing rows (11796 EB and 11796 Timoshenko), the nine R1--R3
+and `epsilon +/- 1e-6` rows all retain both roots, and all 720 first-12
+comparisons at `mu=0,0.3,0.7,0.9` pass with unchanged order, multiplicity, and
+`N_true`. The independent raw general-6x6 comparison misses 155 factorized
+roots over all primary, verification, and mu-audit scopes (91 EB and 64
+Timoshenko); all 155 are independently confirmed by local full-matrix SVD
+refinement. All 2754 required axial records pass their block/full-matrix
+checks, including 27 Timoshenko axial records absent from the raw sign scan.
+These omissions remain visible diagnostics but do not contaminate the
+corrected threshold source.
 
 The straight baseline defines
 
@@ -176,10 +189,11 @@ N_certified_0(epsilon) = max { n : epsilon <= epsilon_certified_n }
 ```
 
 only over the scanned buffer. It is not a global lower envelope over `beta`,
-`mu`, or `eta`. Research step 3 remains pending: a future targeted geometry
-search should probe the recorded `epsilon_near_n = 0.999 epsilon_star_n` and
-`epsilon_buffer_n = 0.99 epsilon_star_n` values, while keeping first loss
-distinct from re-entry and retaining the unresolved-mu numerical caveat.
+`mu`, or `eta`. Research step 3 remains pending and was not started by this
+correction. A future targeted geometry search may probe the recorded
+`epsilon_near_n = 0.999 epsilon_star_n` and
+`epsilon_buffer_n = 0.99 epsilon_star_n` values while keeping first loss
+distinct from re-entry.
 
 ## Engineering Objective
 

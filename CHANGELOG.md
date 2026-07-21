@@ -2,31 +2,34 @@
 
 ## 2026-07-21
 
-- Added and executed the stable research-step-2 straight-system epsilon
-  baseline audit at
-  `scripts/analysis/thickness_mismatch/audits/audit_eb_epsilon_baseline_thresholds.py`.
-  It reuses the existing general EB/Timoshenko root/cache workflows, scans
-  `epsilon=0.005..0.060` for `(beta,mu,eta)=(0,0,0)`, computes the first ten
-  squared-Lambda dimensional-frequency discrepancies and running prefix
-  maxima, refines conservative first-loss brackets, records re-entry,
-  late-pass, family-order, cluster, multiplicity, quality, and operation
-  diagnostics, independently audits the straight-rod axial/fixed-fixed EB
-  spectrum, and force-recomputes critical brackets with a larger candidate
-  margin. The workflow writes nine CSVs, one Markdown report, six PNGs, and
-  supports smoke/cache/force-recompute/plot-only modes. Added 34 targeted tests
-  plus import-smoke registration.
+- Corrected the research-step-2 straight-system epsilon baseline after a
+  regression demonstrated that the general 6x6 determinant sign scan can miss
+  two close simple axial/bending roots inside one scan interval. Added the
+  exact special-limit source `factorized_straight_spectrum_v2`: it retains the
+  analytic axial family, extracts the exact 4x4 bending block from the
+  unchanged Timoshenko matrix at `beta=0`, `eta=0`, combines sign brackets with
+  complementary SVD minima, preserves cross-family multiplicity, verifies
+  roots in the full 6x6 matrix, and uses an isolated algorithm-versioned cache.
+  Legacy outputs and all 1948 old cache files are preserved in named
+  pre-correction directories. The stable runner now writes 14 CSVs, one
+  Markdown report, six PNGs, supports plot-only/cache/force-recompute modes,
+  and has 58 targeted baseline tests plus import-smoke coverage.
 
-- The completed baseline has no unresolved `mu=0` points. Prefix 1 is
-  right-censored safe through `epsilon=0.060`; all nine first-loss brackets for
-  prefixes 2--10 pass independent verification, with prefixes 6--9 sharing one
-  simultaneous transition. The separate mu-invariance audit retains 8
-  unresolved high-mode epsilon/mu points at `mu=0.7/0.9`, so those scan-level
-  first-12 discrepancies are reported rather than hidden and are excluded from
-  threshold construction. Updated the safe-spectrum research plan,
-  thickness-mismatch script map, and project journal. Analytic formulas,
-  determinants, shared root solvers and global tolerances, the Timoshenko shear
-  coefficient, FEM/3D FEM workflows, article workspaces, and the repository
-  root README were not changed; research step 3 was not implemented or run.
+- Recomputed `epsilon=0.005..0.060`, `K=10`, first 12. Prefix 1 remains safe
+  through `0.060`; corrected conservative endpoints for prefixes 2--10 are
+  `0.049140625`, `0.037009766`, `0.029705078` for prefixes 4--5,
+  `0.024823242`, `0.021326172`, `0.018695312`, and `0.016643555` for prefixes
+  9--10. All nine brackets pass independent force-recompute verification.
+  Prefixes 2--4 are unchanged; prefixes 5--10 are corrected due to missing
+  roots. All 23592 factorized-spectrum rows (11796 per model), nine close-root
+  regression rows, and 720 mu-invariance rows pass. The raw general scan misses
+  155 roots across the recorded audit scopes (91 EB and 64 Timoshenko), all
+  confirmed locally by full-matrix SVD; all 2754 required axial records pass
+  their block/full-matrix checks. Updated
+  the research plan, script map, project journal, and corrected outputs.
+  Analytic formulas, determinants, shared root solvers/global tolerances,
+  Timoshenko shear coefficient, FEM/3D FEM workflows, article workspaces, and
+  the repository root README were not changed; step 3 was not run.
 
 ## 2026-07-20
 

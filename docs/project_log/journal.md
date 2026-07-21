@@ -4,29 +4,39 @@
 
 ## 2026-07-21
 
-- Completed research step 2, the refined straight homogeneous epsilon
-  baseline at `(beta,mu,eta)=(0,0,0)`, with `K=10`, a `0.005..0.060`
-  computational buffer, mandatory midpoint screening, adaptive
-  crossing/order/cluster refinement, and independent force-recompute checks.
-  Prefix 1 remains safe through `epsilon=0.060`; verified conservative
-  first-loss endpoints for prefixes 2--10 are `0.049140625`, `0.037009766`,
-  `0.029705078`, `0.022800781`, `0.015929688` for prefixes 6--9, and
-  `0.015624023` for prefix 10. All nine finite crossings are inside the
-  primary `0.010..0.050` range and pass the larger-candidate verification.
-  The analytic axial plus fixed-fixed-bending EB union agrees with the resolved
-  baseline general 6x6 spectrum to `1.30e-9` maximum absolute error.
+- Corrected research step 2 after demonstrating that the general 6x6
+  determinant sign scan can miss two close simple axial/bending roots inside
+  one `Lambda=0.01` interval. The earlier prefix-5 through prefix-10 values are
+  superseded but preserved with their cache under the named
+  `legacy_pre_factorized_root_fix` directories. The corrected source
+  `factorized_straight_spectrum_v2` uses the exact axial family and the exact
+  4x4 bending block extracted from the unchanged Timoshenko matrix at
+  `beta=0`, `eta=0`; it preserves cross-family multiplicity and keeps the raw
+  general scan only as an independent completeness audit. No formula,
+  determinant entry, shared root solver/tolerance, FEM workflow, or article
+  file changed.
 
-- Kept first loss separate from later behavior: the baseline audit records 13
-  unsafe-to-safe re-entries, 13 later safe-to-unsafe returns, 55 family reorder
-  events, and 703 evaluated points with individual late passes. A local
-  near-crossing omission is recovered only through existing general-6x6
-  sign/SVD helpers in analytic-guided disjoint windows; no formula,
-  determinant, global solver setting, or production root convention changed.
-  The separate mu-invariance audit retains 8 unresolved high-mode
-  epsilon/mu points at `mu=0.7/0.9`; `N_true` and EB family ordering remain
-  equal, but wrapper-level first-12 mu-invariance is not claimed until that
-  numerical conditioning issue is resolved. Step 3 geometry search was not
-  implemented or run.
+- Recomputed the full `epsilon=0.005..0.060`, `K=10`, first-12 baseline.
+  Prefix 1 remains right-censored safe through `0.060`. Corrected conservative
+  endpoints for prefixes 2--10 are `0.049140625`, `0.037009766`,
+  `0.029705078` for prefixes 4--5, `0.024823242`, `0.021326172`,
+  `0.018695312`, and `0.016643555` for prefixes 9--10. All nine first-loss
+  brackets pass independent force-recompute verification. Prefixes 2--4 are
+  unchanged within tolerance; prefixes 5--10 are classified as corrected due
+  to a missing root. Presentation rounding is separate from conservative
+  four/five-decimal floors.
+
+- The corrected run has 1004/1004 resolved quality rows, 23592/23592 passing
+  factorized-spectrum rows (11796 EB and 11796 Timoshenko), nine passing R1--R3
+  plus/minus-epsilon regressions, and 720/720 passing first-12 mu-invariance
+  rows for `mu=0,0.3,0.7,0.9`. The independent raw general scan misses 155
+  factorized roots over all audit scopes (91 EB and 64 Timoshenko); all are
+  confirmed by local full-6x6 SVD refinement. All 2754 required axial records
+  pass their block/full-matrix checks, including 27 Timoshenko axial records
+  absent from the raw sign scan. First-loss
+  semantics remain separate from four safe and four unsafe re-entry events,
+  53 family reorder events, and 721 points with late individual passes.
+  Research step 3 was not implemented or run.
 
 ## 2026-07-20
 

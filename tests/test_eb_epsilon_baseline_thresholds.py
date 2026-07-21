@@ -68,11 +68,40 @@ def synthetic_evaluation(
     gaps_eb = audit.normalized_adjacent_gaps(eb_roots)
     gaps_timo = audit.normalized_adjacent_gaps(timo_roots)
     prefix = audit.running_prefix_maxima(deltas)
+    factor_roots = tuple(
+        audit.factorized.FamilyRoot(
+            value=value,
+            family="bending_Timoshenko",
+            family_index=index + 1,
+            detection_source="synthetic",
+            block_sigma_min=0.0,
+        )
+        for index, value in enumerate(timo_roots)
+    )
+    factor_spectrum = audit.factorized.FactorizedSpectrum(
+        epsilon=epsilon,
+        mu=mu,
+        requested_roots=12,
+        roots=factor_roots,
+        bending_search=audit.factorized.BendingRootSearch(
+            roots=timo_roots,
+            sources=("synthetic",) * 12,
+            sigma_minima=(0.0,) * 12,
+            scan_upper=20.0,
+            determinant_evaluations=0,
+            svd_refinements=0,
+            warnings=(),
+        ),
+        cache_status="hit",
+    )
     return audit.Evaluation(
         epsilon=epsilon,
         mu=mu,
         eb_roots=eb_roots,
         timo_roots=timo_roots,
+        factorized_timo=factor_spectrum,
+        raw_eb_roots=eb_roots,
+        raw_timo_roots=timo_roots,
         deltas=tuple(deltas),
         prefix_deltas=prefix,
         n_true=audit.true_safe_prefix(deltas),
@@ -93,10 +122,13 @@ def synthetic_evaluation(
         quality_status=quality,
         quality_reasons=() if quality == "resolved" else ("synthetic_warning",),
         cache_status="hit",
+        general_cache_status="hit",
         eb_found=20,
         timo_found=20,
         eb_warnings=(),
         timo_warnings=(),
+        raw_eb_warnings=(),
+        raw_timo_warnings=(),
         eb_retry_attempted=False,
         timo_retry_attempted=False,
         candidate_boundary_warning=False,
@@ -393,7 +425,7 @@ class EbEpsilonBaselineThresholdsTest(unittest.TestCase):
                         "--output-dir", str(output),
                     ]
                 )
-            self.assertEqual(set(audit.OUTPUT_NAMES), {path.name for path in output.iterdir() if path.name != "cache"})
+            self.assertEqual(set(audit.OUTPUT_NAMES), {path.name for path in output.iterdir() if path.is_file()})
 
     def test_29_plot_only_does_not_solve_roots(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -421,6 +453,292 @@ class EbEpsilonBaselineThresholdsTest(unittest.TestCase):
             with (output / "baseline_critical_prefix_thresholds.csv").open(newline="", encoding="utf-8") as handle:
                 rows = list(csv.DictReader(handle))
             self.assertEqual(len(rows), 10)
+
+    def test_33_exact_timoshenko_block_indices_and_zero_off_block(self) -> None:
+        matrix, bending, axial, _warnings = audit.factorized.straight_blocks(4.0, 0.3, 0.02)
+        self.assertEqual(bending.shape, (4, 4))
+        self.assertEqual(axial.shape, (2, 2))
+        self.assertEqual(audit.factorized.BENDING_ROWS, (0, 2, 3, 4))
+        self.assertEqual(audit.factorized.BENDING_COLUMNS, (0, 1, 3, 4))
+        self.assertEqual(audit.factorized.AXIAL_ROWS, (1, 5))
+        self.assertEqual(audit.factorized.AXIAL_COLUMNS, (2, 5))
+        self.assertLessEqual(audit.factorized.off_block_max_abs(matrix), 1.0e-14)
+
+    def test_34_exact_axial_root_is_singular_in_axial_and_full_blocks(self) -> None:
+        epsilon = 0.02
+        root = float(audit.factorized.exact_axial_roots(epsilon, 1)[0])
+        axial_sigma, _ = audit.factorized.axial_block_singular_values(root, 0.0, epsilon)
+        full_sigma, _ = audit.factorized.full_matrix_singular_values(root, 0.0, epsilon)
+        self.assertLessEqual(axial_sigma, audit.factorized.AXIAL_BLOCK_SVD_ACCEPT)
+        self.assertLessEqual(full_sigma, audit.factorized.FULL_MATRIX_SVD_ACCEPT)
+
+    def assert_regression_pair(self, epsilon: float, bending: float, axial: float) -> None:
+        spectrum = audit.factorized.factorized_straight_spectrum(epsilon, 0.0, 12)
+        self.assertEqual(len(spectrum.roots), 12)
+        bend = min(
+            (item for item in spectrum.roots if item.family == "bending_Timoshenko"),
+            key=lambda item: abs(item.value - bending),
+        )
+        axial_item = min(
+            (item for item in spectrum.roots if item.family == "axial"),
+            key=lambda item: abs(item.value - axial),
+        )
+        self.assertLess(abs(bend.value - bending), 0.05)
+        self.assertLess(abs(axial_item.value - axial), 0.05)
+        self.assertNotEqual(spectrum.roots.index(bend), spectrum.roots.index(axial_item))
+        self.assertLessEqual(
+            audit.factorized.full_matrix_singular_values(bend.value, 0.0, epsilon)[0],
+            audit.factorized.FULL_MATRIX_SVD_ACCEPT,
+        )
+        self.assertLessEqual(
+            audit.factorized.full_matrix_singular_values(axial_item.value, 0.0, epsilon)[0],
+            audit.factorized.FULL_MATRIX_SVD_ACCEPT,
+        )
+
+    def test_35_regression_R1_keeps_bending_and_axial_roots(self) -> None:
+        self.assert_regression_pair(0.0228017578125, 8.2932, 8.3000)
+
+    def test_36_regression_R2_keeps_bending_and_axial_roots(self) -> None:
+        self.assert_regression_pair(0.0159306640625, 9.9287, 9.9299)
+
+    def test_37_regression_R3_keeps_bending_and_axial_roots(self) -> None:
+        self.assert_regression_pair(0.015625, 14.1773, 14.1796)
+
+    def test_38_regression_R1_survives_plus_minus_epsilon_perturbation(self) -> None:
+        for offset in (-1.0e-6, 1.0e-6):
+            with self.subTest(offset=offset):
+                self.assert_regression_pair(0.0228017578125 + offset, 8.2932, 8.3000)
+
+    def test_39_regression_R2_survives_plus_minus_epsilon_perturbation(self) -> None:
+        for offset in (-1.0e-6, 1.0e-6):
+            with self.subTest(offset=offset):
+                self.assert_regression_pair(0.0159306640625 + offset, 9.9287, 9.9299)
+
+    def test_40_regression_R3_survives_plus_minus_epsilon_perturbation(self) -> None:
+        for offset in (-1.0e-6, 1.0e-6):
+            with self.subTest(offset=offset):
+                self.assert_regression_pair(0.015625 + offset, 14.1773, 14.1796)
+
+    def test_41_cross_family_duplicates_are_not_deduplicated(self) -> None:
+        epsilon = audit.factorized.brentq(
+            lambda value: audit.factorized.bending_block_det(
+                float(audit.factorized.exact_axial_roots(value, 1)[0]),
+                0.0,
+                value,
+            ),
+            0.01592,
+            0.01594,
+        )
+        bending = float(audit.factorized.exact_axial_roots(epsilon, 1)[0])
+        spectrum = audit.factorized.factorized_straight_spectrum(epsilon, 0.0, 12)
+        close = [item for item in spectrum.roots if abs(item.value - bending) <= 2.0e-6]
+        self.assertEqual(len(close), 2)
+        self.assertEqual({item.family for item in close}, {"axial", "bending_Timoshenko"})
+
+    def test_42_general_matching_preserves_multiplicity_and_marks_missing(self) -> None:
+        spectrum = audit.factorized.factorized_straight_spectrum(0.0228017578125, 0.0, 12)
+        general, _warnings = audit.factorized.TIMO.timo_sorted_roots(
+            0.0, 0.0, 0.0228017578125, 12, eta=0.0
+        )
+        matches = audit.match_general_roots(spectrum.roots, general)
+        self.assertGreaterEqual(sum(match[0] is None for match in matches), 2)
+
+    def test_43_cache_key_changes_with_versioned_settings(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            cache = audit.factorized.FactorizedSpectrumCache(Path(tmp))
+            first = cache.path_for(0.02, 0.0, 12)
+            second = cache.path_for(0.02, 0.0, 13)
+            candidate_changed = cache.path_for(0.02, 0.0, 12, 20)
+            self.assertNotEqual(first, second)
+            self.assertNotEqual(first, candidate_changed)
+            self.assertIn("factorized_straight_spectrum_v2", audit.factorized.ALGORITHM_VERSION)
+
+    def test_44_stale_cache_algorithm_version_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            cache = audit.factorized.FactorizedSpectrumCache(Path(tmp))
+            path = cache.path_for(0.02, 0.0, 12)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('{"algorithm_version":"factorized_straight_spectrum_v1"}\n', encoding="utf-8")
+            result = cache.get(0.02, 0.0, 12)
+            self.assertEqual(result.cache_status, "stale_cache_algorithm_version")
+            self.assertEqual(result.algorithm_version, audit.factorized.ALGORITHM_VERSION)
+
+    def test_45_factorized_cache_reuse_returns_identical_spectrum(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            cache = audit.factorized.FactorizedSpectrumCache(Path(tmp))
+            first = cache.get(0.02, 0.0, 12)
+            second = cache.get(0.02, 0.0, 12)
+            self.assertEqual(first.values, second.values)
+            self.assertEqual(first.cache_status, "miss")
+            self.assertEqual(second.cache_status, "hit")
+
+    def test_46_old_general_cache_file_cannot_contaminate_factorized_cache(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "cache").mkdir()
+            (root / "cache" / "legacy.json").write_text("{}\n", encoding="utf-8")
+            cache = audit.factorized.FactorizedSpectrumCache(root / "cache_factorized_straight_spectrum_v2")
+            result = cache.get(0.02, 0.0, 12)
+            self.assertEqual(result.cache_status, "miss")
+
+    def test_47_conservative_floor_is_not_rounding(self) -> None:
+        self.assertEqual(audit.conservative_decimal_floor(0.02280999, 5), "0.02280")
+        self.assertEqual(audit.conservative_decimal_floor(0.02280999, 4), "0.0228")
+        self.assertEqual(audit.presentation_round(0.02280999, 5), "0.02281")
+
+    def test_48_factorized_mu_invariance_for_first_twelve_roots(self) -> None:
+        baseline = audit.factorized.factorized_straight_spectrum(0.02, 0.0, 12)
+        for mu in (0.3, 0.7, 0.9):
+            with self.subTest(mu=mu):
+                current = audit.factorized.factorized_straight_spectrum(0.02, mu, 12)
+                np.testing.assert_allclose(current.values, baseline.values, rtol=1.0e-7, atol=1.0e-6)
+                self.assertEqual(current.families, baseline.families)
+                self.assertEqual(
+                    tuple(item.multiplicity_group for item in current.roots),
+                    tuple(item.multiplicity_group for item in baseline.roots),
+                )
+
+    def test_49_off_block_entries_vanish_over_required_parameter_grid(self) -> None:
+        maximum = 0.0
+        for mu in (0.0, 0.3, 0.7, 0.9):
+            for epsilon in (0.01, 0.02, 0.05):
+                for Lambda in (2.75, 7.37, 11.11):
+                    with self.subTest(mu=mu, epsilon=epsilon, Lambda=Lambda):
+                        matrix, bending, axial, _warnings = audit.factorized.straight_blocks(
+                            Lambda, mu, epsilon
+                        )
+                        self.assertEqual(bending.shape, (4, 4))
+                        self.assertEqual(axial.shape, (2, 2))
+                        maximum = max(maximum, audit.factorized.off_block_max_abs(matrix))
+        self.assertLessEqual(maximum, audit.factorized.BLOCK_OFFDIAGONAL_ABS_TOL)
+
+    def test_50_block_determinant_product_matches_full_determinant(self) -> None:
+        for Lambda, mu, epsilon in ((4.123, 0.0, 0.02), (7.37, 0.3, 0.01), (11.11, 0.9, 0.05)):
+            with self.subTest(Lambda=Lambda, mu=mu, epsilon=epsilon):
+                matrix, bending, axial, _warnings = audit.factorized.straight_blocks(
+                    Lambda, mu, epsilon
+                )
+                full = float(np.linalg.det(matrix))
+                product = float(np.linalg.det(bending) * np.linalg.det(axial))
+                self.assertTrue(np.isclose(full, -product, rtol=2.0e-12, atol=1.0e-14))
+
+    def test_51_exact_axial_roots_agree_for_eb_and_timoshenko(self) -> None:
+        for epsilon in (0.01, 0.02, 0.05):
+            np.testing.assert_allclose(
+                audit.analytic_axial_roots(epsilon, 12),
+                audit.factorized.exact_axial_roots(epsilon, 12),
+                rtol=0.0,
+                atol=1.0e-14,
+            )
+
+    def test_52_axial_generation_is_sufficient_for_first_twelve_union(self) -> None:
+        spectrum = audit.factorized.factorized_straight_spectrum(0.05, 0.0, 12)
+        axial_records = [item for item in spectrum.roots if item.family == "axial"]
+        exact = audit.factorized.exact_axial_roots(0.05, 12)
+        self.assertTrue(axial_records)
+        self.assertTrue(all(item.family_index <= len(exact) for item in axial_records))
+        self.assertEqual(len(spectrum.roots), 12)
+
+    def test_53_same_family_candidates_are_deduplicated(self) -> None:
+        candidates = [
+            (5.0, "sign_change", 1.0e-10),
+            (5.0 + 0.5 * audit.factorized.BENDING_DEDUP_TOL, "svd_minimum", 1.0e-12),
+            (7.0, "sign_change", 1.0e-11),
+        ]
+        deduplicated = audit.factorized._deduplicate_candidates(  # noqa: SLF001
+            candidates, audit.factorized.BENDING_DEDUP_TOL
+        )
+        self.assertEqual(len(deduplicated), 2)
+        self.assertIn("sign_change", deduplicated[0][1])
+        self.assertIn("svd_minimum", deduplicated[0][1])
+
+    def test_54_missing_required_axial_root_is_detected_and_locally_verified(self) -> None:
+        epsilon = 0.0228017578125
+        spectrum = audit.factorized.factorized_straight_spectrum(epsilon, 0.0, 12)
+        general, _warnings = audit.factorized.TIMO.timo_sorted_roots(
+            0.0, 0.0, epsilon, 12, eta=0.0
+        )
+        matches = audit.match_general_roots(spectrum.roots, general)
+        missing_axial = [
+            index
+            for index, (item, match) in enumerate(zip(spectrum.roots, matches))
+            if item.family == "axial" and match[0] is None
+        ]
+        self.assertTrue(missing_axial)
+        evaluation = synthetic_evaluation(epsilon, [0.01] * 10)
+        evaluation.factorized_timo = spectrum
+        evaluation.timo_roots = spectrum.values
+        evaluation.raw_timo_roots = tuple(float(value) for value in general)
+        _root, sigma, confirmed = audit.local_full_svd_confirmation(
+            evaluation, missing_axial[0]
+        )
+        self.assertTrue(confirmed)
+        self.assertLessEqual(sigma, audit.factorized.FULL_MATRIX_SVD_ACCEPT)
+
+    def test_55_factorized_csv_exposes_required_quality_status(self) -> None:
+        epsilon = 0.0228017578125
+        spectrum = audit.factorized.factorized_straight_spectrum(epsilon, 0.0, 12)
+        general, _warnings = audit.factorized.TIMO.timo_sorted_roots(
+            0.0, 0.0, epsilon, 12, eta=0.0
+        )
+        evaluation = synthetic_evaluation(epsilon, [0.01] * 10)
+        evaluation.factorized_timo = spectrum
+        evaluation.timo_roots = spectrum.values
+        evaluation.raw_timo_roots = tuple(float(value) for value in general)
+        rows = audit.factorized_spectrum_rows([evaluation])
+        flagged = [
+            row
+            for row in rows
+            if row["model"] == "Timoshenko"
+            and row["family"] == "axial"
+            and row["raw_general_missing"]
+        ]
+        self.assertTrue(flagged)
+        self.assertTrue(
+            all(
+                row["quality_status"]
+                == "missing_required_axial_root_in_general_scan"
+                for row in flagged
+            )
+        )
+
+    def test_56_legacy_comparison_output_is_generated_when_legacy_exists(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / "baseline"
+            legacy_dir = output / "legacy_pre_factorized_root_fix"
+            legacy_dir.mkdir(parents=True)
+            legacy_path = legacy_dir / "baseline_critical_prefix_thresholds.csv"
+            audit.write_csv(
+                legacy_path,
+                [{
+                    "prefix_n": 1,
+                    "threshold_status": "resolved",
+                    "epsilon_certified_n": 0.049,
+                    "epsilon_star_estimate": 0.05,
+                    "triggering_sorted_indices": "1",
+                }],
+                [
+                    "prefix_n",
+                    "threshold_status",
+                    "epsilon_certified_n",
+                    "epsilon_star_estimate",
+                    "triggering_sorted_indices",
+                ],
+            )
+            args = make_args(output)
+            corrected = [{
+                "prefix_n": 1,
+                "threshold_status": "resolved",
+                "epsilon_certified_n": 0.049,
+                "epsilon_star_estimate": 0.05,
+                "triggering_sorted_indices": "1",
+            }]
+            rows = audit.legacy_threshold_comparison_rows(args, corrected, [])
+            target = output / "baseline_legacy_threshold_comparison.csv"
+            audit.write_csv(target, rows, audit.LEGACY_COMPARISON_FIELDS)
+            self.assertTrue(target.exists())
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]["scientific_status"], "unchanged_within_tolerance")
 
 
 if __name__ == "__main__":

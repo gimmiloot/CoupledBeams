@@ -4,6 +4,7 @@ import argparse
 from collections import Counter, defaultdict
 import csv
 from dataclasses import dataclass, field, replace
+from decimal import Decimal, ROUND_FLOOR
 import json
 import math
 from math import isfinite
@@ -17,6 +18,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.optimize import minimize_scalar
 
 
 SCRIPT_PATH = Path(__file__).resolve()
@@ -36,6 +38,7 @@ from scripts.analysis.thickness_mismatch.audits import (  # noqa: E402
 from scripts.analysis.thickness_mismatch.maps import (  # noqa: E402
     plot_eb_vs_timoshenko_lambda_beta_cases as root_workflow,
 )
+from scripts.lib import straight_rod_factorized_spectrum as factorized  # noqa: E402
 
 
 DEFAULT_OUTPUT_DIR = Path("results") / "eb_epsilon_baseline_thresholds"
@@ -69,6 +72,15 @@ MU_AUDIT_VALUES = (0.0, 0.3, 0.7, 0.9)
 MU_AUDIT_EPSILONS = (0.005, 0.010, 0.015, 0.020, 0.030, 0.040, 0.050, 0.060)
 VERIFICATION_CANDIDATE_ROOTS = 24
 ROUND_DIGITS = 12
+GENERAL_MATCH_ABS_TOLERANCE = 2.0e-5
+GENERAL_MATCH_REL_TOLERANCE = 2.0e-6
+LOCAL_FULL_SVD_RADIUS = 0.004
+REGRESSION_EPSILON_OFFSET = 1.0e-6
+REGRESSION_CASES = (
+    ("R1", 0.0228017578125, 8.2932, 8.3000),
+    ("R2", 0.0159306640625, 9.9287, 9.9299),
+    ("R3", 0.015625, 14.1773, 14.1796),
+)
 
 OUTPUT_NAMES = (
     "baseline_epsilon_point_summary.csv",
@@ -80,6 +92,11 @@ OUTPUT_NAMES = (
     "baseline_mu_invariance_audit.csv",
     "baseline_solver_quality_audit.csv",
     "baseline_operation_counts.csv",
+    "baseline_factorized_spectrum_audit.csv",
+    "baseline_axial_completeness_audit.csv",
+    "baseline_general_vs_factorized_spectrum_audit.csv",
+    "baseline_legacy_threshold_comparison.csv",
+    "baseline_regression_close_root_pairs.csv",
     "eb_epsilon_baseline_thresholds_report.md",
     "baseline_N_true_vs_epsilon.png",
     "baseline_delta_f_by_mode.png",
@@ -143,8 +160,12 @@ THRESHOLD_FIELDS = [
     "prefix_n",
     "threshold_status",
     "epsilon_certified_n",
+    "epsilon_safe_lower",
     "epsilon_unsafe_upper",
     "epsilon_star_estimate",
+    "epsilon_star_display_5dp",
+    "epsilon_certified_floor_5dp",
+    "epsilon_certified_floor_4dp",
     "bracket_width",
     "Delta_n_safe",
     "Delta_n_unsafe",
@@ -159,6 +180,8 @@ THRESHOLD_FIELDS = [
     "reentry_count_after_first_loss",
     "inside_primary_range",
     "monotonicity_status",
+    "continuity_status",
+    "threshold_continuity_status",
     "numerical_verification_status",
     "verification_estimate",
     "verification_abs_difference",
@@ -166,6 +189,143 @@ THRESHOLD_FIELDS = [
     "verification_root_order_agreement",
     "epsilon_near_n",
     "epsilon_buffer_n",
+    "notes",
+]
+
+FACTORIZED_FIELDS = [
+    "epsilon",
+    "mu",
+    "model",
+    "sorted_index",
+    "sorted_position",
+    "Lambda_factorized",
+    "family",
+    "family_index",
+    "detection_source",
+    "block_det",
+    "block_sigma_min",
+    "full_matrix_sigma_min",
+    "full_matrix_second_sigma",
+    "off_block_max_abs",
+    "multiplicity_group",
+    "multiplicity_group_id",
+    "within_family_duplicate",
+    "cross_family_cluster",
+    "cluster_gap",
+    "cross_family_gap",
+    "raw_general_match",
+    "raw_general_missing",
+    "local_general_recovery_status",
+    "cache_status",
+    "algorithm_version",
+    "root_quality_status",
+    "quality_status",
+    "notes",
+]
+
+AXIAL_COMPLETENESS_FIELDS = [
+    "epsilon",
+    "mu",
+    "axial_index",
+    "Lambda_exact",
+    "Lambda_axial_exact",
+    "axial_block_det",
+    "axial_block_sigma_min",
+    "axial_block_second_sigma",
+    "axial_block_sigma_ratio",
+    "full_matrix_sigma_min",
+    "full_matrix_sigma_ratio",
+    "expected_within_first12",
+    "present_in_factorized_first12",
+    "factorized_present",
+    "raw_general_present",
+    "full_matrix_verified",
+    "factorized_sorted_index",
+    "sorted_position_factorized",
+    "nearest_raw_general_root",
+    "difference",
+    "verification_status",
+    "status",
+    "algorithm_version",
+    "notes",
+]
+
+GENERAL_VS_FACTORIZED_FIELDS = [
+    "scope",
+    "epsilon",
+    "mu",
+    "model",
+    "factorized_sorted_index",
+    "Lambda_factorized",
+    "factorized_family",
+    "factorized_family_index",
+    "present_in_raw_general",
+    "nearest_general_root",
+    "Lambda_general_6x6",
+    "general_sorted_index",
+    "abs_difference",
+    "match_tolerance",
+    "match_status",
+    "missing_general_root",
+    "raw_general_missing_root",
+    "same_family_when_known",
+    "general_sigma_min_at_factorized_root",
+    "local_full_SVD_root",
+    "local_full_SVD_sigma_min",
+    "full_matrix_SVD_confirmation",
+    "general_cache_status",
+    "general_root_warnings",
+    "notes",
+]
+
+LEGACY_COMPARISON_FIELDS = [
+    "prefix_n",
+    "legacy_status",
+    "legacy_threshold_status",
+    "corrected_status",
+    "corrected_threshold_status",
+    "legacy_epsilon_safe_lower",
+    "legacy_epsilon_certified_n",
+    "corrected_epsilon_certified_n",
+    "corrected_epsilon_safe_lower",
+    "legacy_epsilon_star_estimate",
+    "corrected_epsilon_star_estimate",
+    "absolute_estimate_change",
+    "absolute_difference",
+    "relative_difference",
+    "legacy_trigger_mode",
+    "corrected_trigger_mode",
+    "missing_root_in_legacy_bracket",
+    "missing_root_family",
+    "correction_reason",
+    "scientific_status",
+    "comparison_status",
+    "legacy_source",
+    "algorithm_version",
+    "notes",
+]
+
+REGRESSION_FIELDS = [
+    "case_id",
+    "epsilon_nominal",
+    "epsilon_offset",
+    "epsilon",
+    "bending_expected_window_center",
+    "axial_expected_window_center",
+    "Lambda_bending_factorized",
+    "Lambda_axial_exact",
+    "pair_gap",
+    "bending_sorted_index",
+    "axial_sorted_index",
+    "both_roots_present",
+    "cross_family_cluster",
+    "general_bending_present",
+    "general_axial_present",
+    "general_missing_root_count",
+    "full_matrix_SVD_bending",
+    "full_matrix_SVD_axial",
+    "status",
+    "algorithm_version",
     "notes",
 ]
 
@@ -216,8 +376,10 @@ FAMILY_FIELDS = [
     "EB_reference_abs_error",
     "EB_reference_rel_error",
     "Lambda_axial_reference",
-    "Lambda_Timo_general",
+    "Lambda_Timo_factorized",
+    "Lambda_Timo_general_6x6",
     "Timo_family",
+    "Timo_factorized_family_exact",
     "Timo_axial_abs_error",
     "Timo_axial_rel_error",
     "family_ambiguity",
@@ -245,6 +407,8 @@ MU_FIELDS = [
     "N_true_equal",
     "family_order_EB_equal",
     "family_order_Timo_equal",
+    "multiplicity_flags_equal",
+    "multiplicity_groups_Timo_equal",
     "root_quality_status",
     "status",
     "notes",
@@ -263,6 +427,8 @@ QUALITY_FIELDS = [
     "Timo_root_warning",
     "candidate_boundary_warning",
     "cache_status",
+    "general_cache_status",
+    "algorithm_version",
     "EB_retry_attempted",
     "Timo_retry_attempted",
     "SVD_recovery_attempted",
@@ -270,6 +436,8 @@ QUALITY_FIELDS = [
     "root11_available",
     "strictly_increasing_EB",
     "strictly_increasing_Timo",
+    "multiplicity_preserving_order_EB",
+    "multiplicity_preserving_order_Timo",
     "analytic_EB_union_max_abs_error",
     "analytic_EB_union_max_rel_error",
     "analytic_EB_union_mismatch_count",
@@ -319,6 +487,9 @@ class Evaluation:
     mu: float
     eb_roots: tuple[float, ...]
     timo_roots: tuple[float, ...]
+    factorized_timo: factorized.FactorizedSpectrum
+    raw_eb_roots: tuple[float, ...]
+    raw_timo_roots: tuple[float, ...]
     deltas: tuple[float, ...]
     prefix_deltas: tuple[float, ...]
     n_true: int
@@ -339,10 +510,13 @@ class Evaluation:
     quality_status: str
     quality_reasons: tuple[str, ...]
     cache_status: str
+    general_cache_status: str
     eb_found: int
     timo_found: int
     eb_warnings: tuple[str, ...]
     timo_warnings: tuple[str, ...]
+    raw_eb_warnings: tuple[str, ...]
+    raw_timo_warnings: tuple[str, ...]
     eb_retry_attempted: bool
     timo_retry_attempted: bool
     candidate_boundary_warning: bool
@@ -714,6 +888,36 @@ def roots_strictly_increasing(roots: Sequence[float], count: int) -> bool:
     )
 
 
+def roots_multiplicity_preserving_order(roots: Sequence[float], count: int) -> bool:
+    values = [float(value) for value in roots[: int(count)]]
+    return len(values) == int(count) and all(isfinite(value) for value in values) and all(
+        right >= left for left, right in zip(values, values[1:])
+    )
+
+
+def factorized_cache_dir(args: Args) -> Path:
+    return args.output_dir / f"cache_{factorized.ALGORITHM_VERSION}"
+
+
+def conservative_decimal_floor(value: object, digits: int) -> object:
+    try:
+        number = Decimal(str(value))
+    except Exception:
+        return ""
+    if not number.is_finite():
+        return ""
+    quantum = Decimal(1).scaleb(-int(digits))
+    return format(number.quantize(quantum, rounding=ROUND_FLOOR), f".{int(digits)}f")
+
+
+def presentation_round(value: object, digits: int) -> object:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return ""
+    return f"{number:.{int(digits)}f}" if isfinite(number) else ""
+
+
 def cache_status(eb_entry: fixed_scan.RootCacheEntry, timo_entry: fixed_scan.RootCacheEntry) -> str:
     if eb_entry.cache_hit and timo_entry.cache_hit:
         return "hit"
@@ -739,6 +943,29 @@ def singular_values_for_roots(
     while len(values) < int(count):
         values.append((float("nan"), float("nan")))
     return tuple(values)
+
+
+def eb_full_matrix_singular_values(
+    Lambda: float,
+    mu: float,
+    epsilon: float,
+) -> tuple[float, float]:
+    try:
+        matrix = root_workflow.assemble_clamped_coupled_matrix_eta(
+            float(Lambda), 0.0, float(mu), float(epsilon), 0.0
+        )
+        reference = root_workflow.assemble_clamped_coupled_matrix_eta(
+            float(Lambda) + factorized.FULL_MATRIX_SVD_ROW_SCALE_OFFSET,
+            0.0,
+            float(mu),
+            float(epsilon),
+            0.0,
+        )
+    except (FloatingPointError, OverflowError, ValueError, np.linalg.LinAlgError):
+        return float("nan"), float("nan")
+    if not (np.all(np.isfinite(matrix)) and np.all(np.isfinite(reference))):
+        return float("nan"), float("nan")
+    return factorized.fixed_row_scale_singular_values(matrix, reference)
 
 
 def _entry_from_root_result(result: root_workflow.RootResult) -> fixed_scan.RootCacheEntry:
@@ -933,6 +1160,7 @@ def _solve_evaluation(
         eta=0.0,
         n_roots=int(n_candidate_roots),
     )
+    raw_general_eb_entry = eb_entry
     finite_eb = [float(value) for value in eb_entry.roots if isfinite(float(value))]
     timo_entry = cache.roots(
         model=fixed_scan.MODEL_TIMO,
@@ -992,26 +1220,60 @@ def _solve_evaluation(
             eb_abs, eb_rel, reference_mismatches = local_abs, local_rel, local_mismatches
 
     spectrum_count = args.n_spectrum_roots
-    eb_roots = tuple(float(value) for value in eb_entry.roots[:spectrum_count])
-    timo_roots = tuple(float(value) for value in timo_entry.roots[:spectrum_count])
+    factorized_cache = factorized.FactorizedSpectrumCache(
+        factorized_cache_dir(args),
+        reuse=bool(reuse_cache),
+        force_recompute=bool(force_recompute),
+    )
+    factorized_timo = factorized_cache.get(
+        float(epsilon),
+        float(mu),
+        int(spectrum_count),
+        int(n_candidate_roots),
+    )
+    raw_eb_roots = tuple(
+        float(value) for value in raw_general_eb_entry.roots[:spectrum_count]
+    )
+    raw_timo_roots = tuple(float(value) for value in timo_entry.roots[:spectrum_count])
+    # The straight baseline source of truth is the exact family union.  The EB
+    # family values are analytic; the Timoshenko bending values come only from
+    # the exact 4x4 block extracted from the unchanged 6x6 matrix.  The raw
+    # general roots above remain available for the independent completeness
+    # audit and are never substituted into the corrected target.
+    eb_roots = tuple(float(item.value) for item in references)
+    timo_roots = tuple(float(item.value) for item in factorized_timo.roots)
+    eb_abs = tuple(0.0 for _item in references)
+    eb_rel = tuple(0.0 for _item in references)
     eb_gaps = normalized_adjacent_gaps(eb_roots)
     timo_gaps = normalized_adjacent_gaps(timo_roots)
     axial = analytic_axial_roots(epsilon, max(spectrum_count + 12, 24))
     eb_families = tuple(
         "axial_bending_cluster" if item.ambiguous else item.family for item in references
     )
-    timo_families, timo_ambiguity, timo_ax_abs, timo_ax_rel = classify_timo_families(
-        timo_roots, axial, timo_gaps
+    timo_families = tuple(
+        "axial_bending_cluster" if item.cross_family_cluster else item.family
+        for item in factorized_timo.roots
     )
+    timo_ambiguity = tuple(item.cross_family_cluster for item in factorized_timo.roots)
+    timo_ax_abs_list: list[float] = []
+    timo_ax_rel_list: list[float] = []
+    for item in factorized_timo.roots:
+        _reference, absolute, relative = nearest_axial_match(item.value, axial)
+        timo_ax_abs_list.append(absolute)
+        timo_ax_rel_list.append(relative)
+    timo_ax_abs = tuple(timo_ax_abs_list)
+    timo_ax_rel = tuple(timo_ax_rel_list)
     family_ambiguity = tuple(
         bool(references[index].ambiguous or timo_ambiguity[index])
         for index in range(spectrum_count)
     )
-    eb_singular = singular_values_for_roots(
-        epsilon, mu, eb_roots, root_workflow.MODEL_EB, spectrum_count
+    eb_singular = tuple(
+        eb_full_matrix_singular_values(root, mu, epsilon)
+        for root in eb_roots
     )
-    timo_singular = singular_values_for_roots(
-        epsilon, mu, timo_roots, root_workflow.MODEL_TIMO, spectrum_count
+    timo_singular = tuple(
+        factorized.full_matrix_singular_values(root, mu, epsilon)
+        for root in timo_roots
     )
     multiplicity: list[bool] = []
     for index in range(spectrum_count):
@@ -1021,6 +1283,7 @@ def _solve_evaluation(
         second_timo = timo_singular[index][1]
         multiplicity.append(
             family_ambiguity[index]
+            or factorized_timo.roots[index].cross_family_cluster
             or (isfinite(gap_eb) and gap_eb <= FAMILY_AMBIGUITY_GAP)
             or (isfinite(gap_t) and gap_t <= FAMILY_AMBIGUITY_GAP)
             or (isfinite(second_eb) and second_eb <= SINGULAR_MULTIPLICITY_THRESHOLD)
@@ -1033,33 +1296,40 @@ def _solve_evaluation(
     )
     prefix_deltas = running_prefix_maxima(deltas)
     n_true = true_safe_prefix(deltas, args.threshold)
-    candidate_boundary = (
-        int(eb_entry.root_count_found) <= args.k_max
-        or int(timo_entry.root_count_found) <= args.k_max
-        or len(eb_roots) <= args.k_max
-        or len(timo_roots) <= args.k_max
-    )
+    candidate_boundary = len(eb_roots) <= args.k_max or len(timo_roots) <= args.k_max
     reasons: list[str] = []
-    if eb_entry.root_count_found < spectrum_count:
-        reasons.append(f"missing_EB_roots={eb_entry.root_count_found}/{spectrum_count}")
-    if timo_entry.root_count_found < spectrum_count:
-        reasons.append(f"missing_Timo_roots={timo_entry.root_count_found}/{spectrum_count}")
+    if len(factorized_timo.roots) < spectrum_count:
+        reasons.append(f"missing_factorized_Timo_roots={len(factorized_timo.roots)}/{spectrum_count}")
     if len(eb_roots) < spectrum_count or not all(isfinite(value) for value in eb_roots):
         reasons.append("nonfinite_EB_first12")
     if len(timo_roots) < spectrum_count or not all(isfinite(value) for value in timo_roots):
         reasons.append("nonfinite_Timo_first12")
-    if not roots_strictly_increasing(eb_roots, spectrum_count):
-        reasons.append("EB_roots_not_strictly_increasing")
-    if not roots_strictly_increasing(timo_roots, spectrum_count):
-        reasons.append("Timo_roots_not_strictly_increasing")
-    if eb_entry.warnings:
-        reasons.append("unresolved_EB_root_warning")
-    if timo_entry.warnings:
-        reasons.append("unresolved_Timo_root_warning")
+    if not roots_multiplicity_preserving_order(eb_roots, spectrum_count):
+        reasons.append("EB_roots_not_multiplicity_preserving_order")
+    if not roots_multiplicity_preserving_order(timo_roots, spectrum_count):
+        reasons.append("Timo_roots_not_multiplicity_preserving_order")
+    if factorized_timo.bending_search.warnings:
+        reasons.append("unresolved_factorized_bending_root_warning")
     if candidate_boundary:
         reasons.append("mode10_or_root11_at_candidate_boundary")
-    if reference_mismatches:
-        reasons.append(f"analytic_EB_union_mismatch_count={reference_mismatches}")
+    off_block_values: list[float] = []
+    for root in timo_roots:
+        matrix, _bending, _axial, _warnings = factorized.straight_blocks(root, mu, epsilon)
+        off_block_values.append(factorized.off_block_max_abs(matrix))
+    if any(value > factorized.BLOCK_OFFDIAGONAL_ABS_TOL for value in off_block_values):
+        reasons.append("nonzero_straight_off_block_entry")
+    if any(
+        not isfinite(values[0]) or values[0] > factorized.FULL_MATRIX_SVD_ACCEPT
+        for values in timo_singular
+    ):
+        reasons.append("factorized_root_failed_full_matrix_SVD_confirmation")
+    for item in factorized_timo.roots:
+        if item.family == "axial" and (
+            not isfinite(item.block_sigma_min)
+            or item.block_sigma_min > factorized.AXIAL_BLOCK_SVD_ACCEPT
+        ):
+            reasons.append("exact_axial_root_failed_axial_block_confirmation")
+            break
     if not all(isfinite(value) for value in deltas):
         reasons.append("nonfinite_target_delta")
     quality_status = "resolved" if not reasons else "unresolved"
@@ -1069,6 +1339,9 @@ def _solve_evaluation(
         mu=float(mu),
         eb_roots=eb_roots,
         timo_roots=timo_roots,
+        factorized_timo=factorized_timo,
+        raw_eb_roots=raw_eb_roots,
+        raw_timo_roots=raw_timo_roots,
         deltas=deltas,
         prefix_deltas=prefix_deltas,
         n_true=n_true,
@@ -1088,11 +1361,14 @@ def _solve_evaluation(
         possible_multiplicity=tuple(multiplicity),
         quality_status=quality_status,
         quality_reasons=tuple(dict.fromkeys(reasons)),
-        cache_status=cache_status(eb_entry, timo_entry),
-        eb_found=int(eb_entry.root_count_found),
-        timo_found=int(timo_entry.root_count_found),
-        eb_warnings=tuple(eb_entry.warnings),
-        timo_warnings=tuple(timo_entry.warnings),
+        cache_status=factorized_timo.cache_status,
+        general_cache_status=cache_status(raw_general_eb_entry, timo_entry),
+        eb_found=len(eb_roots),
+        timo_found=len(timo_roots),
+        eb_warnings=(),
+        timo_warnings=tuple(factorized_timo.bending_search.warnings),
+        raw_eb_warnings=tuple(raw_general_eb_entry.warnings),
+        raw_timo_warnings=tuple(timo_entry.warnings),
         eb_retry_attempted=bool(eb_entry.retry_attempted),
         timo_retry_attempted=bool(timo_entry.retry_attempted),
         candidate_boundary_warning=candidate_boundary,
@@ -1589,13 +1865,28 @@ def build_threshold_rows(
         )
         if status == "not_reached_in_scan_range" and safe is not None and safe.resolved:
             note += "; epsilon_certified_n is the right-censored verified scan endpoint, not a first-loss estimate"
+        continuity_status = {
+            "resolved": (
+                "sorted_family_reorder_crossing"
+                if reorder_near
+                else "smooth_threshold_crossing"
+            ),
+            "not_reached_in_scan_range": "right_censored_safe_over_scan",
+            "below_scan_range": "unsafe_at_left_scan_boundary",
+            "unresolved_root_quality": "unresolved_root_quality",
+            "smoke_not_refined": "smoke_not_refined",
+        }.get(status, status)
         rows.append(
             {
                 "prefix_n": prefix_n,
                 "threshold_status": status,
                 "epsilon_certified_n": certified_safe,
+                "epsilon_safe_lower": certified_safe,
                 "epsilon_unsafe_upper": unsafe.epsilon if status == "resolved" and unsafe is not None else "",
                 "epsilon_star_estimate": estimate,
+                "epsilon_star_display_5dp": presentation_round(estimate, 5),
+                "epsilon_certified_floor_5dp": conservative_decimal_floor(certified_safe, 5),
+                "epsilon_certified_floor_4dp": conservative_decimal_floor(certified_safe, 4),
                 "bracket_width": unsafe.epsilon - safe.epsilon if status == "resolved" and safe is not None and unsafe is not None else "",
                 "Delta_n_safe": certified_delta,
                 "Delta_n_unsafe": unsafe.prefix_deltas[prefix_n - 1] if status == "resolved" and unsafe is not None else "",
@@ -1610,6 +1901,8 @@ def build_threshold_rows(
                 "reentry_count_after_first_loss": reentry_count(evaluations, prefix_n, args.threshold),
                 "inside_primary_range": inside_primary,
                 "monotonicity_status": "pending",
+                "continuity_status": continuity_status,
+                "threshold_continuity_status": continuity_status,
                 "numerical_verification_status": "pending" if status == "resolved" else "not_applicable",
                 "verification_estimate": "",
                 "verification_abs_difference": "",
@@ -1784,8 +2077,40 @@ def mu_invariance_rows(
                 timo_pass = timo_abs <= MU_TIMO_ABS_TOLERANCE and timo_rel <= MU_TIMO_REL_TOLERANCE
                 family_eb_equal = current.eb_families == baseline.eb_families
                 family_timo_equal = current.timo_families == baseline.timo_families
+                # Physical cross-family multiplicity comes from the retained
+                # family records.  `possible_multiplicity` also contains a
+                # conditioning-sensitive second-SVD diagnostic and is not a
+                # canonical multiplicity identity across artificial splits.
+                multiplicity_flags_equal = (
+                    tuple(item.ambiguous for item in current.eb_references)
+                    == tuple(item.ambiguous for item in baseline.eb_references)
+                    and tuple(
+                        item.cross_family_cluster
+                        for item in current.factorized_timo.roots
+                    )
+                    == tuple(
+                        item.cross_family_cluster
+                        for item in baseline.factorized_timo.roots
+                    )
+                )
+                multiplicity_groups_equal = tuple(
+                    item.multiplicity_group for item in current.factorized_timo.roots
+                ) == tuple(
+                    item.multiplicity_group for item in baseline.factorized_timo.roots
+                )
                 n_equal = current.n_true == baseline.n_true
-                status = "pass" if current.resolved and eb_pass and timo_pass and family_eb_equal and family_timo_equal and n_equal else "fail"
+                status = (
+                    "pass"
+                    if current.resolved
+                    and eb_pass
+                    and timo_pass
+                    and family_eb_equal
+                    and family_timo_equal
+                    and multiplicity_flags_equal
+                    and multiplicity_groups_equal
+                    and n_equal
+                    else "fail"
+                )
                 rows.append(
                     {
                         "epsilon": epsilon,
@@ -1804,6 +2129,8 @@ def mu_invariance_rows(
                         "N_true_equal": n_equal,
                         "family_order_EB_equal": family_eb_equal,
                         "family_order_Timo_equal": family_timo_equal,
+                        "multiplicity_flags_equal": multiplicity_flags_equal,
+                        "multiplicity_groups_Timo_equal": multiplicity_groups_equal,
                         "root_quality_status": current.quality_status,
                         "status": status,
                         "notes": "mu changes only the artificial internal joint location in the straight homogeneous rod",
@@ -1924,8 +2251,14 @@ def family_rows(evaluations: Sequence[Evaluation], args: Args) -> list[dict[str,
                     "EB_reference_abs_error": evaluation.eb_reference_abs_errors[index],
                     "EB_reference_rel_error": evaluation.eb_reference_rel_errors[index],
                     "Lambda_axial_reference": axial_ref,
-                    "Lambda_Timo_general": evaluation.timo_roots[index],
+                    "Lambda_Timo_factorized": evaluation.timo_roots[index],
+                    "Lambda_Timo_general_6x6": (
+                        evaluation.raw_timo_roots[index]
+                        if index < len(evaluation.raw_timo_roots)
+                        else float("nan")
+                    ),
                     "Timo_family": evaluation.timo_families[index],
+                    "Timo_factorized_family_exact": evaluation.factorized_timo.roots[index].family,
                     "Timo_axial_abs_error": timo_ax_abs,
                     "Timo_axial_rel_error": timo_ax_rel,
                     "family_ambiguity": evaluation.family_ambiguity[index],
@@ -1933,7 +2266,660 @@ def family_rows(evaluations: Sequence[Evaluation], args: Args) -> list[dict[str,
                     "adjacent_gap_Timo": timo_gap,
                     "possible_multiplicity": evaluation.possible_multiplicity[index],
                     "point_type": evaluation.point_type,
-                    "notes": "analytic formulas are independent audit references, not production root replacements",
+                    "notes": "corrected baseline uses the exact family union; the raw general 6x6 value is retained only for completeness comparison",
+                }
+            )
+    return rows
+
+
+def local_eb_svd_confirmation(
+    evaluation: Evaluation,
+    index: int,
+) -> tuple[float, float, bool]:
+    root = evaluation.eb_roots[index]
+    neighbor_gaps = []
+    if index > 0:
+        neighbor_gaps.append(root - evaluation.eb_roots[index - 1])
+    if index + 1 < len(evaluation.eb_roots):
+        neighbor_gaps.append(evaluation.eb_roots[index + 1] - root)
+    positive = [gap for gap in neighbor_gaps if gap > 0.0]
+    radius = min(
+        LOCAL_FULL_SVD_RADIUS,
+        0.45 * min(positive) if positive else LOCAL_FULL_SVD_RADIUS,
+    )
+    radius = max(radius, 5.0e-7)
+    exact_sigma, _second = eb_full_matrix_singular_values(
+        root, evaluation.mu, evaluation.epsilon
+    )
+    result = minimize_scalar(
+        lambda value: eb_full_matrix_singular_values(
+            float(value), evaluation.mu, evaluation.epsilon
+        )[0],
+        bounds=(max(root_workflow.ROOT_SCAN_START, root - radius), root + radius),
+        method="bounded",
+        options={"xatol": 1.0e-12, "maxiter": 160},
+    )
+    candidates = [(root, exact_sigma)]
+    if result.success and isfinite(float(result.fun)):
+        candidates.append((float(result.x), float(result.fun)))
+    best_root, best_sigma = min(candidates, key=lambda pair: pair[1])
+    return best_root, best_sigma, best_sigma <= factorized.FULL_MATRIX_SVD_ACCEPT
+
+
+def factorized_spectrum_rows(
+    evaluations: Sequence[Evaluation],
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for evaluation in sorted(evaluations, key=lambda item: (item.epsilon, item.mu)):
+        eb_components = tuple(
+            factorized.FamilyRoot(
+                value=item.value,
+                family=item.family,
+                family_index=item.family_index,
+                detection_source=(
+                    "exact_axial_formula"
+                    if item.family == "axial"
+                    else "analytic_fixed_fixed_EB"
+                ),
+                block_sigma_min=evaluation.eb_singular_values[index][0],
+                multiplicity_group=(
+                    f"eb_cross_family_{index + 1:03d}" if item.ambiguous else ""
+                ),
+                cross_family_cluster=item.ambiguous,
+                cluster_gap=(
+                    sided_gap(evaluation.eb_gaps, index)[2]
+                    if item.ambiguous
+                    else float("nan")
+                ),
+            )
+            for index, item in enumerate(evaluation.eb_references)
+        )
+        eb_matches = match_general_roots(eb_components, evaluation.raw_eb_roots)
+        for index, (item, match) in enumerate(zip(eb_components, eb_matches)):
+            general_index, general_value, _difference = match
+            missing = general_index is None
+            if missing:
+                _local_root, _local_sigma, recovered = local_eb_svd_confirmation(
+                    evaluation, index
+                )
+            else:
+                recovered = True
+            full_smallest, full_second = eb_full_matrix_singular_values(
+                item.value, evaluation.mu, evaluation.epsilon
+            )
+            matrix = root_workflow.assemble_clamped_coupled_matrix_eta(
+                item.value, 0.0, evaluation.mu, evaluation.epsilon, 0.0
+            )
+            rows.append(
+                {
+                    "epsilon": evaluation.epsilon,
+                    "mu": evaluation.mu,
+                    "model": "Euler-Bernoulli",
+                    "sorted_index": index + 1,
+                    "sorted_position": index + 1,
+                    "Lambda_factorized": item.value,
+                    "family": item.family,
+                    "family_index": item.family_index,
+                    "detection_source": item.detection_source,
+                    "block_det": float(np.linalg.det(matrix)),
+                    "block_sigma_min": item.block_sigma_min,
+                    "full_matrix_sigma_min": full_smallest,
+                    "full_matrix_second_sigma": full_second,
+                    "off_block_max_abs": float("nan"),
+                    "multiplicity_group": item.multiplicity_group,
+                    "multiplicity_group_id": item.multiplicity_group,
+                    "within_family_duplicate": item.within_family_duplicate,
+                    "cross_family_cluster": item.cross_family_cluster,
+                    "cluster_gap": item.cluster_gap,
+                    "cross_family_gap": item.cluster_gap,
+                    "raw_general_match": general_value,
+                    "raw_general_missing": missing,
+                    "local_general_recovery_status": (
+                        "confirmed_by_local_full_matrix_SVD" if missing and recovered else "not_needed"
+                    ),
+                    "cache_status": evaluation.cache_status,
+                    "algorithm_version": factorized.ALGORITHM_VERSION,
+                    "root_quality_status": (
+                        "pass"
+                        if full_smallest <= factorized.FULL_MATRIX_SVD_ACCEPT and recovered
+                        else "fail"
+                    ),
+                    "quality_status": (
+                        "missing_required_axial_root_in_general_scan"
+                        if missing and item.family == "axial"
+                        else ("missing_in_general_sign_scan" if missing else "pass")
+                    ),
+                    "notes": "exact analytic EB family union; general 6x6 retained as completeness audit",
+                }
+            )
+
+        timo_matches = match_general_roots(
+            evaluation.factorized_timo.roots, evaluation.raw_timo_roots
+        )
+        for index, item in enumerate(evaluation.factorized_timo.roots, start=1):
+            general_index, general_value, _difference = timo_matches[index - 1]
+            missing = general_index is None
+            if missing:
+                _local_root, _local_sigma, recovered = local_full_svd_confirmation(
+                    evaluation, index - 1
+                )
+            else:
+                recovered = True
+            matrix, _bending, _axial, _warnings = factorized.straight_blocks(
+                item.value, evaluation.mu, evaluation.epsilon
+            )
+            local_off_block = factorized.off_block_max_abs(matrix)
+            full_smallest, full_second = factorized.full_matrix_singular_values(
+                item.value, evaluation.mu, evaluation.epsilon
+            )
+            status = (
+                "pass"
+                if local_off_block <= factorized.BLOCK_OFFDIAGONAL_ABS_TOL
+                and item.block_sigma_min <= (
+                    factorized.AXIAL_BLOCK_SVD_ACCEPT
+                    if item.family == "axial"
+                    else factorized.BENDING_SVD_ACCEPT
+                )
+                and full_smallest <= factorized.FULL_MATRIX_SVD_ACCEPT
+                and recovered
+                else "fail"
+            )
+            block_det = (
+                factorized.axial_block_det(item.value, evaluation.mu, evaluation.epsilon)
+                if item.family == "axial"
+                else factorized.bending_block_det(item.value, evaluation.mu, evaluation.epsilon)
+            )
+            rows.append(
+                {
+                    "epsilon": evaluation.epsilon,
+                    "mu": evaluation.mu,
+                    "model": "Timoshenko",
+                    "sorted_index": index,
+                    "sorted_position": index,
+                    "Lambda_factorized": item.value,
+                    "family": item.family,
+                    "family_index": item.family_index,
+                    "detection_source": item.detection_source,
+                    "block_det": block_det,
+                    "block_sigma_min": item.block_sigma_min,
+                    "full_matrix_sigma_min": full_smallest,
+                    "full_matrix_second_sigma": full_second,
+                    "off_block_max_abs": local_off_block,
+                    "multiplicity_group": item.multiplicity_group,
+                    "multiplicity_group_id": item.multiplicity_group,
+                    "within_family_duplicate": item.within_family_duplicate,
+                    "cross_family_cluster": item.cross_family_cluster,
+                    "cluster_gap": item.cluster_gap,
+                    "cross_family_gap": item.cluster_gap,
+                    "raw_general_match": general_value,
+                    "raw_general_missing": missing,
+                    "local_general_recovery_status": (
+                        "confirmed_by_local_full_matrix_SVD" if missing and recovered else "not_needed"
+                    ),
+                    "cache_status": evaluation.cache_status,
+                    "algorithm_version": factorized.ALGORITHM_VERSION,
+                    "root_quality_status": status,
+                    "quality_status": (
+                        "missing_required_axial_root_in_general_scan"
+                        if missing and item.family == "axial"
+                        else ("missing_in_general_sign_scan" if missing else "pass")
+                    ),
+                    "notes": "exact beta=0 eta=0 block extraction from the unchanged 6x6 Timoshenko matrix",
+                }
+            )
+    return rows
+
+
+def axial_completeness_rows(
+    evaluations: Sequence[Evaluation],
+    count: int,
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for evaluation in sorted(evaluations, key=lambda item: (item.epsilon, item.mu)):
+        matches = match_general_roots(
+            evaluation.factorized_timo.roots, evaluation.raw_timo_roots
+        )
+        for sorted_index, item in enumerate(evaluation.factorized_timo.roots, start=1):
+            if item.family != "axial":
+                continue
+            axial_index = item.family_index
+            value = item.value
+            block_smallest, block_second = factorized.axial_block_singular_values(
+                float(value), evaluation.mu, evaluation.epsilon
+            )
+            full_smallest, full_second = factorized.full_matrix_singular_values(
+                float(value), evaluation.mu, evaluation.epsilon
+            )
+            _general_index, nearest_general, difference = matches[sorted_index - 1]
+            raw_present = isfinite(nearest_general)
+            block_det = factorized.axial_block_det(
+                float(value), evaluation.mu, evaluation.epsilon
+            )
+            passed = (
+                block_smallest <= factorized.AXIAL_BLOCK_SVD_ACCEPT
+                and full_smallest <= factorized.FULL_MATRIX_SVD_ACCEPT
+            )
+            status = (
+                "fail"
+                if not passed
+                else (
+                    "pass"
+                    if raw_present
+                    else "missing_required_axial_root_in_general_scan"
+                )
+            )
+            rows.append(
+                {
+                    "epsilon": evaluation.epsilon,
+                    "mu": evaluation.mu,
+                    "axial_index": axial_index,
+                    "Lambda_exact": value,
+                    "Lambda_axial_exact": value,
+                    "axial_block_det": block_det,
+                    "axial_block_sigma_min": block_smallest,
+                    "axial_block_second_sigma": block_second,
+                    "axial_block_sigma_ratio": (
+                        block_smallest / block_second
+                        if isfinite(block_second) and block_second > 0.0
+                        else float("nan")
+                    ),
+                    "full_matrix_sigma_min": full_smallest,
+                    "full_matrix_sigma_ratio": (
+                        full_smallest / full_second
+                        if isfinite(full_second) and full_second > 0.0
+                        else float("nan")
+                    ),
+                    "expected_within_first12": True,
+                    "present_in_factorized_first12": True,
+                    "factorized_present": True,
+                    "raw_general_present": raw_present,
+                    "full_matrix_verified": passed,
+                    "factorized_sorted_index": sorted_index,
+                    "sorted_position_factorized": sorted_index,
+                    "nearest_raw_general_root": nearest_general,
+                    "difference": difference,
+                    "verification_status": "pass" if passed else "fail",
+                    "status": status,
+                    "algorithm_version": factorized.ALGORITHM_VERSION,
+                    "notes": "exact axial root retained in the requested sorted prefix; raw scan status is independent evidence",
+                }
+            )
+    del count
+    return rows
+
+
+def general_match_tolerance(value: float) -> float:
+    return GENERAL_MATCH_ABS_TOLERANCE + GENERAL_MATCH_REL_TOLERANCE * abs(float(value))
+
+
+def match_general_roots(
+    factorized_roots: Sequence[factorized.FamilyRoot],
+    general_roots: Sequence[float],
+) -> list[tuple[int | None, float, float]]:
+    finite = [
+        (index, float(value))
+        for index, value in enumerate(general_roots, start=1)
+        if isfinite(float(value))
+    ]
+    unused = set(range(len(finite)))
+    matches: list[tuple[int | None, float, float]] = []
+    for item in factorized_roots:
+        tolerance = general_match_tolerance(item.value)
+        candidates = [
+            position
+            for position in unused
+            if abs(finite[position][1] - item.value) <= tolerance
+        ]
+        if not candidates:
+            matches.append((None, float("nan"), float("nan")))
+            continue
+        position = min(candidates, key=lambda value: abs(finite[value][1] - item.value))
+        unused.remove(position)
+        general_index, general_value = finite[position]
+        matches.append((general_index, general_value, abs(general_value - item.value)))
+    return matches
+
+
+def local_full_svd_confirmation(
+    evaluation: Evaluation,
+    index: int,
+) -> tuple[float, float, bool]:
+    item = evaluation.factorized_timo.roots[index]
+    neighbor_gaps = []
+    if index > 0:
+        neighbor_gaps.append(item.value - evaluation.factorized_timo.roots[index - 1].value)
+    if index + 1 < len(evaluation.factorized_timo.roots):
+        neighbor_gaps.append(evaluation.factorized_timo.roots[index + 1].value - item.value)
+    positive_gaps = [value for value in neighbor_gaps if value > 0.0]
+    radius = min(
+        LOCAL_FULL_SVD_RADIUS,
+        0.45 * min(positive_gaps) if positive_gaps else LOCAL_FULL_SVD_RADIUS,
+    )
+    radius = max(radius, 5.0e-7)
+    left = max(root_workflow.ROOT_SCAN_START, item.value - radius)
+    right = item.value + radius
+    exact_sigma, _exact_second = factorized.full_matrix_singular_values(
+        item.value, evaluation.mu, evaluation.epsilon
+    )
+    result = minimize_scalar(
+        lambda value: factorized.full_matrix_singular_values(
+            float(value), evaluation.mu, evaluation.epsilon
+        )[0],
+        bounds=(left, right),
+        method="bounded",
+        options={"xatol": 1.0e-12, "maxiter": 160},
+    )
+    candidates = [(item.value, exact_sigma)]
+    if result.success and isfinite(float(result.fun)):
+        candidates.append((float(result.x), float(result.fun)))
+    best_root, best_sigma = min(candidates, key=lambda pair: pair[1])
+    return best_root, best_sigma, best_sigma <= factorized.FULL_MATRIX_SVD_ACCEPT
+
+
+def general_vs_factorized_rows(
+    managers: Sequence[EvaluationManager],
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for manager in managers:
+        for evaluation in sorted(manager.evaluations.values(), key=lambda item: (item.epsilon, item.mu)):
+            eb_components = tuple(
+                factorized.FamilyRoot(
+                    value=reference.value,
+                    family=reference.family,
+                    family_index=reference.family_index,
+                    detection_source="exact_analytic_union",
+                    block_sigma_min=evaluation.eb_singular_values[index][0],
+                )
+                for index, reference in enumerate(evaluation.eb_references)
+            )
+            model_payloads = (
+                (
+                    "Euler-Bernoulli",
+                    eb_components,
+                    evaluation.raw_eb_roots,
+                    evaluation.raw_eb_warnings,
+                ),
+                (
+                    "Timoshenko",
+                    evaluation.factorized_timo.roots,
+                    evaluation.raw_timo_roots,
+                    evaluation.raw_timo_warnings,
+                ),
+            )
+            for model, components, general_roots, general_warnings in model_payloads:
+                matches = match_general_roots(components, general_roots)
+                for index, (item, match) in enumerate(zip(components, matches)):
+                    general_index, general_value, difference = match
+                    missing = general_index is None
+                    if model == "Timoshenko":
+                        if missing:
+                            local_root, local_sigma, confirmed = local_full_svd_confirmation(
+                                evaluation, index
+                            )
+                        else:
+                            local_root = item.value
+                            local_sigma, _second = factorized.full_matrix_singular_values(
+                                item.value, evaluation.mu, evaluation.epsilon
+                            )
+                            confirmed = local_sigma <= factorized.FULL_MATRIX_SVD_ACCEPT
+                    else:
+                        if missing:
+                            local_root, local_sigma, confirmed = local_eb_svd_confirmation(
+                                evaluation, index
+                            )
+                        else:
+                            local_root = item.value
+                            local_sigma, _second = eb_full_matrix_singular_values(
+                                item.value, evaluation.mu, evaluation.epsilon
+                            )
+                            confirmed = local_sigma <= factorized.FULL_MATRIX_SVD_ACCEPT
+                    missing_status = (
+                        "missing_required_axial_root_in_general_scan"
+                        if missing and item.family == "axial"
+                        else "missing_in_general_sign_scan"
+                    )
+                    rows.append(
+                        {
+                            "scope": manager.scope,
+                            "epsilon": evaluation.epsilon,
+                            "mu": evaluation.mu,
+                            "model": model,
+                            "factorized_sorted_index": index + 1,
+                            "Lambda_factorized": item.value,
+                            "factorized_family": item.family,
+                            "factorized_family_index": item.family_index,
+                            "present_in_raw_general": not missing,
+                            "nearest_general_root": general_value,
+                            "Lambda_general_6x6": general_value,
+                            "general_sorted_index": general_index or "",
+                            "abs_difference": difference,
+                            "match_tolerance": general_match_tolerance(item.value),
+                            "match_status": missing_status if missing else "matched",
+                            "missing_general_root": missing,
+                            "raw_general_missing_root": missing,
+                            "same_family_when_known": True if not missing else "unknown",
+                            "general_sigma_min_at_factorized_root": (
+                                factorized.full_matrix_singular_values(
+                                    item.value, evaluation.mu, evaluation.epsilon
+                                )[0]
+                                if model == "Timoshenko"
+                                else eb_full_matrix_singular_values(
+                                    item.value, evaluation.mu, evaluation.epsilon
+                                )[0]
+                            ),
+                            "local_full_SVD_root": local_root,
+                            "local_full_SVD_sigma_min": local_sigma,
+                            "full_matrix_SVD_confirmation": confirmed,
+                            "general_cache_status": evaluation.general_cache_status,
+                            "general_root_warnings": ";".join(general_warnings),
+                            "notes": (
+                                "missing general root independently confirmed by local full-6x6 SVD refinement"
+                                if missing and confirmed
+                                else "one-to-one multiplicity-preserving general/factorized comparison"
+                            ),
+                        }
+                    )
+    return rows
+
+
+def legacy_threshold_comparison_rows(
+    args: Args,
+    corrected_rows: Sequence[Mapping[str, object]],
+    general_comparison: Sequence[Mapping[str, object]],
+) -> list[dict[str, object]]:
+    legacy_path = (
+        args.output_dir
+        / "legacy_pre_factorized_root_fix"
+        / "baseline_critical_prefix_thresholds.csv"
+    )
+    if not legacy_path.exists():
+        return []
+    try:
+        legacy_source = str(legacy_path.relative_to(REPO_ROOT))
+    except ValueError:
+        legacy_source = str(legacy_path)
+    legacy_by_prefix = {
+        int(float(row["prefix_n"])): row for row in read_csv(legacy_path)
+    }
+    rows: list[dict[str, object]] = []
+    for corrected in sorted(corrected_rows, key=lambda row: int(row["prefix_n"])):
+        prefix_n = int(corrected["prefix_n"])
+        legacy = legacy_by_prefix.get(prefix_n, {})
+        legacy_status = str(legacy.get("threshold_status", ""))
+        corrected_status = str(corrected.get("threshold_status", ""))
+        legacy_estimate = finite_float(legacy, "epsilon_star_estimate")
+        corrected_estimate = finite_float(corrected, "epsilon_star_estimate")
+        difference = (
+            abs(legacy_estimate - corrected_estimate)
+            if isfinite(legacy_estimate) and isfinite(corrected_estimate)
+            else float("nan")
+        )
+        if "unresolved" in corrected_status:
+            comparison_status = "still_unresolved"
+        elif "unresolved" in legacy_status and "unresolved" not in corrected_status:
+            comparison_status = "previously_unresolved_now_resolved"
+        elif legacy_status == "not_reached_in_scan_range" and corrected_status == legacy_status:
+            comparison_status = "not_reached"
+        elif isfinite(difference) and difference <= args.epsilon_tolerance:
+            comparison_status = "unchanged_within_tolerance"
+        elif corrected_status == "not_reached_in_scan_range":
+            comparison_status = "not_reached"
+        else:
+            comparison_status = "corrected_due_to_missing_root"
+        nearby_missing = [
+            audit_row
+            for audit_row in general_comparison
+            if bool_value(audit_row.get("missing_general_root"))
+            and isfinite(legacy_estimate)
+            and abs(finite_float(audit_row, "epsilon") - legacy_estimate)
+            <= args.coarse_step + args.epsilon_tolerance
+        ]
+        missing_families = sorted(
+            {str(item.get("factorized_family")) for item in nearby_missing}
+        )
+        relative_difference = (
+            difference / abs(legacy_estimate)
+            if isfinite(difference) and abs(legacy_estimate) > 0.0
+            else float("nan")
+        )
+        if comparison_status == "corrected_due_to_missing_root":
+            correction_reason = (
+                "raw general sign scan omitted a factorized root near the legacy bracket"
+            )
+        elif comparison_status == "not_reached":
+            correction_reason = "first loss was not reached in either scan; no finite bracket exists"
+        else:
+            correction_reason = "corrected and legacy estimates agree within epsilon tolerance"
+        rows.append(
+            {
+                "prefix_n": prefix_n,
+                "legacy_status": legacy_status,
+                "legacy_threshold_status": legacy_status,
+                "corrected_status": corrected_status,
+                "corrected_threshold_status": corrected_status,
+                "legacy_epsilon_safe_lower": legacy.get("epsilon_certified_n", ""),
+                "legacy_epsilon_certified_n": legacy.get("epsilon_certified_n", ""),
+                "corrected_epsilon_certified_n": corrected.get("epsilon_certified_n", ""),
+                "corrected_epsilon_safe_lower": corrected.get("epsilon_certified_n", ""),
+                "legacy_epsilon_star_estimate": legacy.get("epsilon_star_estimate", ""),
+                "corrected_epsilon_star_estimate": corrected.get("epsilon_star_estimate", ""),
+                "absolute_estimate_change": difference,
+                "absolute_difference": difference,
+                "relative_difference": relative_difference,
+                "legacy_trigger_mode": legacy.get("triggering_sorted_indices", ""),
+                "corrected_trigger_mode": corrected.get("triggering_sorted_indices", ""),
+                "missing_root_in_legacy_bracket": bool(nearby_missing),
+                "missing_root_family": ";".join(missing_families),
+                "correction_reason": correction_reason,
+                "scientific_status": comparison_status,
+                "comparison_status": comparison_status,
+                "legacy_source": legacy_source,
+                "algorithm_version": factorized.ALGORITHM_VERSION,
+                "notes": "legacy values are preserved for provenance and are not used by the corrected certificate",
+            }
+        )
+    return rows
+
+
+def regression_close_root_rows(
+    manager: EvaluationManager,
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for case_id, nominal, expected_bending, expected_axial in REGRESSION_CASES:
+        for offset in (-REGRESSION_EPSILON_OFFSET, 0.0, REGRESSION_EPSILON_OFFSET):
+            epsilon = nominal + offset
+            evaluation = manager.evaluate(epsilon, "close_root_regression")
+            bending_candidates = [
+                (index, item)
+                for index, item in enumerate(evaluation.factorized_timo.roots, start=1)
+                if item.family == "bending_Timoshenko"
+            ]
+            axial_candidates = [
+                (index, item)
+                for index, item in enumerate(evaluation.factorized_timo.roots, start=1)
+                if item.family == "axial"
+            ]
+            if not bending_candidates or not axial_candidates:
+                rows.append(
+                    {
+                        "case_id": case_id,
+                        "epsilon_nominal": nominal,
+                        "epsilon_offset": offset,
+                        "epsilon": epsilon,
+                        "bending_expected_window_center": expected_bending,
+                        "axial_expected_window_center": expected_axial,
+                        "Lambda_bending_factorized": "",
+                        "Lambda_axial_exact": "",
+                        "pair_gap": "",
+                        "bending_sorted_index": "",
+                        "axial_sorted_index": "",
+                        "both_roots_present": False,
+                        "cross_family_cluster": False,
+                        "general_bending_present": False,
+                        "general_axial_present": False,
+                        "general_missing_root_count": "",
+                        "full_matrix_SVD_bending": "",
+                        "full_matrix_SVD_axial": "",
+                        "status": "unavailable_synthetic_evaluation",
+                        "algorithm_version": factorized.ALGORITHM_VERSION,
+                        "notes": "regression families unavailable in injected synthetic evaluation",
+                    }
+                )
+                continue
+            bending_index, bending_item = min(
+                bending_candidates,
+                key=lambda pair: abs(pair[1].value - expected_bending),
+            )
+            axial_index, axial_item = min(
+                axial_candidates,
+                key=lambda pair: abs(pair[1].value - expected_axial),
+            )
+            matches = match_general_roots(
+                evaluation.factorized_timo.roots,
+                evaluation.raw_timo_roots,
+            )
+            general_bending = matches[bending_index - 1][0] is not None
+            general_axial = matches[axial_index - 1][0] is not None
+            missing_count = sum(match[0] is None for match in matches)
+            bending_sigma, _ = factorized.full_matrix_singular_values(
+                bending_item.value, evaluation.mu, evaluation.epsilon
+            )
+            axial_sigma, _ = factorized.full_matrix_singular_values(
+                axial_item.value, evaluation.mu, evaluation.epsilon
+            )
+            both_present = (
+                abs(bending_item.value - expected_bending) <= 0.05
+                and abs(axial_item.value - expected_axial) <= 0.05
+                and bending_index != axial_index
+            )
+            passed = (
+                both_present
+                and bending_sigma <= factorized.FULL_MATRIX_SVD_ACCEPT
+                and axial_sigma <= factorized.FULL_MATRIX_SVD_ACCEPT
+            )
+            rows.append(
+                {
+                    "case_id": case_id,
+                    "epsilon_nominal": nominal,
+                    "epsilon_offset": offset,
+                    "epsilon": epsilon,
+                    "bending_expected_window_center": expected_bending,
+                    "axial_expected_window_center": expected_axial,
+                    "Lambda_bending_factorized": bending_item.value,
+                    "Lambda_axial_exact": axial_item.value,
+                    "pair_gap": abs(axial_item.value - bending_item.value),
+                    "bending_sorted_index": bending_index,
+                    "axial_sorted_index": axial_index,
+                    "both_roots_present": both_present,
+                    "cross_family_cluster": bending_item.cross_family_cluster and axial_item.cross_family_cluster,
+                    "general_bending_present": general_bending,
+                    "general_axial_present": general_axial,
+                    "general_missing_root_count": missing_count,
+                    "full_matrix_SVD_bending": bending_sigma,
+                    "full_matrix_SVD_axial": axial_sigma,
+                    "status": "pass" if passed else "fail",
+                    "algorithm_version": factorized.ALGORITHM_VERSION,
+                    "notes": "expected values define regression windows only; no root is hard-coded",
                 }
             )
     return rows
@@ -1972,6 +2958,8 @@ def quality_rows(
                     "root11_available": len(evaluation.eb_roots) > args.k_max and isfinite(evaluation.eb_roots[args.k_max]),
                     "strictly_increasing_EB": roots_strictly_increasing(evaluation.eb_roots, args.n_spectrum_roots),
                     "strictly_increasing_Timo": roots_strictly_increasing(evaluation.timo_roots, args.n_spectrum_roots),
+                    "multiplicity_preserving_order_EB": roots_multiplicity_preserving_order(evaluation.eb_roots, args.n_spectrum_roots),
+                    "multiplicity_preserving_order_Timo": roots_multiplicity_preserving_order(evaluation.timo_roots, args.n_spectrum_roots),
                     "analytic_EB_union_max_abs_error": max_abs,
                     "analytic_EB_union_max_rel_error": max_rel,
                     "analytic_EB_union_mismatch_count": mismatch_count,
@@ -1980,7 +2968,7 @@ def quality_rows(
                     "root_quality_status": evaluation.quality_status,
                     "quality_reasons": ";".join(evaluation.quality_reasons),
                     "point_type": evaluation.point_type,
-                    "notes": "EB uses the configured candidate margin; Timoshenko root 12 is the boundary margin and both roots 11-12 are excluded from the K=10 target",
+                    "notes": "corrected source is the exact straight-family union; raw general 6x6 roots remain independent completeness evidence",
                 }
             )
     return rows
@@ -2001,6 +2989,21 @@ def operation_rows(
     misses = sum(manager.runtime.root_cache_misses for manager in managers)
     svd_calls = sum(manager.svd_recovery_calls for manager in managers)
     analytic_calls = sum(manager.analytic_reference_evaluations for manager in managers)
+    factorized_evaluations = [
+        evaluation for manager in managers for evaluation in manager.evaluations.values()
+    ]
+    factorized_hits = sum(evaluation.cache_status == "hit" for evaluation in factorized_evaluations)
+    factorized_misses = sum(evaluation.cache_status != "hit" for evaluation in factorized_evaluations)
+    factorized_det_evaluations = sum(
+        evaluation.factorized_timo.bending_search.determinant_evaluations
+        for evaluation in factorized_evaluations
+        if evaluation.cache_status != "hit"
+    )
+    factorized_svd_refinements = sum(
+        evaluation.factorized_timo.bending_search.svd_refinements
+        for evaluation in factorized_evaluations
+        if evaluation.cache_status != "hit"
+    )
     unique_eps = len({round(item.epsilon, ROUND_DIGITS) for item in baseline_evaluations})
     primary_mu0 = [
         evaluation
@@ -2030,6 +3033,10 @@ def operation_rows(
         ("SVD recovery calls", svd_calls, "measured", "existing global helper plus audit-local calls to the existing 6x6 SVD minimizer"),
         ("epsilon bisection evaluations", epsilon_bisections, "measured", "adaptive epsilon threshold refinement"),
         ("analytic reference evaluations", analytic_calls, "measured", "axial plus fixed-fixed EB union audits"),
+        ("factorized spectrum cache hits", factorized_hits, "measured", factorized.ALGORITHM_VERSION),
+        ("factorized spectrum cache misses/recomputes", factorized_misses, "measured", factorized.ALGORITHM_VERSION),
+        ("factorized bending determinant evaluations", factorized_det_evaluations, "measured", "exact extracted 4x4 block"),
+        ("factorized bending SVD refinements", factorized_svd_refinements, "measured", "audit-local complementary minima"),
         ("wall-clock seconds", elapsed_seconds, "auxiliary", "not used as the primary cost metric"),
     ]
     unavailable = [
@@ -2177,6 +3184,11 @@ def write_report(
     mu_rows: Sequence[Mapping[str, object]],
     quality: Sequence[Mapping[str, object]],
     operations: Sequence[Mapping[str, object]],
+    factorized_rows: Sequence[Mapping[str, object]],
+    axial_rows: Sequence[Mapping[str, object]],
+    general_comparison: Sequence[Mapping[str, object]],
+    legacy_comparison: Sequence[Mapping[str, object]],
+    regression_rows: Sequence[Mapping[str, object]],
 ) -> Path:
     report = args.output_dir / "eb_epsilon_baseline_thresholds_report.md"
     resolved_points = [row for row in points if str(row.get("root_quality_status")) == "resolved"]
@@ -2184,22 +3196,87 @@ def write_report(
     cache_counts = Counter(str(row.get("cache_status")) for row in quality)
     max_eb_abs = max((finite_float(row, "EB_reference_abs_error") for row in families), default=float("nan"))
     axial_eb_errors = [finite_float(row, "EB_reference_abs_error") for row in families if str(row.get("EB_reference_family")) == "axial"]
-    axial_timo_errors = [finite_float(row, "Timo_axial_abs_error") for row in families if str(row.get("Timo_family")) in {"axial", "axial_bending_cluster"}]
+    axial_timo_errors = [
+        finite_float(row, "Timo_axial_abs_error")
+        for row in families
+        if str(row.get("Timo_factorized_family_exact")) == "axial"
+    ]
     mu_eb = max((finite_float(row, "EB_abs_difference") for row in mu_rows), default=float("nan"))
     mu_timo = max((finite_float(row, "Timo_abs_difference") for row in mu_rows), default=float("nan"))
     mu_failures = sum(str(row.get("status")) != "pass" for row in mu_rows)
-    mu_n_true_failures = sum(str(row.get("N_true_equal")) != "true" for row in mu_rows)
-    mu_eb_order_failures = sum(str(row.get("family_order_EB_equal")) != "true" for row in mu_rows)
-    mu_timo_order_failures = sum(str(row.get("family_order_Timo_equal")) != "true" for row in mu_rows)
+    mu_n_true_failures = sum(not bool_value(row.get("N_true_equal")) for row in mu_rows)
+    mu_eb_order_failures = sum(not bool_value(row.get("family_order_EB_equal")) for row in mu_rows)
+    mu_timo_order_failures = sum(not bool_value(row.get("family_order_Timo_equal")) for row in mu_rows)
+    mu_multiplicity_failures = sum(
+        not bool_value(row.get("multiplicity_flags_equal"))
+        or not bool_value(row.get("multiplicity_groups_Timo_equal"))
+        for row in mu_rows
+    )
     eb_warning_rows = sum(bool(str(row.get("EB_root_warning", "")).strip()) for row in quality)
     timo_warning_rows = sum(bool(str(row.get("Timo_root_warning", "")).strip()) for row in quality)
     candidate_boundary_rows = sum(str(row.get("candidate_boundary_warning")) == "true" for row in quality)
     multiplicity_point_rows = sum(int(float(row.get("possible_multiplicity_count", 0) or 0)) > 0 for row in quality)
     multiplicity_flags = sum(int(float(row.get("possible_multiplicity_count", 0) or 0)) for row in quality)
     reentries = [row for row in transitions if str(row.get("event_type")) in {"safe_reentry", "unsafe_reentry"}]
+    reentry_counts = Counter(str(row.get("event_type")) for row in reentries)
     late_pass_points = [row for row in points if int(float(row.get("late_pass_count", 0) or 0)) > 0]
+    factorized_failures = sum(str(row.get("root_quality_status")) != "pass" for row in factorized_rows)
+    axial_failures = sum(str(row.get("status")) == "fail" for row in axial_rows)
+    missing_general = [row for row in general_comparison if bool_value(row.get("missing_general_root"))]
+    missing_general_confirmed = sum(
+        bool_value(row.get("full_matrix_SVD_confirmation")) for row in missing_general
+    )
+    missing_general_by_model = Counter(str(row.get("model")) for row in missing_general)
+    missing_required_axial = [
+        row
+        for row in missing_general
+        if str(row.get("model")) == "Timoshenko"
+        and str(row.get("factorized_family")) == "axial"
+    ]
+    full_matrix_verified = sum(
+        str(row.get("root_quality_status")) == "pass" for row in factorized_rows
+    )
+    max_off_block = max(
+        (
+            finite_float(row, "off_block_max_abs")
+            for row in factorized_rows
+            if str(row.get("model")) == "Timoshenko"
+        ),
+        default=float("nan"),
+    )
+    legacy_counts = Counter(str(row.get("comparison_status")) for row in legacy_comparison)
+    regression_failures = sum(str(row.get("status")) != "pass" for row in regression_rows)
+    finite_bracket_widths = [
+        finite_float(row, "bracket_width")
+        for row in thresholds
+        if isfinite(finite_float(row, "bracket_width"))
+    ]
+    regression_table_rows = [
+        "| "
+        f"{row.get('case_id')} | {markdown_value(row.get('epsilon_offset'))} | "
+        f"{markdown_value(row.get('Lambda_bending_factorized'))} | "
+        f"{markdown_value(row.get('Lambda_axial_exact'))} | "
+        f"{markdown_value(row.get('pair_gap'))} | {row.get('status')} |"
+        for row in regression_rows
+    ]
+    legacy_table_rows = [
+        "| "
+        f"{row.get('prefix_n')} | {row.get('legacy_threshold_status')} | "
+        f"{markdown_value(row.get('legacy_epsilon_star_estimate'))} | "
+        f"{row.get('corrected_threshold_status')} | "
+        f"{markdown_value(row.get('corrected_epsilon_star_estimate'))} | "
+        f"{row.get('correction_reason')} | {row.get('scientific_status')} |"
+        for row in sorted(legacy_comparison, key=lambda item: int(item["prefix_n"]))
+    ]
     lines = [
         "# EB Epsilon Baseline Thresholds Report",
+        "",
+        "## Correction Notice",
+        "",
+        "The earlier step-2 thresholds for prefixes 5--10 were produced by a general 6x6 determinant sign scan that can miss two close simple roots when both lie inside one Lambda step. The earlier independent verification repeated that same root-detection mechanism, so it could reproduce rather than expose the omission. Affected legacy thresholds are superseded.",
+        "Legacy results and cache are preserved under `legacy_pre_factorized_root_fix/` and `cache_legacy_pre_factorized_root_fix/`; they are provenance only and do not contribute to this corrected certificate.",
+        f"`spectrum_algorithm_version = {factorized.ALGORITHM_VERSION}`.",
+        "Cache settings include algorithm version, epsilon, beta, mu, eta, requested/candidate root counts, and audit-local solver settings; an old-version entry is rejected as `stale_cache_algorithm_version`.",
         "",
         "## Scope",
         "",
@@ -2208,40 +3285,62 @@ def write_report(
         f"- Primary engineering range: `{args.primary_epsilon_min:g}..{args.primary_epsilon_max:g}`.",
         f"- Computational buffer: `{args.epsilon_min:g}..{args.epsilon_max:g}`.",
         "- Timoshenko is a one-dimensional reference, not an exact 3D solution.",
-        "- No FEM rerun, formula/determinant/root-solver modification, or beta/mu/eta adversarial search was performed.",
+        "- No FEM rerun, formula/determinant/shared-root-solver modification, or beta/mu/eta adversarial search was performed; research step 3 was not started.",
         "",
-        "## Straight-Rod Reduction Audit",
+        "## Exact Straight-System Factorization",
         "",
-        "At `beta=0`, `eta=0`, changing `mu` moves only the artificial internal joint inside one straight homogeneous fixed-fixed rod; it does not change the physical rod or its spectrum.",
+        "At `beta=0`, `eta=0`, the unchanged Timoshenko 6x6 matrix with unknown ordering `(A1,B1,P1,A2,B2,P2)` is exactly block diagonal after selecting bending rows/columns `[0,2,3,4]/[0,1,3,4]` and axial rows/columns `[1,5]/[2,5]`. This is a matrix factorization, not a new physical model or a new characteristic equation.",
+        "Changing `mu` moves only the artificial internal joint inside one straight homogeneous fixed-fixed rod; it does not change the physical rod or its spectrum.",
         "The independent axial reference follows `Lambda_axial,m=sqrt(m*pi/(2*epsilon))` from `theta=epsilon*Lambda^2` over total length 2.",
         "The independent EB bending reference uses `cosh(2*Lambda) cos(2*Lambda)=1`; `fixed_fixed_eb_roots` supplies the existing alpha convention and the audit uses `Lambda=alpha/2`.",
-        f"- Maximum analytic EB union absolute discrepancy: `{markdown_value(max_eb_abs)}`.",
+        "Within-family numerical duplicates are merged; axial/bending records are never merged, so exact and near cross-family crossings retain multiplicity two with deterministic stable ordering.",
+        f"- Maximum off-block matrix norm: `{markdown_value(max_off_block)}`.",
+        f"- Maximum corrected analytic EB union absolute discrepancy: `{markdown_value(max_eb_abs)}`.",
         f"- Maximum EB axial-family absolute discrepancy: `{markdown_value(max(axial_eb_errors, default=float('nan')))}`.",
         f"- Maximum Timoshenko axial-family absolute discrepancy: `{markdown_value(max(axial_timo_errors, default=float('nan')))}`.",
         f"- Mu-invariance maximum EB/Timoshenko absolute drift: `{markdown_value(mu_eb)}` / `{markdown_value(mu_timo)}`.",
-        f"- Mu-invariance scan-comparison failing rows: `{mu_failures}`; `N_true` mismatches: `{mu_n_true_failures}`; EB/Timoshenko family-order mismatches: `{mu_eb_order_failures}/{mu_timo_order_failures}`.",
-        "- The baseline `mu=0` threshold curve is fully resolved. Separate high-mode `mu=0.7/0.9` scan discrepancies are retained as numerical warnings and are not used to construct thresholds.",
+        f"- Corrected factorized mu-invariance failing rows: `{mu_failures}`; `N_true` mismatches: `{mu_n_true_failures}`; EB/Timoshenko family-order mismatches: `{mu_eb_order_failures}/{mu_timo_order_failures}`; multiplicity mismatches: `{mu_multiplicity_failures}`.",
+        "",
+        "## Root Completeness",
+        "",
+        f"- Total factorized root records evaluated: `{len(factorized_rows)}`; unresolved: `{factorized_failures}`.",
+        f"- Full-matrix SVD verified factorized records: `{full_matrix_verified}` / `{len(factorized_rows)}`.",
+        f"- Exact axial roots required in first 12: `{len(axial_rows)}`; block/full-matrix failures: `{axial_failures}`.",
+        f"- Raw general-6x6 missing factorized roots: `{len(missing_general)}` (EB `{missing_general_by_model['Euler-Bernoulli']}`, Timoshenko `{missing_general_by_model['Timoshenko']}`); missing required axial records: `{len(missing_required_axial)}`.",
+        f"- Missing roots locally confirmed by full-matrix SVD: `{missing_general_confirmed}`; unresolved confirmations: `{len(missing_general) - missing_general_confirmed}`.",
+        f"- R1--R3 and +/-1e-6 regression failures: `{regression_failures}` / `{len(regression_rows)}` rows.",
+        "",
+        "| case | epsilon offset | bending Lambda | axial Lambda | gap | status |",
+        "| --- | ---: | ---: | ---: | ---: | --- |",
+        *regression_table_rows,
+        "",
+        "## Mu-Invariance",
+        "",
+        "The physical factorized straight-rod spectrum is independent of the artificial internal split `mu`; the raw general solver is retained only as a diagnostic comparison.",
+        f"- Maximum corrected EB/Timoshenko absolute drift: `{markdown_value(mu_eb)}` / `{markdown_value(mu_timo)}`.",
+        f"- Failing rows: `{mu_failures}` / `{len(mu_rows)}`; `N_true` mismatches: `{mu_n_true_failures}`; EB/Timoshenko family-order mismatches: `{mu_eb_order_failures}/{mu_timo_order_failures}`; multiplicity mismatches: `{mu_multiplicity_failures}`.",
+        f"- The raw general comparison reports `{len(missing_general)}` missing records; those diagnostic omissions are not interpreted as physical mu-dependence.",
         "",
         "## Coarse and Adaptive Scan",
         "",
         f"- Unique evaluated baseline epsilon points: `{len(points)}` (`{len(resolved_points)}` resolved).",
         f"- Root-quality resolved/unresolved rows across all scopes: `{quality_counts['resolved']}/{quality_counts['unresolved']}`.",
-        f"- Cache hit/miss/mixed rows: `{cache_counts['hit']}/{cache_counts['miss']}/{cache_counts['mixed']}`.",
+        f"- Cache hit/miss/mixed/force-recomputed rows: `{cache_counts['hit']}/{cache_counts['miss']}/{cache_counts['mixed']}/{cache_counts['force_recomputed']}`.",
         f"- EB/Timoshenko root-warning rows: `{eb_warning_rows}/{timo_warning_rows}`; candidate-boundary rows: `{candidate_boundary_rows}`.",
         f"- Possible-multiplicity point rows/first-12 flags: `{multiplicity_point_rows}/{multiplicity_flags}`.",
         f"- Recorded transition/event rows: `{len(transitions)}`.",
         "- Every coarse interval received a deterministic midpoint screening pass; event intervals received local deterministic refinement.",
         "",
-        "## Critical Prefix Thresholds",
+        "## Corrected Thresholds",
         "",
-        "| n | status | epsilon_certified_n | epsilon_unsafe_upper | epsilon_star_estimate | trigger mode/family | primary | verification |",
-        "| ---: | --- | ---: | ---: | ---: | --- | --- | --- |",
+        "| n | status | safe lower | unsafe upper | epsilon_star_estimate (display 5dp) | floor 5dp / 4dp | trigger mode/family | continuity | verification |",
+        "| ---: | --- | ---: | ---: | ---: | --- | --- | --- | --- |",
     ]
     for row in sorted(thresholds, key=lambda item: int(item["prefix_n"])):
         lines.append(
-            f"| {row['prefix_n']} | {row.get('threshold_status')} | {markdown_value(row.get('epsilon_certified_n'))} | {markdown_value(row.get('epsilon_unsafe_upper'))} | {markdown_value(row.get('epsilon_star_estimate'))} | "
-            f"{row.get('triggering_sorted_indices') or '--'} / {row.get('triggering_EB_family') or '--'} -> {row.get('triggering_Timo_family') or '--'} | "
-            f"{row.get('inside_primary_range')} | {row.get('numerical_verification_status')} |"
+            f"| {row['prefix_n']} | {row.get('threshold_status')} | {markdown_value(row.get('epsilon_safe_lower'))} | {markdown_value(row.get('epsilon_unsafe_upper'))} | {markdown_value(row.get('epsilon_star_estimate'))} ({row.get('epsilon_star_display_5dp') or '--'}) | {row.get('epsilon_certified_floor_5dp') or '--'} / {row.get('epsilon_certified_floor_4dp') or '--'} | "
+            f"{row.get('triggering_sorted_indices') or '--'} / {row.get('triggering_EB_family') or '--'} -> {row.get('triggering_Timo_family') or '--'} | {row.get('threshold_continuity_status')} | "
+            f"{row.get('numerical_verification_status')} |"
         )
     lines.extend(
         [
@@ -2256,9 +3355,24 @@ def write_report(
             "",
             "For a resolved first loss, `epsilon_certified_n` is the verified safe lower endpoint, not the midpoint estimate. For `not_reached_in_scan_range`, it is the right-censored verified endpoint of the computational buffer; no first-loss estimate is claimed. This certificate applies only to the straight baseline system and only over the scanned epsilon range.",
             "",
-            "## Re-Entry and Sorted Reordering",
+            "## Precision Policy",
             "",
-            f"- Prefix safe/unsafe re-entry events: `{len(reentries)}`.",
+            f"Internal first-loss brackets are refined to approximately `{args.epsilon_tolerance:g}` or tighter. Publication uses five decimal places; practical certificate fields use downward decimal flooring at five and four places. Presentation fields never replace full-precision values, and any future step-3 points use the full-precision verified bracket/estimate.",
+            f"- Maximum resolved bracket width: `{markdown_value(max(finite_bracket_widths, default=float('nan')))}`.",
+            "",
+            "## Legacy Comparison",
+            "",
+            f"- Unchanged within tolerance: `{legacy_counts['unchanged_within_tolerance']}`.",
+            f"- Corrected due to a missing root: `{legacy_counts['corrected_due_to_missing_root']}`.",
+            f"- Previously unresolved now resolved / still unresolved / not reached: `{legacy_counts['previously_unresolved_now_resolved']}` / `{legacy_counts['still_unresolved']}` / `{legacy_counts['not_reached']}`.",
+            "",
+            "| n | legacy status | legacy estimate | corrected status | corrected estimate | reason | scientific status |",
+            "| ---: | --- | ---: | --- | ---: | --- | --- |",
+            *legacy_table_rows,
+            "",
+            "## Re-Entry",
+            "",
+            f"- Prefix safe/unsafe re-entry events: `{reentry_counts['safe_reentry']}` / `{reentry_counts['unsafe_reentry']}` (`{len(reentries)}` total).",
             f"- Evaluated points containing late individual passes: `{len(late_pass_points)}`.",
             f"- Family reorder events: `{sum(str(row.get('event_type')) == 'family_reorder' for row in transitions)}`.",
             "- First loss defines every threshold; a later safe interval or individual late pass never increases the certificate.",
@@ -2266,8 +3380,8 @@ def write_report(
             "## Numerical Verification",
             "",
             f"- Thresholds passing independent force-recompute verification: `{sum(str(row.get('numerical_verification_status')) == 'pass' for row in thresholds)}` / `{sum(str(row.get('threshold_status')) not in {'below_scan_range', 'not_reached_in_scan_range'} for row in thresholds)}` applicable rows.",
-            f"- EB candidate margin used for verification: `{max(VERIFICATION_CANDIDATE_ROOTS, args.n_candidate_roots + 4)}`; the Timoshenko wrapper requested the audited first 12 roots, with root 12 as its boundary margin.",
-            "- Verification did not reuse primary result objects or cache entries and repeated the first-12 root-order and analytic-union checks.",
+            f"- Independent verification candidate margin: `{max(VERIFICATION_CANDIDATE_ROOTS, args.n_candidate_roots + 4)}` for the raw audit; the corrected target force-recomputed `{factorized.ALGORITHM_VERSION}` without primary cache reuse.",
+            "- Verification repeated the first-12 multiplicity-preserving family order, exact axial block checks, and full-6x6 SVD confirmation.",
             "",
             "## Operation Counts",
             "",
@@ -2288,11 +3402,12 @@ def write_report(
             "- No adversarial geometry search has been run yet.",
             "- Timoshenko remains a one-dimensional reference.",
             "- Existing 3D support is strongest in the primary range `0.01..0.05` and does not automatically extend over the whole computational buffer.",
-            "- Exact crossings and multiplicity require special numerical care; unresolved quality rows invalidate the associated threshold rather than being discarded.",
-            "- The separate mu-invariance scan has unresolved high-mode rows at `mu=0.7/0.9`; therefore first-12 wrapper-level mu-invariance is not claimed despite unchanged `N_true` and EB family ordering in the audit.",
+            "- Exact crossings and multiplicity require special numerical care; cross-family duplicates are retained and only within-family numerical duplicates are removed.",
+            "- The raw general 6x6 sign scan remains a useful independent completeness diagnostic, but its missing-root rows are not a production source for this special-limit certificate.",
+            "- The general production solver outside the straight limit was not changed; future general-geometry work still requires a dedicated root-completeness recovery audit.",
             "- Thresholds outside the primary range have weaker physical validation status.",
             "",
-            "## Recommendation for Step 3",
+            "## Boundary of This Correction",
             "",
             "| n | epsilon_star_n | epsilon_near_n | epsilon_buffer_n |",
             "| ---: | ---: | ---: | ---: |",
@@ -2305,7 +3420,7 @@ def write_report(
     lines.extend(
         [
             "",
-            "These values are recommendations for a future targeted counterexample search only. No geometry search was implemented or run here.",
+            "These values are retained as possible inputs to a future targeted counterexample search only. No geometry search was implemented or run, and this task does not transition to research step 3.",
         ]
     )
     report.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -2322,6 +3437,11 @@ def run_plot_only(args: Args) -> dict[str, object]:
     mu_rows = read_csv(args.output_dir / "baseline_mu_invariance_audit.csv")
     quality = read_csv(args.output_dir / "baseline_solver_quality_audit.csv")
     operations = read_csv(args.output_dir / "baseline_operation_counts.csv")
+    factorized_rows = read_csv(args.output_dir / "baseline_factorized_spectrum_audit.csv")
+    axial_rows = read_csv(args.output_dir / "baseline_axial_completeness_audit.csv")
+    general_comparison = read_csv(args.output_dir / "baseline_general_vs_factorized_spectrum_audit.csv")
+    legacy_comparison = read_csv(args.output_dir / "baseline_legacy_threshold_comparison.csv")
+    regression_rows = read_csv(args.output_dir / "baseline_regression_close_root_pairs.csv")
     plots = make_plots(
         args.output_dir,
         points,
@@ -2332,7 +3452,22 @@ def run_plot_only(args: Args) -> dict[str, object]:
         primary_min=args.primary_epsilon_min,
         primary_max=args.primary_epsilon_max,
     )
-    report = write_report(args, points, modes, thresholds, transitions, families, mu_rows, quality, operations)
+    report = write_report(
+        args,
+        points,
+        modes,
+        thresholds,
+        transitions,
+        families,
+        mu_rows,
+        quality,
+        operations,
+        factorized_rows,
+        axial_rows,
+        general_comparison,
+        legacy_comparison,
+        regression_rows,
+    )
     print(f"plot-only regenerated {len(plots)} plots; root calculations performed: 0")
     return {"args": args, "plot_paths": plots, "report": report, "root_solves": 0}
 
@@ -2348,6 +3483,7 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
     coarse_values = epsilon_grid(args)
     for epsilon in coarse_values:
         primary.evaluate(epsilon, "coarse")
+    regression_rows = regression_close_root_rows(primary)
     adaptive_rows, adaptive_intervals = adaptive_screen(args, primary, coarse_values)
     baseline_before_thresholds = ordered_baseline_evaluations(primary, args)
     threshold_rows, threshold_refinement_rows = build_threshold_rows(
@@ -2362,6 +3498,13 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
     families = family_rows(baseline_evaluations, args)
     refinement = [*adaptive_rows, *threshold_refinement_rows, *verification_rows]
     quality = quality_rows((primary, verification), args)
+    primary_all_evaluations = list(primary.evaluations.values())
+    factorized_rows = factorized_spectrum_rows(primary_all_evaluations)
+    axial_rows = axial_completeness_rows(primary_all_evaluations, args.n_spectrum_roots)
+    general_comparison = general_vs_factorized_rows((primary, verification))
+    legacy_comparison = legacy_threshold_comparison_rows(
+        args, threshold_rows, general_comparison
+    )
     elapsed = time.perf_counter() - started
     operations = operation_rows(
         args,
@@ -2381,6 +3524,11 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
     write_csv(args.output_dir / "baseline_mu_invariance_audit.csv", mu_rows, MU_FIELDS)
     write_csv(args.output_dir / "baseline_solver_quality_audit.csv", quality, QUALITY_FIELDS)
     write_csv(args.output_dir / "baseline_operation_counts.csv", operations, OPERATION_FIELDS)
+    write_csv(args.output_dir / "baseline_factorized_spectrum_audit.csv", factorized_rows, FACTORIZED_FIELDS)
+    write_csv(args.output_dir / "baseline_axial_completeness_audit.csv", axial_rows, AXIAL_COMPLETENESS_FIELDS)
+    write_csv(args.output_dir / "baseline_general_vs_factorized_spectrum_audit.csv", general_comparison, GENERAL_VS_FACTORIZED_FIELDS)
+    write_csv(args.output_dir / "baseline_legacy_threshold_comparison.csv", legacy_comparison, LEGACY_COMPARISON_FIELDS)
+    write_csv(args.output_dir / "baseline_regression_close_root_pairs.csv", regression_rows, REGRESSION_FIELDS)
     plots = make_plots(
         args.output_dir,
         points,
@@ -2401,6 +3549,11 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
         mu_rows,
         quality,
         operations,
+        factorized_rows,
+        axial_rows,
+        general_comparison,
+        legacy_comparison,
+        regression_rows,
     )
     unresolved = sum(str(row.get("root_quality_status")) != "resolved" for row in quality)
     print(f"baseline epsilon points: {len(points)}; unresolved quality rows: {unresolved}")
@@ -2419,6 +3572,11 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
         "mu_rows": mu_rows,
         "quality_rows": quality,
         "operation_rows": operations,
+        "factorized_rows": factorized_rows,
+        "axial_rows": axial_rows,
+        "general_comparison_rows": general_comparison,
+        "legacy_comparison_rows": legacy_comparison,
+        "regression_rows": regression_rows,
         "plot_paths": plots,
         "report": report,
         "elapsed_seconds": elapsed,
