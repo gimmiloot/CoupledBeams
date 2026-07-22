@@ -71,7 +71,8 @@ rules with Rules A--D plus a `Pi_EB`/spectral-gap ablation, Rule A-gap. The
 production threshold candidate search now gives priority to the running prefix
 extrema that actually control certification decisions.
 
-All 21 geometries completed without root or candidate-boundary warnings. On
+The legacy 2026-07-20 run reported all 21 geometries without root or
+candidate-boundary warnings. On
 the baseline-reference transfer to the 14 non-baseline cases, the observed
 results were:
 
@@ -194,6 +195,66 @@ correction. A future targeted geometry search may probe the recorded
 `epsilon_near_n = 0.999 epsilon_star_n` and
 `epsilon_buffer_n = 0.99 epsilon_star_n` values while keeping first loss
 distinct from re-entry.
+
+## General-Spectrum Completeness Audit Before Step 3
+
+Research step 2.5 was implemented and run on `2026-07-22` through
+[`audit_eb_timo_general_spectrum_completeness.py`](../../scripts/analysis/thickness_mismatch/audits/audit_eb_timo_general_spectrum_completeness.py).
+It is an offline audit of the unchanged general coupled Euler--Bernoulli and
+Timoshenko `6x6` matrices. It does not replace the production root wrappers.
+The candidate union combines unshifted and shifted determinant scans,
+independent half-step scans, normalized smallest-singular-value and
+singular-value-ratio valleys, adaptive local refinement, continuation seeds,
+EB seed windows for Timoshenko, and the straight factorized oracle where its
+`beta=0`, `eta=0` assumptions apply. A candidate is accepted only after a
+row-normalized full-matrix SVD check. Lambda proximity alone does not merge
+roots: self-MAC and compatible detection histories are also required, while
+exact nullity and coalesced continuation tracks remain separate metadata.
+
+The primary search retained 20 candidate roots and the independent
+verification search retained 24, with the first 12 used for the `K=10`
+completeness decision. Root 11 is the right spectral-gap guard and root 12 is
+a candidate-boundary margin. The two searches use different steps and phases;
+verification receives no primary candidate objects or primary seeds. The
+versioned JSON cache records geometry, model, search bounds, steps, phases,
+refinement, SVD settings, root tolerances, and
+`general_complete_svd_v1`. Stale algorithm versions are rejected explicitly.
+
+The finite full run produced the following evidence:
+
+- the general `6x6` audit resolved both EB and Timoshenko for 17 of the 21
+  pilot geometries; unresolved rows were B07 Timoshenko, G01 EB, G02 EB, and
+  both M02 models;
+- the straight oracle comparison passed 431 of 432 first-12 rows; the sole
+  mismatch was G02 EB root 12, and 65 roots absent from raw sign-scan prefixes
+  were recovered and checked in the full matrix;
+- the requested R1--R3, `epsilon +/- 1e-6`, and
+  `beta=0,0.1,1,5 deg` stress set plus pilot cluster controls contained 110
+  rows. Twenty-six stress rows failed or remained unresolved, including 21
+  unresolved model summaries. The minimum retained close-pair gap was
+  `9.19871808003e-4`;
+- across all 114 model/geometry audit rows, the candidate records contained 67
+  close clusters and no asserted algebraic multiplicity. The run performed
+  2,290,411 characteristic-matrix evaluations, 2,106,161 full `6x6` SVD
+  calls, 8,040 adaptive subdivisions, and 254,040 Brent/bisection evaluations;
+  this first full run had 114 cache misses and no cache hits;
+- the corrected pilot's explicit auto-spectrum mode used the exact
+  factorized source only in the straight special limit and the general audit
+  elsewhere. It included 20/21 geometries and excluded M02 with
+  `EB_spectrum_unresolved;Timo_spectrum_unresolved`; it never substituted
+  legacy roots for an unresolved corrected result;
+- all included first-ten roots and all 21 reported `N_true` values matched the
+  legacy pilot. False-safe geometry counts were unchanged in all 53 rule
+  comparison rows. Retention and conservative-loss summaries changed because
+  M02 was excluded, with maximum absolute changes of `0.172414` and
+  `1.333333`, respectively; thresholds were not retuned in response to these
+  results.
+
+This is a finite numerical audit, not a mathematical root-count proof. Its
+readiness decision is `not_ready_for_step3`: the general pilot audit retains
+unresolved cases, G02 retains a straight-oracle mismatch at root 12, and the
+small-angle stress audit retains unresolved/failing rows. Step 3, any
+four-dimensional lower-envelope search, FEM, and article work remain unrun.
 
 ## Engineering Objective
 

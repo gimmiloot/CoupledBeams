@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 import csv
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 import json
 import math
 from math import isfinite
@@ -32,6 +32,7 @@ from scripts.analysis.thickness_mismatch.audits import (  # noqa: E402
 from scripts.analysis.thickness_mismatch.postprocess import (  # noqa: E402
     analyze_eb_safe_prefix_certification as certification,
 )
+from scripts.lib import general_spectrum_completeness as general_complete  # noqa: E402
 
 
 DEFAULT_MANIFEST = SCRIPT_PATH.parent / "data" / "eb_epsilon_apriori_pilot_cases.csv"
@@ -39,11 +40,15 @@ DEFAULT_OUTPUT_DIR = Path("results") / "eb_epsilon_apriori_pilot"
 SMOKE_OUTPUT_DIR = Path("results") / "_smoke" / "eb_epsilon_apriori_pilot"
 DEFAULT_K_MAX = 10
 DEFAULT_N_CANDIDATE_ROOTS = 20
+DEFAULT_N_SPECTRUM_ROOTS = 12
+DEFAULT_VERIFICATION_CANDIDATE_ROOTS = 24
 DEFAULT_N_SHAPE_POINTS = fixed_scan.DEFAULT_SHAPE_POINTS
 SMOKE_N_SHAPE_POINTS = 51
 DEFAULT_CLUSTER_GAP_THRESHOLD = fixed_scan.DEFAULT_CLUSTER_GAP_THRESHOLD
 FREQUENCY_ERROR_THRESHOLD = 0.10
 SMOKE_CASE_IDS = ("B01", "G04", "M04")
+SPECTRUM_METHOD_LEGACY = "legacy"
+SPECTRUM_METHOD_AUTO = general_complete.AUTO_SPECTRUM_ALGORITHM_VERSION
 
 SOURCE_OUTPUT_NAMES = (
     "epsilon_pilot_case_manifest_resolved.csv",
@@ -73,6 +78,7 @@ RESOLVED_FIELDS = [
     "diameter_to_length_2",
     "case_groups",
     "notes",
+    "spectrum_method",
 ]
 
 MODE_FIELDS = [
@@ -127,6 +133,10 @@ MODE_FIELDS = [
     "quality_status",
     "source_warning",
     "notes",
+    "spectrum_method",
+    "EB_spectrum_status",
+    "Timo_spectrum_status",
+    "root12_boundary_warning",
 ]
 
 GEOMETRY_FIELDS = [
@@ -153,6 +163,10 @@ GEOMETRY_FIELDS = [
     "root11_guard_available",
     "exclusion_reason",
     "notes",
+    "spectrum_method",
+    "EB_spectrum_status",
+    "Timo_spectrum_status",
+    "root12_available",
 ]
 
 MATCHING_FIELDS = [
@@ -199,6 +213,7 @@ ROOT_OPERATION_FIELDS = [
     "Timoshenko_determinant_evaluations",
     "root_bracketing_intervals",
     "Brent_function_evaluations",
+    *general_complete.OperationCounts.__dataclass_fields__.keys(),
     "notes",
 ]
 
@@ -221,12 +236,65 @@ class Args:
     cache_dir: Path
     k_max: int
     n_candidate_roots: int
+    n_spectrum_roots: int
+    verification_candidate_roots: int
     n_shape_points: int
     cluster_gap_threshold: float
     reuse_cache: bool
     force_recompute: bool
     force: bool
     smoke: bool
+    spectrum_method: str
+
+
+@dataclass(frozen=True)
+class AutoSpectrumProducts:
+    eb_entry: fixed_scan.RootCacheEntry
+    timo_entry: fixed_scan.RootCacheEntry
+    eb_status: str
+    timo_status: str
+    eb_source: str
+    timo_source: str
+    root12_boundary_warning: bool
+    operations: general_complete.OperationCounts
+
+
+class CompleteRootCacheAdapter:
+    """Duck-typed fixed-scan cache backed by audit-resolved root records."""
+
+    def __init__(self, entries: Mapping[str, fixed_scan.RootCacheEntry]) -> None:
+        self.entries = dict(entries)
+
+    def roots(
+        self,
+        *,
+        model: str,
+        beta_deg: float,
+        mu: float,
+        eta: float,
+        n_roots: int,
+        upper_hint: float | None = None,
+    ) -> fixed_scan.RootCacheEntry:
+        del beta_deg, mu, eta, upper_hint
+        entry = self.entries[str(model)]
+        values = list(entry.roots[: int(n_roots)])
+        found = sum(isfinite(float(value)) for value in values)
+        if len(values) < int(n_roots):
+            values.extend([float("nan")] * (int(n_roots) - len(values)))
+        warnings = list(entry.warnings)
+        if found < int(n_roots):
+            warnings.append(f"complete spectrum adapter has {found}/{int(n_roots)} requested roots")
+        return fixed_scan.RootCacheEntry(
+            roots=tuple(float(value) for value in values),
+            warnings=tuple(warnings),
+            root_count_found=found,
+            lambda_max_used=entry.lambda_max_used,
+            scan_step_used=entry.scan_step_used,
+            retry_attempted=entry.retry_attempted,
+            retry_changed_value=entry.retry_changed_value,
+            notes=entry.notes,
+            cache_hit=entry.cache_hit,
+        )
 
 
 def repo_path(path: Path) -> Path:
@@ -275,7 +343,19 @@ def parse_args(argv: Sequence[str] | None = None) -> Args:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--cache-dir", type=Path, default=None)
     parser.add_argument("--k-max", type=int, default=DEFAULT_K_MAX)
+    parser.add_argument("--n-spectrum-roots", type=int, default=DEFAULT_N_SPECTRUM_ROOTS)
     parser.add_argument("--n-candidate-roots", type=int, default=DEFAULT_N_CANDIDATE_ROOTS)
+    parser.add_argument(
+        "--verification-candidate-roots",
+        type=int,
+        default=DEFAULT_VERIFICATION_CANDIDATE_ROOTS,
+    )
+    parser.add_argument(
+        "--spectrum-method",
+        choices=(SPECTRUM_METHOD_LEGACY, SPECTRUM_METHOD_AUTO),
+        default=SPECTRUM_METHOD_LEGACY,
+        help="Explicit root source; default legacy preserves the historical pilot.",
+    )
     parser.add_argument("--n-shape-points", type=int, default=DEFAULT_N_SHAPE_POINTS)
     parser.add_argument("--cluster-gap-threshold", type=float, default=DEFAULT_CLUSTER_GAP_THRESHOLD)
     parser.add_argument("--reuse-cache", dest="reuse_cache", action="store_true", default=True)
@@ -297,18 +377,25 @@ def parse_args(argv: Sequence[str] | None = None) -> Args:
         output_dir=output_dir,
         cache_dir=cache_dir,
         k_max=int(ns.k_max),
+        n_spectrum_roots=int(ns.n_spectrum_roots),
         n_candidate_roots=int(ns.n_candidate_roots),
+        verification_candidate_roots=int(ns.verification_candidate_roots),
         n_shape_points=n_shape_points,
         cluster_gap_threshold=float(ns.cluster_gap_threshold),
         reuse_cache=bool(ns.reuse_cache),
         force_recompute=bool(ns.force_recompute),
         force=bool(ns.force),
         smoke=bool(ns.smoke),
+        spectrum_method=str(ns.spectrum_method),
     )
     if args.k_max != 10:
         raise ValueError("this pilot contract requires --k-max 10")
-    if args.n_candidate_roots < args.k_max + 1:
+    if args.n_spectrum_roots < args.k_max + 2:
+        raise ValueError("--n-spectrum-roots must be at least K+2")
+    if args.n_candidate_roots < args.n_spectrum_roots:
         raise ValueError("--n-candidate-roots must include the K+1 EB guard root")
+    if args.spectrum_method == SPECTRUM_METHOD_AUTO and args.verification_candidate_roots <= args.n_candidate_roots:
+        raise ValueError("--verification-candidate-roots must exceed --n-candidate-roots")
     if args.n_shape_points < 51:
         raise ValueError("--n-shape-points must be at least 51")
     if args.cluster_gap_threshold <= 0.0:
@@ -453,6 +540,136 @@ def runtime_difference(before: Mapping[str, float | int], after: Mapping[str, fl
     return {name: after[name] - before[name] for name in before}
 
 
+def _geometry_distance(left: general_complete.Geometry, right: general_complete.Geometry) -> float:
+    return (
+        abs(left.epsilon_0 - right.epsilon_0) / 0.05
+        + abs(left.beta_deg - right.beta_deg) / 90.0
+        + abs(left.mu - right.mu)
+        + abs(left.eta - right.eta)
+    )
+
+
+def _nearest_continuation_roots(
+    geometry: general_complete.Geometry,
+    bank: Sequence[tuple[general_complete.Geometry, tuple[float, ...]]],
+) -> tuple[float, ...]:
+    if not bank:
+        return ()
+    _source_geometry, roots = min(
+        bank,
+        key=lambda item: (
+            _geometry_distance(geometry, item[0]),
+            item[0].beta_deg,
+            item[0].mu,
+            abs(item[0].eta),
+            item[0].eta,
+            item[0].epsilon_0,
+        ),
+    )
+    return tuple(roots)
+
+
+def _entry_from_values(
+    values: Sequence[float],
+    *,
+    source: str,
+    cache_hit: bool,
+) -> fixed_scan.RootCacheEntry:
+    finite = tuple(float(value) for value in values if isfinite(float(value)))
+    return fixed_scan.RootCacheEntry(
+        roots=finite,
+        warnings=(),
+        root_count_found=len(finite),
+        lambda_max_used=max(finite) if finite else float("nan"),
+        scan_step_used=general_complete.DEFAULT_SCAN_STEP,
+        retry_attempted=False,
+        retry_changed_value=False,
+        notes=(source,),
+        cache_hit=cache_hit,
+    )
+
+
+def auto_complete_spectrum_products(
+    args: Args,
+    case: PilotCase,
+    cache: general_complete.GeneralSpectrumCache,
+    continuation_bank: Mapping[str, list[tuple[general_complete.Geometry, tuple[float, ...]]]],
+) -> AutoSpectrumProducts:
+    geometry = general_complete.Geometry(case.epsilon_0, case.beta_deg, case.mu, case.eta)
+    settings = general_complete.SearchSettings(
+        requested_roots=args.n_spectrum_roots,
+        candidate_roots=args.n_candidate_roots,
+        verification_candidate_roots=args.verification_candidate_roots,
+    )
+    operations = general_complete.OperationCounts()
+    if abs(case.beta_deg) <= 1.0e-14 and abs(case.eta) <= 1.0e-14:
+        eb_values = general_complete.straight_oracle_values(
+            general_complete.MODEL_EB, geometry, args.n_candidate_roots
+        )
+        timo_values = general_complete.straight_oracle_values(
+            general_complete.MODEL_TIMO, geometry, args.n_candidate_roots
+        )
+        eb_entry = _entry_from_values(
+            eb_values,
+            source="factorized_straight_spectrum_v2:exact_EB_family_union",
+            cache_hit=False,
+        )
+        timo_entry = _entry_from_values(
+            timo_values,
+            source="factorized_straight_spectrum_v2:exact_Timoshenko_block_union",
+            cache_hit=False,
+        )
+        eb_status = timo_status = "resolved_complete"
+        eb_source = timo_source = "factorized_straight_spectrum_v2"
+        boundary_warning = False
+    else:
+        eb_seeds = _nearest_continuation_roots(geometry, continuation_bank[general_complete.MODEL_EB])
+        eb_result = cache.resolve(
+            general_complete.MODEL_EB,
+            geometry,
+            settings,
+            continuation_seeds=eb_seeds,
+        )
+        timo_seeds = _nearest_continuation_roots(geometry, continuation_bank[general_complete.MODEL_TIMO])
+        timo_result = cache.resolve(
+            general_complete.MODEL_TIMO,
+            geometry,
+            settings,
+            continuation_seeds=timo_seeds,
+            eb_seed_roots=eb_result.values,
+        )
+        operations.add(eb_result.operations)
+        operations.add(timo_result.operations)
+        eb_entry = _entry_from_values(
+            [root.Lambda for root in eb_result.primary.roots[: args.n_candidate_roots]],
+            source=f"{general_complete.GENERAL_SPECTRUM_ALGORITHM_VERSION}:{eb_result.cache_status}",
+            cache_hit=eb_result.cache_status == "hit",
+        )
+        timo_entry = _entry_from_values(
+            [root.Lambda for root in timo_result.primary.roots[: args.n_candidate_roots]],
+            source=f"{general_complete.GENERAL_SPECTRUM_ALGORITHM_VERSION}:{timo_result.cache_status}",
+            cache_hit=timo_result.cache_status == "hit",
+        )
+        eb_status = eb_result.spectrum_status
+        timo_status = timo_result.spectrum_status
+        eb_source = timo_source = general_complete.GENERAL_SPECTRUM_ALGORITHM_VERSION
+        boundary_warning = eb_result.root12_boundary_warning or timo_result.root12_boundary_warning
+    if eb_status == "resolved_complete":
+        continuation_bank[general_complete.MODEL_EB].append((geometry, tuple(eb_entry.roots)))
+    if timo_status == "resolved_complete":
+        continuation_bank[general_complete.MODEL_TIMO].append((geometry, tuple(timo_entry.roots)))
+    return AutoSpectrumProducts(
+        eb_entry=eb_entry,
+        timo_entry=timo_entry,
+        eb_status=eb_status,
+        timo_status=timo_status,
+        eb_source=eb_source,
+        timo_source=timo_source,
+        root12_boundary_warning=boundary_warning,
+        operations=operations,
+    )
+
+
 def gap_from_pair(left: float, right: float) -> float:
     if not (isfinite(left) and isfinite(right)):
         return float("nan")
@@ -513,10 +730,25 @@ def solve_case(
     args: Args,
     case: PilotCase,
     runtime: fixed_scan.RuntimeTracker,
+    *,
+    general_cache: general_complete.GeneralSpectrumCache | None = None,
+    continuation_bank: Mapping[str, list[tuple[general_complete.Geometry, tuple[float, ...]]]] | None = None,
 ) -> dict[str, object]:
     point_args = fixed_args_for_case(args, case)
-    cache = fixed_scan.RootCache(point_args, runtime)
     before = runtime_snapshot(runtime)
+    auto_products: AutoSpectrumProducts | None = None
+    if args.spectrum_method == SPECTRUM_METHOD_AUTO:
+        if general_cache is None or continuation_bank is None:
+            raise ValueError("auto complete spectrum mode requires its isolated cache and continuation bank")
+        auto_products = auto_complete_spectrum_products(args, case, general_cache, continuation_bank)
+        cache = CompleteRootCacheAdapter(
+            {
+                fixed_scan.MODEL_EB: auto_products.eb_entry,
+                fixed_scan.MODEL_TIMO: auto_products.timo_entry,
+            }
+        )
+    else:
+        cache = fixed_scan.RootCache(point_args, runtime)
     products = fixed_scan.point_products(
         point_args,
         cache,
@@ -528,15 +760,18 @@ def solve_case(
     after = runtime_snapshot(runtime)
     operation_delta = runtime_difference(before, after)
 
-    audit_cache = fixed_scan.RootCache(point_args, None)
-    eb_entry, timo_entry = fixed_scan.solve_point_roots(
-        point_args,
-        audit_cache,
-        beta_deg=case.beta_deg,
-        mu=case.mu,
-        eta=case.eta,
-        n_roots=args.n_candidate_roots,
-    )
+    if auto_products is not None:
+        eb_entry, timo_entry = auto_products.eb_entry, auto_products.timo_entry
+    else:
+        audit_cache = fixed_scan.RootCache(point_args, None)
+        eb_entry, timo_entry = fixed_scan.solve_point_roots(
+            point_args,
+            audit_cache,
+            beta_deg=case.beta_deg,
+            mu=case.mu,
+            eta=case.eta,
+            n_roots=args.n_candidate_roots,
+        )
     sorted_rows = sorted(
         (row for row in products.mode_rows if row.get("comparison_type") == "sorted_index"),
         key=lambda row: int(row["eb_sorted_index"]),
@@ -560,6 +795,14 @@ def solve_case(
         k_max=args.k_max,
         n_candidate_roots=args.n_candidate_roots,
     )
+    if auto_products is not None:
+        if auto_products.eb_status != "resolved_complete":
+            reasons.append(f"EB_spectrum_{auto_products.eb_status}")
+        if auto_products.timo_status != "resolved_complete":
+            reasons.append(f"Timo_spectrum_{auto_products.timo_status}")
+        if auto_products.root12_boundary_warning:
+            reasons.append("root12_candidate_boundary_warning")
+        reasons = list(dict.fromkeys(reasons))
     included = not reasons
     eb_roots = list(eb_entry.roots)
     guard_11 = eb_roots[args.k_max] if len(eb_roots) > args.k_max and isfinite(eb_roots[args.k_max]) else float("nan")
@@ -638,6 +881,10 @@ def solve_case(
                 "quality_status": "included" if included else "excluded",
                 "source_warning": source_warning,
                 "notes": "sorted-spectrum target; homologous matching fields are quality metadata only",
+                "spectrum_method": args.spectrum_method,
+                "EB_spectrum_status": auto_products.eb_status if auto_products else "legacy_not_audit_resolved",
+                "Timo_spectrum_status": auto_products.timo_status if auto_products else "legacy_not_audit_resolved",
+                "root12_boundary_warning": auto_products.root12_boundary_warning if auto_products else "not_audited",
             }
         )
 
@@ -681,6 +928,13 @@ def solve_case(
         "root11_guard_available": isfinite(guard_11),
         "exclusion_reason": ";".join(reasons),
         "notes": "N_true uses the first continuous sorted-frequency prefix",
+        "spectrum_method": args.spectrum_method,
+        "EB_spectrum_status": auto_products.eb_status if auto_products else "legacy_not_audit_resolved",
+        "Timo_spectrum_status": auto_products.timo_status if auto_products else "legacy_not_audit_resolved",
+        "root12_available": (
+            len(eb_entry.roots) >= args.n_spectrum_roots
+            and len(timo_entry.roots) >= args.n_spectrum_roots
+        ),
     }
     matching_rows = [
         {
@@ -727,6 +981,11 @@ def solve_case(
         "Timoshenko_determinant_evaluations": "unavailable",
         "root_bracketing_intervals": "unavailable",
         "Brent_function_evaluations": "unavailable",
+        **(
+            asdict(auto_products.operations)
+            if auto_products is not None
+            else {name: "unavailable" for name in general_complete.OperationCounts.__dataclass_fields__}
+        ),
         "notes": "actual existing-wrapper counters only; no counts inferred from wall-clock time",
     }
     resolved_row = {
@@ -739,6 +998,7 @@ def solve_case(
         **local,
         "case_groups": case_groups,
         "notes": case.notes,
+        "spectrum_method": args.spectrum_method,
     }
     return {
         "resolved_row": resolved_row,
@@ -773,6 +1033,8 @@ def write_generation_report(
         f"- Manifest geometries solved: `{len(cases)}`.",
         f"- Sorted target modes: `K = {args.k_max}`.",
         f"- Candidate roots per theory: `{args.n_candidate_roots}`.",
+        f"- Audited spectrum roots: `{args.n_spectrum_roots}`; verification candidate margin: `{args.verification_candidate_roots}`.",
+        f"- Spectrum method: `{args.spectrum_method}` (historical default remains `{SPECTRUM_METHOD_LEGACY}`).",
         f"- Shape samples per rod: `{args.n_shape_points}`.",
         "- The dimensional-frequency discrepancy is recomputed from squared `Lambda`.",
         "- Timoshenko is used only as the one-dimensional reference target and matching audit.",
@@ -788,7 +1050,10 @@ def write_generation_report(
         f"- Generation wall-clock time: `{elapsed_seconds:.6f}` seconds (auxiliary only).",
         "",
         "Excluded cases are retained in `epsilon_pilot_exclusion_audit.csv`; they are never removed silently.",
-        "The operation CSV reports only counters exposed by the existing wrappers. Missing determinant-level counters are marked unavailable rather than reconstructed from elapsed time.",
+        (
+            "The corrected spectrum mode records primitive general-completeness operations; "
+            "the legacy mode keeps unavailable determinant-level counters explicit."
+        ),
     ]
     if excluded:
         lines.extend(["", "## Exclusions", ""])
@@ -806,6 +1071,19 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
     ensure_output_policy(args)
 
     runtime = fixed_scan.RuntimeTracker()
+    general_cache = (
+        general_complete.GeneralSpectrumCache(
+            args.cache_dir,
+            reuse_cache=args.reuse_cache,
+            force_recompute=args.force_recompute,
+        )
+        if args.spectrum_method == SPECTRUM_METHOD_AUTO
+        else None
+    )
+    continuation_bank: dict[str, list[tuple[general_complete.Geometry, tuple[float, ...]]]] = {
+        general_complete.MODEL_EB: [],
+        general_complete.MODEL_TIMO: [],
+    }
     resolved_rows: list[dict[str, object]] = []
     mode_rows: list[dict[str, object]] = []
     geometry_rows: list[dict[str, object]] = []
@@ -814,7 +1092,13 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
     operation_rows: list[dict[str, object]] = []
     started = time.perf_counter()
     for case in cases:
-        product = solve_case(args, case, runtime)
+        product = solve_case(
+            args,
+            case,
+            runtime,
+            general_cache=general_cache,
+            continuation_bank=continuation_bank,
+        )
         resolved_rows.append(product["resolved_row"])  # type: ignore[arg-type]
         mode_rows.extend(product["mode_rows"])  # type: ignore[arg-type]
         geometry_rows.append(product["geometry_row"])  # type: ignore[arg-type]

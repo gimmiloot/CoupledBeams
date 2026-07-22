@@ -2,6 +2,35 @@
 
 Здесь ведётся рабочий журнал проекта: этапы, решения и важные исследовательские заметки.
 
+## 2026-07-22
+
+- Implemented research step 2.5 as an offline general-spectrum completeness
+  layer around the unchanged coupled EB and Timoshenko `6x6` matrices. The
+  primary and independent verification configurations combine determinant
+  brackets, shifted and half-step grids, normalized SVD valleys, adaptive
+  refinement, continuation and cross-model seed windows, and the straight
+  factorized oracle only where `beta=0`, `eta=0`. Every accepted root is
+  checked in the row-normalized full matrix. Close-root deduplication requires
+  Lambda, self-MAC, and compatible search history; exact nullity and coalesced
+  continuation tracks remain distinct. Added an algorithm-versioned cache,
+  operation counters, a stable audit entry point, synthetic regressions, and
+  an explicit auto-spectrum option while leaving the historical pilot default
+  on `legacy`.
+
+- Ran the full first-12 audit for the 21 pilot geometries and the requested
+  R1--R3 small-angle stresses. The strict general audit resolved both models
+  for 17/21 pilot cases; B07, G01, G02, and M02 retain explicit unresolved
+  rows. The straight comparison passed 431/432 oracle rows and recovered 65
+  roots absent from raw sign-scan prefixes; G02 EB root 12 remains the sole
+  oracle mismatch. The stress audit has 26 failing/unresolved rows and a
+  minimum retained pair gap of `9.19871808003e-4`. The corrected auto pilot
+  included 20/21 cases, excluded M02 without legacy fallback, and changed no
+  first-ten roots or `N_true` values. False-safe geometry counts were unchanged
+  across all 53 rule-comparison rows, although retention/loss summaries moved
+  after M02 exclusion. The decision is `not_ready_for_step3`. No formula,
+  determinant, shared solver/tolerance, FEM, article, or step-3 workflow was
+  changed or run.
+
 ## 2026-07-21
 
 - Corrected research step 2 after demonstrating that the general 6x6

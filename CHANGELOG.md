@@ -1,5 +1,33 @@
 # CHANGELOG
 
+## 2026-07-22
+
+- Added the research-step-2.5 general EB/Timoshenko spectrum-completeness
+  layer and stable audit entry point. It builds an auditable candidate union
+  from determinant sign scans, shifted/half-step grids, normalized full-matrix
+  SVD valleys, adaptive refinement, continuation/cross-model seed windows, and
+  the straight factorized oracle only in its valid special limit. Primary and
+  independent verification searches retain 20/24 candidate roots and audit
+  the first 12 for the `K=10` target. Root acceptance, duplicate handling,
+  cluster/multiplicity metadata, cache identity/version rejection, operation
+  counts, unresolved exclusions, smoke mode, and solver-free plot-only report
+  regeneration are explicit. Added targeted synthetic, oracle, cache, pilot,
+  and import-smoke tests. The manifest pilot now has an explicit
+  `auto_complete_spectrum_v1` mode; its default remains `legacy`.
+
+- Completed the 21-case and requested R1--R3 small-angle audit. The strict
+  general `6x6` search resolved both models for 17/21 pilot geometries; the
+  corrected pilot included 20/21 and explicitly excluded M02. All included
+  first-ten roots and all reported `N_true` values match legacy. The straight
+  oracle comparison passed 431/432 rows and recovered 65 raw-scan omissions;
+  G02 EB root 12 remains mismatched. The stress audit retains 26
+  failing/unresolved rows, so the recorded readiness decision is
+  `not_ready_for_step3`. False-safe geometry counts are unchanged in all 53
+  legacy/corrected rule comparisons. Updated the research plan, script map,
+  journal, audit outputs, and separate corrected-pilot outputs. Analytic
+  formulas, matrices, shared production solvers/tolerances, FEM/3D FEM,
+  article workspaces, the repository root README, and step 3 were unchanged.
+
 ## 2026-07-21
 
 - Corrected the research-step-2 straight-system epsilon baseline after a
