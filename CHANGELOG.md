@@ -2,6 +2,34 @@
 
 ## 2026-07-22
 
+- Added the research-step-2.5b branch-informed spectrum continuation layer,
+  stable gateway audit, and 46 targeted regressions. Exact beta=0 axial and
+  bending blocks seed separately identified parent families. Adaptive isolated
+  continuation and left/right null-subspace cluster continuation use projected
+  or reduced candidates only to define local windows; accepted roots require
+  stationary, independent, unchanged full-6x6 SVD checks. Seed-only root
+  creation is prohibited, duplicate-basin seeds have an explicit existing-root
+  status, and K10/root-11 guard status remains separate from full12 status.
+  Added separately counted global guards, triggered strict fallback,
+  force-global verification, operation categories, and primary/force cache
+  identities. Updated the general completeness helper to
+  `general_complete_svd_v2` so its seeds also require refinement; production
+  solver defaults remain unchanged.
+
+- Completed the requested R1--R3, B07/G01/G02/M02, and 21-case pilot gateway
+  run. All 122 audited EB/Timoshenko model/geometry records pass
+  `K10_guard_resolved`; 103/122 also pass `full12_resolved`. The separate
+  branch-informed pilot includes 21/21 geometries and both models pass K10 for
+  all 42 spectra, with no pilot changes to first-ten roots, `N_true`, or first
+  failure in the recorded comparisons. Every readiness item passes, producing
+  `ready_for_targeted_step3`. Added the 12 gateway CSVs, detailed report,
+  corrected pilot outputs, documentation, and a compact future-only 28-case
+  step-3 manifest derived solely from the corrected full-precision
+  `epsilon_near_n`/`epsilon_buffer_n` thresholds. The manifest was not
+  executed; no lower-envelope search, formula, matrix, coefficient ordering,
+  FEM/3D FEM, Gmsh, CalculiX, article workspace, or repository-root README was
+  changed.
+
 - Added the research-step-2.5 general EB/Timoshenko spectrum-completeness
   layer and stable audit entry point. It builds an auditable candidate union
   from determinant sign scans, shifted/half-step grids, normalized full-matrix

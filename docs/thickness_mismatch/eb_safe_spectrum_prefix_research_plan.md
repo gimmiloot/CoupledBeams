@@ -256,6 +256,45 @@ unresolved cases, G02 retains a straight-oracle mismatch at root 12, and the
 small-angle stress audit retains unresolved/failing rows. Step 3, any
 four-dimensional lower-envelope search, FEM, and article work remain unrun.
 
+## Branch-informed continuation gateway to step 3
+
+Research step 2.5b was completed on `2026-07-22` with
+[`audit_eb_timo_branch_continuation_gateway.py`](../../scripts/analysis/thickness_mismatch/audits/audit_eb_timo_branch_continuation_gateway.py).
+It addresses the unresolved step-2.5 cases without changing either production
+characteristic matrix. At `beta=0`, the existing EB and Timoshenko coefficient
+orderings are used to extract separate exact axial and bending parent blocks;
+the measured off-block maximum over the completed audit is zero. Cross-family
+multiplicity is preserved, and the straight `eta=0` parent spectra retain their
+factorized-oracle regression.
+
+For `beta>0`, isolated roots are continued through adaptive local windows.
+Close roots are continued as left/right null-subspace clusters: a reduced
+matrix proposes candidates, but the unchanged full `6x6` matrix determines
+stationarity, singularity quality, and the accepted root record. Seeds never
+become terminal roots by themselves. Direct `seed_only` acceptance is
+prohibited; a new record requires `seed_refined_to_new_root`, while convergence
+to an already accepted stationary minimum is recorded separately. A cheap
+global guard searches below root 11, and strict global search is used only as
+a triggered fallback or in the separate force-verification scope.
+
+The completed gateway resolved `K10_guard_resolved` for all 122 audited
+model/geometry records: the R1--R3 base and `epsilon +/- 1e-6` cases at
+`beta=0,0.1,1,5 deg`, B07/G01/G02/M02, and both models for all 21 pilot
+geometries. The full-12 margin resolved for 103/122 records; this is reported
+separately and is not substituted for the `K=10` decision. The branch-informed
+pilot included 21/21 geometries and changed no first-ten root, `N_true`, or
+first-failure result relative to the comparison pilots. All local-independent,
+cluster, root-11 guard, straight-oracle, and requested force-global readiness
+checks passed. The resulting decision is `ready_for_targeted_step3`.
+
+Because that gate passed, the future-only compact manifest
+[`eb_epsilon_lower_envelope_step3_cases.csv`](../../scripts/analysis/thickness_mismatch/audits/data/eb_epsilon_lower_envelope_step3_cases.csv)
+was written. Its 28 unique geometries use only full-precision
+`epsilon_near_n` and `epsilon_buffer_n` values from the corrected straight
+baseline, deduplicate the prefix 4/5 and 9/10 thresholds, and select baseline,
+small-angle, 45/90-degree, high-`mu`, signed-`eta`, and mixed probes. No root
+calculation or lower-envelope search from that manifest was run in step 2.5b.
+
 ## Engineering Objective
 
 For each complete system parameter point, first solve the Euler--Bernoulli

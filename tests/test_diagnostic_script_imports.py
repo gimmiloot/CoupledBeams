@@ -27,6 +27,7 @@ class DiagnosticScriptImportTest(unittest.TestCase):
             "scripts.analysis.thickness_mismatch.audits.audit_eb_validity_vs_timoshenko_stage1",
             "scripts.analysis.thickness_mismatch.audits.audit_eb_epsilon_baseline_thresholds",
             "scripts.analysis.thickness_mismatch.audits.audit_eb_timo_general_spectrum_completeness",
+            "scripts.analysis.thickness_mismatch.audits.audit_eb_timo_branch_continuation_gateway",
             "scripts.analysis.thickness_mismatch.audits.run_eb_epsilon_apriori_pilot",
             "scripts.analysis.thickness_mismatch.audits.audit_timoshenko_modes_4_6_shape_diagnostics",
             "scripts.analysis.thickness_mismatch.audits.audit_timoshenko_shape_bug_thin_limit",

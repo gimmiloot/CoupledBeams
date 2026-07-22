@@ -4,6 +4,36 @@
 
 ## 2026-07-22
 
+- Completed research step 2.5b with the versioned
+  `branch_informed_continuation_v1` spectrum layer and gateway. Exact beta=0
+  axial/bending parent blocks preserve the existing EB and Timoshenko unknown
+  orderings. Isolated roots use adaptive projected windows; close roots use
+  left/right null-subspace clusters and reduced candidates followed by
+  unchanged full-6x6 stationary/SVD verification. Seeds cannot create root
+  records directly. The global root-11 guard, triggered strict fallback,
+  force-global comparison, local-independent refinement, and primary/force
+  cache scopes are reported separately. The companion general helper is now
+  `general_complete_svd_v2`, removing its former direct seed-acceptance path;
+  no production solver default was changed.
+
+- The full gateway resolved `K10_guard_resolved` for 122/122 audited
+  model/geometries and `full12_resolved` for 103/122. R1--R3 at base and
+  `epsilon +/- 1e-6`, B07/G01/G02/M02, straight-oracle comparisons, accepted
+  clusters, local-independent refinements, root-11 guards, and the requested
+  force-global samples all passed. The branch-informed pilot included 21/21
+  geometries, with 42/42 model spectra resolved at K10 and no changed
+  first-ten roots, `N_true`, or first-failure results in the pilot comparison.
+  The decision is `ready_for_targeted_step3`.
+
+- Wrote, but did not execute, the future-only 28-case manifest
+  `scripts/analysis/thickness_mismatch/audits/data/eb_epsilon_lower_envelope_step3_cases.csv`.
+  It uses only full-precision corrected `epsilon_near_n` and
+  `epsilon_buffer_n` values, deduplicates prefixes 4/5 and 9/10, and selects a
+  compact set of baseline, small-angle, 45/90-degree, high-mu, signed-eta, and
+  mixed probes. No step-3 lower-envelope search, FEM/3D FEM, Gmsh, CalculiX,
+  physical-model, determinant, coefficient-ordering, or article change was
+  made.
+
 - Implemented research step 2.5 as an offline general-spectrum completeness
   layer around the unchanged coupled EB and Timoshenko `6x6` matrices. The
   primary and independent verification configurations combine determinant

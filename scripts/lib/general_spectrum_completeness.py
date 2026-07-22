@@ -18,7 +18,7 @@ from src.my_project.analytic.formulas_thickness_mismatch import (
 )
 
 
-GENERAL_SPECTRUM_ALGORITHM_VERSION = "general_complete_svd_v1"
+GENERAL_SPECTRUM_ALGORITHM_VERSION = "general_complete_svd_v2"
 AUTO_SPECTRUM_ALGORITHM_VERSION = "auto_complete_spectrum_v1"
 
 MODEL_EB = "Euler-Bernoulli"
@@ -718,24 +718,6 @@ def _global_candidates(
                 max(settings.lambda_min, float(seed) - half_width),
                 min(upper, float(seed) + half_width),
                 seed_source,
-            )
-        )
-        seed_diag = evaluator.diagnostics(float(seed))
-        seed_status = (
-            "accepted_full_matrix_svd"
-            if _candidate_is_accepted(seed_diag, settings)
-            else "rejected_seed_residual"
-        )
-        candidates.append(
-            RootCandidate(
-                Lambda=float(seed),
-                detection_sources=(seed_source + ":direct_full_matrix_SVD",),
-                diagnostics=seed_diag,
-                interval_left=max(settings.lambda_min, float(seed) - half_width),
-                interval_right=min(upper, float(seed) + half_width),
-                interior_minimum=True,
-                acceptance_status=seed_status,
-                notes="seed is only accepted after its own full-matrix SVD check",
             )
         )
         if seed_source == "continuation_seed_window":

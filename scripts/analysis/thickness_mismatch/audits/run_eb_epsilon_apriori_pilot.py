@@ -33,6 +33,7 @@ from scripts.analysis.thickness_mismatch.postprocess import (  # noqa: E402
     analyze_eb_safe_prefix_certification as certification,
 )
 from scripts.lib import general_spectrum_completeness as general_complete  # noqa: E402
+from scripts.lib import branch_informed_spectrum_continuation as branch_complete  # noqa: E402
 
 
 DEFAULT_MANIFEST = SCRIPT_PATH.parent / "data" / "eb_epsilon_apriori_pilot_cases.csv"
@@ -49,6 +50,7 @@ FREQUENCY_ERROR_THRESHOLD = 0.10
 SMOKE_CASE_IDS = ("B01", "G04", "M04")
 SPECTRUM_METHOD_LEGACY = "legacy"
 SPECTRUM_METHOD_AUTO = general_complete.AUTO_SPECTRUM_ALGORITHM_VERSION
+SPECTRUM_METHOD_BRANCH = branch_complete.BRANCH_CONTINUATION_ALGORITHM_VERSION
 
 SOURCE_OUTPUT_NAMES = (
     "epsilon_pilot_case_manifest_resolved.csv",
@@ -214,6 +216,7 @@ ROOT_OPERATION_FIELDS = [
     "root_bracketing_intervals",
     "Brent_function_evaluations",
     *general_complete.OperationCounts.__dataclass_fields__.keys(),
+    *branch_complete.BranchOperationCounts.__dataclass_fields__.keys(),
     "notes",
 ]
 
@@ -257,6 +260,7 @@ class AutoSpectrumProducts:
     timo_source: str
     root12_boundary_warning: bool
     operations: general_complete.OperationCounts
+    branch_operations: branch_complete.BranchOperationCounts | None = None
 
 
 class CompleteRootCacheAdapter:
@@ -352,7 +356,7 @@ def parse_args(argv: Sequence[str] | None = None) -> Args:
     )
     parser.add_argument(
         "--spectrum-method",
-        choices=(SPECTRUM_METHOD_LEGACY, SPECTRUM_METHOD_AUTO),
+        choices=(SPECTRUM_METHOD_LEGACY, SPECTRUM_METHOD_AUTO, SPECTRUM_METHOD_BRANCH),
         default=SPECTRUM_METHOD_LEGACY,
         help="Explicit root source; default legacy preserves the historical pilot.",
     )
@@ -394,7 +398,7 @@ def parse_args(argv: Sequence[str] | None = None) -> Args:
         raise ValueError("--n-spectrum-roots must be at least K+2")
     if args.n_candidate_roots < args.n_spectrum_roots:
         raise ValueError("--n-candidate-roots must include the K+1 EB guard root")
-    if args.spectrum_method == SPECTRUM_METHOD_AUTO and args.verification_candidate_roots <= args.n_candidate_roots:
+    if args.spectrum_method != SPECTRUM_METHOD_LEGACY and args.verification_candidate_roots <= args.n_candidate_roots:
         raise ValueError("--verification-candidate-roots must exceed --n-candidate-roots")
     if args.n_shape_points < 51:
         raise ValueError("--n-shape-points must be at least 51")
@@ -670,6 +674,46 @@ def auto_complete_spectrum_products(
     )
 
 
+def branch_continuation_spectrum_products(
+    args: Args,
+    case: PilotCase,
+    cache: branch_complete.BranchContinuationCache,
+) -> AutoSpectrumProducts:
+    geometry = general_complete.Geometry(case.epsilon_0, case.beta_deg, case.mu, case.eta)
+    settings = branch_complete.ContinuationSettings(
+        requested_roots=args.n_spectrum_roots,
+        candidate_roots=args.n_candidate_roots,
+        verification_candidate_roots=args.verification_candidate_roots,
+    )
+    eb_result = cache.resolve(general_complete.MODEL_EB, geometry, settings)
+    timo_result = cache.resolve(general_complete.MODEL_TIMO, geometry, settings)
+    operations = branch_complete.BranchOperationCounts()
+    operations.add(eb_result.operations)
+    operations.add(timo_result.operations)
+    eb_entry = _entry_from_values(
+        eb_result.values[: args.n_candidate_roots],
+        source=f"{branch_complete.BRANCH_CONTINUATION_ALGORITHM_VERSION}:{eb_result.cache_status}",
+        cache_hit=eb_result.cache_status == "hit",
+    )
+    timo_entry = _entry_from_values(
+        timo_result.values[: args.n_candidate_roots],
+        source=f"{branch_complete.BRANCH_CONTINUATION_ALGORITHM_VERSION}:{timo_result.cache_status}",
+        cache_hit=timo_result.cache_status == "hit",
+    )
+    return AutoSpectrumProducts(
+        eb_entry=eb_entry,
+        timo_entry=timo_entry,
+        eb_status="resolved_complete" if eb_result.k10_guard_resolved else "unresolved",
+        timo_status="resolved_complete" if timo_result.k10_guard_resolved else "unresolved",
+        eb_source=branch_complete.BRANCH_CONTINUATION_ALGORITHM_VERSION,
+        timo_source=branch_complete.BRANCH_CONTINUATION_ALGORITHM_VERSION,
+        # Root 12 is reported separately and is not a K=10 exclusion trigger.
+        root12_boundary_warning=False,
+        operations=general_complete.OperationCounts(),
+        branch_operations=operations,
+    )
+
+
 def gap_from_pair(left: float, right: float) -> float:
     if not (isfinite(left) and isfinite(right)):
         return float("nan")
@@ -732,6 +776,7 @@ def solve_case(
     runtime: fixed_scan.RuntimeTracker,
     *,
     general_cache: general_complete.GeneralSpectrumCache | None = None,
+    branch_cache: branch_complete.BranchContinuationCache | None = None,
     continuation_bank: Mapping[str, list[tuple[general_complete.Geometry, tuple[float, ...]]]] | None = None,
 ) -> dict[str, object]:
     point_args = fixed_args_for_case(args, case)
@@ -741,6 +786,16 @@ def solve_case(
         if general_cache is None or continuation_bank is None:
             raise ValueError("auto complete spectrum mode requires its isolated cache and continuation bank")
         auto_products = auto_complete_spectrum_products(args, case, general_cache, continuation_bank)
+        cache = CompleteRootCacheAdapter(
+            {
+                fixed_scan.MODEL_EB: auto_products.eb_entry,
+                fixed_scan.MODEL_TIMO: auto_products.timo_entry,
+            }
+        )
+    elif args.spectrum_method == SPECTRUM_METHOD_BRANCH:
+        if branch_cache is None:
+            raise ValueError("branch continuation spectrum mode requires its isolated cache")
+        auto_products = branch_continuation_spectrum_products(args, case, branch_cache)
         cache = CompleteRootCacheAdapter(
             {
                 fixed_scan.MODEL_EB: auto_products.eb_entry,
@@ -793,7 +848,11 @@ def solve_case(
         eb_entry,
         timo_entry,
         k_max=args.k_max,
-        n_candidate_roots=args.n_candidate_roots,
+        n_candidate_roots=(
+            args.k_max + 1
+            if args.spectrum_method == SPECTRUM_METHOD_BRANCH
+            else args.n_candidate_roots
+        ),
     )
     if auto_products is not None:
         if auto_products.eb_status != "resolved_complete":
@@ -986,6 +1045,11 @@ def solve_case(
             if auto_products is not None
             else {name: "unavailable" for name in general_complete.OperationCounts.__dataclass_fields__}
         ),
+        **(
+            asdict(auto_products.branch_operations)
+            if auto_products is not None and auto_products.branch_operations is not None
+            else {name: "unavailable" for name in branch_complete.BranchOperationCounts.__dataclass_fields__}
+        ),
         "notes": "actual existing-wrapper counters only; no counts inferred from wall-clock time",
     }
     resolved_row = {
@@ -1080,6 +1144,16 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
         if args.spectrum_method == SPECTRUM_METHOD_AUTO
         else None
     )
+    branch_cache = (
+        branch_complete.BranchContinuationCache(
+            args.cache_dir,
+            reuse_cache=args.reuse_cache,
+            force_recompute=args.force_recompute,
+            verification_scope="primary",
+        )
+        if args.spectrum_method == SPECTRUM_METHOD_BRANCH
+        else None
+    )
     continuation_bank: dict[str, list[tuple[general_complete.Geometry, tuple[float, ...]]]] = {
         general_complete.MODEL_EB: [],
         general_complete.MODEL_TIMO: [],
@@ -1097,6 +1171,7 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
             case,
             runtime,
             general_cache=general_cache,
+            branch_cache=branch_cache,
             continuation_bank=continuation_bank,
         )
         resolved_rows.append(product["resolved_row"])  # type: ignore[arg-type]

@@ -13,6 +13,12 @@ Current diagnostic plans and status notes:
 - [EB safe-spectrum-prefix research plan](eb_safe_spectrum_prefix_research_plan.md);
 - [frequency-crossing positive-gap verification status](frequency_crossing_verification_status.md).
 
+The safe-prefix plan now records the completed branch-informed step-2.5b
+gateway. All 122 audited EB/Timoshenko model/geometry records passed the
+`K=10` plus root-11 guard, all 21 pilot geometries were included, and the
+decision is `ready_for_targeted_step3`. The resulting 28-case manifest is a
+future proposal only; no step-3 lower-envelope/root search has been run.
+
 The current rigid-joint `Lambda(mu)` EB/Timoshenko/3D FEM diagnostic plots are
 listed in the [FEM validation status](fem_validation_status.md). They use the
 full rigid end-face 3D FEM model as an independent engineering benchmark, not

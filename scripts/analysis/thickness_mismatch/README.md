@@ -196,6 +196,50 @@ by local full-matrix SVD. Prefix 1 remains safe through the
 upper scan endpoint; prefixes 2--10 have verified first-loss brackets. This
 workflow is not a lower-envelope proof and does not implement step 3.
 
+The branch-informed research-step-2.5b gateway is the decision gate for a
+targeted step 3:
+
+```bash
+python scripts/analysis/thickness_mismatch/audits/audit_eb_timo_branch_continuation_gateway.py \
+  --manifest scripts/analysis/thickness_mismatch/audits/data/eb_epsilon_apriori_pilot_cases.csv \
+  --baseline-dir results/eb_epsilon_baseline_thresholds \
+  --strict-audit-dir results/eb_timo_general_spectrum_completeness \
+  --legacy-pilot-dir results/eb_epsilon_apriori_pilot \
+  --auto-complete-pilot-dir results/eb_epsilon_apriori_pilot_complete_spectrum_v1 \
+  --corrected-pilot-dir results/eb_epsilon_apriori_pilot_branch_continuation_v1 \
+  --output-dir results/eb_timo_branch_continuation_gateway \
+  --cache-dir results/eb_timo_branch_continuation_gateway/cache \
+  --k-max 10 \
+  --n-spectrum-roots 12 \
+  --initial-beta-step 0.5 \
+  --min-beta-step 0.005 \
+  --max-beta-step 5 \
+  --run-close-pair-regressions \
+  --run-pilot \
+  --reuse-cache \
+  --force-strict-verification \
+  --write-step3-manifest-if-ready \
+  --force
+```
+
+Use `--smoke` with separate `_smoke` output/cache directories for a small
+end-to-end check. Use `--plot-only` only to rerun the branch-informed pilot
+postprocessor from its saved CSV files. The production run writes 12 gateway
+CSV tables and `eb_timo_branch_continuation_gateway_report.md` under
+`results/eb_timo_branch_continuation_gateway/`, plus a separate 21-case pilot
+under `results/eb_epsilon_apriori_pilot_branch_continuation_v1/`. The pilot's
+historical default remains `legacy`; branch-informed use is explicit.
+
+The decision gate requires all audited `K10_guard_resolved` flags, all 21 pilot
+geometries, no seed-only root, no unresolved root-11 guard interval, resolved
+accepted clusters, straight-oracle and independent-local regressions, and the
+requested force-global comparisons. The completed decision is
+`ready_for_targeted_step3`. Consequently, the runner wrote the compact
+future-only manifest
+`audits/data/eb_epsilon_lower_envelope_step3_cases.csv` from the corrected
+baseline `epsilon_near_n`/`epsilon_buffer_n` values. It did not run roots for
+that manifest or start the lower-envelope search.
+
 ## Preferred Entry Points
 
 Stage-1 universal-parameter post-processing is available after the EB
@@ -226,6 +270,7 @@ when the Stage-1 data are present.
 | Geometry-only epsilon pilot post-processing | `python scripts/analysis/thickness_mismatch/postprocess/analyze_eb_epsilon_apriori_pilot.py --pilot-dir results/eb_epsilon_apriori_pilot --output-dir results/eb_epsilon_apriori_pilot/analysis --k-max 10 --frequency-error-threshold 0.10 --candidate-grid-sizes 8 16 32` | consumes only the pilot CSV files and imports production safe-prefix rule/calibration semantics | exact E0/Emax thresholds, fold predictions and summaries, reference/matched/same-epsilon audits, operation and convergence CSVs, six compact PNGs, and `epsilon_apriori_pilot_report.md` | CSV-only comparison of E0-ref, Emax-ref, E0-cal, Emax-cal, Rules A--D, and Rule A-gap. Complete geometries stay together in every fold; X-domain fallbacks and 16-to-32 search changes are explicit. The 21-case result does not establish a universal geometry-only criterion. |
 | Straight-system epsilon baseline thresholds | `python scripts/analysis/thickness_mismatch/audits/audit_eb_epsilon_baseline_thresholds.py --epsilon-min 0.005 --epsilon-max 0.060 --primary-epsilon-min 0.010 --primary-epsilon-max 0.050 --coarse-step 0.0005 --k-max 10 --n-spectrum-roots 12 --n-candidate-roots 20 --epsilon-tolerance 1e-6 --delta-tolerance 1e-6 --output-dir results/eb_epsilon_baseline_thresholds --reuse-cache` | reuses the existing matrix/basis helpers and raw general root cache for comparison; corrected source uses `scripts/lib/straight_rod_factorized_spectrum.py` | 14 `baseline_*.csv` audit tables, `eb_epsilon_baseline_thresholds_report.md`, six diagnostic PNGs, versioned corrected cache, and preserved legacy outputs/cache under `results/eb_epsilon_baseline_thresholds/` | Research-step-2 baseline only at `(beta,mu,eta)=(0,0,0)`. Uses the exact EB family union and exact Timoshenko axial/4x4-bending factorization with multiplicity, while retaining the general 6x6 sign scan as an independent completeness audit. Computes corrected first-loss brackets, re-entry/order/multiplicity audits, mu-invariance, R1--R3 close-root regressions, full-matrix SVD confirmations, conservative display floors, and force-recompute verification. It does not change formulas/shared solvers, run FEM, prove a geometry lower envelope, or implement step 3. |
 | General EB/Timoshenko spectrum-completeness audit before step 3 | `python scripts/analysis/thickness_mismatch/audits/audit_eb_timo_general_spectrum_completeness.py --manifest scripts/analysis/thickness_mismatch/audits/data/eb_epsilon_apriori_pilot_cases.csv --legacy-pilot-dir results/eb_epsilon_apriori_pilot --output-dir results/eb_timo_general_spectrum_completeness --corrected-pilot-dir results/eb_epsilon_apriori_pilot_complete_spectrum_v1 --k-max 10 --n-spectrum-roots 12 --n-candidate-roots 20 --verification-candidate-roots 24 --reuse-cache --run-stress-cases` | reuses the unchanged general EB/Timoshenko matrices, the straight factorized oracle only at `beta=0, eta=0`, the existing pilot reconstruction/matching code, and the unchanged CSV-only pilot postprocessor; candidate recovery lives in `scripts/lib/general_spectrum_completeness.py` | ten `general_spectrum_*.csv`/report audit products under `results/eb_timo_general_spectrum_completeness/`, a versioned JSON cache, and the separate corrected pilot plus legacy-comparison CSVs under `results/eb_epsilon_apriori_pilot_complete_spectrum_v1/` | Research-step-2.5 finite numerical audit, not a root-count proof. Primary and independent verification searches combine determinant scans, shifted/half-step grids, SVD valleys, adaptive refinement, and seed windows; every accepted root passes a row-normalized full-6x6 SVD check. The historical pilot default remains `legacy`; corrected use is explicit with `--spectrum-method auto_complete_spectrum_v1`. The completed audit is `not_ready_for_step3`: strict general completeness passed both models for 17/21 pilot cases, the corrected pilot included 20/21 and excluded M02, one straight-oracle row and requested small-angle stress rows remain unresolved. No formula, matrix, shared solver, FEM, article, or step-3 change is involved. |
+| Branch-informed spectrum-continuation gateway to targeted step 3 | `python scripts/analysis/thickness_mismatch/audits/audit_eb_timo_branch_continuation_gateway.py --min-beta-step 0.005 --run-pilot --reuse-cache --force-strict-verification --write-step3-manifest-if-ready --force` | reuses unchanged EB/Timoshenko matrices, exact beta=0 axial/bending parent blocks, the historical and auto-complete pilot outputs, the pilot matching/postprocessor, and the corrected straight thresholds | 12 `branch_*.csv` audit tables and `eb_timo_branch_continuation_gateway_report.md` under `results/eb_timo_branch_continuation_gateway/`; separate branch-informed pilot outputs; conditional future manifest under `audits/data/` | Research-step-2.5b numerical gateway. Seeds create windows only; isolated and null-subspace cluster continuation both require full-matrix refinement. `K10_guard_resolved` remains separate from `full12_resolved`; global guard, triggered fallback, force verification, and cache scopes are separately audited. The completed run passed all readiness items (122/122 model/geometries at K10 and 21/21 included pilot cases), so it wrote but did not execute the 28-case future manifest. No physical model, determinant, FEM, article, or lower-envelope search changed or ran. |
 | Longitudinal-character audit for EB/Timoshenko `Lambda(mu)` suspect modes | `python scripts/analysis/thickness_mismatch/audits/audit_longitudinal_suspect_modes_eb_timo.py` | reuses the existing sorted EB/Timoshenko `Lambda(mu)` CSVs when available, the EB eta determinant for coefficients, and `scripts/lib/variable_length_timoshenko.py` for Timoshenko fields and section/kappa data | `results/eb_vs_timoshenko_longitudinal_suspect_modes/suspect_mode_energy_fractions.csv`, `control_mode_energy_fractions.csv`, `suspect_mode_shape_summary.csv`, `timoshenko_joint_continuity_audit.csv`, per-mode shape PNGs, `suspect_shapes_eps*_grid.png`, `longitudinal_suspect_modes_report.tex`, and optional PDF | Diagnostic-only sorted-frequency mode-shape and energy audit for the beta=45 deg, eta=0 suspect cases `epsilon=0.03` sorted 5 and `epsilon=0.05` sorted 4. It computes axial, bending, and Timoshenko shear energy fractions plus displacement fractions, audits Timoshenko joint compatibility before plotting, blocks Timoshenko shape figures with normalized kinematic joint gap above `1e-6`, includes neighboring sorted modes at `mu=0.35` as controls, and writes a Russian TeX report. It does not use descendant tracking, FEM/3D FEM/Gmsh/CalculiX, article outputs, determinant changes, root-solver changes, or shear-coefficient changes. |
 | Timoshenko thin-limit shape-bug audit | `python scripts/analysis/thickness_mismatch/audits/audit_timoshenko_shape_bug_thin_limit.py` | reuses the sorted EB/Timoshenko root provider, analytic EB reconstruction, `scripts/lib/variable_length_timoshenko.py`, and `scripts/lib/in_plane_shape_geometry.py` | `results/timoshenko_shape_bug_audit/beta_unit_audit.md`, `display_transform_regression.csv`, `thin_limit_eb_timo_shape_mac.csv`, `timoshenko_null_vector_audit.csv`, `timoshenko_shape_residual_audit.csv`, three thin-limit full-centerline PNG grids, and `timoshenko_shape_bug_audit_report.md` | Diagnostic-only sorted-mode audit at `epsilon=0.0025` and comparison with `epsilon=0.03` for beta=45 deg, eta=0, mu=0,0.2,0.4,0.6, and modes 4-6. It checks explicit beta units, same-index local and corrected-display EB/Timoshenko MAC, rod-2-only display MAC, shear convergence, both smallest singular values, null residuals, clamp/joint residuals, and plot regularity. Corrected Timoshenko display normals are reflected relative to determinant components; older Timoshenko global plots are invalid for physical interpretation. It does not use descendant tracking, FEM/3D FEM/Gmsh/CalculiX, article outputs, determinant changes, root-solver changes, or shear-coefficient changes. |
 | Clean corrected EB/Timoshenko full shape grids | `python scripts/analysis/thickness_mismatch/shapes/plot_eb_timo_full_mode_shapes_eps0p03_beta45_eta0_modes4_6.py --epsilon 0.03 --mode-indices 4 5 6 --mu-values 0 0.2 0.4 0.6 --clean-style --output-dir results/eb_timo_clean_mode_shapes` | reuses the sorted shape-construction audit and shared in-plane display geometry | `results/eb_timo_clean_mode_shapes/` clean EB, Timoshenko, and optional combined PNG grids, `clean_mode_shape_summary.csv`, and `clean_mode_shape_report.md` | Diagnostic-only full-displacement centerlines from sorted frequencies. The entrypoint also accepts `--epsilon 0.04 --mode-indices 3 4 5`, `--epsilon 0.02 --mode-indices 5 6 7`, `--epsilon 0.05 --mode-indices 3 4 5`, and other sorted-mode/mu selections. Scale 0.08 is checked across all EB+Timoshenko shapes for the requested epsilon; if any shape fails, the whole epsilon set checks 0.05, then 0.02, and uses one common scale. Panel titles are clean (`mu`, sorted `k`, `Lambda`) and the corrected in-plane display mapping is used. |
