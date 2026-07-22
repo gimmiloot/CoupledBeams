@@ -4,6 +4,33 @@
 
 ## 2026-07-22
 
+- Completed the fixed-manifest research Step 3A targeted lower-envelope
+  screen with `epsilon_lower_envelope_step3a_v1`. The runner validates all 28
+  rows and their full-precision near/buffer epsilon provenance against the
+  corrected `factorized_straight_spectrum_v2` thresholds before invoking the
+  unchanged branch-informed EB/Timoshenko spectrum layer. It writes CSV-first
+  prefix/mode/control/verification/cost products, six compact plots, separate
+  primary and force-recompute verification caches, and an unexecuted paired
+  Step-3B proposal. Added 53 targeted tests, including synthetic CLI and
+  solver-free plot-only coverage.
+
+- The full run resolved K10/root 11 for 28/28 geometries and 56/56 primary
+  model spectra; 40/56 also resolved the optional root 12. All 18
+  baseline-control/prefix comparisons passed the corrected factorized oracle.
+  Independent verification was triggered for 27 geometries, including every
+  provisional/near/quality case and the worst sample from each prefix group;
+  all passed root and cluster agreement. `S3_12` confirmed a prefix-5
+  violation of `1.73946990918e-2`, and `S3_14` confirmed a prefix-6 violation
+  of `5.09348548033e-4`. No case was unresolved or numerically indeterminate,
+  so the decision is `counterexample_found`.
+
+- Wrote the 18-row paired near/buffer Step-3B proposal for prefixes 2--10 but
+  did not execute it or refine any non-baseline epsilon threshold. The result
+  is finite 28-case evidence, not a continuous-domain lower-envelope proof.
+  No formula, matrix, determinant, coefficient ordering, shared solver
+  default/tolerance, FEM/3D FEM, article workspace, or repository-root README
+  was changed.
+
 - Completed research step 2.5b with the versioned
   `branch_informed_continuation_v1` spectrum layer and gateway. Exact beta=0
   axial/bending parent blocks preserve the existing EB and Timoshenko unknown

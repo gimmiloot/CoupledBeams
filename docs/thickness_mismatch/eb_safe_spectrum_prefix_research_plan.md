@@ -295,6 +295,70 @@ baseline, deduplicate the prefix 4/5 and 9/10 thresholds, and select baseline,
 small-angle, 45/90-degree, high-`mu`, signed-`eta`, and mixed probes. No root
 calculation or lower-envelope search from that manifest was run in step 2.5b.
 
+## Step 3A: targeted lower-envelope screening
+
+Step 3A executes the fixed 28-row manifest produced by the branch gateway; it
+does not expand it into a tensor grid or optimize over geometry. For sorted
+mode `k`, prefix `n`, and the fixed threshold `tau=0.10`, the audited
+quantities are
+
+\[
+\delta_{f,k}=\frac{|\Lambda_{\mathrm{EB},k}^{2}-
+\Lambda_{\mathrm{Timo},k}^{2}|}{\Lambda_{\mathrm{Timo},k}^{2}},\qquad
+\Delta_n=\max_{1\leq k\leq n}\delta_{f,k},
+\]
+
+\[
+V_n=\Delta_n-\tau,\qquad M_n=\tau-\Delta_n=-V_n.
+\]
+
+Equality is safe. `N_true` is the continuous prefix ending before the first
+failed mode; a later individual pass cannot repair it. The groups for
+prefixes 4/5 and 9/10 generate distinct screening rows even though each pair
+shares one corrected straight-baseline threshold.
+
+Every manifest epsilon is checked at full CSV precision against the corrected
+`factorized_straight_spectrum_v2` safe-threshold products before root
+calculation. The scientific inclusion gate requires branch-informed EB and
+Timoshenko roots 1--10 and resolved root 11; root 12 is retained only as a
+diagnostic margin. The 14 straight controls are compared independently with
+the corrected factorized oracle. Legacy roots never fill an unresolved case.
+
+`provisional_counterexample` and near-boundary/cluster/quality triggers do not
+determine the conclusion from one run. They cause a force-recomputed second
+continuation with an independently fixed beta path, separate cache, unchanged
+full-`6x6` residual checks, root-11 guard, and automatic strict fallback when
+local continuation needs it. A `confirmed_counterexample` requires both
+resolved runs, root/cluster agreement, a violation above the fixed numerical
+tolerance, and failure of the target prefix or full corrected baseline
+certificate. Sign instability is reported as
+`numerically_indeterminate_near_threshold` rather than rounded into a pass or
+failure.
+
+The runner records one of `counterexample_found`,
+`no_counterexample_in_28_case_screen`,
+`inconclusive_due_to_unresolved_cases`, or
+`inconclusive_due_to_numerical_boundary`. It also writes an unexecuted Step-3B
+proposal pairing near/buffer epsilon values at the same selected geometry.
+Adversarial near/buffer rows in Step 3A itself are usually different
+geometries and are not interpreted as thickness trajectories. Even a complete
+28-case result is finite numerical evidence, not a continuous-domain proof of
+a global lower envelope.
+
+The completed run resolved K10/root 11 for all 28 geometries and all 56
+primary model spectra; 40/56 primary spectra also resolved the optional root
+12. All 18 baseline-control/prefix rows passed the corrected factorized-oracle
+pipeline. Automatic triggers force-recomputed 27 geometries with the separate
+verification configuration, and every verification row passed its K10,
+root-match, and cluster checks. Two candidates were confirmed by both runs:
+`S3_12` at prefix 5 (`beta=90 deg`, `mu=0.7`, `eta=0`, verified
+`V_5=1.73946990918e-2`) and `S3_14` at prefix 6 (`beta=45 deg`, `mu=0.5`,
+`eta=-0.1`, verified `V_6=5.09348548033e-4`, triggered by sorted mode 5).
+There were no unresolved or numerically indeterminate geometries. The Step-3A
+decision is therefore `counterexample_found`. The 18-row paired Step-3B
+proposal covers prefixes 2--10 and remains unexecuted; no local epsilon
+refinement was performed.
+
 ## Engineering Objective
 
 For each complete system parameter point, first solve the Euler--Bernoulli

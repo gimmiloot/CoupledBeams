@@ -2,6 +2,39 @@
 
 ## 2026-07-22
 
+- Added the standalone S3_12/S3_14 dimensional-frequency versus beta
+  diagnostic. It loads full-precision epsilon values from Step-3A outputs,
+  reuses sequential `branch_informed_continuation_v1` local/cluster tracking,
+  strict fallback, and the root-11 global guard, and converts every trusted
+  sorted root with the canonical shared cyclic-frequency scale
+  `f=Lambda^2*sqrt(EI/(rho*S))/(2*pi*L_base^2)`. The completed 0--90 degree,
+  0.5-degree run resolved K10/root 11 for 724/724 model-points, retained the
+  optional full-12 margin for 363/724, used strict fallback at 3 points, and
+  left 0 unresolved points. Added 10 targeted tests, three audit CSVs, one
+  report, and exactly two title/legend-free PDFs; no formula, matrix, unknown
+  ordering, shared solver default/tolerance, shear coefficient, FEM, article,
+  commit, or push changed.
+
+- Added the stable `epsilon_lower_envelope_step3a_v1` targeted screening
+  entry point, pure prefix-metric/provenance/classification helper, and 53
+  targeted regressions. The workflow validates the unchanged 28-case manifest
+  against corrected full-precision `factorized_straight_spectrum_v2`
+  thresholds before roots, requires branch-informed K10 plus root 11 for both
+  models, records root/branch/cluster/residual quality, separates primary and
+  force-recompute verification caches, and writes 11 Step-3A CSV audits, six
+  plots, a report, and an unexecuted paired Step-3B proposal.
+
+- Completed the 28-case Step-3A run. All 28 geometries and 56 primary model
+  spectra pass K10/root 11; 40/56 also pass the optional full-12 margin. All
+  18 baseline-control/prefix rows match the corrected factorized pipeline.
+  Twenty-seven geometries received independent triggered verification and all
+  passed root/cluster agreement. Two counterexamples were confirmed:
+  `S3_12` at prefix 5 (`V=1.73946990918e-2`) and `S3_14` at prefix 6
+  (`V=5.09348548033e-4`). The decision is `counterexample_found`; there are no
+  unresolved or numerically indeterminate cases. The 18-row Step-3B proposal
+  was written but not run. No formula, matrix, determinant, shared solver
+  default/tolerance, FEM/3D FEM, article, or repository-root README changed.
+
 - Added the research-step-2.5b branch-informed spectrum continuation layer,
   stable gateway audit, and 46 targeted regressions. Exact beta=0 axial and
   bending blocks seed separately identified parent families. Adaptive isolated
