@@ -1,6 +1,64 @@
 # CHANGELOG
 
+## 2026-07-23
+
+- Added the stable zero-root `eb_rule_ab_exact_pareto_v2` postprocessor and
+  targeted regressions for the minimal exact Rules A/B deciding
+  experiment. It locks the corrected 21-case branch-informed pilot as
+  development, separates 14 Step-3A baseline controls from 12 nonbaseline
+  directed-validation cases, holds `S3_12`/`S3_14` out until thresholds are
+  frozen, audits full-precision geometry deduplication at tolerance `1e-12`,
+  consumes verified saved roots, and reconstructs only the existing EB Pi
+  predictors. No EB/Timoshenko root calculation, Step 3B, continuation, FEM,
+  formula, matrix, unknown ordering, solver tolerance, shear coefficient,
+  article workspace, commit, or push changed.
+- Completed the exact search under `results/eb_rule_ab_exact_pareto/`. Rule A
+  selected `T_A=0.20310844707256814` with development retention 147/155 and
+  remains benchmark-only. Rule B evaluated all 25,122 pairs on exact 159 by
+  158 candidate axes, selected `T_s=0.16762413001084248` and
+  `T_r=0.046719283392029604` by the declared minimum-`T_s`, then minimum-`T_r`
+  tie-break over all 32 equal optima, retained 153/155 development frequencies, and
+  produced no observed false-safe on nonbaseline directed validation or the
+  locked holdout (`N_hat=N_true=4` for both S3 cases). Its status is
+  `rule_B_safety_survives_cost_test_required`.
+- Added the independent exact shear-only Rule S search, complete 32-pair by
+  five-partition sensitivity plus per-geometry hashes, threshold margins,
+  21 leave-one-geometry-out recalibrations, and specialized shear-helper
+  equivalence. Rule S selects the same `T_s`, attains the same 153/155
+  development objective, and matches Rule B on all 49 included geometries;
+  rotary is decision-nonbinding, and the specialized helper matches the
+  existing implementation on all 280 reconstructed modes.
+- Executed the locked five-geometry cost proposal with the new stable
+  `rule_s_cost_break_even_v2` benchmark. It performs no EB root solve, withholds
+  saved Timoshenko roots until post-solve verification, and records direct,
+  local-suffix, verification-triggered fallback, operation, cache, and runtime
+  provenance. All direct/final hybrid roots pass verification, but all four
+  nonempty suffixes require full K=10 fallback. The result is
+  `rule_S_cost_not_beneficial`; the current Rule-S/rectangular-Rule-B
+  engineering-selector path is closed without retuning or a new guard.
+- Recorded the finite-sample separability limitation: 2 of 155 safe
+  development prefixes have componentwise-lower unsafe witnesses, making 153
+  the observed maximum zero-false-safe rectangular Rule-B retention. Updated
+  the research plan and thickness-mismatch script map to state that
+  `epsilon_0` is not a certificate, historical A-gap/C/D are not continued in
+  this experiment, and zero observed false-safe on finite data is not a
+  continuous-domain guarantee. The repository-root `README.md` was
+  intentionally unchanged because the user-facing project entry points did
+  not change.
+
 ## 2026-07-22
+
+- Added a documentation-only frequency-map computation policy separating
+  `fast_plot`, `certified_audit`, and zero-root-calculation `plot_only`.
+  Future ordinary maps are specified as one sequential continuation path per
+  case/model with sorted roots 1--10, root 11 as the K10 guard, scheduled cheap
+  global checks, recorded operation counts, and strict fallback only at
+  explicit quality triggers; root 12 and `full12_resolved` are not fast-mode
+  requirements. Documented path-level cache identity, unresolved-point NaN/gap
+  handling, scientific anchors, and a future three-mode CLI contract. Existing
+  S3_12/S3_14 PDFs remain valid certified outputs and were not regenerated.
+  No numerical result, formula, matrix, solver, FEM, article file, or root
+  `README.md` changed.
 
 - Added the standalone S3_12/S3_14 dimensional-frequency versus beta
   diagnostic. It loads full-precision epsilon values from Step-3A outputs,

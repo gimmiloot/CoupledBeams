@@ -136,6 +136,52 @@ The postprocessor rejects K=8-only inputs with the two regeneration commands
 above. It does not solve roots, run FEM, or use Timoshenko-derived quantities as
 certificate features.
 
+The minimal exact Rule A/B deciding experiment has its own multi-source
+partition contract and therefore uses one separate stable postprocessor:
+
+```bash
+python scripts/analysis/thickness_mismatch/postprocess/analyze_eb_rule_ab_exact_pareto.py
+```
+
+It reads the corrected 21-case branch-informed pilot and existing Step-3A CSV
+files, uses independently verified Step-3A roots where required, reconstructs
+only EB predictors from saved EB roots, and performs zero new root
+calculations. `--force` deterministically replaces its generated result set;
+`--plot-only` regenerates at most three PNG diagnostics from saved output CSVs
+without mode reconstruction or root calculation. Outputs live under
+`results/eb_rule_ab_exact_pareto/`.
+
+The completed exact search selected `T_A=0.20310844707256814` and the frozen
+Rule-B pair `T_s=0.16762413001084248`, `T_r=0.046719283392029604`. Neither rule
+produced an observed false-safe on the checked directed validation or locked
+`S3_12`/`S3_14` holdout. Rule A remains a benchmark. Rule B has status
+`rule_B_safety_survives_cost_test_required`. All 32 equal development optima
+have identical checked prediction/safety vectors. The independent exact shear-
+only Rule S selects the same `T_s`, attains the same 153/155 objective, and is
+prediction-equivalent to Rule B on all 49 included geometries; rotary is never
+decision-binding. `epsilon_0` is not a certificate, A-gap/C/D are not continued
+in this stage, and finite-set zero false-safe is not a continuous-domain
+guarantee.
+
+The permitted five-case cost proposal has subsequently been executed with:
+
+```bash
+python scripts/analysis/thickness_mismatch/benchmarks/benchmark_rule_s_cost_break_even.py \
+  --proposal-csv results/eb_rule_ab_exact_pareto/rule_B_cost_break_even_proposal.csv \
+  --output-dir results/eb_rule_s_cost_break_even --runtime-repeats 3
+```
+
+The benchmark supports `--force`, `--reuse-cache`, and zero-solve
+`--plot-only`. It never solves EB roots and never passes saved Timoshenko
+references to online bracketing; references are used only after a local/direct
+solve. All four cases with a nonempty suffix required a full K=10 fallback, so
+the result is `rule_S_cost_not_beneficial`. Outputs under
+`results/eb_rule_s_cost_break_even/` include the locked manifest/input audit,
+direct and hybrid predictions, suffix verification, per-case and aggregate
+operation counts, three-repeat runtime measurements, one summary, one report,
+a reusable benchmark cache, and two PNG diagnostics. This closes the current
+Rule-S/rectangular-Rule-B engineering-selector path without retuning it.
+
 The completed 21-geometry pre-solution pilot is a separate, manifest-driven
 diagnostic. It generates only the selected source points and then reruns all
 calibration, fold, plot, and report work from CSV:
@@ -311,6 +357,25 @@ figures (no title or legend), three audit CSVs, and one Markdown report under
 rebuilds the PDFs from CSV without root calculations, and `--smoke` writes to
 the separate `_smoke` tree.
 
+## Frequency-Map Computation Modes
+
+The documented future contract separates `fast_plot`, `certified_audit`, and
+`plot_only`; see the
+[frequency-map computation policy](../../../docs/thickness_mismatch/frequency_plot_computation_policy.md).
+`fast_plot` is the recommended default for ordinary maps: one sequential
+branch-informed beta path per case/model, sorted roots 1--10 for the figure,
+and root 11 as the K10 completeness guard. Root 12 is off by default in this
+mode. `certified_audit` is reserved for counterexamples, reference data,
+solver validation, and difficult clusters. `plot_only` reads saved CSV data
+and performs zero root or SVD calculations.
+
+The current S3_12/S3_14 counterexample entry point used certified
+branch-continuation data. Its two PDFs are valid certified outputs; their
+generation cost belongs to spectrum verification, not PDF rendering. Visual
+changes must use its existing CSV-only `--plot-only` path and must not rerun
+the certified calculation. The three-mode CLI spelling is documented for
+future work only and is not implemented by this documentation change.
+
 ## Preferred Entry Points
 
 Stage-1 universal-parameter post-processing is available after the EB
@@ -337,6 +402,8 @@ when the Stage-1 data are present.
 | Stage-1 EB applicability relative to Timoshenko | `python scripts/analysis/thickness_mismatch/audits/audit_eb_validity_vs_timoshenko_stage1.py` | reuses the existing in-plane EB root solver, Timoshenko root solver, sorted shape/energy reconstruction helpers, shape MAC helpers, and `thickness_mismatch_factors` | `results/eb_validity_vs_timoshenko_stage1/eb_timo_mode_level_metrics.csv`, `eb_timo_validity_summary.csv`, `eb_timo_critical_thickness_by_branch.csv`, `epsilon_branch_tracking_audit.csv`, `critical_threshold_refinement_audit.csv`, `chi_scaling_fit_summary.csv`, diagnostic PNGs, root cache under `cache/`, timing CSVs, and `eb_validity_vs_timoshenko_stage1_report.md` | Diagnostic-only `beta=45 deg`, `eta=0` applicability scan over `mu=0..0.7` and `epsilon_0=0.0025..0.06`. It keeps sorted-spectrum metrics separate from physical-branch metrics, seeds `base_branch_1..8` at the thin limit, continues EB and Timoshenko branches independently by shape MAC over candidate roots 1..12, computes energy character and chi metrics, refines 10% `delta_f` threshold brackets, and supports `--smoke`, `--reuse-cache`, `--force-recompute`, `--plot-only`, `--skip-critical-refinement`, grid overrides, and output-dir overrides. It does not run FEM/3D FEM/Gmsh/CalculiX, change formulas/determinants/root solvers/k', or touch article workspaces. |
 | Fixed-epsilon EB applicability geometry scan | `python scripts/analysis/thickness_mismatch/audits/audit_eb_validity_fixed_epsilon_geometry_scan.py` | reuses the existing EB/Timoshenko root wrappers, tau-aware geometry factors, analytic shape reconstruction, energy helpers, and shape-MAC utilities | `results/eb_validity_fixed_epsilon_geometry_scan/fixed_epsilon_mode_metrics.csv`, `fixed_epsilon_matching_audit.csv`, `fixed_epsilon_point_summary.csv`, predictor fit/CV/threshold/runtime CSVs, diagnostic PNGs, root cache under `cache/`, and `eb_validity_fixed_epsilon_geometry_scan_report.md` | Diagnostic-only follow-up scan at fixed `epsilon_0=0.02` over `beta=0..90 deg`, `mu=0..0.7`, and `eta=-0.1,0,0.1`. It keeps sorted metrics separate from per-point homologous EB/Timoshenko matching, uses mass-weighted local `[u,w]` MAC with one-to-one assignment and close-cluster subspace rows, computes EB-only `Theta_max_EB` and `Pi_EB` predictors, supports cache reuse, `--smoke`, `--plot-only`, optional local Timoshenko benchmarking, and grid overrides. It does not use descendant tracking, FEM/3D FEM/Gmsh/CalculiX, article styling, determinant changes, root-solver changes, or shear-coefficient changes. |
 | K=10 EB safe-prefix certification | `python scripts/analysis/thickness_mismatch/postprocess/analyze_eb_safe_prefix_certification.py --stage1-dir results/eb_validity_vs_timoshenko_stage1 --fixed-epsilon-dir results/eb_validity_fixed_epsilon_geometry_scan --output-dir results/eb_safe_prefix_certification --k-max 10` | consumes only the sorted rows from the two applicability CSV files and reuses fixed-epsilon EB reconstruction/predictor helpers | `results/eb_safe_prefix_certification/eb_safe_prefix_mode_audit.csv`, geometry, calibration, fold-prediction, validation, exclusion, overlap, predictor-consistency, and operation-count CSVs, plus `eb_safe_prefix_certification_report.md` | Diagnostic-only geometry-level certification with Rules A--D plus Rule A-gap, train-only deterministic threshold calibration, prefix-extrema-aware candidate priorities, complete-geometry held-out splits, explicit false-safe/conservative-loss separation, and raw operation counts. Requires complete K=10 inputs and performs no root recomputation, FEM, local Timoshenko solve, geometry-only prediction, or article work. |
+| Exact Rule A/B deciding experiment | `python scripts/analysis/thickness_mismatch/postprocess/analyze_eb_rule_ab_exact_pareto.py` | reuses the safe-prefix, EB null-vector, predictor, metric, and CSV helpers; reads only the corrected branch-informed pilot and Step-3A saved results | partition/inclusion/exclusion audits, exact Rule-A search, exact Rule-B Cartesian/Pareto search, exact shear-only Rule-S search, equal-optimum and implementation-equivalence audits, dominance witnesses, frozen predictions, validation sensitivity, per-geometry and aggregate operation counts, at most three PNGs, report, and the five-case cost proposal under `results/eb_rule_ab_exact_pareto/` | Development-only exact calibration with locked S3 holdout and no root solver. Tests Rules A/B plus the demonstrated equivalent Rule S only: no gap, modal-character, epsilon, subgroup, ML, or new-indicator guard. The finite-set Rule-B safety status is `rule_B_safety_survives_cost_test_required`; it is not a universal certificate. |
+| Frozen Rule S cost break-even benchmark | `python scripts/analysis/thickness_mismatch/benchmarks/benchmark_rule_s_cost_break_even.py --proposal-csv results/eb_rule_ab_exact_pareto/rule_B_cost_break_even_proposal.csv --output-dir results/eb_rule_s_cost_break_even --runtime-repeats 3` | reuses the existing fast direct Timoshenko K=10 solver, local fixed-scan suffix helper, EB mode reconstruction, and specialized shear predictor; saved Timoshenko roots are post-solve references only | locked manifest and input audit, direct/hybrid predictions, suffix verification, componentwise operation counts, runtime measurements, cost summary/report, cache, and two PNGs under `results/eb_rule_s_cost_break_even/` | Exactly five frozen geometries and one frozen `T_s`; no EB roots, new grid, or threshold retuning. Every nonempty suffix triggered full K=10 fallback, yielding `rule_S_cost_not_beneficial` and closing this engineering-selector path. |
 | Manifest-driven EB epsilon a-priori pilot source generation | `python scripts/analysis/thickness_mismatch/audits/run_eb_epsilon_apriori_pilot.py --manifest scripts/analysis/thickness_mismatch/audits/data/eb_epsilon_apriori_pilot_cases.csv --output-dir results/eb_epsilon_apriori_pilot --k-max 10 --n-candidate-roots 20 --reuse-cache` | reuses the fixed-epsilon EB/Timoshenko root cache, point solve, mode reconstruction, predictor, MAC, cluster, and boundary-retry helpers plus the Stage-1 local-thickness helper | resolved manifest, K=10 mode and geometry CSVs, matching/exclusion/root-operation audits, cache files, and `epsilon_pilot_generation_report.md` under `results/eb_epsilon_apriori_pilot/` | Diagnostic-only solve of exactly 21 selected geometries. Root 11 is retained only as the right EB gap guard for target mode 10. No production tensor grid, FEM, solver modification, or article workflow is involved. |
 | Geometry-only epsilon pilot post-processing | `python scripts/analysis/thickness_mismatch/postprocess/analyze_eb_epsilon_apriori_pilot.py --pilot-dir results/eb_epsilon_apriori_pilot --output-dir results/eb_epsilon_apriori_pilot/analysis --k-max 10 --frequency-error-threshold 0.10 --candidate-grid-sizes 8 16 32` | consumes only the pilot CSV files and imports production safe-prefix rule/calibration semantics | exact E0/Emax thresholds, fold predictions and summaries, reference/matched/same-epsilon audits, operation and convergence CSVs, six compact PNGs, and `epsilon_apriori_pilot_report.md` | CSV-only comparison of E0-ref, Emax-ref, E0-cal, Emax-cal, Rules A--D, and Rule A-gap. Complete geometries stay together in every fold; X-domain fallbacks and 16-to-32 search changes are explicit. The 21-case result does not establish a universal geometry-only criterion. |
 | Straight-system epsilon baseline thresholds | `python scripts/analysis/thickness_mismatch/audits/audit_eb_epsilon_baseline_thresholds.py --epsilon-min 0.005 --epsilon-max 0.060 --primary-epsilon-min 0.010 --primary-epsilon-max 0.050 --coarse-step 0.0005 --k-max 10 --n-spectrum-roots 12 --n-candidate-roots 20 --epsilon-tolerance 1e-6 --delta-tolerance 1e-6 --output-dir results/eb_epsilon_baseline_thresholds --reuse-cache` | reuses the existing matrix/basis helpers and raw general root cache for comparison; corrected source uses `scripts/lib/straight_rod_factorized_spectrum.py` | 14 `baseline_*.csv` audit tables, `eb_epsilon_baseline_thresholds_report.md`, six diagnostic PNGs, versioned corrected cache, and preserved legacy outputs/cache under `results/eb_epsilon_baseline_thresholds/` | Research-step-2 baseline only at `(beta,mu,eta)=(0,0,0)`. Uses the exact EB family union and exact Timoshenko axial/4x4-bending factorization with multiplicity, while retaining the general 6x6 sign scan as an independent completeness audit. Computes corrected first-loss brackets, re-entry/order/multiplicity audits, mu-invariance, R1--R3 close-root regressions, full-matrix SVD confirmations, conservative display floors, and force-recompute verification. It does not change formulas/shared solvers, run FEM, prove a geometry lower envelope, or implement step 3. |

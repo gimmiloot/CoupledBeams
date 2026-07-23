@@ -15,6 +15,94 @@ applicability, and diagnostic-to-article promotion remain those in the
 
 ## Implementation Status
 
+### Exact Rule A/B deciding experiment (2026-07-23)
+
+The minimal deciding experiment is implemented as the separate, stable,
+CSV-first postprocessor
+[`analyze_eb_rule_ab_exact_pareto.py`](../../scripts/analysis/thickness_mismatch/postprocess/analyze_eb_rule_ab_exact_pareto.py).
+It has a distinct multi-source partition and output contract that does not fit
+the historical two-source fold workflow below. It consumes only the corrected
+21-case branch-informed pilot and the existing 28 Step-3A cases; it never calls
+a root solver. Step-3A EB predictors are reconstructed from the selected saved
+EB roots by one existing 6x6 null-vector SVD per mode.
+
+The split is locked as follows: 21 development geometries, 14 Step-3A baseline
+controls, 12 nonbaseline directed-validation geometries, and the separate
+locked adversarial holdout `S3_12`/`S3_14`. No geometry is repeated across
+included partitions at the documented coordinate-wise tolerance `1e-12`.
+Thresholds are selected from exact observed prefix-extrema candidate sets on
+development only; no reduced grid, validation tuning, or S3 retuning is used.
+
+The completed result under `results/eb_rule_ab_exact_pareto/` is:
+
+- Rule A: `T_A = 0.20310844707256814`, development objective 147/155,
+  with no observed false-safe on the checked sets; its diagnostic status is
+  `rule_A_no_false_safe_on_checked_sets_benchmark_only`.
+- Rule B: exact 159 by 158 Cartesian search, 25,122 evaluated pairs,
+  maximum zero-development-false-safe objective 153/155, 32 equally optimal
+  pairs and one threshold-space Pareto-nondominated optimum. The frozen pair
+  is the deterministic minimum-`T_s`, then minimum-`T_r` representative
+  `T_s = 0.16762413001084248`, `T_r = 0.046719283392029604` (`BOPT_0001`).
+  All 32 equal optima give identical prediction and safety vectors on every
+  checked geometry.
+- The independent exact one-dimensional shear-only Rule S search also has
+  159 candidates, selects the same `T_s`, and attains 153/155. Rule S and
+  Rule B give identical `N_hat` for all 49 included geometries. The rotary
+  threshold is decision-nonbinding: 15 rejected modes exceed it only together
+  with an already-failed shear threshold, and no decision is triggered by
+  rotary alone. The specialized shear helper agrees exactly with the existing
+  full predictor implementation on all 280 reconstructed Step-3A modes.
+- Frozen Rule B has zero false-safe geometries in the nonbaseline directed
+  validation and returns `N_hat = N_true = 4` for each of `S3_12` and `S3_14`.
+  Its status is therefore `rule_B_safety_survives_cost_test_required`.
+- The finite development sample contains 155 safe and 55 unsafe prefix points.
+  Two safe prefixes have a componentwise-lower unsafe witness, so the maximum
+  attainable zero-false-safe Rule-B retention on this finite sample is 153.
+  This is a finite-sample limitation of the monotone rectangular Rule-B class,
+  not an impossibility result on the continuous domain.
+
+The result does not promote either rule to a universal or production
+certificate. `epsilon_0` is not a certificate, and the historical Rule A-gap,
+Rule C, and Rule D paths are not continued or recalibrated in this stage. Rule
+B passed the Phase-I safety gate only as
+`rule_B_safety_survives_cost_test_required`. The resulting operation-cost
+experiment has now been executed as described below. Zero observed false-safe
+on these finite checked sets is not a guarantee over the continuous parameter
+domain.
+
+### Frozen Rule S operation-cost benchmark (2026-07-23)
+
+The separate benchmark
+[`benchmark_rule_s_cost_break_even.py`](../../scripts/analysis/thickness_mismatch/benchmarks/benchmark_rule_s_cost_break_even.py)
+uses exactly `B01`, `G04`, `S3_06`, `S3_12`, and `S3_14`, the frozen
+`T_s=0.16762413001084248`, and three cold/warm observations per workflow. It
+compares the existing fast direct Timoshenko K=10 solve with sequential Rule S
+reconstruction and local suffix recovery. Saved Timoshenko roots are withheld
+from local intervals and root calls and are consulted only in post-solve
+verification. A missing, ambiguous, or verification-mismatched local suffix
+causes an independently counted global K=10 fallback. No EB root is solved.
+
+All direct and final hybrid roots pass post-solve checks. `B01` accepts all ten
+EB modes and needs no suffix solve. Every one of the four nonempty-suffix cases
+requires a full K=10 fallback: `S3_06` fails its online local reliability check,
+while `G04`, `S3_12`, and `S3_14` expose sorted-mode-index mismatches during
+post-solve verification. On the canonical repetitions, direct uses 5 spectrum
+calls and 56,611 Timoshenko determinant evaluations. Hybrid uses 35 EB mode
+reconstructions plus 19 Timoshenko root-helper/spectrum calls, 52,001
+determinant evaluations, 15 Timoshenko SVD checks, and four full-spectrum
+fallbacks. Median measured time is 1.319 s direct versus 1.411 s hybrid;
+runtime is supporting evidence only, and no arbitrary operation weights are
+introduced.
+
+The cost decision is `rule_S_cost_not_beneficial`. This five-geometry result
+does not weaken or universalize the finite-sample safety observation; it closes
+the current Rule-S/rectangular-Rule-B production-selector path because every
+nonempty suffix paid for a full direct spectrum after selector/local overhead.
+No Rule B retuning, additional guard, new indicator, or expanded grid follows
+from this negative cost result.
+
+### Historical fold-based postprocessor
+
 The first CSV-first certification postprocessor was implemented on
 `2026-07-20` at
 [`analyze_eb_safe_prefix_certification.py`](../../scripts/analysis/thickness_mismatch/postprocess/analyze_eb_safe_prefix_certification.py).
@@ -359,6 +447,19 @@ decision is therefore `counterexample_found`. The 18-row paired Step-3B
 proposal covers prefixes 2--10 and remains unexecuted; no local epsilon
 refinement was performed.
 
+## Frequency-map computation policy
+
+Future frequency-map workflows must separate spectrum generation from figure
+rendering according to the
+[frequency-map computation policy](frequency_plot_computation_policy.md).
+Ordinary figures should use one sequential `fast_plot` continuation path per
+case/model, plot sorted roots 1--10, and require root 11 as the K10 guard; root
+12 and `full12_resolved` are not default fast-mode requirements. Scientific
+counterexample verification remains a separate `certified_audit`, while
+format-only changes to saved data must use zero-root-calculation `plot_only`.
+The existing S3_12/S3_14 PDFs remain certified outputs and are not invalidated
+by this performance policy.
+
 ## Engineering Objective
 
 For each complete system parameter point, first solve the Euler--Bernoulli
@@ -502,7 +603,13 @@ For fixed material constants, `Theta_max_EB` is a monotonic transformation of
 `chi_max_EB`. Agreement between these two quantities therefore is not
 independent physical confirmation and must not be counted as such.
 
-## Immediate Next Computational Step
+## Historical Initial Certification Plan
+
+The following list records the initial broader plan that preceded the locked
+exact Rule A/B experiment above. It is retained for provenance, not as the
+current instruction to continue A-gap/C/D or to promote an epsilon
+certificate. The current permitted next step is the separate Rule-B operation-
+cost break-even experiment described above.
 
 The recommended next stage is the following.
 

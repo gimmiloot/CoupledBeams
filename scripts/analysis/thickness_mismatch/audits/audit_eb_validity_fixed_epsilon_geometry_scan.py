@@ -1018,6 +1018,28 @@ def bending_energies_by_rod_eb(result: ModeResult) -> tuple[float, float]:
     return max(float(e1), 0.0), max(float(e2), 0.0)
 
 
+def eb_shear_predictor(result: ModeResult) -> dict[str, float]:
+    """Return the existing EB shear-energy predictor without rotary integrals."""
+
+    if result.model != MODEL_EB:
+        raise ValueError("Pi_shear_EB is defined here for EB modes only")
+    factors = thickness_mismatch_factors(result.mu, result.eta)
+    sections = {
+        1: TIMO.section_from_epsilon_tau(result.epsilon, factors.tau1),
+        2: TIMO.section_from_epsilon_tau(result.epsilon, factors.tau2),
+    }
+    U_shear_star = 0.0
+    U_total = float(result.energy.get("U_total", float("nan")))
+    for rod_index, rod in ((1, result.rod1), (2, result.rod2)):
+        if rod.w_third is None:
+            raise ValueError("EB third derivative is required for Pi_shear_EB")
+        section = sections[rod_index]
+        coordinate = np.abs(rod.x)
+        q_eb = -section.bending_stiffness * np.asarray(rod.w_third, dtype=float)
+        U_shear_star += 0.5 * trapz(q_eb**2 / section.shear_stiffness, coordinate)
+    return {"Pi_shear_EB": safe_ratio(U_shear_star, U_total)}
+
+
 def pi_eb_metrics(result: ModeResult) -> dict[str, float]:
     if result.model != MODEL_EB:
         raise ValueError("Pi_EB is defined here for EB modes only")
@@ -1027,20 +1049,14 @@ def pi_eb_metrics(result: ModeResult) -> dict[str, float]:
         2: TIMO.section_from_epsilon_tau(result.epsilon, factors.tau2),
     }
     omega = TIMO.project_omega(result.Lambda, result.epsilon)
-    U_shear_star = 0.0
     T_trans = 0.0
     T_rot = 0.0
-    U_total = float(result.energy.get("U_total", float("nan")))
+    pi_shear = float(eb_shear_predictor(result)["Pi_shear_EB"])
     for rod_index, rod in ((1, result.rod1), (2, result.rod2)):
-        if rod.w_third is None:
-            raise ValueError("EB third derivative is required for Pi_EB")
         section = sections[rod_index]
         coordinate = np.abs(rod.x)
-        q_eb = -section.bending_stiffness * np.asarray(rod.w_third, dtype=float)
-        U_shear_star += 0.5 * trapz(q_eb**2 / section.shear_stiffness, coordinate)
         T_trans += 0.5 * omega**2 * section.mass_per_length * trapz(rod.u**2 + rod.w**2, coordinate)
         T_rot += 0.5 * omega**2 * section.rotary_inertia_per_length * trapz(rod.w_prime**2, coordinate)
-    pi_shear = safe_ratio(U_shear_star, U_total)
     pi_rot = safe_ratio(T_rot, T_trans)
     pi = pi_shear + pi_rot if isfinite(pi_shear) and isfinite(pi_rot) else float("nan")
     return {

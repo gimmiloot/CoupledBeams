@@ -4,6 +4,22 @@
 
 ## 2026-07-22
 
+- Separated future frequency-map spectrum generation from figure rendering in
+  a documentation-only policy. The future contract defines `fast_plot` as one
+  sequential branch-informed beta path per case/model with sorted roots 1--10,
+  root 11 as the mandatory K10 guard, periodic/event-driven global checks, and
+  triggered strict recovery; root 12 and `full12_resolved` are not fast-mode
+  requirements. `certified_audit` remains the research-grade path for
+  counterexamples and independent validation, while `plot_only` must perform
+  zero root, matrix, SVD, or cache calculations.
+
+- Recorded that the existing S3_12/S3_14 dimensional-frequency PDFs are valid
+  certified outputs. Their runtime reflects spectral certification rather
+  than PDF rendering, so presentation changes must reuse saved CSV data. This
+  documentation task did not recalculate roots, alter numerical results, or
+  modify formulas, matrices, solver settings, FEM, article files, or the
+  repository-root README.
+
 - Completed the fixed-manifest research Step 3A targeted lower-envelope
   screen with `epsilon_lower_envelope_step3a_v1`. The runner validates all 28
   rows and their full-precision near/buffer epsilon provenance against the
