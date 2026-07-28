@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 2026-07-28
+
+- Closed the EB-only safe-prefix research stage in a standalone final note and
+  synchronized the research plan and thickness-mismatch navigation. The record
+  consolidates the exact A/B/S experiment, empirical Rule-B-to-Rule-S
+  degeneration, locked S3 validation, finite-sample monotone-threshold
+  dominance limit, and frozen negative cost break-even result
+  `rule_S_cost_not_beneficial`; further empirical selector refinement is not a
+  recommended next step under the unchanged `K=10` workflow. No numerical
+  result, scientific algorithm, code, test, root calculation, FEM workflow, or
+  repository-root README changed.
+
 ## 2026-07-23
 
 - Added the stable zero-root `eb_rule_ab_exact_pareto_v2` postprocessor and

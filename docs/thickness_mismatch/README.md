@@ -11,13 +11,16 @@ Current diagnostic plans and status notes:
 
 - [FEM validation status and roadmap](fem_validation_status.md);
 - [EB safe-spectrum-prefix research plan](eb_safe_spectrum_prefix_research_plan.md);
+- [EB safe-prefix stage closure](eb_safe_prefix_stage_closure.md);
 - [frequency-crossing positive-gap verification status](frequency_crossing_verification_status.md).
 
-The safe-prefix plan now records the completed branch-informed step-2.5b
-gateway. All 122 audited EB/Timoshenko model/geometry records passed the
-`K=10` plus root-11 guard, all 21 pilot geometries were included, and the
-decision is `ready_for_targeted_step3`. The resulting 28-case manifest is a
-future proposal only; no step-3 lower-envelope/root search has been run.
+The EB safe-prefix stage is closed. The branch-informed completeness gateway
+resolved the `K=10` plus root-11 guard, Step 3A found two quality-approved
+counterexamples to the straight lower-envelope hypothesis, and exact Phase I
+reduced the best checked rectangular Rule B to the shear-only Rule S. Rule S
+survived the checked finite-sample safety tests, but the frozen five-case cost
+benchmark returned `rule_S_cost_not_beneficial`; it is not a production
+selector recommendation.
 
 The current rigid-joint `Lambda(mu)` EB/Timoshenko/3D FEM diagnostic plots are
 listed in the [FEM validation status](fem_validation_status.md). They use the

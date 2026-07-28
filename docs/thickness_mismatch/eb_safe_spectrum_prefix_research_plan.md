@@ -1,13 +1,24 @@
 # EB Safe-Spectrum-Prefix Research Plan
 
+```text
+Stage status: closed
+Scientific result: finite-sample Rule-S safety survived
+Engineering result: Rule S was not cost-beneficial
+Recommended action: do not continue empirical selector refinement
+```
+
+The final stage record is
+[EB-only Safe-Prefix Study: Final Status and Stage Closure](eb_safe_prefix_stage_closure.md).
+The historical sequence below is retained as an audit trail; it is not a list
+of active next steps.
+
 ## Status and Scope
 
-This document records the current diagnostic-only research direction for a
-conservative Euler--Bernoulli (EB) certificate for the low sorted spectrum of
-the coupled-rod system. It defines the engineering target, the evidence that
-may be used, the next computational step, and the quality and cost metrics that
-must be reported. It does not introduce a new analytic model or claim a
-continuous-domain guarantee.
+This document records the completed diagnostic-only investigation of a
+conservative Euler--Bernoulli (EB) safe prefix for the low sorted spectrum of
+the coupled-rod system. It preserves the engineering target, evidence chain,
+quality requirements, historical decisions, and final cost result. It does not
+introduce a new analytic model or claim a continuous-domain guarantee.
 
 Project-wide conventions for sorted frequencies, descendant branches, model
 applicability, and diagnostic-to-article promotion remain those in the
@@ -101,6 +112,27 @@ nonempty suffix paid for a full direct spectrum after selector/local overhead.
 No Rule B retuning, additional guard, new indicator, or expanded grid follows
 from this negative cost result.
 
+## Stage closure and reopening conditions
+
+The stage is closed. The positive scientific result is that the shear-only
+Rule S survived the checked finite-sample safety, directed-validation, locked
+S3, threshold-margin, and leave-one-development-geometry-out audits. The
+negative engineering result is that the frozen hybrid did not reduce the cost
+of the reliable first-ten-frequency workflow relative to direct Timoshenko
+`K=10`.
+
+The present branch does not continue Rule-A retuning, Rule-B/Rule-S retuning,
+A-gap, Rule C, Rule D, geometry caps, an `epsilon_0` certificate, Step 3B,
+selector-rescue S3 screens, ML, fitted composite predictors, post-hoc guards,
+or a larger cost grid under the unchanged algorithm.
+
+Reopening requires a material change in the engineering problem, such as a
+reliable suffix solver that avoids full `K=10` fallback, a substantially more
+expensive production Timoshenko solve, a larger `K` that changes suffix
+economics, a theoretically derived a posteriori majorant, a changed error
+criterion or parameter domain, or a diagnostic-only use for Rule S. Merely
+adding ordinary validation geometries is not sufficient.
+
 ### Historical fold-based postprocessor
 
 The first CSV-first certification postprocessor was implemented on
@@ -124,19 +156,20 @@ postprocessor operation counts. Existing `first8` source-summary fields retain
 their original eight-mode meaning; added `firstK` fields support explicit
 `--n-reported-modes 10` runs without changing source defaults.
 
-Remaining steps are computational and scientific rather than implementation
-claims:
+The following were the remaining steps recorded at that historical point.
+They were superseded by the corrected completeness, Step-3A, exact A/B/S, and
+cost phases documented above and are not current recommendations:
 
-- regenerate both complete source datasets with `K = 10` and the documented
+- regeneration of both complete source datasets with `K = 10` and the documented
   candidate-root margins;
-- review held-out false-safe cases, conservative loss, and cluster triggers on
-  those complete datasets;
-- decide whether Rules A--D and the Rule A-gap ablation retain enough safe frequencies before introducing
-  any new physical composite criterion;
-- extend evidence beyond the two current parameter slices only after the
-  complete K=10 results have been reviewed;
-- add source root-operation counters later if this can be done without changing
-  solver behavior.
+- review of held-out false-safe cases, conservative loss, and cluster triggers
+  on those complete datasets;
+- a decision on whether Rules A--D and the Rule A-gap ablation retained enough
+  safe frequencies before any new physical composite criterion was considered;
+- extension beyond the two parameter slices only after the complete K=10
+  results had been reviewed;
+- later addition of source root-operation counters if it could be done without
+  changing solver behavior.
 
 ## Geometry-Only Epsilon Pilot
 
@@ -183,12 +216,13 @@ In addition, many reduced searches for Rules A-gap through D changed between
 the 16- and 32-candidate grids. Those rules therefore retain an explicit
 calibration-convergence caveat in this pilot.
 
-The current diagnostic recommendation is to retain a cascade rather than
-replace the EB certificate: geometry-only screening may be tested as an early
-conservative fallback, followed by EB frequencies and gaps, EB-only Pi guards,
-and Timoshenko for the uncertified suffix. Any decision to promote `epsilon_0`
-or `epsilon_max` requires a larger held-out geometry design. Zero observed
-false-safe on these selected finite cases is not a continuous-domain guarantee.
+At the pilot stage, the provisional recommendation was to retain a cascade
+rather than replace the EB certificate. The later Step-3A counterexamples and
+negative Rule-S cost benchmark superseded that provisional engineering path.
+`epsilon_0` remains a screening quantity, `epsilon_max` remains a weak
+geometry-only indicator, and neither is promoted to a certificate. Zero
+observed false-safe on selected finite cases is not a continuous-domain
+guarantee.
 
 ## Refined Straight-System Epsilon Baseline
 
@@ -278,11 +312,11 @@ N_certified_0(epsilon) = max { n : epsilon <= epsilon_certified_n }
 ```
 
 only over the scanned buffer. It is not a global lower envelope over `beta`,
-`mu`, or `eta`. Research step 3 remains pending and was not started by this
-correction. A future targeted geometry search may probe the recorded
+`mu`, or `eta`. At the time of this correction, research step 3 had not yet
+started. The later fixed Step-3A screen used the recorded
 `epsilon_near_n = 0.999 epsilon_star_n` and
-`epsilon_buffer_n = 0.99 epsilon_star_n` values while keeping first loss
-distinct from re-entry.
+`epsilon_buffer_n = 0.99 epsilon_star_n` values and found the counterexamples
+documented below.
 
 ## General-Spectrum Completeness Audit Before Step 3
 
@@ -375,13 +409,14 @@ first-failure result relative to the comparison pilots. All local-independent,
 cluster, root-11 guard, straight-oracle, and requested force-global readiness
 checks passed. The resulting decision is `ready_for_targeted_step3`.
 
-Because that gate passed, the future-only compact manifest
+Because that gate passed, the then-future compact manifest
 [`eb_epsilon_lower_envelope_step3_cases.csv`](../../scripts/analysis/thickness_mismatch/audits/data/eb_epsilon_lower_envelope_step3_cases.csv)
-was written. Its 28 unique geometries use only full-precision
+was written. Its 28 unique geometries used only full-precision
 `epsilon_near_n` and `epsilon_buffer_n` values from the corrected straight
 baseline, deduplicate the prefix 4/5 and 9/10 thresholds, and select baseline,
 small-angle, 45/90-degree, high-`mu`, signed-`eta`, and mixed probes. No root
-calculation or lower-envelope search from that manifest was run in step 2.5b.
+calculation or lower-envelope search from that manifest was run in step 2.5b;
+it was subsequently executed only by Step 3A.
 
 ## Step 3A: targeted lower-envelope screening
 
@@ -444,8 +479,9 @@ root-match, and cluster checks. Two candidates were confirmed by both runs:
 `eta=-0.1`, verified `V_6=5.09348548033e-4`, triggered by sorted mode 5).
 There were no unresolved or numerically indeterminate geometries. The Step-3A
 decision is therefore `counterexample_found`. The 18-row paired Step-3B
-proposal covers prefixes 2--10 and remains unexecuted; no local epsilon
-refinement was performed.
+proposal covers prefixes 2--10 and remains unexecuted; it was not needed to
+answer the lower-envelope hypothesis and is closed with this stage. No local
+epsilon refinement was performed.
 
 ## Frequency-map computation policy
 
@@ -551,9 +587,9 @@ convergence, joint idealization, and article-grade assignment limitations are
 still open. No stronger validation claim is permitted here than the one stated
 in the current [FEM validation status](fem_validation_status.md).
 
-## Current Evidence and Parameter Slices
+## Initial Evidence and Parameter Slices
 
-The current evidence comes from three complementary diagnostic workflows:
+The initial evidence came from three complementary diagnostic workflows:
 
 - [`audit_eb_validity_vs_timoshenko_stage1.py`](../../scripts/analysis/thickness_mismatch/audits/audit_eb_validity_vs_timoshenko_stage1.py)
   provides the thickness scan at `beta = 45 deg`, `eta = 0`, with varying
@@ -573,15 +609,16 @@ space:
 - `beta = 45 deg`, `eta = 0`, varying `epsilon` and `mu`;
 - `epsilon = 0.02`, varying `beta`, `mu`, and `eta`.
 
-They provide evidence about candidate indicators and transfer behavior, but
-they do not prove that any criterion is universal. In addition, the existing
-applicability datasets report eight modes; a `K = 10` source-data extension is
-required before the proposed ten-frequency certificate can be calibrated.
+They provided evidence about candidate indicators and transfer behavior, but
+did not prove that any criterion was universal. At that time the applicability
+datasets reported eight modes, so a `K = 10` source-data extension was required
+before the ten-frequency experiment. The later corrected pilot and Step-3A
+datasets supplied the completed `K=10` evidence used by the exact A/B/S phase.
 
 ## Candidate EB-Only Indicators
 
-The first certification stage must test the existing EB-only quantities before
-introducing a new arbitrary scalar predictor:
+The initial certification stage was specified to test the existing EB-only
+quantities before introducing any new scalar predictor:
 
 - `Pi_shear_EB`;
 - `Pi_rotary_EB`;
@@ -592,12 +629,10 @@ introducing a new arbitrary scalar predictor:
 - `epsilon_max`;
 - EB axial and bending energy fractions.
 
-An adjacent EB sorted spectral gap is to be added as an inexpensive protective
-feature. Small gaps within a proposed prefix, or at its upper boundary, can
-trigger a conservative fallback because close roots increase the risk of
-root-order sensitivity, mode mixing, and unreliable individual-mode
-interpretation. The gap must remain an explicit guard with a documented
-normalization; it must not be hidden inside an unexplained composite scalar.
+An adjacent EB sorted spectral gap was initially proposed as an explicit
+protective feature. The historical A-gap/C implementation jointly optimized
+the base and gap thresholds, so it did not provide a clean nested ablation.
+That path was closed rather than continued with another guard.
 
 For fixed material constants, `Theta_max_EB` is a monotonic transformation of
 `chi_max_EB`. Agreement between these two quantities therefore is not
@@ -606,24 +641,25 @@ independent physical confirmation and must not be counted as such.
 ## Historical Initial Certification Plan
 
 The following list records the initial broader plan that preceded the locked
-exact Rule A/B experiment above. It is retained for provenance, not as the
-current instruction to continue A-gap/C/D or to promote an epsilon
-certificate. The current permitted next step is the separate Rule-B operation-
-cost break-even experiment described above.
+exact Rule A/B experiment. It is retained for provenance only, not as an
+instruction to continue A-gap/C/D, Step 3B, or an epsilon certificate. Its
+operation-cost question was subsequently answered by the frozen Rule-S
+benchmark.
 
-The recommended next stage is the following.
+The historical sequence was:
 
-1. Extend both source applicability workflows to `K = 10` reported sorted
-   frequencies. Retain a sufficient margin of candidate roots and preserve
-   candidate-boundary, root-recovery, close-cluster, and matching diagnostics.
+1. Both source applicability workflows were to be extended to `K = 10`
+   reported sorted frequencies, with a sufficient candidate-root margin and
+   preserved candidate-boundary, root-recovery, close-cluster, and matching
+   diagnostics.
 
-2. Use the separate CSV-only postprocessor at
+2. A separate CSV-only postprocessor was to be used at
    `scripts/analysis/thickness_mismatch/postprocess/analyze_eb_safe_prefix_certification.py`.
    The stable entry point is now implemented and reads only existing source
    CSV files; it does not recompute roots.
 
-3. For every complete geometry, compute `N_true` and candidate `N_hat` values
-   for nested rule families:
+3. For every complete geometry, the plan called for computing `N_true` and
+   candidate `N_hat` values for nested rule families:
 
    - **Rule A:** `Pi_EB <= threshold`.
    - **Rule A-gap:** Rule A plus the minimum adjacent EB sorted spectral-gap
@@ -634,23 +670,23 @@ The recommended next stage is the following.
    - **Rule D:** Rule C plus EB-only modal-character guards or subgroup-specific
      thresholds based on EB axial and bending energy fractions.
 
-   Each rule must return a prefix: isolated passing modes after the first
-   rejected mode must not increase `N_hat`.
+   Each rule was required to return a prefix: isolated passing modes after the
+   first rejected mode could not increase `N_hat`.
 
-4. Calibrate each rule by maximizing the total number of accepted EB
-   frequencies subject to `false_safe_geometry_count = 0`, that is, **zero
+4. Each rule was to be calibrated by maximizing the total number of accepted
+   EB frequencies subject to `false_safe_geometry_count = 0`, that is, **zero
    observed false-safe** on the calibration set. Threshold selection, tie
-   breaking, and any subgroup boundaries must be reproducible and reported.
+   breaking, and any subgroup boundaries were to be reproducible and reported.
 
-5. Validate on held-out **complete geometries**, not on randomly split mode
-   rows. The same geometry must never contribute modes to both calibration and
-   validation. Required transfer checks hold out beta/eta groups, epsilon
-   groups or ranges, and mu groups or ranges.
+5. Validation was to use held-out **complete geometries**, not randomly split
+   mode rows. The same geometry could not contribute modes to both calibration
+   and validation. The planned transfer checks held out beta/eta groups,
+   epsilon groups or ranges, and mu groups or ranges.
 
-6. Introduce a new physically motivated composite criterion only if the
-   existing indicators produce systematic false-safe cases or unacceptably low
-   coverage, and only after the failure structure identifies the missing
-   physical or spectral dependence.
+6. A new physically motivated composite criterion was to be considered only if
+   the existing indicators produced systematic false-safe cases or
+   unacceptably low coverage, and only after the failure structure identified
+   the missing physical or spectral dependence. That option was not pursued.
 
 ## Required Quality Metrics
 
@@ -701,9 +737,9 @@ software environment, cache state, and worker count. It is not the principal
 evidence for computational savings because it mixes implementation details,
 hardware, parallelism, and cache effects.
 
-## Non-Goals
+## Historical non-goals
 
-This research direction does not currently require:
+The initial research direction did not require:
 
 - changing analytic formulas or determinants;
 - changing root solvers;
@@ -714,6 +750,6 @@ This research direction does not currently require:
 - introducing a geometry-only predictor before the EB-based certificate has
   been evaluated.
 
-The plan also does not promote existing diagnostic outputs into article
-results. Any later promotion remains subject to the repository's separate
+This closure does not promote the diagnostic outputs into article results.
+Any later promotion remains subject to the repository's separate
 diagnostic-to-article workflow.

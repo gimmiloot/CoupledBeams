@@ -102,15 +102,47 @@ python scripts/analysis/thickness_mismatch/shapes/plot_beta_scan.py \
   --sorted-modes 2 3
 ```
 
-## Current Research Direction
+## Final EB safe-prefix result
 
-The current direction is a conservative `K = 10` EB-based certificate for the
-safe prefix of the sorted spectrum. The CSV-first postprocessor is implemented;
-the engineering target, candidate EB-only indicators, held-out-geometry
-validation policy, and operation-count requirements are recorded in the
+The EB-only safe-prefix stage is closed. The complete evidence chain and
+reopening conditions are recorded in the
+[stage-closure note](../../../docs/thickness_mismatch/eb_safe_prefix_stage_closure.md).
+Canonical generated reports are the
+[Phase-I exact A/B/S report](../../../results/eb_rule_ab_exact_pareto/eb_rule_ab_exact_pareto_report.md)
+and the
+[Phase-II Rule-S cost report](../../../results/eb_rule_s_cost_break_even/rule_S_cost_break_even_report.md).
+
+For prefix \(n\), Rule S uses
+
+\[
+S_{g,n}=\max_{1\leq k\leq n}\Pi_{\mathrm{shear},g,k},
+\qquad
+N_S(g)=\max\{n:S_{g,n}\leq T_s\},
+\]
+
+with the frozen development threshold
+`T_s=0.16762413001084248`. Its checked finite-sample safety status survived:
+Rule S produced no observed false-safe result on development, baseline
+controls, nonbaseline directed validation, or the locked `S3_12`/`S3_14`
+holdout. Its engineering cost status is `rule_S_cost_not_beneficial`: every
+nonempty suffix in the frozen five-case benchmark required full `K=10`
+fallback.
+
+This workflow remains a research diagnostic and is not a production
+recommendation or a continuous-domain certificate. Do not continue empirical
+selector refinement under the unchanged problem statement.
+
+## Historical EB safe-prefix workflow
+
+The following commands and descriptions preserve the completed workflow for
+provenance. The engineering target, candidate EB-only indicators,
+held-out-geometry validation policy, operation-count requirements, and stage
+history remain in the
 [EB safe-spectrum-prefix research plan](../../../docs/thickness_mismatch/eb_safe_spectrum_prefix_research_plan.md).
+They are not active next-step instructions.
 
-Generate the required K=10 source inputs without changing the legacy defaults:
+The initial K=10 source-generation commands, which did not change the legacy
+defaults, were:
 
 ```bash
 python scripts/analysis/thickness_mismatch/audits/audit_eb_validity_vs_timoshenko_stage1.py \
@@ -122,7 +154,7 @@ python scripts/analysis/thickness_mismatch/audits/audit_eb_validity_fixed_epsilo
   --n-candidate-roots 20
 ```
 
-Then run the CSV-only certification workflow:
+The historical CSV-only certification workflow was:
 
 ```bash
 python scripts/analysis/thickness_mismatch/postprocess/analyze_eb_safe_prefix_certification.py \
@@ -132,9 +164,8 @@ python scripts/analysis/thickness_mismatch/postprocess/analyze_eb_safe_prefix_ce
   --k-max 10
 ```
 
-The postprocessor rejects K=8-only inputs with the two regeneration commands
-above. It does not solve roots, run FEM, or use Timoshenko-derived quantities as
-certificate features.
+The postprocessor rejects K=8-only inputs. It does not solve roots, run FEM, or
+use Timoshenko-derived quantities as certificate features.
 
 The minimal exact Rule A/B deciding experiment has its own multi-source
 partition contract and therefore uses one separate stable postprocessor:
@@ -155,15 +186,15 @@ The completed exact search selected `T_A=0.20310844707256814` and the frozen
 Rule-B pair `T_s=0.16762413001084248`, `T_r=0.046719283392029604`. Neither rule
 produced an observed false-safe on the checked directed validation or locked
 `S3_12`/`S3_14` holdout. Rule A remains a benchmark. Rule B has status
-`rule_B_safety_survives_cost_test_required`. All 32 equal development optima
-have identical checked prediction/safety vectors. The independent exact shear-
-only Rule S selects the same `T_s`, attains the same 153/155 objective, and is
-prediction-equivalent to Rule B on all 49 included geometries; rotary is never
-decision-binding. `epsilon_0` is not a certificate, A-gap/C/D are not continued
-in this stage, and finite-set zero false-safe is not a continuous-domain
-guarantee.
+`rule_B_safety_survives_cost_test_required` in the immutable Phase-I report;
+the required cost test was subsequently completed. All 32 equal development
+optima have identical checked prediction/safety vectors. The independent exact
+shear-only Rule S selects the same `T_s`, attains the same 153/155 objective,
+and is prediction-equivalent to Rule B on all 49 included geometries; rotary is
+never decision-binding. `epsilon_0` is not a certificate, A-gap/C/D are closed,
+and finite-set zero false-safe is not a continuous-domain guarantee.
 
-The permitted five-case cost proposal has subsequently been executed with:
+The locked five-case cost proposal was executed with:
 
 ```bash
 python scripts/analysis/thickness_mismatch/benchmarks/benchmark_rule_s_cost_break_even.py \
