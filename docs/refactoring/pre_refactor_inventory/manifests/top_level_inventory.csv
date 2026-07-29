@@ -1,0 +1,13 @@
+top_level,exists,file_count,total_size,tracked_files,untracked_files,ignored_files,readme_present,readme_paths,agents_present,agents_paths,main_content,status,accidental_deletion_risk,recommended_later_action
+.agents,true,0,0,0,0,0,false,,false,,agent-local metadata,unknown-manual-review,low,retain and audit before structural change
+.codex,true,1,31,1,0,0,false,,false,,Codex configuration,editor-config,medium,retain and audit before structural change
+.pytest_cache,true,6,35884,0,0,6,true,.pytest_cache/README.md,false,,pytest cache,disposable-cache,low,retain unchanged in this task; disposable later
+data,true,2,0,2,0,0,false,,false,,data placeholders,stable,medium,retain and audit before structural change
+docs,true,89,35093583,89,0,0,true,docs/theory/veering_bridge/README.md;docs/thickness_mismatch/README.md;docs/veering/README.md,true,docs/theory/AGENTS.md,"theory, literature, logs and research documentation",active,high,retain and audit before structural change
+notebooks,true,1,0,1,0,0,false,,false,,notebook placeholder,placeholder,medium,retain and audit before structural change
+private,true,52,5549997,0,0,52,true,<redacted-private-path>,false,,local private files,private,high,retain and audit before structural change
+results,true,9317,1363576511,1,0,9316,false,,false,,generated scientific results and caches,generated,high,retain and audit before structural change
+scripts,true,205,8752061,157,0,48,true,scripts/README.md;scripts/analysis/README.md;scripts/analysis/thickness_mismatch/README.md;scripts/legacy/README.md;scripts/lib/README.md,false,,runnable workflows and reusable helpers,active,high,retain and audit before structural change
+skills,true,4,9378,4,0,0,true,skills/README.md,false,,writing workflow instructions,active,medium,retain and audit before structural change
+src,true,24,179398,16,0,8,false,,false,,analytic and FEM source,stable,high,retain and audit before structural change
+tests,true,54,1011432,25,0,29,false,,false,,"unit, smoke and regression tests",stable,high,retain and audit before structural change

@@ -11,6 +11,9 @@ applicability, model-extension checks, and FEM comparison conventions live in
 New runnable scripts must also follow the Script Proliferation Control rule in
 that file: prefer parameters or presets over new one-case scripts.
 
+For active, completed, historical, superseded, and compatibility workflow
+status, see [Script and Workflow Status](STATUS.md).
+
 ## Branch identity and current sorted index
 
 Analytic branch identity is defined at the base point `beta = 0`, `mu = 0` for each `epsilon` independently. A `branch_id` such as `bending_desc_05` means "the branch seeded by base sorted index 5"; it does not mean "whatever root is currently fifth."
@@ -100,6 +103,11 @@ The solid lines are the first `--num-modes` canonical analytic branches seeded a
 - Do not use when: you are regenerating article figures; this script does not write `paper_dorofeev_style/figures/` and does not update `main.tex`.
 
 The coupled analytic curves, FEM markers, axes, labels, mu grid, and original FP reference counts are reused from `paper_dorofeev_style/generate_article_spectral_figures.py`. FF reference curves use the same single-rod length logic, with `L+ = l(1+mu)` and `L- = l(1-mu)`, and roots of `cosh(alpha) cos(alpha) = 1`.
+
+The referenced `paper_dorofeev_style/` workspace is not part of the current
+tracked checkout. Treat it as an external/local prerequisite and verify its
+authoritative location before running this command; the results-only script is
+not self-contained in a fresh public clone.
 
 ### Thickness-mismatch diagnostic model
 

@@ -1,0 +1,4 @@
+category,file_count,total_size,backup_included,example_paths,notes
+disposable-python-cache,91,4086091,false,.pytest_cache/.gitignore;.pytest_cache/CACHEDIR.TAG;.pytest_cache/README.md;.pytest_cache/v/cache/lastfailed;.pytest_cache/v/cache/nodeids,Regenerable caches excluded but listed externally
+generated-results,9316,1363576511,true,results/_smoke/3d_fem_environment_check/3d_fem_environment_check_report.md;results/_smoke/3d_fem_environment_check/calculix_2p22/CalculiX-2.22.0-win-x64/bin/LICENSE.txt;results/_smoke/3d_fem_environment_check/calculix_2p22/CalculiX-2.22.0-win-x64/bin/buildInfo.log;results/_smoke/3d_fem_environment_check/calculix_2p22/CalculiX-2.22.0-win-x64/bin/ccx.exe;results/_smoke/3d_fem_environment_check/calculix_2p22/CalculiX-2.22.0-win-x64/bin/ccx_MT.exe,Copied with SHA256 verification
+private-data,52,5549997,true,<aggregate-only; private paths redacted>,Copied with SHA256 verification

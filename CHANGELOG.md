@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 2026-07-29
+
+- Added the verified pre-refactor inventory and public privacy sanitization,
+  research-direction navigation, grouped script-status map, generated-results
+  index, archive/preservation policy, and refactoring-stage overview. Updated
+  the root and script navigation without changing scientific code, formulas,
+  scripts, tests, generated results, caches, solver behavior, or private data;
+  no file was moved or deleted.
+
 ## 2026-07-28
 
 - Closed the EB-only safe-prefix research stage in a standalone final note and
