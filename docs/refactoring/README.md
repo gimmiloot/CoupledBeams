@@ -59,6 +59,15 @@ These are possible review stages, not commitments:
 Stages 4--5 require separately approved regression gates and, for anisotropy,
 an approved physical model and isotropic-limit contract before implementation.
 
+## Anisotropic direction
+
+A [documentation location](../anisotropic_rods/README.md) is reserved for the
+future anisotropic direction; scientific scoping is deferred until the current
+refactoring is complete. Future anisotropic work is not a justification for
+speculative abstractions during the current refactoring. The next refactoring
+step must be evaluated independently of the future book and must not introduce
+a speculative anisotropic API.
+
 ## Manual path-reference review
 
 The inventory found 371 absent inline path references. Of these, 345 point

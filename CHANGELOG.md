@@ -2,6 +2,11 @@
 
 ## 2026-07-29
 
+- Reserved `docs/anisotropic_rods/` for a future research direction and
+  recorded that theory and implementation are deferred until repository
+  refactoring is complete and the user's electronic book has been studied. No
+  model assumptions, notation, constitutive equations, code, tests, or
+  numerical results were introduced.
 - Centralized the duplicated mass-preserving radius/thickness denominator and
   `tau1`/`tau2` algebra in a small analytic common helper while preserving the
   legacy EB `ThicknessMismatchFactors` and Timoshenko `TauFactors` APIs and
