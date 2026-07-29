@@ -2,6 +2,13 @@
 
 ## 2026-07-29
 
+- Centralized the duplicated mass-preserving radius/thickness denominator and
+  `tau1`/`tau2` algebra in a small analytic common helper while preserving the
+  legacy EB `ThicknessMismatchFactors` and Timoshenko `TauFactors` APIs and
+  return types. Exact pre/post factor, exception, import, signature, dataclass,
+  repr, and fixed-`Lambda` matrix audits passed with zero mismatches; no
+  determinant, coupling matrix, solver, root, FEM, generated result, or cache
+  behavior changed.
 - Added the verified pre-refactor inventory and public privacy sanitization,
   research-direction navigation, grouped script-status map, generated-results
   index, archive/preservation policy, and refactoring-stage overview. Updated

@@ -17,37 +17,47 @@ backup.
 
 ## Current stage
 
-Stage 1 is the documentation and navigation pass. It creates the
-[research index](../research_index.md), [generated results index](../results_index.md),
-[archive policy](../archive_policy.md), and [script status map](../../scripts/STATUS.md).
-It does not refactor scientific code or physically archive anything.
+Stage 3, the common thickness-scaling helper, is completed and awaiting review.
+The value-only
+[`thickness_scaling.py`](../../src/my_project/analytic/common/thickness_scaling.py)
+module now owns the duplicated mass-preserving denominator polynomial and
+`tau1`/`tau2` divisions. The EB and Timoshenko entry points remain legacy
+wrappers with their original validation, square-root backends, dataclass return
+types, exception messages, and public imports.
 
 ## Completed actions
 
 - Stage 0: backup and inventory — completed.
-- Stage 1: documentation and navigation — current.
+- Stage 1: documentation and navigation — completed.
+- Stage 3: common thickness-scaling helper — completed and awaiting review.
 - Public privacy review of the inventory — completed for this pass.
 - Canonical status, result-directory, and preservation navigation — documented
   for manual review.
+- Pre/post regression gates passed for 98 factor outputs, 28 exception cases,
+  public imports/signatures/dataclass fields/repr, and six fixed-`Lambda`
+  matrices for each of EB and Timoshenko, all with zero exact mismatches.
+- The local baseline remains identified by
+  `pre-common-code-refactor-2026-07-29`.
 
-## Prohibited changes in this stage
+## Preserved Stage 3 boundaries
 
-No Python code, test, formula, determinant, root solver, branch tracker, FEM
-model, generated result, cache, or private file may be changed. Files are not
-moved, renamed, deleted, or physically archived. Scientific calculations are
-outside this stage.
+No determinant or coupling-matrix entry, formula sign or coefficient, unknown
+ordering, root solver, branch tracker, FEM model, generated result, cache, or
+private file changed. The refactor added only the shared value algebra, legacy
+wrapper calls, targeted regression tests, and this status documentation. It
+performed no eigenvalue root calculation or scientific result regeneration.
 
 ## Planned later stages
 
 These are possible review stages, not commitments:
 
 - Stage 2: soft archive classification — documentation only.
-- Stage 3: common thickness-scaling helper — not started.
+- Stage 3: common thickness-scaling helper — completed and awaiting review.
 - Stage 4: effective rod properties interface — not started.
 - Stage 5: anisotropic research scaffold — not started.
 
-Stages 3--5 require new regression gates and, for anisotropy, an approved
-physical model and isotropic-limit contract before implementation.
+Stages 4--5 require separately approved regression gates and, for anisotropy,
+an approved physical model and isotropic-limit contract before implementation.
 
 ## Manual path-reference review
 

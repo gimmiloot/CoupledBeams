@@ -4,6 +4,11 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from .common.thickness_scaling import (
+    mass_preserving_denominator_squared as _mass_preserving_denominator_squared,
+    mass_preserving_tau_values_from_denominator as _mass_preserving_tau_values_from_denominator,
+)
+
 
 @dataclass(frozen=True)
 class ThicknessMismatchFactors:
@@ -27,12 +32,11 @@ def thickness_mismatch_factors(mu: float, eta: float) -> ThicknessMismatchFactor
     if not (-1.0 < eta_f < 1.0):
         raise ValueError("eta must lie inside (-1, 1) for positive radii.")
 
-    denom_sq = 1.0 + 2.0 * mu_f * eta_f + eta_f**2
+    denom_sq = _mass_preserving_denominator_squared(mu_f, eta_f)
     if denom_sq <= 0.0:
         raise ValueError("mass-preserving radius denominator is not positive.")
     denom = float(np.sqrt(denom_sq))
-    tau1 = (1.0 - eta_f) / denom
-    tau2 = (1.0 + eta_f) / denom
+    tau1, tau2 = _mass_preserving_tau_values_from_denominator(eta_f, denom)
     return ThicknessMismatchFactors(mu=mu_f, eta=eta_f, denom=denom, tau1=float(tau1), tau2=float(tau2))
 
 

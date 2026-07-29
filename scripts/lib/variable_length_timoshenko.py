@@ -7,6 +7,11 @@ from typing import Callable
 import numpy as np
 from scipy.optimize import brentq
 
+from src.my_project.analytic.common.thickness_scaling import (
+    mass_preserving_denominator_squared as _mass_preserving_denominator_squared,
+    mass_preserving_tau_values_from_denominator as _mass_preserving_tau_values_from_denominator,
+)
+
 
 E = 1.0
 RHO = 1.0
@@ -83,16 +88,17 @@ def tau_factors(mu: float, eta: float) -> TauFactors:
         raise ValueError("mu must lie inside (-1, 1) for positive segment lengths.")
     if not (-1.0 < eta_f < 1.0):
         raise ValueError("eta must lie inside (-1, 1) for positive radii.")
-    denom_sq = 1.0 + 2.0 * mu_f * eta_f + eta_f**2
+    denom_sq = _mass_preserving_denominator_squared(mu_f, eta_f)
     if denom_sq <= 0.0:
         raise ValueError("tau denominator is not positive.")
     denom = math.sqrt(denom_sq)
+    tau1, tau2 = _mass_preserving_tau_values_from_denominator(eta_f, denom)
     return TauFactors(
         mu=mu_f,
         eta=eta_f,
         denom=denom,
-        tau1=(1.0 - eta_f) / denom,
-        tau2=(1.0 + eta_f) / denom,
+        tau1=tau1,
+        tau2=tau2,
     )
 
 
