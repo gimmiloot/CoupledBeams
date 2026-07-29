@@ -17,8 +17,9 @@ backup.
 
 ## Current stage
 
-Stage 3, the common thickness-scaling helper, is completed and awaiting review.
-The value-only
+The residual refactoring audit is complete and recommends no further code
+refactoring for the current scope. Stage 3, the common thickness-scaling
+helper, is completed. The value-only
 [`thickness_scaling.py`](../../src/my_project/analytic/common/thickness_scaling.py)
 module now owns the duplicated mass-preserving denominator polynomial and
 `tau1`/`tau2` divisions. The EB and Timoshenko entry points remain legacy
@@ -29,7 +30,9 @@ types, exception messages, and public imports.
 
 - Stage 0: backup and inventory — completed.
 - Stage 1: documentation and navigation — completed.
-- Stage 3: common thickness-scaling helper — completed and awaiting review.
+- Stage 3: common thickness-scaling helper — completed.
+- Residual duplicate, soft-archive, possible-orphan, path-reference, and module
+  boundary audit — completed.
 - Public privacy review of the inventory — completed for this pass.
 - Canonical status, result-directory, and preservation navigation — documented
   for manual review.
@@ -38,6 +41,18 @@ types, exception messages, and public imports.
   matrices for each of EB and Timoshenko, all with zero exact mismatches.
 - The local baseline remains identified by
   `pre-common-code-refactor-2026-07-29`.
+
+## Residual refactoring audit
+
+Status: **completed — no further code refactoring recommended**.
+
+The [closing audit](residual_refactoring_audit.md) and its
+[candidate](manifests/residual_refactor_candidates.csv),
+[possible-orphan](manifests/orphan_script_audit.csv), and
+[manual-reference](manifests/manual_path_reference_review.csv) manifests record
+why the remaining similar functions retain different contracts, why soft
+archive status is sufficient, and why two exact filename utilities are only
+future candidates if their existing call sites are already being changed.
 
 ## Preserved Stage 3 boundaries
 
@@ -51,8 +66,9 @@ performed no eigenvalue root calculation or scientific result regeneration.
 
 These are possible review stages, not commitments:
 
-- Stage 2: soft archive classification — documentation only.
-- Stage 3: common thickness-scaling helper — completed and awaiting review.
+- Later soft-archive status harmonization — documentation only and only where
+  the closing audit records a concrete navigation mismatch.
+- Stage 3: common thickness-scaling helper — completed.
 - Stage 4: effective rod properties interface — not started.
 - Stage 5: anisotropic research scaffold — not started.
 

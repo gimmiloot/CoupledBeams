@@ -2,6 +2,13 @@
 
 ## 2026-07-29
 
+- Completed the residual refactoring audit across duplicate candidates,
+  script/workflow status, the possible orphan visualization audit, manual path
+  references, and the `src/` versus `scripts/lib/` boundary. Recorded
+  `refactoring_complete_for_current_scope`: remaining similarities have
+  different contracts or do not justify churn, and soft archive status is
+  sufficient. No scientific code, tests, scripts, results, private files, or
+  caches changed.
 - Reserved `docs/anisotropic_rods/` for a future research direction and
   recorded that theory and implementation are deferred until repository
   refactoring is complete and the user's electronic book has been studied. No
