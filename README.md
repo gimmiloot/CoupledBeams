@@ -37,7 +37,9 @@ review; no absent `paper_*` directory is assumed to exist here.
 - Euler--Bernoulli versus Timoshenko applicability and validation diagnostics;
 - the completed and closed EB safe-prefix engineering study;
 - out-of-plane Euler--Bernoulli bending plus Saint-Venant torsion;
-- planned anisotropic rods, with no model or implementation yet.
+- completed Chapter-2 source reproduction for one free-free and cantilever
+  monoclinic rod from Yartsev; the coupled-rod model is the next research step
+  and is not implemented.
 
 See the [research index](docs/research_index.md) for canonical documents, implementations,
 conclusions, and status definitions.
@@ -48,8 +50,9 @@ The isotropic analytic/FEM baseline is stable. Several diagnostic branches are
 active, while the K=10 completeness, Step-3A, and exact Rules A/B/S stages have
 completed records. The Rule-S engineering-selector path is closed after the
 negative cost result `rule_S_cost_not_beneficial`; this does not refute Rule S
-mathematically. An anisotropic extension is planned only and has not been
-implemented.
+mathematically. The selected anisotropic Chapter-2 single-rod source line has
+completed free-free and cantilever gates. Coupled anisotropic rods, a
+production API, and FEM validation have not been started.
 
 ## Analytic Layer
 
@@ -77,6 +80,22 @@ python scripts/run/run_branchwise_fem_audit.py
 For the single tracked descendant shape runner, ordinary runs use the editable `USER PARAMETERS` block at the top of `scripts/run/run_tracked_bending_descendant_shape_ru.py`; CLI arguments remain available as overrides.
 
 See `scripts/README.md` for the full script inventory and legacy command map.
+
+The diagnostic Chapter-2 single-rod reproduction is run with:
+
+```bash
+python scripts/analysis/anisotropic_rods/reproduce_yartsev_fig_2_2.py
+```
+
+It writes Git-ignored evidence under
+`results/anisotropic_rods/yartsev_ch2_free_free/` and does not alter the
+isotropic analytic/FEM baseline.
+
+The completed cantilever source reproduction and its saved-data-only boundary
+decision are documented in
+[`docs/anisotropic_rods/yartsev_ch2_cantilever_reproduction.md`](docs/anisotropic_rods/yartsev_ch2_cantilever_reproduction.md).
+The next separate research gate is the derivation and verification of internal
+rigid angular-joint conditions; no coupled-rod determinant is implemented.
 
 ## FEM Baseline
 

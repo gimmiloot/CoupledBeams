@@ -1,5 +1,40 @@
 # CHANGELOG
 
+## 2026-07-31
+
+- Completed the Chapter-2 cantilever source reproduction and confirmed
+  `book_slope_clamp` from Figure 2.8. Recorded the distinction between that
+  external source clamp and future rigid-joint compatibility, and registered
+  the generated-result navigation and CLI status. No coupled-rod model,
+  Euler--Bernoulli--Saint-Venant comparison, or FEM was added.
+- Registered B. A. Yartsev's 2024 monograph as the primary source for
+  `anisotropic_rods`; added its BibTeX and source-index entries plus a detailed
+  source note, inventoried the seven local scan fragments, and documented the
+  Chapter-2 source warnings and corrected-model
+  `PASS_WITHIN_GRAPH_RESOLUTION` evidence. Scientific code and generated
+  results were not changed.
+
+## 2026-07-30
+
+- Added the diagnostic Yartsev Chapter-2 source-reproduction workflow for one
+  free-free monoclinic Timoshenko rod. It implements the Chapter-1 complex
+  modulus/compliance rotation, adaptive generalized-torsion series, the
+  source-consistent six-state transfer matrix, corrected and literally
+  printed eliminated variants, determinant/Brent elastic roots, loss/theta
+  continuation for complex roots, and narrow MAC continuity diagnostics.
+- Added focused geometry, material-rotation, torsional-series, elastic/complex
+  limit, orthotropic factorization, free-free torsion, formulation-equivalence,
+  rigid-mode, and root-convergence tests. The corrected state and eliminated
+  systems agree for the first eight positive elastic roots; the printed signs
+  remain a separate diagnostic and do not reproduce the torsional spectrum.
+- Generated Git-ignored Figure-2.2 reproduction evidence and recorded
+  `PASS_WITHIN_GRAPH_RESOLUTION` against a separate rounded reading of all 98
+  calculated-curve anchor values. No parameter was fitted; the source has no
+  digital curve table and experimental markers were not digitized. Updated
+  anisotropic, script, result, and root navigation. No coupled-rod model,
+  Euler--Bernoulli model, FEM run, existing isotropic determinant, commit, or
+  push was included.
+
 ## 2026-07-29
 
 - Completed the residual refactoring audit across duplicate candidates,

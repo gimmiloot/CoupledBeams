@@ -32,6 +32,8 @@ file.
 | Branch tracking and analytic shapes | `scripts/lib/analytic_branch_tracking.py`; `scripts/run/run_tracked_bending_descendant_shape_ru.py` | `stable-baseline` | [branch rules](../docs/project_rules.md#branch-identity-and-mode-descendants) | Use `branch_id` for identity and record `current_sorted_index` separately. |
 | Veering, modal exchange, and localization | `scripts/analyze_target_descendants_beta15_r5.py`; `scripts/analyze_flat_mu_bending_energy.py`; focused audits under `scripts/analysis/` | `active-diagnostic` | [strict assessment](../docs/veering/strict_veering_assessment.md), [slow-evolution assessment](../docs/veering/mu_slow_evolution_assessment.md) | Preserve completed evidence; make strict claims only with tracked branches, paired gaps, and shape/MAC evidence. |
 | Thickness-mismatch limits and maps | limit audits plus parameterized map/shape commands listed in the [script map](analysis/thickness_mismatch/README.md#preferred-entry-points) | `active-diagnostic` | [model note](../docs/thickness_mismatch/README.md) | Prefer parameterized entry points and distinguish sorted spectra from descendants. |
+| Yartsev Chapter-2 free-free monoclinic rod | `analysis/anisotropic_rods/reproduce_yartsev_fig_2_2.py` | `completed` source-reproduction diagnostic | [single-rod reproduction](../docs/anisotropic_rods/yartsev_ch2_single_rod_reproduction.md): `PASS_WITHIN_GRAPH_RESOLUTION` | Preserve the corrected/printed distinction. This completed gate is not a coupled-rod or production anisotropic workflow. |
+| Yartsev Chapter-2 cantilever monoclinic rod | `analysis/anisotropic_rods/reproduce_yartsev_ch2_cantilever.py` | `completed` source-reproduction and boundary-condition diagnostic | [cantilever reproduction](../docs/anisotropic_rods/yartsev_ch2_cantilever_reproduction.md): `BOOK_SLOPE_CLAMP_CONFIRMED` | Supports ordinary full run, smoke, quick boundary gate, and saved-data-only boundary source check. The quick gate is preliminary; the postprocess-only mode does not invoke the root solver. This is not a coupled-rod solver. |
 | Stage-1 and fixed-epsilon EB applicability | `analysis/thickness_mismatch/audits/audit_eb_validity_vs_timoshenko_stage1.py`; `audit_eb_validity_fixed_epsilon_geometry_scan.py` | `completed` | [stage closure](../docs/thickness_mismatch/eb_safe_prefix_stage_closure.md) | Retain as source-generation provenance; these are not pending selector-development steps. |
 | General spectrum-completeness audit | `analysis/thickness_mismatch/audits/audit_eb_timo_general_spectrum_completeness.py` | `superseded` | branch-informed gateway below; [research plan](../docs/thickness_mismatch/eb_safe_spectrum_prefix_research_plan.md#branch-informed-continuation-gateway-to-step-3) | Preserve the important `not_ready_for_step3` result; do not use it as the targeted gateway's current status. |
 | Branch-informed completeness gateway | `analysis/thickness_mismatch/audits/audit_eb_timo_branch_continuation_gateway.py` | `completed` | [research plan](../docs/thickness_mismatch/eb_safe_spectrum_prefix_research_plan.md#branch-informed-continuation-gateway-to-step-3) | Canonical targeted K10/root-11 readiness provenance; not a general root-count proof. |
@@ -47,10 +49,10 @@ file.
 ## Active diagnostic workflows
 
 Active work consists mainly of broad EB/Timoshenko maps, thickness-mismatch
-branch/FEM checks, corrected Timoshenko shape interpretation, out-of-plane
-maps/1D validation, and independent 3D FEM comparisons. Their output belongs
-under `results/` and remains diagnostic until a canonical tracked document
-promotes a conclusion.
+branch/FEM checks, corrected Timoshenko shape interpretation, the next
+anisotropic rigid-joint research gate, out-of-plane maps/1D validation, and
+independent 3D FEM comparisons. Diagnostic output belongs under `results/`
+until a canonical tracked document promotes a conclusion.
 
 ## Completed and closed workflows
 

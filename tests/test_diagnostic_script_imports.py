@@ -13,8 +13,10 @@ if str(SRC) not in sys.path:
 
 
 class DiagnosticScriptImportTest(unittest.TestCase):
-    def test_thickness_mismatch_diagnostic_entrypoints_import(self) -> None:
+    def test_diagnostic_entrypoints_import(self) -> None:
         modules = [
+            "scripts.analysis.anisotropic_rods.reproduce_yartsev_ch2_cantilever",
+            "scripts.analysis.anisotropic_rods.reproduce_yartsev_fig_2_2",
             "scripts.analysis.plot_diagnostic_eta_mu_beta_frequency_maps",
             "scripts.analysis.plot_lambda_mu_eta_m0p5_with_single_beam_refs",
             "scripts.analysis.plot_mode_shapes_eta_beta_scan",

@@ -16,7 +16,8 @@ index should be run without first reviewing its cost and output contract.
 ## Result directories
 
 All 23 immediate ignored result directories present in the pre-refactor
-snapshot are included here.
+snapshot are included here, together with later registered diagnostic result
+families.
 
 | Result directory | Scientific workflow | Status | Canonical report or documentation | Reproduction entry point | Local archive class |
 | --- | --- | --- | --- | --- | --- |
@@ -43,6 +44,10 @@ snapshot are included here.
 | `results/timoshenko_mode_shape_diagnostics/` | Corrected vector/component diagnostics for modes 4--6 | `active-diagnostic` | generated `timoshenko_modes_4_6_shape_diagnostics_report.md`; [script map](../scripts/analysis/thickness_mismatch/README.md) | `scripts/analysis/thickness_mismatch/audits/audit_timoshenko_modes_4_6_shape_diagnostics.py` | `active-local` |
 | `results/timoshenko_shape_bug_audit/` | Thin-limit shape/display-transform audit | `active-diagnostic` | generated `timoshenko_shape_bug_audit_report.md`; [script map](../scripts/analysis/thickness_mismatch/README.md) | `scripts/analysis/thickness_mismatch/audits/audit_timoshenko_shape_bug_thin_limit.py` | `preserve-diagnostic-correction-evidence` |
 | `results/timoshenko_shape_construction_audit/` | Shape-construction residual, visualization, and provenance audit | `active-diagnostic` | generated `timoshenko_modes456_visualization_report.md`; [script status](../scripts/STATUS.md#manual-review-candidates) | preferred: `scripts/analysis/thickness_mismatch/audits/audit_timoshenko_shape_construction.py` | `manual-review`; adjacent possible-orphan producer must be audited |
+| `results/anisotropic_rods/yartsev_ch2_free_free/` | Yartsev Chapter-2 one-rod corrected/printed comparison and Figure-2.2 graph-resolution gate | `completed` source reproduction | generated `single_rod_reproduction_report.md`; [tracked free-free note](anisotropic_rods/yartsev_ch2_single_rod_reproduction.md) | `scripts/analysis/anisotropic_rods/reproduce_yartsev_fig_2_2.py` | Local generated evidence; not guaranteed in Git or a fresh clone |
+| `results/anisotropic_rods/yartsev_ch2_cantilever/` | Full orientation/length cantilever reproduction and diagnostic evidence for both clamp variants | `completed` source reproduction / diagnostic evidence | generated `cantilever_reproduction_report.md`; [tracked cantilever note](anisotropic_rods/yartsev_ch2_cantilever_reproduction.md) | `scripts/analysis/anisotropic_rods/reproduce_yartsev_ch2_cantilever.py` | Local generated evidence; not guaranteed in Git or a fresh clone |
+| `results/anisotropic_rods/yartsev_ch2_cantilever_quick_gate/` | Preliminary elastic sensitivity of the two cantilever clamp variants | `completed` preliminary boundary-sensitivity diagnostic | generated `quick_boundary_gate_report.md`; [tracked cantilever note](anisotropic_rods/yartsev_ch2_cantilever_reproduction.md) | cantilever CLI with `--quick-boundary-gate` | Local generated evidence; the quick gate does not replace source reproduction |
+| `results/anisotropic_rods/yartsev_ch2_cantilever_boundary_source_check/` | Saved-data-only Figure-2.8 frequency/loss comparison used to identify the book clamp | `completed` source-boundary decision evidence | generated `boundary_source_check_report.md`; [tracked cantilever note](anisotropic_rods/yartsev_ch2_cantilever_reproduction.md) | cantilever CLI with `--postprocess-boundary-source-check` | `BOOK_SLOPE_CLAMP_CONFIRMED`; local generated evidence, not guaranteed in Git |
 
 The snapshot also contains two ignored files directly under `results/`:
 `variable_length_timoshenko_limits_audit.csv` and

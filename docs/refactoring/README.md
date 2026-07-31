@@ -70,19 +70,21 @@ These are possible review stages, not commitments:
   the closing audit records a concrete navigation mismatch.
 - Stage 3: common thickness-scaling helper — completed.
 - Stage 4: effective rod properties interface — not started.
-- Stage 5: anisotropic research scaffold — not started.
+- Stage 5: anisotropic source assimilation is active as a separate diagnostic
+  research line; no coupled-rod model or production API has been started.
 
-Stages 4--5 require separately approved regression gates and, for anisotropy,
-an approved physical model and isotropic-limit contract before implementation.
+Stage 4 and any future production anisotropic implementation require separately
+approved regression gates, a physical model, and an isotropic-limit contract.
 
 ## Anisotropic direction
 
-A [documentation location](../anisotropic_rods/README.md) is reserved for the
-future anisotropic direction; scientific scoping is deferred until the current
-refactoring is complete. Future anisotropic work is not a justification for
-speculative abstractions during the current refactoring. The next refactoring
-step must be evaluated independently of the future book and must not introduce
-a speculative anisotropic API.
+The [anisotropic direction](../anisotropic_rods/README.md) is now an
+`active-diagnostic` source-assimilation line. Yartsev's 2024 monograph is
+registered as its primary source, and the Chapter-2 single free-free rod gate
+is complete. Coupled rods and a production anisotropic API remain not started.
+This diagnostic work is not a justification for speculative abstractions in
+the refactoring line; any future refactoring step must be evaluated
+independently.
 
 ## Manual path-reference review
 

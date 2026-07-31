@@ -109,6 +109,59 @@ tracked checkout. Treat it as an external/local prerequisite and verify its
 authoritative location before running this command; the results-only script is
 not self-contained in a fresh public clone.
 
+### Yartsev Chapter-2 single-rod source reproduction
+
+- Task: reproduce the calculated part of Figure 2.2 for one free-free
+  monoclinic Timoshenko rod, while keeping the internally corrected and
+  literally printed equation variants separate.
+- Status: completed source-reproduction diagnostic;
+  `PASS_WITHIN_GRAPH_RESOLUTION`.
+- Command: `python scripts/analysis/anisotropic_rods/reproduce_yartsev_fig_2_2.py`.
+- Main options: `--material-mode elastic|book-complex|both`,
+  `--equation-variant corrected|printed|both`, `--theta-step-deg`,
+  `--num-positive-modes`, `--output-dir`, and `--smoke`.
+- Results: `results/anisotropic_rods/yartsev_ch2_free_free/` for the ordinary
+  run and `results/_smoke/yartsev_ch2_free_free/` for smoke mode.
+- Use when: checking the Chapter-2 single-rod source gate, transformed material
+  properties, positive free-free roots, complex modal losses, or the effect of
+  the printed `d0`/`f0` signs.
+- Do not use when: modelling two coupled rods, Euler--Bernoulli/Saint-Venant
+  reductions, a production anisotropic API, or FEM.
+
+Root CSV files use the sorted spectrum at each `theta` and record the
+MAC-continuity label separately. The Figure-2.2 reproduction plot uses those
+continuity labels only to preserve the book's smooth curve grouping through
+the mode-6/7 sorted-position exchanges. See the [single-rod reproduction
+note](../docs/anisotropic_rods/yartsev_ch2_single_rod_reproduction.md).
+
+### Yartsev Chapter-2 cantilever source reproduction
+
+- Task: reproduce the Chapter-2 cantilever source line, compare the two clamp
+  interpretations, and identify the condition used in the calculated curves
+  of Figure 2.8.
+- Status: completed source-reproduction and boundary-condition diagnostic;
+  `BOOK_SLOPE_CLAMP_CONFIRMED`.
+- Command: `python scripts/analysis/anisotropic_rods/reproduce_yartsev_ch2_cantilever.py`.
+- Ordinary full run: use `--study orientation|length|both`,
+  `--clamp-variant book-slope|section-rotation|both`, and
+  `--material-mode elastic|book-complex|both` as required. The generated data
+  retain the canonical labels `book_slope_clamp` and
+  `timoshenko_section_clamp`.
+- Reduced smoke: `--smoke`.
+- Preliminary elastic boundary sensitivity: `--quick-boundary-gate`.
+- Saved-data-only source decision:
+  `--postprocess-boundary-source-check` (alias
+  `--boundary-source-check-from-saved`).
+- Results: `results/anisotropic_rods/yartsev_ch2_cantilever/`,
+  `results/anisotropic_rods/yartsev_ch2_cantilever_quick_gate/`, and
+  `results/anisotropic_rods/yartsev_ch2_cantilever_boundary_source_check/`.
+
+The postprocess-only mode exits before the scientific root workflow is
+imported and does not invoke the root solver. The quick boundary gate is a
+preliminary elastic sensitivity check and does not replace the full source
+reproduction. This cantilever workflow is not a coupled-rod solver. See the
+[cantilever reproduction note](../docs/anisotropic_rods/yartsev_ch2_cantilever_reproduction.md).
+
 ### Thickness-mismatch diagnostic model
 
 Thickness-mismatch scripts implement a diagnostic-only eta model with
@@ -491,6 +544,7 @@ plotter.
 | --- | --- | --- | --- | --- |
 | `scripts/lib/analytic_coupled_rods_shapes.py` | internal helper | Shared analytic null-vector reconstruction, endpoint diagnostics, normalization, and analytic arm-energy utilities. | none | keep in `scripts/lib/` |
 | `scripts/lib/analytic_branch_tracking.py` | internal helper | Source-of-truth analytic branch identity tracking from `beta=0`, `mu=0` using shape-MAC assignment and `current_sorted_index` diagnostics. | none | keep in `scripts/lib/` |
+| `scripts/lib/yartsev_ch2_monoclinic_rod.py` | internal diagnostic helper | Chapter-2 one-rod material rotation, generalized torsional stiffness, state/eliminated boundary matrices, elastic/complex roots, and narrow shape-continuity diagnostics. | none | keep in `scripts/lib/`; do not promote to a general anisotropic API in this gate |
 | `scripts/lib/tracked_bending_descendant_shapes.py` | internal helper | Shared tracked-state extraction and one-case drawing for tracked bending descendant shape plots. | none | keep in `scripts/lib/` |
 | `scripts/sweep_grid_policy.py` | internal helper | Shared presentation/analysis grid policy. | none | keep root; moving would require broad import updates |
 
