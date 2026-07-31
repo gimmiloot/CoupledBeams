@@ -417,6 +417,25 @@ def scaled_state_matrix(omega: complex, point: RodPoint) -> NDArray[np.complex12
     return point.geometry.length * (physical * scales[np.newaxis, :]) / scales[:, np.newaxis]
 
 
+def physical_state_transfer_matrix(
+    omega: complex, point: RodPoint
+) -> NDArray[np.complex128]:
+    """Return the full-length corrected transfer matrix in physical states.
+
+    This is the narrow public bridge needed by the coupled-rod diagnostic.  It
+    keeps the private state scales centralized here and does not redefine the
+    accepted ``state_corrected`` equations.
+    """
+
+    scales = _state_scales(point)
+    scaled_transfer = expm(scaled_state_matrix(omega, point))
+    return (
+        scales[:, np.newaxis]
+        * scaled_transfer
+        / scales[np.newaxis, :]
+    )
+
+
 def state_boundary_matrix(omega: complex, point: RodPoint) -> NDArray[np.complex128]:
     transfer = expm(scaled_state_matrix(omega, point))
     return transfer[3:6, 0:3]
@@ -1402,6 +1421,7 @@ __all__ = [
     "partial_bending_mode_shape",
     "partial_bending_scaled_system",
     "partial_torsion_mode_shape",
+    "physical_state_transfer_matrix",
     "rigid_body_nullity",
     "rotate_material",
     "scaled_eliminated_system",

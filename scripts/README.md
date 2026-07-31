@@ -162,6 +162,55 @@ preliminary elastic sensitivity check and does not replace the full source
 reproduction. This cantilever workflow is not a coupled-rod solver. See the
 [cantilever reproduction note](../docs/anisotropic_rods/yartsev_ch2_cantilever_reproduction.md).
 
+### Yartsev Chapter-2 rigid-joint elastic pilot
+
+- Task: verify the ideal angular-joint matrix for two accepted Chapter-2 rods
+  and run the deliberately small HMS/DX-209 real-elastic spectrum pilot.
+- Status: completed diagnostic pilot; `PASS`.
+- Command: `python scripts/analysis/anisotropic_rods/pilot_yartsev_ch2_coupled_rods.py`.
+- Staged runtime command: add `--beta0-only` to run the algebraic gates and
+  independent `beta=0` straight-rod check before `beta=30,90 deg`.
+- Results: `results/anisotropic_rods/yartsev_ch2_coupled_joint_pilot/`.
+- Use when: checking book/old notation signs, joint rank, vector compatibility,
+  virtual work, angle limits, orthotropic block separation, equal-arm exchange,
+  `6 x 6` coupled roots, or the independent `3 x 3` straight reference.
+- Do not use when: requesting a final coupled model, parameter map, complex
+  roots, damping, shapes, Euler--Bernoulli/Saint-Venant comparison, or FEM.
+
+The pilot retains book notation and the existing project bases, reuses the
+confirmed `book_slope_clamp` and unchanged `state_corrected` arm equations,
+and keeps raw/scaled root-quality diagnostics distinct. Modes 1--6 are the
+pilot spectrum; mode 7 is the completeness guard.
+
+### Yartsev Chapter-2 rectangular orthotropic EB validation
+
+- Task: validate the finite `theta=0` rectangular EB plus generalized
+  Saint-Venant comparator against exact straight families, the unchanged
+  Chapter-2 Timoshenko model, and an independent 1D FEM.
+- Status: completed finite diagnostic; overall `PARTIAL_PASS`, targeted
+  length-proportional status `FAIL_CONVERGENCE_ORDER`.
+- Command: `python scripts/analysis/anisotropic_rods/validate_yartsev_ch2_rectangular_eb.py`.
+- Staged smoke: add `--smoke` for exact straight checks plus one equal-arm
+  `beta=0` analytic/FEM case.
+- Targeted addendum: add `--targeted-smoke` for only the `(16,48)` preflight,
+  or `--targeted-length-proportional-refinement` for the prescribed
+  `(8,24)` through `(64,192)` sequence and `(128,128)` equal-h control.
+- Results: `results/anisotropic_rods/yartsev_ch2_rectangular_eb_validation/`.
+- Use when: checking artificial unequal-length split invariance, rectangular
+  `C_SV=Cbar`, exact fixed--fixed families, `beta=0,30,90 deg` Timoshenko/EB
+  model differences, the mathematical slender limit, or the declared 1D-FEM
+  meshes and cases.
+- Do not use for: `theta != 0`, unequal thickness, complex roots, damping,
+  Timoshenko FEM, 3D FEM, mode shapes/MAC, parameter maps, or a production API.
+
+The original fixed-64 gate remains `PARTIAL_PASS`: its worst first-three error
+is `5.18e-5`, while the modes-1--6 maximum is `3.71e-4`. The proportional
+`(64,192)` raw result closes both accuracy thresholds (`6.18e-6` first three,
+`5.65e-5` first six), but the targeted status is
+`FAIL_CONVERGENCE_ORDER` because mode 1 violates the unchanged monotonicity
+allowance at the dense-eigensolver conditioning floor. No stiffness, mass,
+analytic coefficient, eigensolver tolerance, or threshold was changed.
+
 ### Thickness-mismatch diagnostic model
 
 Thickness-mismatch scripts implement a diagnostic-only eta model with
@@ -545,6 +594,8 @@ plotter.
 | `scripts/lib/analytic_coupled_rods_shapes.py` | internal helper | Shared analytic null-vector reconstruction, endpoint diagnostics, normalization, and analytic arm-energy utilities. | none | keep in `scripts/lib/` |
 | `scripts/lib/analytic_branch_tracking.py` | internal helper | Source-of-truth analytic branch identity tracking from `beta=0`, `mu=0` using shape-MAC assignment and `current_sorted_index` diagnostics. | none | keep in `scripts/lib/` |
 | `scripts/lib/yartsev_ch2_monoclinic_rod.py` | internal diagnostic helper | Chapter-2 one-rod material rotation, generalized torsional stiffness, state/eliminated boundary matrices, elastic/complex roots, and narrow shape-continuity diagnostics. | none | keep in `scripts/lib/`; do not promote to a general anisotropic API in this gate |
+| `scripts/lib/yartsev_ch2_coupled_rods.py` | internal diagnostic helper | Chapter-2 basis/notation transformations, ideal rigid-joint matrix, physical arm end maps, and coupled/straight-reference boundary matrices for the small elastic pilot. | none | keep script-owned; not a production anisotropic API or final coupled model |
+| `scripts/lib/yartsev_ch2_rectangular_eb.py` | internal diagnostic helper | `theta=0` rectangular EB/Saint-Venant state/end maps, exact fixed--fixed families, and independent Hermite-bending/linear-torsion 1D FEM. | none | keep script-owned; not a general anisotropic EB or production FEM API |
 | `scripts/lib/tracked_bending_descendant_shapes.py` | internal helper | Shared tracked-state extraction and one-case drawing for tracked bending descendant shape plots. | none | keep in `scripts/lib/` |
 | `scripts/sweep_grid_policy.py` | internal helper | Shared presentation/analysis grid policy. | none | keep root; moving would require broad import updates |
 

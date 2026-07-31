@@ -2,6 +2,37 @@
 
 ## 2026-07-31
 
+- Extended the existing rectangular EB 1D-FEM helper to accept distinct arm
+  element counts while preserving the old equal-count API and all element
+  matrices. Added the targeted equal-element-length sequence `(8,24)` through
+  `(64,192)` plus the `(128,128)` equal-h control. The raw finest result closes
+  the unchanged first-three and first-six accuracy thresholds (`6.18e-6` and
+  `5.65e-5`), and torsional mode 2 retains second-order convergence. The
+  targeted status is nevertheless `FAIL_CONVERGENCE_ORDER` because bending
+  mode 1 violates the unchanged monotonicity allowance at the dense generalized
+  eigensolver conditioning floor; the overall validation remains
+  `PARTIAL_PASS`. The original fixed-64 evidence was preserved, and no model
+  coefficient, eigensolver tolerance, or acceptance threshold changed.
+- Added the isolated `theta=0` rectangular orthotropic Euler--Bernoulli plus
+  generalized Saint-Venant comparator, reusing `C_SV=Cbar`, book notation,
+  project bases, and unchanged `J_book`. Exact fixed--fixed families,
+  Timoshenko/EB artificial split invariance, the bending slender limit, root
+  quality, and seventh-root guards passed. Added an independent Hermite
+  bending plus linear-torsion 1D FEM and mesh convergence gate. The finite
+  validation is `PARTIAL_PASS`: mesh 64 passes the modes-1--6 `5e-4` target
+  but misses the stricter first-three `1e-5` target (`5.18e-5` worst case).
+  No off-axis model, unequal thickness, Timoshenko or 3D FEM, complex roots,
+  damping, shapes/MAC, parameter maps, production API, commit, or push was
+  introduced.
+- Added the isolated Chapter-2 book/old notation translation, derived and
+  implemented the ideal rigid angular-joint `6 x 12` conditions, and assembled
+  the physical `6 x 6` two-arm boundary matrix without changing the accepted
+  one-rod equations. Sign/rank, random global-state, virtual-work, angle-limit,
+  orthotropic-block, and equal-arm gates passed. A small real-elastic
+  HMS/DX-209 pilot at `beta=0,30,90 deg` passed all first-six roots plus a
+  seventh guard; the independent `beta=0` straight-rod comparison agreed to
+  `1.724809e-10` relatively. No complex roots, EB/Saint-Venant comparison,
+  FEM, shapes, or parameter maps were added or run.
 - Completed the Chapter-2 cantilever source reproduction and confirmed
   `book_slope_clamp` from Figure 2.8. Recorded the distinction between that
   external source clamp and future rigid-joint compatibility, and registered

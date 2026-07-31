@@ -37,9 +37,8 @@ review; no absent `paper_*` directory is assumed to exist here.
 - Euler--Bernoulli versus Timoshenko applicability and validation diagnostics;
 - the completed and closed EB safe-prefix engineering study;
 - out-of-plane Euler--Bernoulli bending plus Saint-Venant torsion;
-- completed Chapter-2 source reproduction for one free-free and cantilever
-  monoclinic rod from Yartsev; the coupled-rod model is the next research step
-  and is not implemented.
+- completed Chapter-2 single-rod source gates and a passing small elastic
+  rigid-joint pilot for two monoclinic rods; no final coupled model exists.
 
 See the [research index](docs/research_index.md) for canonical documents, implementations,
 conclusions, and status definitions.
@@ -51,8 +50,11 @@ active, while the K=10 completeness, Step-3A, and exact Rules A/B/S stages have
 completed records. The Rule-S engineering-selector path is closed after the
 negative cost result `rule_S_cost_not_beneficial`; this does not refute Rule S
 mathematically. The selected anisotropic Chapter-2 single-rod source line has
-completed free-free and cantilever gates. Coupled anisotropic rods, a
-production API, and FEM validation have not been started.
+completed free-free and cantilever gates, and its first ideal rigid-joint
+elastic pilot passed. A finite rectangular orthotropic endpoint 1D-FEM gate
+has also been completed and remains `PARTIAL_PASS` after targeted
+equal-element-length refinement; a final coupled model, production API,
+unequal-thickness study, and 3D FEM validation have not been started.
 
 ## Analytic Layer
 
@@ -94,8 +96,8 @@ isotropic analytic/FEM baseline.
 The completed cantilever source reproduction and its saved-data-only boundary
 decision are documented in
 [`docs/anisotropic_rods/yartsev_ch2_cantilever_reproduction.md`](docs/anisotropic_rods/yartsev_ch2_cantilever_reproduction.md).
-The next separate research gate is the derivation and verification of internal
-rigid angular-joint conditions; no coupled-rod determinant is implemented.
+The separate internal rigid angular-joint derivation and small elastic pilot
+are complete with `PASS`; this is not a stable or final coupled-rod baseline.
 
 ## FEM Baseline
 

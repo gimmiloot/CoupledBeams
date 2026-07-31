@@ -7,6 +7,37 @@ diagnostic workflow, and model-extension checks, see `../project_rules.md`.
 
 ## Working Notes
 
+## Chapter-2 anisotropic rigid-joint pilot
+
+- The first two-monoclinic-rod diagnostic uses an ideal point joint with no
+  mass, rotary inertia, eccentricity, elastic compliance, extra joint torsion
+  stiffness, independent warping coordinate, or bimoment. Generalized torsion
+  remains condensed in the existing Chapter-2 `C_T`. Both external ends use
+  the source-confirmed book slope clamp. These assumptions define only the
+  small elastic pilot documented in
+  `docs/anisotropic_rods/yartsev_ch2_rigid_angular_joint.md`; they do not
+  define a stable or final coupled-rod model.
+- Its canonical state is the book state
+  `[w_i, psi_i, Phi_i, Q_i, M_i, M_{T,i}]^T`. The project bases remain
+  `e_z`, `t_i`, `n_i=e_z x t_i`, and the translation to the old out-of-plane
+  notation is isolated in
+  `docs/anisotropic_rods/yartsev_ch2_notation_translation.md`.
+
+## Chapter-2 rectangular orthotropic EB comparator
+
+- The comparator is restricted to the real-elastic HMS/DX-209 endpoint
+  `theta_1=theta_2=0`, where `Sbar16=0`. It retains the book state and the
+  existing ideal point-joint conditions, removes transverse shear and bending
+  rotary inertia, and retains torsional inertia `rho I_p`. It introduces no
+  warping coordinate or bimoment.
+- Rectangular torsion uses the existing generalized stiffness
+  `C_SV=Cbar=C_T` at `theta=0`; `G I_p` is not a valid replacement. The
+  independent validation FEM uses Hermite EB bending and linear Saint-Venant
+  torsion with consistent mass. These assumptions define only the finite
+  `PARTIAL_PASS` gate documented in
+  `docs/anisotropic_rods/yartsev_ch2_rectangular_eb_validation.md`, not a
+  general anisotropic EB model or production API.
+
 ## Out-of-plane EB + Saint-Venant torsion
 
 - The out-of-plane subsystem is treated as a separate linear model for a

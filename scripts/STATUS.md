@@ -34,6 +34,8 @@ file.
 | Thickness-mismatch limits and maps | limit audits plus parameterized map/shape commands listed in the [script map](analysis/thickness_mismatch/README.md#preferred-entry-points) | `active-diagnostic` | [model note](../docs/thickness_mismatch/README.md) | Prefer parameterized entry points and distinguish sorted spectra from descendants. |
 | Yartsev Chapter-2 free-free monoclinic rod | `analysis/anisotropic_rods/reproduce_yartsev_fig_2_2.py` | `completed` source-reproduction diagnostic | [single-rod reproduction](../docs/anisotropic_rods/yartsev_ch2_single_rod_reproduction.md): `PASS_WITHIN_GRAPH_RESOLUTION` | Preserve the corrected/printed distinction. This completed gate is not a coupled-rod or production anisotropic workflow. |
 | Yartsev Chapter-2 cantilever monoclinic rod | `analysis/anisotropic_rods/reproduce_yartsev_ch2_cantilever.py` | `completed` source-reproduction and boundary-condition diagnostic | [cantilever reproduction](../docs/anisotropic_rods/yartsev_ch2_cantilever_reproduction.md): `BOOK_SLOPE_CLAMP_CONFIRMED` | Supports ordinary full run, smoke, quick boundary gate, and saved-data-only boundary source check. The quick gate is preliminary; the postprocess-only mode does not invoke the root solver. This is not a coupled-rod solver. |
+| Yartsev Chapter-2 rigid angular joint | `analysis/anisotropic_rods/pilot_yartsev_ch2_coupled_rods.py` | `completed` small elastic diagnostic — `PASS` | [rigid-joint theory and gate](../docs/anisotropic_rods/yartsev_ch2_rigid_angular_joint.md) | Use for the declared sign/rank/virtual-work/limit gates and `beta=0,30,90 deg` HMS/DX-209 pilot only. It is not a stable baseline, final parameter study, complex-root workflow, EB comparison, or FEM validation. |
+| Yartsev Chapter-2 rectangular orthotropic EB validation | `analysis/anisotropic_rods/validate_yartsev_ch2_rectangular_eb.py` | `completed` finite diagnostic — overall `PARTIAL_PASS`; targeted `FAIL_CONVERGENCE_ORDER` | [rectangular EB validation](../docs/anisotropic_rods/yartsev_ch2_rectangular_eb_validation.md) | Original fixed-64 `PARTIAL_PASS` is preserved. Proportional `(64,192)` closes the raw first-three accuracy threshold, but mode 1 violates the unchanged monotonicity allowance at the dense-eigensolver conditioning floor. No model coefficient or threshold changed; do not promote this to a general/off-axis EB model, stable baseline, unequal-thickness or 3D validation. |
 | Stage-1 and fixed-epsilon EB applicability | `analysis/thickness_mismatch/audits/audit_eb_validity_vs_timoshenko_stage1.py`; `audit_eb_validity_fixed_epsilon_geometry_scan.py` | `completed` | [stage closure](../docs/thickness_mismatch/eb_safe_prefix_stage_closure.md) | Retain as source-generation provenance; these are not pending selector-development steps. |
 | General spectrum-completeness audit | `analysis/thickness_mismatch/audits/audit_eb_timo_general_spectrum_completeness.py` | `superseded` | branch-informed gateway below; [research plan](../docs/thickness_mismatch/eb_safe_spectrum_prefix_research_plan.md#branch-informed-continuation-gateway-to-step-3) | Preserve the important `not_ready_for_step3` result; do not use it as the targeted gateway's current status. |
 | Branch-informed completeness gateway | `analysis/thickness_mismatch/audits/audit_eb_timo_branch_continuation_gateway.py` | `completed` | [research plan](../docs/thickness_mismatch/eb_safe_spectrum_prefix_research_plan.md#branch-informed-continuation-gateway-to-step-3) | Canonical targeted K10/root-11 readiness provenance; not a general root-count proof. |
@@ -49,10 +51,11 @@ file.
 ## Active diagnostic workflows
 
 Active work consists mainly of broad EB/Timoshenko maps, thickness-mismatch
-branch/FEM checks, corrected Timoshenko shape interpretation, the next
-anisotropic rigid-joint research gate, out-of-plane maps/1D validation, and
-independent 3D FEM comparisons. Diagnostic output belongs under `results/`
-until a canonical tracked document promotes a conclusion.
+branch/FEM checks, corrected Timoshenko shape interpretation, any separately
+scoped anisotropic work beyond the completed small rigid-joint pilot,
+out-of-plane maps/1D validation, and independent 3D FEM comparisons. Diagnostic
+output belongs under `results/` until a canonical tracked document promotes a
+conclusion.
 
 ## Completed and closed workflows
 
