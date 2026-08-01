@@ -11,6 +11,9 @@ UT-1 full beta=0 unequal-thickness validation:
 UT-1a beta=0 EB FEM matrix-level exchange audit:
 **INCONCLUSIVE_NUMERICAL_AUDIT**
 
+UT-2 beta=30 deg unequal-thickness angular-joint validation:
+**PASS**
+
 ## 1. UT-0 scope
 
 UT-0 is a finite validation gate for the existing Chapter-2 Timoshenko and
@@ -566,3 +569,199 @@ maps, plots, or PDF.
 
 The four text-only evidence files are under
 `results/anisotropic_rods/yartsev_ch2_unequal_thickness_validation/ut1a_fem_exchange_audit/`.
+
+## 26. UT-2 — beta=30 deg unequal-thickness angular-joint validation
+
+UT-2 is restricted to elastic HMS/DX-209, `theta_1=theta_2=0`,
+`L_1=L_2=0.2 m`, `b_1=b_2=0.020 m`, the existing `5/6` shear factor,
+and `a_i || e_z`. The three independently constructed section orders are
+`(5,5)`, `(4,6)`, and `(6,4) mm`.
+
+The only angles are `+30 deg` and `-30 deg`. The negative angle is the
+reflected/oriented-relabelled control required by the symmetry gates, not a
+parameter sweep. No `beta=0` calculation occurs inside UT-2, and
+`beta=90 deg` remains outside this stage.
+
+## 27. Seven-root continuum spectra
+
+The existing `state_corrected` Timoshenko and rectangular EB coupled boundary
+matrices and unchanged root finder produce 12 spectra and 84 positive roots.
+The scan uses seven roots, `10 Hz` steps, a `5000 Hz` initial maximum, and a
+`100000 Hz` hard maximum. No direct stepped reference is used at nonzero
+angle.
+
+| case | beta | model | f1 | f2 | f3 | f4 | f5 | f6 | f7 | units |
+|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `(5,5)` | -30 | Timoshenko | 255.494532340 | 951.544856627 | 1102.551624700 | 1533.384062161 | 1678.186006703 | 2698.999033778 | 2910.274098207 | Hz |
+| `(5,5)` | -30 | EB | 255.505600394 | 973.329477494 | 1111.234881238 | 1533.524452625 | 1717.937467393 | 2733.231671876 | 3058.956114198 | Hz |
+| `(5,5)` | +30 | Timoshenko | 255.494532340 | 951.544856627 | 1102.551624700 | 1533.384062161 | 1678.186006703 | 2698.999033778 | 2910.274098207 | Hz |
+| `(5,5)` | +30 | EB | 255.505600394 | 973.329477494 | 1111.234881238 | 1533.524452625 | 1717.937467393 | 2733.231671876 | 3058.956114198 | Hz |
+| `(4,6)` | -30 | Timoshenko | 264.752127927 | 832.745061312 | 1150.954641618 | 1431.600500928 | 1743.852235518 | 2401.473331654 | 2677.481474915 | Hz |
+| `(4,6)` | -30 | EB | 264.709670343 | 844.160379298 | 1161.385328091 | 1448.512715481 | 1785.046309716 | 2420.308809865 | 2776.648670104 | Hz |
+| `(4,6)` | +30 | Timoshenko | 264.752127927 | 832.745061312 | 1150.954641618 | 1431.600500928 | 1743.852235518 | 2401.473331654 | 2677.481474915 | Hz |
+| `(4,6)` | +30 | EB | 264.709670343 | 844.160379298 | 1161.385328091 | 1448.512715481 | 1785.046309716 | 2420.308809865 | 2776.648670104 | Hz |
+| `(6,4)` | -30 | Timoshenko | 264.752127927 | 832.745061312 | 1150.954641618 | 1431.600500929 | 1743.852235518 | 2401.473331654 | 2677.481474915 | Hz |
+| `(6,4)` | -30 | EB | 264.709670343 | 844.160379298 | 1161.385328091 | 1448.512715481 | 1785.046309715 | 2420.308809865 | 2776.648670104 | Hz |
+| `(6,4)` | +30 | Timoshenko | 264.752127927 | 832.745061312 | 1150.954641618 | 1431.600500929 | 1743.852235518 | 2401.473331654 | 2677.481474915 | Hz |
+| `(6,4)` | +30 | EB | 264.709670343 | 844.160379298 | 1161.385328091 | 1448.512715481 | 1785.046309715 | 2420.308809865 | 2776.648670104 | Hz |
+
+All 84 roots are finite, positive, and accepted. All 84 pass through the
+scaled quality branch; none requires the normalized physical-raw fallback.
+The accepted scaled maxima are `1.150017894418392e-16` for normalized
+determinant residual and `2.578987913792316e-14` for relative singular
+residual, both below `1e-8`. The physical-raw branch count is zero, so no
+physical-raw accepted-basis maximum is claimed. Neighbor gaps and matching
+bases are retained for every root.
+
+## 28. Continuum angular symmetries
+
+The comparisons are sorted unless a connected relative-gap cluster below
+`1e-3` requires local minimum-cost frequency assignment. MAC and branch
+identity are not used.
+
+| symmetry family | maximum relative difference | threshold | status |
+|---|---:|---:|---|
+| reflection, `spec(P1,P2,+beta)=spec(P1,P2,-beta)` | `0` | `1e-8` | PASS |
+| oriented-angle arm relabeling, `spec(P1,P2,+beta)=spec(P2,P1,-beta)` | `2.995403119135e-13` | `1e-8` | PASS |
+| same-positive exchange | `2.995403119134e-13` | `1e-8` | PASS |
+| same-negative exchange | `2.995403119134e-13` | `1e-8` | PASS |
+
+The reflection statement is restricted to `theta=0`; it is not generalized
+to off-axis material bending--torsion coupling. Relabeling is explicitly an
+oriented-angle identity, not a same-angle arm permutation. Same-positive and
+same-negative exchange are retained as direct end-to-end consequences.
+
+## 29. Independent mesh-64 EB FEM
+
+UT-2 reuses the unchanged Hermite EB bending, consistent translational mass,
+linear Saint-Venant torsion, consistent torsional mass, common-joint
+congruence, fixed outer nodes, and symmetric generalized eigensolver. Exactly
+six systems are assembled, all with `N_1=N_2=64`, `h_1=h_2=0.003125 m`, and
+381 reduced DOFs. No mesh sequence or convergence calculation is performed.
+
+| case | beta | E3 | E6 | root-7 error (diagnostic) | structural | accuracy |
+|---|---:|---:|---:|---:|---|---|
+| `(5,5)` | -30 | `3.552794434732e-5` | `2.697832816478e-4` | `3.696972241188e-4` | PASS | PASS |
+| `(5,5)` | +30 | `3.552794434732e-5` | `2.697832816478e-4` | `3.696972241188e-4` | PASS | PASS |
+| `(4,6)` | -30 | `6.018508910398e-5` | `3.018977041739e-4` | `1.651310680764e-4` | PASS | PASS |
+| `(4,6)` | +30 | `6.018508910398e-5` | `3.018977041739e-4` | `1.651310680764e-4` | PASS | PASS |
+| `(6,4)` | -30 | `6.017909789368e-5` | `3.018988967671e-4` | `1.651309672617e-4` | PASS | PASS |
+| `(6,4)` | +30 | `6.017909789368e-5` | `3.018988967671e-4` | `1.651309672617e-4` | PASS | PASS |
+
+Every system passes `E3<=1e-4` and `E6<=5e-4`; root 7 is finite and
+positive and has no separate accuracy threshold. The maximum structural
+diagnostics are:
+
+| diagnostic | value | threshold/condition |
+|---|---:|---:|
+| stiffness symmetry | `0` | `<=1e-12` |
+| mass symmetry | `1.374779291274e-22` | `<=1e-12` |
+| joint kinematic residual | `1.053898899863e-16` | `<=2e-14` |
+| joint equilibrium residual | `6.332804244625e-9` | `<=1e-7` |
+| minimum mass eigenvalue | `1.839986418545e-11` | positive |
+| maximum zero-mode count | `0` | zero |
+
+## 30. FEM reflection transformations
+
+Reflection applies
+
+```text
+G_ref = diag(1,1,-1)
+```
+
+to every full and internal `[w,psi,Phi]` triple and
+
+```text
+H_ref = diag(1,-1,1)
+```
+
+to `[w_J,theta_t,theta_n]`. The predeclared endpoint identities
+`G_ref F_i(+beta)=F_i(-beta) H_ref`, transformation orthogonality and
+involution, reduction intertwining, and full/reduced stiffness and mass
+congruences all have zero saved residual. Their relative Frobenius and
+relative maximum-entry maxima are `0`, below `1e-13`.
+
+## 31. FEM oriented-angle relabeling transformation
+
+Full arm blocks and reduced internal arm blocks are exchanged without local
+nodal signs. The joint block is
+
+```text
+H_rel(beta) = [[1, 0, 0],
+               [0,-cos(beta), sin(beta)],
+               [0,-sin(beta),-cos(beta)]].
+```
+
+`sin(30 deg)` and `cos(30 deg)` are evaluated directly. Both directions
+`(4,6,+30)->(6,4,-30)` and `(6,4,+30)->(4,6,-30)` are checked. The endpoint,
+permutation, reduction, full-matrix, and reduced-matrix maxima are:
+
+| group | relative Frobenius | relative max entry | absolute max entry | threshold |
+|---|---:|---:|---:|---:|
+| endpoint maps | `6.072353716590e-18` | `7.437084071669e-18` | `7.437084071669e-18` | `1e-13` |
+| permutation | `5.388342597893e-19` | `7.437084071669e-18` | `7.437084071669e-18` | `1e-13` |
+| reduction intertwining | `5.367253113455e-19` | `7.437084071669e-18` | `7.437084071669e-18` | `1e-13` |
+| full `K,M` | `0` | `0` | `0` | `1e-13` |
+| reduced `K,M` | `2.201319149713e-20` | `1.377821864960e-19` | `7.450580596924e-9` | `1e-13` |
+
+The nonzero absolute reduced entry is measured against stiffness entries of
+their physical scale; both predeclared relative matrix criteria pass by many
+orders of magnitude.
+
+## 32. Native FEM symmetry diagnostic
+
+Native dense-eigensolver spectra are retained as diagnostics, not as a
+separate UT-2 hard gate when matrix congruence and both analytic-accuracy
+checks pass:
+
+| symmetry family | maximum native relative difference | historical marker | interpretation |
+|---|---:|---:|---|
+| reflection | `0` | `1e-8` | within marker |
+| oriented-angle relabeling | `2.010070773791e-7` | `1e-8` | above marker, matrices congruent |
+| same-positive exchange | `2.010070773791e-7` | `1e-8` | above marker, matrices congruent |
+
+The corresponding CSV rows use
+`ABOVE_HISTORICAL_MARKER_MATRIX_CONGRUENT`. UT-2 does not repeat UT-1a
+backward-residual, Rayleigh, canonicalized-solve, balancing, or high-precision
+audits and does not replace native FEM frequencies.
+
+## 33. Timoshenko--EB diagnostic
+
+For the first six `+30 deg` roots, the maximum relative model differences are
+`2.368716014241e-2` for `(5,5)`, `2.362245685644e-2` for `(4,6)`, and
+`2.362245685651e-2` for `(6,4)`. These are diagnostics without an acceptance
+threshold, branch identity, or accuracy ranking.
+
+## 34. UT-2 status and exclusions
+
+All continuum completeness, accepted root quality, reflection, oriented-angle
+relabeling, same-positive/same-negative exchange, six FEM structural and
+accuracy gates, endpoint-map identities, and reflection/relabeling matrix
+congruence gates pass their predeclared thresholds. The repeated historical
+statuses are unchanged:
+
+```text
+Overall unequal-thickness validation: IN_PROGRESS
+
+UT-0:
+PASS
+
+UT-1:
+PARTIAL_PASS
+
+UT-1a:
+INCONCLUSIVE_NUMERICAL_AUDIT
+
+UT-2 beta=30 deg unequal-thickness angular-joint validation:
+PASS
+```
+
+Overall validation remains `IN_PROGRESS` because `beta=90 deg` is not yet
+validated. UT-2 excludes all other angles, `theta != 0`, mesh refinement,
+Timoshenko/3D FEM, damping, complex roots, MAC, physical mode shapes, branch
+tracking, parameter maps, mass-preserving parametrization, plots, PDF,
+eigensolver changes, new balancing/high-precision work, model/threshold
+changes, production API work, and automatic transition to UT-3.
+
+The eight text-only evidence files are under
+`results/anisotropic_rods/yartsev_ch2_unequal_thickness_validation/ut2_beta30/`.

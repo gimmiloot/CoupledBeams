@@ -2,6 +2,18 @@
 
 ## 2026-08-01
 
+- Added the isolated unequal-thickness UT-2 `beta=+/-30 deg` angular-joint
+  gate to the existing validation CLI. All 12 seven-root Timoshenko/EB
+  spectra pass unchanged root-quality checks; continuum reflection and
+  oriented arm-relabeling differences are `0` and `3.00e-13`. Six mesh-64
+  EB FEM assemblies pass the fixed accuracy and structural gates, while
+  a-priori full/reduced reflection and relabeling maps pass endpoint,
+  reduction, and stiffness/mass identities at a maximum relative matrix
+  residual of `1.38e-19`. Native FEM relabeling (`2.01e-7`) remains a
+  diagnostic rather than a hard gate. UT-2 is `PASS`; UT-0, UT-1, and UT-1a
+  retain `PASS`, `PARTIAL_PASS`, and `INCONCLUSIVE_NUMERICAL_AUDIT`, and the
+  overall unequal-thickness status remains `IN_PROGRESS`. No production
+  model, solver setting, threshold, or release version changed.
 - Added the isolated UT-1a `beta=0` EB FEM matrix-level exchange audit to the
   existing unequal-thickness CLI. A-priori full and signed-reduced arm
   permutations give zero saved residual for permutation identities,

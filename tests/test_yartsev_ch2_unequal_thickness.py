@@ -1,5 +1,6 @@
 import math
 import importlib
+import inspect
 import sys
 import tempfile
 import unittest
@@ -48,6 +49,16 @@ class YartsevChapter2UnequalThicknessUT0Test(unittest.TestCase):
             validation.assemble_two_arm_eb_fem(
                 point_6, point_4, validation.BETA_RAD, elements
             ),
+        )
+
+    def _small_ut2_assembly(
+        self, a_1: float, a_2: float, beta_deg: float, elements: int = 2
+    ):
+        return validation.assemble_two_arm_eb_fem(
+            validation._make_section_point(a_1),
+            validation._make_section_point(a_2),
+            math.radians(beta_deg),
+            elements,
         )
 
     def test_section_points_have_expected_geometry(self) -> None:
@@ -204,6 +215,9 @@ class YartsevChapter2UnequalThicknessUT0Test(unittest.TestCase):
             ["--smoke", "--ut1-beta0"],
             ["--smoke", "--ut1a-fem-exchange-audit"],
             ["--ut1-beta0", "--ut1a-fem-exchange-audit"],
+            ["--smoke", "--ut2-beta30"],
+            ["--ut1-beta0", "--ut2-beta30"],
+            ["--ut1a-fem-exchange-audit", "--ut2-beta30"],
         )
         for arguments in combinations:
             with self.subTest(arguments=arguments), self.assertRaises(
@@ -215,11 +229,14 @@ class YartsevChapter2UnequalThicknessUT0Test(unittest.TestCase):
             validation, "_run_ut1_beta0"
         ) as ut1, mock.patch.object(
             validation, "_run_ut1a_fem_exchange_audit"
-        ) as ut1a:
+        ) as ut1a, mock.patch.object(
+            validation, "_run_ut2_beta30"
+        ) as ut2:
             self.assertEqual(validation.main([]), 2)
             smoke.assert_not_called()
             ut1.assert_not_called()
             ut1a.assert_not_called()
+            ut2.assert_not_called()
 
     def test_ut1_section_cases_use_two_independent_points(self) -> None:
         cases = validation._make_ut1_section_cases()
@@ -238,6 +255,19 @@ class YartsevChapter2UnequalThicknessUT0Test(unittest.TestCase):
         self.assertEqual(validation.UT1_FEM_MESHES, (16, 32, 64))
         self.assertEqual(validation.UT1A_FEM_ELEMENTS_PER_ARM, 64)
         self.assertEqual(validation.BETA_RAD, 0.0)
+
+    def test_ut2_scope_constants_are_exact(self) -> None:
+        self.assertEqual(validation.UT2_ANGLES_DEG, (-30.0, 30.0))
+        self.assertEqual(
+            validation.UT2_SECTION_CASES,
+            {
+                "baseline_5_5": (0.005, 0.005),
+                "asymmetric_4_6": (0.004, 0.006),
+                "swapped_6_4": (0.006, 0.004),
+            },
+        )
+        self.assertEqual(validation.UT2_NUM_ROOTS, 7)
+        self.assertEqual(validation.UT2_FEM_ELEMENTS_PER_ARM, (64, 64))
 
     def test_ut1a_full_permutation_swaps_complete_arm_blocks(self) -> None:
         assembly_46, assembly_64 = self._small_ut1a_pair()
@@ -387,6 +417,180 @@ class YartsevChapter2UnequalThicknessUT0Test(unittest.TestCase):
         )
         self.assertTrue(all(row["status"] == "PASS" for row in rows))
         self.assertEqual(library.read_bytes(), before)
+
+    def test_ut2_reflection_full_transform_flips_only_phi(self) -> None:
+        assembly = self._small_ut2_assembly(0.004, 0.006, 30.0)
+        transform = validation._ut2_reflection_full_transform(assembly)
+        full_size = assembly.stiffness_full.shape[0]
+        self.assertEqual(transform.shape, (full_size, full_size))
+        np.testing.assert_array_equal(transform.T @ transform, np.eye(full_size))
+        np.testing.assert_array_equal(transform @ transform, np.eye(full_size))
+        vector = np.arange(1.0, full_size + 1.0)
+        expected = vector * np.tile([1.0, 1.0, -1.0], full_size // 3)
+        np.testing.assert_array_equal(transform @ vector, expected)
+
+    def test_ut2_reflection_reduced_transform_has_declared_signs(self) -> None:
+        assembly = self._small_ut2_assembly(0.004, 0.006, 30.0)
+        transform = validation._ut2_reflection_reduced_transform(assembly)
+        reduced_size = assembly.stiffness.shape[0]
+        self.assertEqual(transform.shape, (reduced_size, reduced_size))
+        np.testing.assert_array_equal(
+            transform.T @ transform, np.eye(reduced_size)
+        )
+        np.testing.assert_array_equal(transform @ transform, np.eye(reduced_size))
+        vector = np.arange(1.0, reduced_size + 1.0)
+        internal_nodes = (reduced_size - 3) // 3
+        signs = np.concatenate(
+            (
+                np.tile([1.0, 1.0, -1.0], internal_nodes),
+                [1.0, -1.0, 1.0],
+            )
+        )
+        np.testing.assert_array_equal(transform @ vector, signs * vector)
+
+    def test_ut2_reflection_endpoint_map_identities(self) -> None:
+        rows = [
+            row
+            for row in validation._ut2_endpoint_map_rows()
+            if row["symmetry_type"] == "reflection"
+        ]
+        self.assertEqual(len(rows), 2)
+        self.assertTrue(all(row["status"] == "PASS" for row in rows))
+        self.assertLessEqual(
+            max(row["relative_max_residual"] for row in rows), 1.0e-13
+        )
+
+    def test_ut2_relabel_full_transform_swaps_without_local_signs(self) -> None:
+        source = self._small_ut2_assembly(0.004, 0.006, 30.0)
+        target = self._small_ut2_assembly(0.006, 0.004, -30.0)
+        transform = validation._ut2_relabel_full_transform(source, target)
+        arm_size = source.stiffness_full.shape[0] // 2
+        vector = np.arange(source.stiffness_full.shape[0], dtype=float)
+        np.testing.assert_array_equal(
+            transform @ vector,
+            np.concatenate((vector[arm_size:], vector[:arm_size])),
+        )
+        np.testing.assert_array_equal(transform.T @ transform, np.eye(len(vector)))
+
+    def test_ut2_relabel_joint_transform_is_declared_matrix(self) -> None:
+        beta = math.radians(30.0)
+        expected = np.array(
+            [
+                [1.0, 0.0, 0.0],
+                [0.0, -math.cos(beta), math.sin(beta)],
+                [0.0, -math.sin(beta), -math.cos(beta)],
+            ]
+        )
+        np.testing.assert_array_equal(
+            validation._ut2_relabel_joint_transform(beta), expected
+        )
+
+    def test_ut2_relabel_endpoint_map_identities(self) -> None:
+        rows = [
+            row
+            for row in validation._ut2_endpoint_map_rows()
+            if row["symmetry_type"] == "oriented_angle_relabeling"
+        ]
+        self.assertEqual(len(rows), 2)
+        self.assertTrue(all(row["status"] == "PASS" for row in rows))
+        self.assertLessEqual(
+            max(row["relative_max_residual"] for row in rows), 1.0e-13
+        )
+
+    def test_ut2_reflection_matrix_identities_on_small_mesh(self) -> None:
+        plus = self._small_ut2_assembly(0.004, 0.006, 30.0)
+        minus = self._small_ut2_assembly(0.004, 0.006, -30.0)
+        rows = validation._ut2_reflection_matrix_rows(
+            "asymmetric_4_6", plus, minus
+        )
+        self.assertEqual(len(rows), 9)
+        self.assertTrue(all(row["status"] == "PASS" for row in rows))
+        self.assertTrue(
+            any(row["check"] == "reflection reduction intertwining" for row in rows)
+        )
+        self.assertTrue(
+            any(row["check"] == "K_full reflection congruence" for row in rows)
+        )
+        self.assertTrue(
+            any(row["check"] == "M_reduced reflection congruence" for row in rows)
+        )
+
+    def test_ut2_relabel_matrix_identities_on_small_mesh(self) -> None:
+        source = self._small_ut2_assembly(0.004, 0.006, 30.0)
+        target = self._small_ut2_assembly(0.006, 0.004, -30.0)
+        rows = validation._ut2_relabeling_matrix_rows(
+            "asymmetric_4_6", "swapped_6_4", source, target
+        )
+        self.assertEqual(len(rows), 7)
+        self.assertTrue(all(row["status"] == "PASS" for row in rows))
+        self.assertTrue(
+            any(row["check"] == "relabeling reduction intertwining" for row in rows)
+        )
+        self.assertTrue(
+            any(row["check"] == "K_full relabeling congruence" for row in rows)
+        )
+        self.assertTrue(
+            any(row["check"] == "M_reduced relabeling congruence" for row in rows)
+        )
+
+    def test_ut2_continuum_factories_do_not_call_stepped_references(self) -> None:
+        point_1, point_2 = self.points["a4"], self.points["a6"]
+        forbidden = (
+            "_timoshenko_stepped_boundary_matrix",
+            "_timoshenko_stepped_boundary_matrix_raw",
+            "_eb_stepped_boundary_matrix",
+            "_eb_stepped_boundary_matrix_raw",
+        )
+        patches = [
+            mock.patch.object(
+                validation,
+                name,
+                side_effect=AssertionError("stepped reference entered UT-2"),
+            )
+            for name in forbidden
+        ]
+        with patches[0], patches[1], patches[2], patches[3]:
+            for model in ("Timoshenko", "EB"):
+                factory, raw = validation._ut2_continuum_factories(
+                    model, math.radians(30.0), point_1, point_2
+                )
+                self.assertEqual(factory(self.omega).shape, (6, 6))
+                self.assertEqual(raw(self.omega).shape, (6, 6))
+
+    def test_ut2_driver_contains_no_refinement_or_ut1a_eigenpair_audit(self) -> None:
+        source = inspect.getsource(validation._run_ut2_beta30)
+        for forbidden in (
+            "UT1_FEM_MESHES",
+            "_run_eb_fem_case",
+            "_timoshenko_stepped",
+            "_eb_stepped",
+            "_ut1a_native_and_transport_audit",
+            "_ut1a_transported_rayleigh",
+        ):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, source)
+
+    def test_ut2_native_fem_spectral_symmetry_is_not_a_hard_gate(self) -> None:
+        parameters = inspect.signature(validation._classify_ut2_status).parameters
+        self.assertNotIn("native_fem_spectral_symmetry_ok", parameters)
+        self.assertEqual(
+            validation._classify_ut2_status(
+                continuum_hard_ok=True,
+                matrix_hard_ok=True,
+                fem_hard_ok=True,
+                regressions_ok=True,
+            ),
+            "PASS",
+        )
+        self.assertEqual(
+            validation._classify_ut2_status(
+                continuum_hard_ok=True,
+                matrix_hard_ok=True,
+                fem_hard_ok=False,
+                regressions_ok=True,
+            ),
+            "PARTIAL_PASS",
+        )
 
     def test_equal_section_stepped_matches_homogeneous_straight_matrices(self) -> None:
         arm = self.points["a5"]
