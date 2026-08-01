@@ -2,6 +2,29 @@
 
 ## 2026-08-01
 
+- Added the isolated UT-1a `beta=0` EB FEM matrix-level exchange audit to the
+  existing unequal-thickness CLI. A-priori full and signed-reduced arm
+  permutations give zero saved residual for permutation identities,
+  reduction intertwining, full stiffness/mass exchange, and forward/reverse
+  reduced congruence on the two prescribed mesh-64 systems. Native exchange
+  reproduces `5.7622845e-8` and canonicalized spectra agree exactly, but UT-1a
+  is `INCONCLUSIVE_NUMERICAL_AUDIT` because native/transported backward
+  residuals (`7.28e-7`) and transported Rayleigh difference (`1.48e-7`)
+  exceed their fixed audit thresholds. UT-0 remains `PASS`, UT-1 remains
+  `PARTIAL_PASS`, and overall unequal-thickness validation remains
+  `IN_PROGRESS`; FEM coefficients, joint maps, solver settings, thresholds,
+  and release version are unchanged.
+- Extended the existing unequal-thickness CLI with the isolated UT-1
+  `beta=0` mode while preserving UT-0. All 12 seven-root Timoshenko/EB
+  coupled/direct-stepped spectra, normalized root quality, the independent
+  equal-thickness straight regression, and analytic `(4,6)`--`(6,4)` exchange
+  pass. Existing independent EB FEM assemblies pass structure and mesh-64
+  `E3<=1e-4`, `E6<=5e-4` accuracy; the fixed `(16,32,64)` aggregate `E6`
+  sequence converges at orders `2.00037` and `2.00009`. UT-1 is nevertheless
+  `PARTIAL_PASS` because the mesh-64 FEM stepped-order exchange difference is
+  `5.76e-8`, above its fixed `1e-8` threshold. No nonzero angle, Timoshenko or
+  3D FEM, model coefficient, root/scaling helper, old threshold, or release
+  version changed.
 - Added the isolated Chapter-2 unequal-thickness UT-0 diagnostic gate. Three
   independently constructed `a=4,5,6 mm` rectangular points pass section,
   baseline-geometry, arm-specific Timoshenko/EB coefficient, torsion-series,

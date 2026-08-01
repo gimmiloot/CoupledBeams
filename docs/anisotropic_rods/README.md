@@ -13,7 +13,7 @@ Rigid angular-joint gate: completed — PASS
 Coupled-rod code: small elastic diagnostic pilot only — PASS
 Final coupled-rod model or parameter study: not started
 Rectangular orthotropic Euler--Bernoulli--Saint-Venant gate: PARTIAL_PASS after targeted refinement
-Unequal-thickness validation: IN_PROGRESS; UT-0 beta=0 stepped smoke: PASS
+Unequal-thickness validation: IN_PROGRESS; UT-0: PASS; UT-1: PARTIAL_PASS; UT-1a matrix audit: INCONCLUSIVE
 Production anisotropic API: not started
 Independent rectangular EB + torsion 1D FEM: completed for the finite gate
 ```
@@ -62,7 +62,7 @@ dense-eigensolver conditioning floor. Its targeted status is
 is a project comparator, not a source reproduction, general anisotropic EB
 model, final coupled baseline, unequal-thickness study, or 3D validation.
 
-## Unequal-thickness UT-0
+## Unequal-thickness UT-0, UT-1, and UT-1a
 
 The isolated UT-0 gate constructs independent `a=4,5,6 mm` rectangular
 `RodPoint` objects at `theta=0` and verifies section properties, arm-specific
@@ -74,6 +74,26 @@ first-three sorted spectra to `1.42e-13` relatively for Timoshenko and
 remains `IN_PROGRESS`; other angles, the swapped case, root 7, FEM, shapes,
 tracking, and parameter studies were not run.
 
+UT-1 extends the same script-local validation to seven roots for `(5,5)`,
+`(4,6)`, and `(6,4) mm`. All 12 coupled/direct-stepped spectra, root quality,
+the homogeneous equal-thickness regression, analytic stepped-order exchange,
+mesh-64 FEM accuracy, and the fixed `(16,32,64)` aggregate convergence gate
+pass. UT-1 is `PARTIAL_PASS` only because the independent mesh-64 FEM exchange
+difference is `5.76e-8`, above its fixed `1e-8` threshold. No FEM coefficient,
+continuum formula, or threshold was changed.
+
+UT-1a isolates that FEM exchange difference at matrix level for only the two
+`N_1=N_2=64`, `beta=0` systems `(4,6)` and `(6,4)`. The a-priori full and
+signed-reduced arm permutations give exactly zero saved residual for
+permutation, reduction-intertwining, full-matrix exchange, and forward/reverse
+reduced congruence. The canonicalized spectra also agree exactly. The audit is
+nevertheless `INCONCLUSIVE_NUMERICAL_AUDIT`: native/transported backward
+residuals reach `7.28e-7 > 1e-8`, and the transported Rayleigh difference is
+`1.48e-7 > 1e-10`. No assembly asymmetry was detected within the declared
+matrix thresholds, but the failed numerical-quality gates prevent attributing
+the native difference conclusively to DOF-order-sensitive eigensolver error.
+UT-1 remains `PARTIAL_PASS` and the overall status remains `IN_PROGRESS`.
+
 ## Navigation
 
 - [Yartsev source note and local scan map](source_note_yartsev_2024.md)
@@ -83,12 +103,12 @@ tracking, and parameter studies were not run.
 - [Chapter-2 notation translation](yartsev_ch2_notation_translation.md)
 - [Rigid angular-joint theory and gate](yartsev_ch2_rigid_angular_joint.md)
 - [Rectangular orthotropic EB validation](yartsev_ch2_rectangular_eb_validation.md)
-- [Unequal-thickness validation (UT-0 only)](yartsev_ch2_unequal_thickness_validation.md)
+- [Unequal-thickness validation (UT-0, UT-1, and UT-1a)](yartsev_ch2_unequal_thickness_validation.md)
 - [Free-free diagnostic CLI](../../scripts/analysis/anisotropic_rods/reproduce_yartsev_fig_2_2.py)
 - [Cantilever diagnostic CLI](../../scripts/analysis/anisotropic_rods/reproduce_yartsev_ch2_cantilever.py)
 - [Small coupled-joint pilot CLI](../../scripts/analysis/anisotropic_rods/pilot_yartsev_ch2_coupled_rods.py)
 - [Rectangular EB validation CLI](../../scripts/analysis/anisotropic_rods/validate_yartsev_ch2_rectangular_eb.py)
-- [Unequal-thickness UT-0 CLI](../../scripts/analysis/anisotropic_rods/validate_yartsev_ch2_unequal_thickness.py)
+- [Unequal-thickness UT-0/UT-1/UT-1a CLI](../../scripts/analysis/anisotropic_rods/validate_yartsev_ch2_unequal_thickness.py)
 
 Generated local evidence, which may be absent from a fresh clone, is kept in:
 
@@ -103,12 +123,14 @@ Generated local evidence, which may be absent from a fresh clone, is kept in:
 ## Current boundary
 
 The rigid-point-joint pilot, finite `theta=0` rectangular EB/1D-FEM gate, and
-unequal-thickness UT-0 smoke are complete. The rectangular gate closed its original strict accuracy shortfall under
+unequal-thickness UT-0, UT-1, and UT-1a beta-zero gates are complete. The rectangular gate closed its original strict accuracy shortfall under
 equal-element-length refinement but was not promoted because the separate
 mode-1 monotonic-refinement gate failed. Unequal-thickness validation remains
-`IN_PROGRESS` after UT-0. Any UT-1 work, off-axis or broad spectrum study,
-final coupled-rod model, damping calculation, FEM/3D validation, or production
-API requires a separately scoped next stage.
+`IN_PROGRESS` after the UT-1 `PARTIAL_PASS` and inconclusive UT-1a numerical
+audit; nonzero-angle validation remains
+outside the completed scope. Any UT-2 work, off-axis or broad spectrum study,
+final coupled-rod model, damping calculation, 3D validation, or production API
+requires a separately scoped next stage.
 
 ## Preservation rule
 
