@@ -26,6 +26,8 @@ from scripts.lib.yartsev_ch2_coupled_rods import (  # noqa: E402
     coupled_boundary_matrix,
     coupled_boundary_matrix_raw,
     equilibrate_matrix,
+    joint_matrix_book,
+    physical_end_map,
     straight_boundary_matrix,
     straight_boundary_matrix_raw,
     straight_right_clamp_matrix,
@@ -52,6 +54,7 @@ from scripts.lib.yartsev_ch2_rectangular_eb import (  # noqa: E402
     eb_coupled_boundary_matrix_raw,
     eb_joint_dof_maps,
     eb_joint_mapping_residual,
+    eb_physical_end_map,
     eb_state_matrix,
     eb_state_transfer_matrix,
     eb_straight_boundary_matrix,
@@ -88,6 +91,13 @@ UT2_DEFAULT_OUTPUT_DIR = (
     / "anisotropic_rods"
     / "yartsev_ch2_unequal_thickness_validation"
     / "ut2_beta30"
+)
+UT3_DEFAULT_OUTPUT_DIR = (
+    ROOT
+    / "results"
+    / "anisotropic_rods"
+    / "yartsev_ch2_unequal_thickness_validation"
+    / "ut3_beta90"
 )
 SECTION_A_M = {"a4": 0.004, "a5": 0.005, "a6": 0.006}
 LENGTH_M = 0.2
@@ -140,6 +150,30 @@ UT2_SECTION_CASES = {
 UT2_NUM_ROOTS = 7
 UT2_FEM_ELEMENTS_PER_ARM = (64, 64)
 UT2_MATRIX_RELATIVE_TOLERANCE = 1.0e-13
+
+UT3_ANGLES_DEG = (-90.0, 90.0)
+UT3_SECTION_CASES = {
+    "baseline_5_5": (0.005, 0.005),
+    "asymmetric_4_6": (0.004, 0.006),
+    "swapped_6_4": (0.006, 0.004),
+}
+UT3_NUM_ROOTS = 7
+UT3_FEM_ELEMENTS_PER_ARM = (64, 64)
+UT3_MATRIX_RELATIVE_TOLERANCE = 1.0e-13
+UT3_EXACT_LIMIT_TOLERANCE = 1.0e-14
+
+UT3_EXPLICIT_EXCLUSIONS = [
+    "all angles other than +/-90 deg inside UT-3",
+    "parameter grids, intermediate angles, or mesh refinement",
+    "Timoshenko FEM or 3D FEM",
+    "theta != 0, complex roots, or damping",
+    "MAC, physical mode shapes, or branch tracking",
+    "mass-preserving parametrization or parameter maps",
+    "plots or PDF",
+    "continued UT-1a backward, Rayleigh, balancing, or high-precision audits",
+    "changes to J_book, model coefficients, eigensolver, thresholds, or version",
+    "production anisotropic API or limited 3D FEM anchor implementation",
+]
 
 UT2_EXPLICIT_EXCLUSIONS = [
     "beta=0 calculations except separately requested regression modes",
@@ -247,6 +281,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--ut2-beta30",
         action="store_true",
         help="run the isolated +/-30 deg unequal-thickness angular-joint gate",
+    )
+    modes.add_argument(
+        "--ut3-beta90",
+        action="store_true",
+        help="run the isolated +/-90 deg unequal-thickness quarter-turn gate",
     )
     parser.add_argument("--output-dir", type=Path, default=None)
     return parser.parse_args(argv)
@@ -3328,11 +3367,35 @@ def _run_ut1a_fem_exchange_audit(output_dir: Path) -> dict[str, Any]:
     return summary
 
 
-def _ut2_beta_rad(beta_deg: float) -> float:
+def _angular_beta_rad(
+    beta_deg: float,
+    *,
+    allowed_angles_deg: Sequence[float],
+    gate_label: str,
+) -> float:
     value = float(beta_deg)
-    if value not in UT2_ANGLES_DEG:
-        raise ValueError(f"UT-2 accepts only beta in {UT2_ANGLES_DEG}, got {value}")
+    allowed = tuple(float(angle) for angle in allowed_angles_deg)
+    if value not in allowed:
+        raise ValueError(
+            f"{gate_label} accepts only beta in {allowed}, got {value}"
+        )
     return math.radians(value)
+
+
+def _ut2_beta_rad(beta_deg: float) -> float:
+    return _angular_beta_rad(
+        beta_deg,
+        allowed_angles_deg=UT2_ANGLES_DEG,
+        gate_label="UT-2",
+    )
+
+
+def _ut3_beta_rad(beta_deg: float) -> float:
+    return _angular_beta_rad(
+        beta_deg,
+        allowed_angles_deg=UT3_ANGLES_DEG,
+        gate_label="UT-3",
+    )
 
 
 def _make_ut2_section_cases() -> dict[str, tuple[RodPoint, RodPoint]]:
@@ -3525,12 +3588,13 @@ def _ut2_matrix_row(
     right: np.ndarray,
     row_label: Callable[[int], str] | None = None,
     column_label: Callable[[int], str] | None = None,
+    threshold: float = UT2_MATRIX_RELATIVE_TOLERANCE,
 ) -> dict[str, Any]:
     evidence = _ut1a_matrix_identity_row(
         check=check,
         left=left,
         right=right,
-        threshold=UT2_MATRIX_RELATIVE_TOLERANCE,
+        threshold=threshold,
         row_label=row_label,
         column_label=column_label,
     )
@@ -3544,8 +3608,12 @@ def _ut2_matrix_row(
     }
 
 
-def _ut2_endpoint_map_rows() -> list[dict[str, Any]]:
-    beta = _ut2_beta_rad(30.0)
+def _ut2_endpoint_map_rows(
+    beta_deg: float = 30.0,
+) -> list[dict[str, Any]]:
+    """Return the generic angular reflection/relabeling endpoint identities."""
+
+    beta = math.radians(float(beta_deg))
     maps_plus = eb_joint_dof_maps(beta)
     maps_minus = eb_joint_dof_maps(-beta)
     reflection_nodal = np.diag([1.0, 1.0, -1.0])
@@ -3556,8 +3624,8 @@ def _ut2_endpoint_map_rows() -> list[dict[str, Any]]:
             symmetry_type="reflection",
             section_case_left="all",
             section_case_right="all",
-            beta_left_deg=30.0,
-            beta_right_deg=-30.0,
+            beta_left_deg=beta_deg,
+            beta_right_deg=-beta_deg,
             check="endpoint map arm 1",
             left=reflection_nodal @ maps_plus[0],
             right=maps_minus[0] @ reflection_joint,
@@ -3566,8 +3634,8 @@ def _ut2_endpoint_map_rows() -> list[dict[str, Any]]:
             symmetry_type="reflection",
             section_case_left="all",
             section_case_right="all",
-            beta_left_deg=30.0,
-            beta_right_deg=-30.0,
+            beta_left_deg=beta_deg,
+            beta_right_deg=-beta_deg,
             check="endpoint map arm 2",
             left=reflection_nodal @ maps_plus[1],
             right=maps_minus[1] @ reflection_joint,
@@ -3576,8 +3644,8 @@ def _ut2_endpoint_map_rows() -> list[dict[str, Any]]:
             symmetry_type="oriented_angle_relabeling",
             section_case_left="all",
             section_case_right="all",
-            beta_left_deg=30.0,
-            beta_right_deg=-30.0,
+            beta_left_deg=beta_deg,
+            beta_right_deg=-beta_deg,
             check="endpoint map F1 H_rel = F2(+beta)",
             left=maps_plus[0] @ relabel_joint,
             right=maps_plus[1],
@@ -3586,8 +3654,8 @@ def _ut2_endpoint_map_rows() -> list[dict[str, Any]]:
             symmetry_type="oriented_angle_relabeling",
             section_case_left="all",
             section_case_right="all",
-            beta_left_deg=30.0,
-            beta_right_deg=-30.0,
+            beta_left_deg=beta_deg,
+            beta_right_deg=-beta_deg,
             check="endpoint map F2(-beta) H_rel = F1",
             left=maps_minus[1] @ relabel_joint,
             right=maps_plus[0],
@@ -3599,6 +3667,8 @@ def _ut2_reflection_matrix_rows(
     section_case: str,
     assembly_plus: EBFEMAssembly,
     assembly_minus: EBFEMAssembly,
+    *,
+    beta_deg: float = 30.0,
 ) -> list[dict[str, Any]]:
     _ut2_pair_metadata(assembly_plus, assembly_minus)
     full = _ut2_reflection_full_transform(assembly_plus)
@@ -3613,8 +3683,8 @@ def _ut2_reflection_matrix_rows(
         "symmetry_type": "reflection",
         "section_case_left": section_case,
         "section_case_right": section_case,
-        "beta_left_deg": 30.0,
-        "beta_right_deg": -30.0,
+        "beta_left_deg": beta_deg,
+        "beta_right_deg": -beta_deg,
     }
     specifications = [
         (
@@ -3699,8 +3769,10 @@ def _ut2_relabeling_matrix_rows(
     section_case_target: str,
     assembly_source: EBFEMAssembly,
     assembly_target: EBFEMAssembly,
+    *,
+    beta_deg: float = 30.0,
 ) -> list[dict[str, Any]]:
-    beta = _ut2_beta_rad(30.0)
+    beta = math.radians(float(beta_deg))
     full = _ut2_relabel_full_transform(assembly_source, assembly_target)
     reduced = _ut2_relabel_reduced_transform(
         assembly_source, assembly_target, beta
@@ -3713,8 +3785,8 @@ def _ut2_relabeling_matrix_rows(
         "symmetry_type": "oriented_angle_relabeling",
         "section_case_left": section_case_source,
         "section_case_right": section_case_target,
-        "beta_left_deg": 30.0,
-        "beta_right_deg": -30.0,
+        "beta_left_deg": beta_deg,
+        "beta_right_deg": -beta_deg,
     }
     specifications = [
         (
@@ -3794,55 +3866,67 @@ def _classify_ut2_status(
     return "PASS" if fem_hard_ok else "PARTIAL_PASS"
 
 
-def _ut2_symmetry_specifications() -> list[dict[str, Any]]:
+def _ut2_symmetry_specifications(
+    *,
+    angle_deg: float = 30.0,
+    section_cases: Sequence[str] | None = None,
+) -> list[dict[str, Any]]:
+    cases = tuple(UT2_SECTION_CASES if section_cases is None else section_cases)
     return [
         *[
             {
                 "symmetry_type": "reflection",
                 "case_left": case,
                 "case_right": case,
-                "beta_left_deg": 30.0,
-                "beta_right_deg": -30.0,
+                "beta_left_deg": angle_deg,
+                "beta_right_deg": -angle_deg,
             }
-            for case in UT2_SECTION_CASES
+            for case in cases
         ],
         {
             "symmetry_type": "oriented_angle_relabeling",
             "case_left": "asymmetric_4_6",
             "case_right": "swapped_6_4",
-            "beta_left_deg": 30.0,
-            "beta_right_deg": -30.0,
+            "beta_left_deg": angle_deg,
+            "beta_right_deg": -angle_deg,
         },
         {
             "symmetry_type": "oriented_angle_relabeling",
             "case_left": "swapped_6_4",
             "case_right": "asymmetric_4_6",
-            "beta_left_deg": 30.0,
-            "beta_right_deg": -30.0,
+            "beta_left_deg": angle_deg,
+            "beta_right_deg": -angle_deg,
         },
         {
             "symmetry_type": "same_positive_exchange",
             "case_left": "asymmetric_4_6",
             "case_right": "swapped_6_4",
-            "beta_left_deg": 30.0,
-            "beta_right_deg": 30.0,
+            "beta_left_deg": angle_deg,
+            "beta_right_deg": angle_deg,
         },
         {
             "symmetry_type": "same_negative_exchange",
             "case_left": "asymmetric_4_6",
             "case_right": "swapped_6_4",
-            "beta_left_deg": -30.0,
-            "beta_right_deg": -30.0,
+            "beta_left_deg": -angle_deg,
+            "beta_right_deg": -angle_deg,
         },
     ]
 
 
 def _ut2_continuum_symmetry_rows(
     spectra: dict[tuple[str, float, str], dict[str, Any]],
+    *,
+    specifications: Sequence[dict[str, Any]] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, dict[str, float]]]:
     rows: list[dict[str, Any]] = []
     maxima: dict[str, dict[str, float]] = {}
-    for specification in _ut2_symmetry_specifications():
+    selected = (
+        _ut2_symmetry_specifications()
+        if specifications is None
+        else specifications
+    )
+    for specification in selected:
         for model in ("Timoshenko", "EB"):
             left_key = (
                 specification["case_left"],
@@ -3909,15 +3993,24 @@ def _run_ut2_eb_fem_configuration(
     point_2: RodPoint,
     beta_deg: float,
     analytic_frequencies: Sequence[float],
+    allowed_angles_deg: Sequence[float] = UT2_ANGLES_DEG,
+    gate_label: str = "UT-2",
+    elements_per_arm: tuple[int, int] = UT2_FEM_ELEMENTS_PER_ARM,
+    num_roots: int = UT2_NUM_ROOTS,
 ) -> dict[str, Any]:
     started = time.perf_counter()
+    beta_rad = _angular_beta_rad(
+        beta_deg,
+        allowed_angles_deg=allowed_angles_deg,
+        gate_label=gate_label,
+    )
     assembly = assemble_two_arm_eb_fem(
         point_1,
         point_2,
-        _ut2_beta_rad(beta_deg),
-        UT2_FEM_ELEMENTS_PER_ARM,
+        beta_rad,
+        elements_per_arm,
     )
-    solution = solve_two_arm_eb_fem(assembly, num_roots=UT2_NUM_ROOTS)
+    solution = solve_two_arm_eb_fem(assembly, num_roots=num_roots)
     runtime = time.perf_counter() - started
     matched, matching, gaps, permutation = _match_frequency_spectra(
         analytic_frequencies, solution.frequencies_hz
@@ -3942,13 +4035,11 @@ def _run_ut2_eb_fem_configuration(
         "zero_mode_count": solution.zero_mode_count,
         "root_count": len(solution.frequencies_hz),
         "positive_finite_roots": bool(
-            len(solution.frequencies_hz) == UT2_NUM_ROOTS
+            len(solution.frequencies_hz) == num_roots
             and np.all(np.isfinite(solution.frequencies_hz))
             and np.all(solution.frequencies_hz > 0.0)
         ),
-        "joint_kinematic_residual": eb_joint_mapping_residual(
-            _ut2_beta_rad(beta_deg)
-        ),
+        "joint_kinematic_residual": eb_joint_mapping_residual(beta_rad),
         "max_joint_equilibrium_residual": float(
             np.max(solution.joint_equilibrium_residuals)
         ),
@@ -4054,40 +4145,42 @@ def _ut2_fem_native_symmetry_rows(
     *,
     reflection_matrix_ok: bool,
     relabeling_matrix_ok: bool,
+    specifications: Sequence[dict[str, Any]] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, dict[str, float]]]:
-    specifications = [
-        *[
+    if specifications is None:
+        specifications = [
+            *[
+                {
+                    "symmetry_type": "reflection",
+                    "case_left": case,
+                    "case_right": case,
+                    "beta_left_deg": 30.0,
+                    "beta_right_deg": -30.0,
+                }
+                for case in UT2_SECTION_CASES
+            ],
             {
-                "symmetry_type": "reflection",
-                "case_left": case,
-                "case_right": case,
+                "symmetry_type": "oriented_angle_relabeling",
+                "case_left": "asymmetric_4_6",
+                "case_right": "swapped_6_4",
                 "beta_left_deg": 30.0,
                 "beta_right_deg": -30.0,
-            }
-            for case in UT2_SECTION_CASES
-        ],
-        {
-            "symmetry_type": "oriented_angle_relabeling",
-            "case_left": "asymmetric_4_6",
-            "case_right": "swapped_6_4",
-            "beta_left_deg": 30.0,
-            "beta_right_deg": -30.0,
-        },
-        {
-            "symmetry_type": "oriented_angle_relabeling",
-            "case_left": "swapped_6_4",
-            "case_right": "asymmetric_4_6",
-            "beta_left_deg": 30.0,
-            "beta_right_deg": -30.0,
-        },
-        {
-            "symmetry_type": "same_positive_exchange",
-            "case_left": "asymmetric_4_6",
-            "case_right": "swapped_6_4",
-            "beta_left_deg": 30.0,
-            "beta_right_deg": 30.0,
-        },
-    ]
+            },
+            {
+                "symmetry_type": "oriented_angle_relabeling",
+                "case_left": "swapped_6_4",
+                "case_right": "asymmetric_4_6",
+                "beta_left_deg": 30.0,
+                "beta_right_deg": -30.0,
+            },
+            {
+                "symmetry_type": "same_positive_exchange",
+                "case_left": "asymmetric_4_6",
+                "case_right": "swapped_6_4",
+                "beta_left_deg": 30.0,
+                "beta_right_deg": 30.0,
+            },
+        ]
     rows: list[dict[str, Any]] = []
     maxima: dict[str, dict[str, float]] = {}
     for specification in specifications:
@@ -4154,15 +4247,19 @@ def _ut2_fem_native_symmetry_rows(
 
 def _ut2_model_difference_rows(
     spectra: dict[tuple[str, float, str], dict[str, Any]],
+    *,
+    angle_deg: float = 30.0,
+    section_cases: Sequence[str] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, float]]:
     rows: list[dict[str, Any]] = []
     maxima: dict[str, float] = {}
-    for section_case in UT2_SECTION_CASES:
+    cases = tuple(UT2_SECTION_CASES if section_cases is None else section_cases)
+    for section_case in cases:
         timo = _frequencies(
-            spectra[(section_case, 30.0, "Timoshenko")]["roots"]
+            spectra[(section_case, angle_deg, "Timoshenko")]["roots"]
         )[:6]
         eb_source = _frequencies(
-            spectra[(section_case, 30.0, "EB")]["roots"]
+            spectra[(section_case, angle_deg, "EB")]["roots"]
         )[:6]
         eb, matching, timo_gaps, permutation = _match_frequency_spectra(
             timo, eb_source
@@ -4178,7 +4275,7 @@ def _ut2_model_difference_rows(
             rows.append(
                 {
                     "section_case": section_case,
-                    "beta_deg": 30.0,
+                    "beta_deg": angle_deg,
                     "mode": mode,
                     "timoshenko_frequency_hz": timo_hz,
                     "eb_frequency_hz": eb_hz,
@@ -4745,6 +4842,1072 @@ def _run_ut2_beta30(output_dir: Path) -> dict[str, Any]:
     return summary
 
 
+def _ut3_joint_plus_90_exact() -> np.ndarray:
+    """Return the prescribed integer-entry +90-degree book joint matrix."""
+
+    return np.array(
+        [
+            [1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0],
+            [0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1],
+        ],
+        dtype=float,
+    )
+
+
+def _ut3_joint_minus_90_exact() -> np.ndarray:
+    """Return the prescribed integer-entry -90-degree book joint matrix."""
+
+    return np.array(
+        [
+            [1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0],
+            [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0],
+            [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+        ],
+        dtype=float,
+    )
+
+
+def _ut3_relabel_joint_exact() -> np.ndarray:
+    """Return the exact +90-degree relabeling map for joint coordinates."""
+
+    return np.array(
+        [[1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, -1.0, 0.0]],
+        dtype=float,
+    )
+
+
+def _ut3_exact_block_end_map(
+    omega: complex,
+    point_1: RodPoint,
+    point_2: RodPoint,
+    *,
+    model: str,
+) -> np.ndarray:
+    """Assemble physical arm end maps without a coupled/joint builder."""
+
+    if model == "Timoshenko":
+        end_map = physical_end_map
+    elif model == "EB":
+        end_map = eb_physical_end_map
+    else:
+        raise ValueError(f"unsupported UT-3 exact continuum model: {model}")
+    block = np.zeros((12, 6), dtype=np.complex128)
+    block[:6, :3] = end_map(omega, point_1)
+    block[6:, 3:] = end_map(omega, point_2)
+    return block
+
+
+def _ut3_exact_boundary_matrix_raw(
+    omega: complex,
+    point_1: RodPoint,
+    point_2: RodPoint,
+    *,
+    model: str,
+) -> np.ndarray:
+    """Return physical ``6 x 6`` +90 exact-limit boundary matrix."""
+
+    return _ut3_joint_plus_90_exact() @ _ut3_exact_block_end_map(
+        omega, point_1, point_2, model=model
+    )
+
+
+def _ut3_exact_boundary_matrix(
+    omega: complex,
+    point_1: RodPoint,
+    point_2: RodPoint,
+    *,
+    model: str,
+) -> np.ndarray:
+    return equilibrate_matrix(
+        _ut3_exact_boundary_matrix_raw(
+            omega, point_1, point_2, model=model
+        )
+    )[0]
+
+
+def _ut3_exact_continuum_factories(
+    model: str,
+    point_1: RodPoint,
+    point_2: RodPoint,
+) -> tuple[Callable[[complex], np.ndarray], Callable[[complex], np.ndarray]]:
+    """Return exact +90 scaled/raw factories without ``J_book`` calls."""
+
+    if model not in ("Timoshenko", "EB"):
+        raise ValueError(f"unsupported UT-3 exact continuum model: {model}")
+    return (
+        lambda omega: _ut3_exact_boundary_matrix(
+            omega, point_1, point_2, model=model
+        ),
+        lambda omega: _ut3_exact_boundary_matrix_raw(
+            omega, point_1, point_2, model=model
+        ),
+    )
+
+
+def _ut3_continuum_root_row(
+    *,
+    builder: str,
+    section_case: str,
+    point_1: RodPoint,
+    point_2: RodPoint,
+    beta_deg: float,
+    model: str,
+    mode: int,
+    root: RootResult,
+    quality: dict[str, Any],
+    gap_hz: float,
+) -> dict[str, Any]:
+    row = _ut2_continuum_root_row(
+        section_case=section_case,
+        point_1=point_1,
+        point_2=point_2,
+        beta_deg=beta_deg,
+        model=model,
+        mode=mode,
+        root=root,
+        quality=quality,
+        gap_hz=gap_hz,
+    )
+    row["builder"] = builder
+    ordered = {
+        key: row[key]
+        for key in (
+            "section_case",
+            "a_1_m",
+            "a_2_m",
+            "beta_deg",
+            "model",
+            "builder",
+            "mode",
+            "frequency_hz",
+        )
+    }
+    ordered.update(
+        {key: value for key, value in row.items() if key not in ordered}
+    )
+    return ordered
+
+
+def _ut3_exact_identity_row(
+    *, check: str, left: np.ndarray, right: np.ndarray
+) -> dict[str, Any]:
+    row = _ut1a_matrix_identity_row(
+        check=check,
+        left=left,
+        right=right,
+        threshold=UT3_EXACT_LIMIT_TOLERANCE,
+    )
+    row["status"] = (
+        "PASS"
+        if row["absolute_max_residual"] <= UT3_EXACT_LIMIT_TOLERANCE
+        and row["relative_frobenius_residual"]
+        <= UT3_EXACT_LIMIT_TOLERANCE
+        else "FAIL"
+    )
+    return row
+
+
+def _ut3_exact_joint_limit_rows() -> list[dict[str, Any]]:
+    """Audit exact joint, endpoint, relabeling, and deterministic limits."""
+
+    plus = math.pi / 2.0
+    minus = -plus
+    f1_plus, f2_plus = eb_joint_dof_maps(plus)
+    f1_minus, f2_minus = eb_joint_dof_maps(minus)
+    h_exact = _ut3_relabel_joint_exact()
+    rows = [
+        _ut3_exact_identity_row(
+            check="J_book(+90) vs J_plus_90_exact",
+            left=joint_matrix_book(plus),
+            right=_ut3_joint_plus_90_exact(),
+        ),
+        _ut3_exact_identity_row(
+            check="J_book(-90) vs J_minus_90_exact",
+            left=joint_matrix_book(minus),
+            right=_ut3_joint_minus_90_exact(),
+        ),
+        _ut3_exact_identity_row(
+            check="F2(+90) vs I",
+            left=f2_plus,
+            right=np.eye(3),
+        ),
+        _ut3_exact_identity_row(
+            check="F2(-90) vs diag(1,-1,-1)",
+            left=f2_minus,
+            right=np.diag([1.0, -1.0, -1.0]),
+        ),
+        _ut3_exact_identity_row(
+            check="H_rel(+90) vs exact quarter-turn",
+            left=_ut2_relabel_joint_transform(plus),
+            right=h_exact,
+        ),
+        _ut3_exact_identity_row(
+            check="F1 H_rel_exact = F2(+90)",
+            left=f1_plus @ h_exact,
+            right=f2_plus,
+        ),
+        _ut3_exact_identity_row(
+            check="F2(-90) H_rel_exact = F1",
+            left=f2_minus @ h_exact,
+            right=f1_minus,
+        ),
+    ]
+    joint_vectors = (
+        np.array([1.0, 0.0, 0.0]),
+        np.array([0.0, 1.0, 0.0]),
+        np.array([0.0, 0.0, 1.0]),
+        np.array([2.0, -3.0, 5.0]),
+    )
+    for index, vector in enumerate(joint_vectors, start=1):
+        w_j, theta_t, theta_n = vector
+        expected = np.array(
+            [w_j, -theta_n, theta_t, w_j, theta_t, theta_n]
+        ).reshape(-1, 1)
+        actual = np.concatenate(
+            (f1_plus @ vector, f2_plus @ vector)
+        ).reshape(-1, 1)
+        rows.append(
+            _ut3_exact_identity_row(
+                check=f"deterministic channel-exchange state {index}",
+                left=actual,
+                right=expected,
+            )
+        )
+    return rows
+
+
+def _ut3_standard_exact_rows(
+    standard: dict[tuple[str, float, str], dict[str, Any]],
+    exact: dict[tuple[str, str], dict[str, Any]],
+) -> tuple[list[dict[str, Any]], dict[str, float]]:
+    rows: list[dict[str, Any]] = []
+    maxima: dict[str, float] = {}
+    for section_case in UT3_SECTION_CASES:
+        for model in ("Timoshenko", "EB"):
+            standard_data = standard[(section_case, 90.0, model)]
+            exact_data = exact[(section_case, model)]
+            standard_hz = _frequencies(standard_data["roots"])
+            exact_source = _frequencies(exact_data["roots"])
+            exact_hz, matching, _, permutation = _match_frequency_spectra(
+                standard_hz, exact_source
+            )
+            differences: list[float] = []
+            for mode, (
+                standard_frequency,
+                exact_frequency,
+                basis,
+                exact_index,
+            ) in enumerate(
+                zip(standard_hz, exact_hz, matching, permutation), start=1
+            ):
+                absolute = abs(
+                    float(standard_frequency) - float(exact_frequency)
+                )
+                relative = absolute / max(
+                    abs(float(exact_frequency)), np.finfo(float).tiny
+                )
+                differences.append(relative)
+                standard_quality = standard_data["quality"][mode - 1]
+                exact_quality = exact_data["quality"][int(exact_index)]
+                rows.append(
+                    {
+                        "section_case": section_case,
+                        "model": model,
+                        "mode": mode,
+                        "standard_frequency_hz": standard_frequency,
+                        "exact_limit_frequency_hz": exact_frequency,
+                        "absolute_difference_hz": absolute,
+                        "relative_difference": relative,
+                        "matching_basis": basis,
+                        "standard_quality_basis": standard_quality[
+                            "root_quality_basis"
+                        ],
+                        "exact_quality_basis": exact_quality[
+                            "root_quality_basis"
+                        ],
+                        "threshold": SPECTRUM_RELATIVE_TOLERANCE,
+                        "status": (
+                            "PASS"
+                            if relative <= SPECTRUM_RELATIVE_TOLERANCE
+                            else "FAIL"
+                        ),
+                    }
+                )
+            maxima[f"{model}|{section_case}"] = max(differences)
+    return rows, maxima
+
+
+def _ut3_previous_statuses() -> dict[str, str]:
+    statuses = _load_ut2_previous_statuses()
+    path = UT2_DEFAULT_OUTPUT_DIR / "ut2_summary.json"
+    if not path.is_file():
+        raise FileNotFoundError(f"UT-3 requires existing UT-2 evidence: {path}")
+    statuses["UT-2"] = json.loads(path.read_text(encoding="utf-8"))[
+        "ut2_status"
+    ]
+    return statuses
+
+
+def _classify_ut3_status(
+    *,
+    continuum_hard_ok: bool,
+    exact_limit_ok: bool,
+    matrix_hard_ok: bool,
+    fem_hard_ok: bool,
+    regressions_ok: bool,
+) -> tuple[str, str, str]:
+    """Return UT-3, overall 1D, and phase statuses; native FEM is excluded."""
+
+    if not (
+        continuum_hard_ok
+        and exact_limit_ok
+        and matrix_hard_ok
+        and regressions_ok
+    ):
+        return "FAIL", "FAIL", "BLOCKED"
+    if not fem_hard_ok:
+        return "PARTIAL_PASS", "PARTIAL_PASS", "COMPLETE_WITH_LIMITATIONS"
+    return "PASS", "PARTIAL_PASS", "COMPLETE"
+
+
+def _ut3_root_quality_summary(
+    rows: Sequence[dict[str, Any]],
+) -> tuple[dict[str, int], dict[str, dict[str, float]]]:
+    counts = {
+        basis: sum(
+            row["quality_status"] == "PASS"
+            and row["quality_basis"] == basis
+            for row in rows
+        )
+        for basis in ("scaled", "physical_raw")
+    }
+    maxima = {
+        "scaled": {
+            "normalized_determinant_residual": max(
+                (
+                    row["scaled_determinant_residual"]
+                    for row in rows
+                    if row["quality_status"] == "PASS"
+                    and row["quality_basis"] == "scaled"
+                ),
+                default=0.0,
+            ),
+            "relative_singular_residual": max(
+                (
+                    row["scaled_relative_singular_residual"]
+                    for row in rows
+                    if row["quality_status"] == "PASS"
+                    and row["quality_basis"] == "scaled"
+                ),
+                default=0.0,
+            ),
+        },
+        "physical_raw": {
+            "normalized_determinant_residual": max(
+                (
+                    row["raw_determinant_residual"]
+                    for row in rows
+                    if row["quality_status"] == "PASS"
+                    and row["quality_basis"] == "physical_raw"
+                ),
+                default=0.0,
+            ),
+            "relative_singular_residual": max(
+                (
+                    row["raw_relative_singular_residual"]
+                    for row in rows
+                    if row["quality_status"] == "PASS"
+                    and row["quality_basis"] == "physical_raw"
+                ),
+                default=0.0,
+            ),
+        },
+    }
+    return counts, maxima
+
+
+def _ut3_exact_rows_maxima(
+    rows: Sequence[dict[str, Any]],
+) -> dict[str, float]:
+    return {
+        "absolute_frobenius_residual": max(
+            (row["absolute_frobenius_residual"] for row in rows), default=0.0
+        ),
+        "relative_frobenius_residual": max(
+            (row["relative_frobenius_residual"] for row in rows), default=0.0
+        ),
+        "absolute_max_residual": max(
+            (row["absolute_max_residual"] for row in rows), default=0.0
+        ),
+        "relative_max_residual": max(
+            (row["relative_max_residual"] for row in rows), default=0.0
+        ),
+    }
+
+
+def _ut3_fem_matrix_rows(
+    fem_runs: dict[tuple[str, float], dict[str, Any]],
+) -> list[dict[str, Any]]:
+    rows = _ut2_endpoint_map_rows(90.0)
+    rows.append(
+        _ut2_matrix_row(
+            symmetry_type="oriented_angle_relabeling",
+            section_case_left="all",
+            section_case_right="all",
+            beta_left_deg=90.0,
+            beta_right_deg=-90.0,
+            check="endpoint exact H_rel(+90) quarter-turn identity",
+            left=_ut2_relabel_joint_transform(math.pi / 2.0),
+            right=_ut3_relabel_joint_exact(),
+            threshold=UT3_EXACT_LIMIT_TOLERANCE,
+        )
+    )
+    for section_case in UT3_SECTION_CASES:
+        rows.extend(
+            _ut2_reflection_matrix_rows(
+                section_case,
+                fem_runs[(section_case, 90.0)]["assembly"],
+                fem_runs[(section_case, -90.0)]["assembly"],
+                beta_deg=90.0,
+            )
+        )
+    rows.extend(
+        _ut2_relabeling_matrix_rows(
+            "asymmetric_4_6",
+            "swapped_6_4",
+            fem_runs[("asymmetric_4_6", 90.0)]["assembly"],
+            fem_runs[("swapped_6_4", -90.0)]["assembly"],
+            beta_deg=90.0,
+        )
+    )
+    rows.extend(
+        _ut2_relabeling_matrix_rows(
+            "swapped_6_4",
+            "asymmetric_4_6",
+            fem_runs[("swapped_6_4", 90.0)]["assembly"],
+            fem_runs[("asymmetric_4_6", -90.0)]["assembly"],
+            beta_deg=90.0,
+        )
+    )
+    return rows
+
+
+def _ut3_fem_structural_maxima(
+    diagnostics: dict[str, dict[str, Any]],
+) -> dict[str, float | int]:
+    return {
+        "stiffness_symmetry_residual": max(
+            item["stiffness_symmetry_residual"] for item in diagnostics.values()
+        ),
+        "mass_symmetry_residual": max(
+            item["mass_symmetry_residual"] for item in diagnostics.values()
+        ),
+        "joint_kinematic_residual": max(
+            item["joint_kinematic_residual"] for item in diagnostics.values()
+        ),
+        "joint_equilibrium_residual": max(
+            item["max_joint_equilibrium_residual"]
+            for item in diagnostics.values()
+        ),
+        "minimum_mass_eigenvalue": min(
+            item["minimum_mass_eigenvalue"] for item in diagnostics.values()
+        ),
+        "maximum_zero_mode_count": max(
+            item["zero_mode_count"] for item in diagnostics.values()
+        ),
+    }
+
+
+def _ut3_report(summary: dict[str, Any]) -> str:
+    lines = [
+        "# UT-3 beta=90 deg unequal-thickness quarter-turn joint validation",
+        "",
+        "Unequal-thickness 1D validation phase: "
+        f"**{summary['unequal_thickness_1d_phase']}**",
+        "",
+        "Overall unequal-thickness 1D validation: "
+        f"**{summary['overall_unequal_thickness_1d_validation']}**",
+        "",
+    ]
+    for gate in ("UT-0", "UT-1", "UT-1a", "UT-2"):
+        lines.extend(
+            [f"{gate}: **{summary['regression_statuses'][gate]}**", ""]
+        )
+    lines.extend(
+        [
+            f"UT-3: **{summary['ut3_status']}**",
+            "",
+            "## Scope and exact quarter-turn limit",
+            "",
+            "Only elastic HMS/DX-209, `theta_1=theta_2=0`, equal `0.2 m` "
+            "arms, `b_1=b_2=0.020 m`, the existing `5/6` shear factor, "
+            "and `(5,5)`, `(4,6)`, `(6,4) mm` are used. Standard spectra "
+            "use exactly `+90 deg` and `-90 deg`; exact-limit spectra use "
+            "only the physical `+90 deg` cases.",
+            "",
+            "The script-local integer matrices impose `Phi_1=psi_2`, "
+            "`psi_1=-Phi_2`, `M_T,1=-M_2`, and `M_1=M_T,2` at `+90 deg`, "
+            "with the corresponding sign reversal at `-90 deg`. Production "
+            "`J_book` is not rounded or changed.",
+            "",
+            "| exact check | absolute max | relative Frobenius | threshold | status |",
+            "|---|---:|---:|---:|---|",
+        ]
+    )
+    for check, values in summary["exact_joint_limit_results"].items():
+        lines.append(
+            f"| {check} | {values['absolute_max_residual']:.12e} | "
+            f"{values['relative_frobenius_residual']:.12e} | 1e-14 | "
+            f"{values['status']} |"
+        )
+    lines.extend(
+        [
+            "",
+            "## Standard continuum spectra",
+            "",
+            "| case | beta | model | f1 | f2 | f3 | f4 | f5 | f6 | f7 |",
+            "|---|---:|---|---:|---:|---:|---:|---:|---:|---:|",
+        ]
+    )
+    for case, angles in summary["first_seven_standard_frequencies_hz"].items():
+        for beta_label, models in angles.items():
+            for model, frequencies in models.items():
+                lines.append(
+                    f"| {case} | {beta_label} | {model} | "
+                    + " | ".join(f"{value:.9f}" for value in frequencies)
+                    + " |"
+                )
+    lines.extend(
+        [
+            "",
+            f"All `{summary['standard_continuum_root_total']}` standard and "
+            f"`{summary['exact_limit_root_total']}` exact-limit roots are "
+            "finite, positive, accepted, and retain scaled plus raw quality "
+            "evidence.",
+            "",
+            "## Standard versus exact-limit spectra",
+            "",
+            "| model and case | maximum relative difference | threshold |",
+            "|---|---:|---:|",
+        ]
+    )
+    for label, maximum in summary["standard_exact_spectrum_maxima"].items():
+        lines.append(f"| {label} | {maximum:.12e} | 1e-8 |")
+    lines.extend(
+        [
+            "",
+            "## Continuum symmetries",
+            "",
+            "| symmetry | maximum relative difference | threshold |",
+            "|---|---:|---:|",
+        ]
+    )
+    for symmetry, values in summary["continuum_symmetry_maxima"].items():
+        lines.append(f"| {symmetry} | {max(values.values()):.12e} | 1e-8 |")
+    lines.extend(
+        [
+            "",
+            "## EB FEM accuracy and structure",
+            "",
+            "| configuration | E3 | E6 | root 7 diagnostic | status |",
+            "|---|---:|---:|---:|---|",
+        ]
+    )
+    for label, diagnostics in summary["fem_configuration_diagnostics"].items():
+        lines.append(
+            f"| {label} | {diagnostics['E3']:.12e} | "
+            f"{diagnostics['E6']:.12e} | "
+            f"{diagnostics['root7_relative_error']:.12e} | "
+            f"{diagnostics['status']} |"
+        )
+    lines.extend(
+        [
+            "",
+            "The existing Hermite-bending/linear-torsion FEM, endpoint maps, "
+            "reduction, clamps, and symmetric generalized eigensolver are "
+            "unchanged. Six and only six mesh-64 assemblies are used.",
+            "",
+            "## FEM matrix symmetries",
+            "",
+            "| symmetry | group | max relative Frobenius | max relative entry | threshold |",
+            "|---|---|---:|---:|---:|",
+        ]
+    )
+    for symmetry, groups in (
+        ("reflection", summary["fem_reflection_matrix_residual_maxima"]),
+        (
+            "oriented_angle_relabeling",
+            summary["fem_relabeling_matrix_residual_maxima"],
+        ),
+    ):
+        for group, values in groups.items():
+            lines.append(
+                f"| {symmetry} | {group} | "
+                f"{values['relative_frobenius']:.12e} | "
+                f"{values['relative_max_entry']:.12e} | 1e-13 |"
+            )
+    lines.extend(
+        [
+            "",
+            "Reflection uses `G_ref=diag(1,1,-1)` and "
+            "`H_ref=diag(1,-1,1)`. Relabeling swaps full/internal arm blocks "
+            "and uses the exact joint quarter-turn "
+            "`[[1,0,0],[0,0,1],[0,-1,0]]`. This map is orthogonal but not "
+            "involutory; its inverse is its transpose.",
+            "",
+            "## Native FEM spectral symmetry",
+            "",
+        ]
+    )
+    for symmetry, values in summary["native_fem_spectral_symmetry_maxima"].items():
+        lines.append(
+            f"- `{symmetry}`: `{max(values.values()):.12e}` "
+            "(historical `1e-8` marker, diagnostic only)."
+        )
+    lines.extend(
+        [
+            "",
+            "Native spectral equality is not a hard rejection gate when the "
+            "declared matrix congruence and both analytic EB accuracy gates "
+            "pass. No UT-1a backward/Rayleigh audit is repeated.",
+            "",
+            "## Timoshenko--EB diagnostic",
+            "",
+        ]
+    )
+    for case, maximum in summary["model_difference_maxima"].items():
+        lines.append(f"- `{case}`: `{maximum:.12e}` (no threshold).")
+    lines.extend(
+        [
+            "",
+            "## Final 1D classification",
+            "",
+            "All continuum, root-quality, beta=30, beta=90, FEM accuracy, "
+            "FEM convergence, and matrix-equivariance gates passed. The "
+            "retained overall limitation is the historical beta=0 native "
+            "FEM spectral-exchange threshold failure; its matrix-level "
+            "follow-up found no assembly asymmetry but did not pass the "
+            "declared backward/Rayleigh numerical audit.",
+            "",
+            "The unequal-thickness 1D phase is complete. The next separately "
+            "scoped stage is limited 3D FEM anchor design; it is not started "
+            "here.",
+            "",
+            "## Explicit exclusions",
+            "",
+        ]
+    )
+    lines.extend(f"- {item}" for item in summary["explicit_exclusions"])
+    return "\n".join(lines) + "\n"
+
+
+def _run_ut3_beta90(output_dir: Path) -> dict[str, Any]:
+    """Run only the prescribed +/-90-degree quarter-turn UT-3 gate."""
+
+    started = time.perf_counter()
+    regression_statuses = _ut3_previous_statuses()
+    section_cases = {
+        case: (_make_section_point(a_1), _make_section_point(a_2))
+        for case, (a_1, a_2) in UT3_SECTION_CASES.items()
+    }
+    standard: dict[tuple[str, float, str], dict[str, Any]] = {}
+    exact: dict[tuple[str, str], dict[str, Any]] = {}
+    continuum_rows: list[dict[str, Any]] = []
+    runtime_by_spectrum: dict[str, float] = {}
+    evaluations_by_spectrum: dict[str, int] = {}
+    scan_max_by_spectrum: dict[str, float] = {}
+
+    for section_case, (point_1, point_2) in section_cases.items():
+        for beta_deg in UT3_ANGLES_DEG:
+            beta_rad = _ut3_beta_rad(beta_deg)
+            for model in ("Timoshenko", "EB"):
+                factory, raw_factory = _ut2_continuum_factories(
+                    model, beta_rad, point_1, point_2
+                )
+                roots, builder, runtime = _solve_roots(
+                    point_1, factory, num_roots=UT3_NUM_ROOTS
+                )
+                quality = [
+                    _root_quality_fields(root, raw_factory) for root in roots
+                ]
+                gaps = _neighbor_gaps(_frequencies(roots))
+                key = (section_case, beta_deg, model)
+                standard[key] = {"roots": roots, "quality": quality}
+                label = (
+                    f"standard_J_book|{section_case}|{beta_deg:+g}|{model}"
+                )
+                runtime_by_spectrum[label] = runtime
+                evaluations_by_spectrum[label] = builder.evaluations
+                scan_max_by_spectrum[label] = builder.maximum_frequency_hz
+                continuum_rows.extend(
+                    _ut3_continuum_root_row(
+                        builder="standard_J_book",
+                        section_case=section_case,
+                        point_1=point_1,
+                        point_2=point_2,
+                        beta_deg=beta_deg,
+                        model=model,
+                        mode=mode,
+                        root=root,
+                        quality=quality_fields,
+                        gap_hz=float(gap),
+                    )
+                    for mode, (root, quality_fields, gap) in enumerate(
+                        zip(roots, quality, gaps), start=1
+                    )
+                )
+
+        for model in ("Timoshenko", "EB"):
+            factory, raw_factory = _ut3_exact_continuum_factories(
+                model, point_1, point_2
+            )
+            roots, builder, runtime = _solve_roots(
+                point_1, factory, num_roots=UT3_NUM_ROOTS
+            )
+            quality = [
+                _root_quality_fields(root, raw_factory) for root in roots
+            ]
+            gaps = _neighbor_gaps(_frequencies(roots))
+            exact[(section_case, model)] = {
+                "roots": roots,
+                "quality": quality,
+            }
+            label = f"exact_beta90_limit|{section_case}|+90|{model}"
+            runtime_by_spectrum[label] = runtime
+            evaluations_by_spectrum[label] = builder.evaluations
+            scan_max_by_spectrum[label] = builder.maximum_frequency_hz
+            continuum_rows.extend(
+                _ut3_continuum_root_row(
+                    builder="exact_beta90_limit",
+                    section_case=section_case,
+                    point_1=point_1,
+                    point_2=point_2,
+                    beta_deg=90.0,
+                    model=model,
+                    mode=mode,
+                    root=root,
+                    quality=quality_fields,
+                    gap_hz=float(gap),
+                )
+                for mode, (root, quality_fields, gap) in enumerate(
+                    zip(roots, quality, gaps), start=1
+                )
+            )
+
+    symmetry_specs = _ut2_symmetry_specifications(
+        angle_deg=90.0, section_cases=tuple(UT3_SECTION_CASES)
+    )
+    continuum_symmetry_rows, continuum_symmetry_maxima = (
+        _ut2_continuum_symmetry_rows(
+            standard, specifications=symmetry_specs
+        )
+    )
+    exact_comparison_rows, exact_comparison_maxima = _ut3_standard_exact_rows(
+        standard, exact
+    )
+    exact_joint_rows = _ut3_exact_joint_limit_rows()
+
+    analytic_eb = {
+        (section_case, beta_deg): _frequencies(
+            standard[(section_case, beta_deg, "EB")]["roots"]
+        )
+        for section_case in UT3_SECTION_CASES
+        for beta_deg in UT3_ANGLES_DEG
+    }
+    fem_runs: dict[tuple[str, float], dict[str, Any]] = {}
+    for section_case, (point_1, point_2) in section_cases.items():
+        for beta_deg in UT3_ANGLES_DEG:
+            fem_runs[(section_case, beta_deg)] = (
+                _run_ut2_eb_fem_configuration(
+                    section_case=section_case,
+                    point_1=point_1,
+                    point_2=point_2,
+                    beta_deg=beta_deg,
+                    analytic_frequencies=analytic_eb[
+                        (section_case, beta_deg)
+                    ],
+                    allowed_angles_deg=UT3_ANGLES_DEG,
+                    gate_label="UT-3",
+                    elements_per_arm=UT3_FEM_ELEMENTS_PER_ARM,
+                    num_roots=UT3_NUM_ROOTS,
+                )
+            )
+    fem_rows = _ut2_fem_comparison_rows(fem_runs, analytic_eb)
+    matrix_rows = _ut3_fem_matrix_rows(fem_runs)
+    reflection_matrix_ok = all(
+        row["status"] == "PASS"
+        for row in matrix_rows
+        if row["symmetry_type"] == "reflection"
+    )
+    relabeling_matrix_ok = all(
+        row["status"] == "PASS"
+        for row in matrix_rows
+        if row["symmetry_type"] == "oriented_angle_relabeling"
+    )
+    native_fem_rows, native_fem_maxima = _ut2_fem_native_symmetry_rows(
+        fem_runs,
+        reflection_matrix_ok=reflection_matrix_ok,
+        relabeling_matrix_ok=relabeling_matrix_ok,
+        specifications=symmetry_specs,
+    )
+    model_difference_rows, model_difference_maxima = (
+        _ut2_model_difference_rows(
+            standard,
+            angle_deg=90.0,
+            section_cases=tuple(UT3_SECTION_CASES),
+        )
+    )
+
+    quality_counts, quality_maxima = _ut3_root_quality_summary(
+        continuum_rows
+    )
+    standard_counts = {
+        f"{case}|{beta:+g}|{model}": len(data["roots"])
+        for (case, beta, model), data in standard.items()
+    }
+    exact_counts = {
+        f"{case}|+90|{model}": len(data["roots"])
+        for (case, model), data in exact.items()
+    }
+    standard_rows = [
+        row for row in continuum_rows if row["builder"] == "standard_J_book"
+    ]
+    exact_rows = [
+        row
+        for row in continuum_rows
+        if row["builder"] == "exact_beta90_limit"
+    ]
+    all_roots_ok = all(
+        np.isfinite(row["frequency_hz"])
+        and row["frequency_hz"] > 0.0
+        and row["quality_status"] == "PASS"
+        for row in continuum_rows
+    )
+    root_complete = bool(
+        len(standard) == 12
+        and len(exact) == 6
+        and len(standard_rows) == 84
+        and len(exact_rows) == 42
+        and all(count == UT3_NUM_ROOTS for count in standard_counts.values())
+        and all(count == UT3_NUM_ROOTS for count in exact_counts.values())
+        and all_roots_ok
+    )
+    continuum_symmetry_ok = all(
+        row["status"] == "PASS" for row in continuum_symmetry_rows
+    )
+    standard_exact_ok = all(
+        row["status"] == "PASS" for row in exact_comparison_rows
+    )
+    exact_joint_ok = all(row["status"] == "PASS" for row in exact_joint_rows)
+    continuum_hard_ok = root_complete and continuum_symmetry_ok
+    exact_limit_ok = exact_joint_ok and standard_exact_ok
+    matrix_hard_ok = reflection_matrix_ok and relabeling_matrix_ok
+    fem_hard_ok = bool(
+        len(fem_runs) == 6
+        and all(
+            run["diagnostics"]["status"] == "PASS"
+            for run in fem_runs.values()
+        )
+    )
+    regressions_ok = regression_statuses == {
+        "UT-0": "PASS",
+        "UT-1": "PARTIAL_PASS",
+        "UT-1a": "INCONCLUSIVE_NUMERICAL_AUDIT",
+        "UT-2": "PASS",
+    }
+    ut3_status, overall_1d, phase_status = _classify_ut3_status(
+        continuum_hard_ok=continuum_hard_ok,
+        exact_limit_ok=exact_limit_ok,
+        matrix_hard_ok=matrix_hard_ok,
+        fem_hard_ok=fem_hard_ok,
+        regressions_ok=regressions_ok,
+    )
+
+    fem_diagnostics = {
+        f"{case}|{beta:+g}": run["diagnostics"]
+        for (case, beta), run in fem_runs.items()
+    }
+    exact_results = {
+        row["check"]: {
+            "absolute_frobenius_residual": row[
+                "absolute_frobenius_residual"
+            ],
+            "relative_frobenius_residual": row[
+                "relative_frobenius_residual"
+            ],
+            "absolute_max_residual": row["absolute_max_residual"],
+            "relative_max_residual": row["relative_max_residual"],
+            "max_mismatch_row": int(row["max_mismatch_row"]),
+            "max_mismatch_column": int(row["max_mismatch_column"]),
+            "left_value": row["left_value"],
+            "right_value": row["right_value"],
+            "status": row["status"],
+        }
+        for row in exact_joint_rows
+    }
+    summary = {
+        "git_context": _git_context(),
+        "scope": "UT-3 beta=+/-90 deg unequal-thickness quarter-turn joint validation only",
+        "geometry": {
+            "theta_1_deg": 0.0,
+            "theta_2_deg": 0.0,
+            "material_mode": "elastic",
+            "material": "existing HMS/DX-209",
+            "length_1_m": LENGTH_M,
+            "length_2_m": LENGTH_M,
+            "b_1_m": WIDTH_B_M,
+            "b_2_m": WIDTH_B_M,
+            "shear_factor": cantilever_geometry().shear_factor,
+            "a_direction": "parallel to e_z",
+        },
+        "angles_deg": list(UT3_ANGLES_DEG),
+        "section_cases": {
+            case: {"a_1_m": values[0], "a_2_m": values[1]}
+            for case, values in UT3_SECTION_CASES.items()
+        },
+        "thresholds": {
+            "root_normalized_determinant": ROOT_DETERMINANT_TOLERANCE,
+            "root_relative_singular": ROOT_SINGULAR_TOLERANCE,
+            "near_degenerate_relative_gap": NEAR_DEGENERATE_RELATIVE_GAP,
+            "exact_joint_absolute_max": UT3_EXACT_LIMIT_TOLERANCE,
+            "exact_joint_relative_frobenius": UT3_EXACT_LIMIT_TOLERANCE,
+            "standard_exact_spectrum_relative": SPECTRUM_RELATIVE_TOLERANCE,
+            "continuum_symmetry_relative": SPECTRUM_RELATIVE_TOLERANCE,
+            "fem_matrix_relative_frobenius": UT3_MATRIX_RELATIVE_TOLERANCE,
+            "fem_matrix_relative_max_entry": UT3_MATRIX_RELATIVE_TOLERANCE,
+            "fem_stiffness_symmetry": FEM_SYMMETRY_TOLERANCE,
+            "fem_mass_symmetry": FEM_SYMMETRY_TOLERANCE,
+            "fem_joint_kinematic": FEM_JOINT_KINEMATIC_TOLERANCE,
+            "fem_joint_equilibrium": FEM_JOINT_EQUILIBRIUM_TOLERANCE,
+            "fem_E3": FEM_FIRST_THREE_TOLERANCE,
+            "fem_E6": FEM_FIRST_SIX_TOLERANCE,
+            "native_fem_historical_marker_diagnostic_only": (
+                SPECTRUM_RELATIVE_TOLERANCE
+            ),
+        },
+        "root_scan": {
+            "formulation": FORMULATION,
+            "num_roots": UT3_NUM_ROOTS,
+            "scan_step_hz": SCAN_STEP_HZ,
+            "initial_max_hz": INITIAL_MAX_HZ,
+            "max_hz": MAX_HZ,
+            "actual_maximum_evaluated_frequency_hz": scan_max_by_spectrum,
+        },
+        "standard_continuum_spectrum_count": len(standard),
+        "standard_continuum_root_total": len(standard_rows),
+        "standard_continuum_root_counts": standard_counts,
+        "exact_limit_spectrum_count": len(exact),
+        "exact_limit_root_total": len(exact_rows),
+        "exact_limit_root_counts": exact_counts,
+        "continuum_root_total": len(continuum_rows),
+        "first_seven_standard_frequencies_hz": {
+            case: {
+                f"{beta:+g} deg": {
+                    model: _frequencies(
+                        standard[(case, beta, model)]["roots"]
+                    ).tolist()
+                    for model in ("Timoshenko", "EB")
+                }
+                for beta in UT3_ANGLES_DEG
+            }
+            for case in UT3_SECTION_CASES
+        },
+        "first_seven_exact_limit_frequencies_hz": {
+            case: {
+                model: _frequencies(exact[(case, model)]["roots"]).tolist()
+                for model in ("Timoshenko", "EB")
+            }
+            for case in UT3_SECTION_CASES
+        },
+        "root_quality_basis_counts": quality_counts,
+        "root_quality_maxima_by_accepted_basis": quality_maxima,
+        "exact_joint_limit_results": exact_results,
+        "exact_joint_limit_maxima": _ut3_exact_rows_maxima(exact_joint_rows),
+        "exact_joint_matrix_residual_maxima": _ut3_exact_rows_maxima(
+            [
+                row
+                for row in exact_joint_rows
+                if row["check"].startswith("J_book")
+            ]
+        ),
+        "endpoint_quarter_turn_residual_maxima": _ut3_exact_rows_maxima(
+            [
+                row
+                for row in exact_joint_rows
+                if not row["check"].startswith("J_book")
+            ]
+        ),
+        "standard_exact_spectrum_maxima": exact_comparison_maxima,
+        "continuum_symmetry_maxima": continuum_symmetry_maxima,
+        "fem_assembly_count": len(fem_runs),
+        "fem_configuration_diagnostics": fem_diagnostics,
+        "fem_structural_maxima": _ut3_fem_structural_maxima(
+            fem_diagnostics
+        ),
+        "fem_reflection_matrix_residual_maxima": _ut2_matrix_group_maxima(
+            matrix_rows, "reflection"
+        ),
+        "fem_relabeling_matrix_residual_maxima": _ut2_matrix_group_maxima(
+            matrix_rows, "oriented_angle_relabeling"
+        ),
+        "native_fem_spectral_symmetry_maxima": native_fem_maxima,
+        "native_fem_spectral_symmetry_is_hard_gate": False,
+        "model_difference_maxima": model_difference_maxima,
+        "runtime_seconds_by_continuum_spectrum": runtime_by_spectrum,
+        "matrix_evaluations_by_continuum_spectrum": evaluations_by_spectrum,
+        "total_continuum_matrix_evaluations": sum(
+            evaluations_by_spectrum.values()
+        ),
+        "fem_runtime_seconds_by_configuration": {
+            label: diagnostics["runtime_seconds"]
+            for label, diagnostics in fem_diagnostics.items()
+        },
+        "total_runtime_seconds": time.perf_counter() - started,
+        "regression_statuses": regression_statuses,
+        "continuum_hard_gates_status": (
+            "PASS" if continuum_hard_ok else "FAIL"
+        ),
+        "exact_limit_hard_gates_status": (
+            "PASS" if exact_limit_ok else "FAIL"
+        ),
+        "fem_matrix_hard_gates_status": "PASS" if matrix_hard_ok else "FAIL",
+        "fem_accuracy_structural_status": "PASS" if fem_hard_ok else "FAIL",
+        "ut3_status": ut3_status,
+        "overall_unequal_thickness_1d_validation": overall_1d,
+        "unequal_thickness_1d_phase": phase_status,
+        "next_separate_stage": "limited 3D FEM anchor design",
+        "explicit_exclusions": UT3_EXPLICIT_EXCLUSIONS,
+    }
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    _write_csv(output_dir / "continuum_roots.csv", continuum_rows)
+    _write_csv(output_dir / "exact_joint_limit.csv", exact_joint_rows)
+    _write_csv(
+        output_dir / "exact_limit_comparison.csv", exact_comparison_rows
+    )
+    _write_csv(output_dir / "continuum_symmetry.csv", continuum_symmetry_rows)
+    _write_csv(output_dir / "fem_comparison.csv", fem_rows)
+    _write_csv(output_dir / "fem_matrix_symmetry.csv", matrix_rows)
+    _write_csv(
+        output_dir / "fem_native_spectral_symmetry.csv", native_fem_rows
+    )
+    _write_csv(output_dir / "model_difference.csv", model_difference_rows)
+    (output_dir / "ut3_summary.json").write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    (output_dir / "ut3_report.md").write_text(
+        _ut3_report(summary), encoding="utf-8"
+    )
+    return summary
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
     if (
@@ -4752,10 +5915,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         and not args.ut1_beta0
         and not args.ut1a_fem_exchange_audit
         and not args.ut2_beta30
+        and not args.ut3_beta90
     ):
         print(
             "Select exactly one validation mode: --smoke, --ut1-beta0, "
-            "--ut1a-fem-exchange-audit, or --ut2-beta30.",
+            "--ut1a-fem-exchange-audit, --ut2-beta30, or --ut3-beta90.",
             file=sys.stderr,
         )
         return 2
@@ -4817,6 +5981,38 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"fem_assembly_count={summary['fem_assembly_count']}")
         print(f"output_dir={output_dir}")
         return 0 if summary["ut2_status"] in ("PASS", "PARTIAL_PASS") else 4
+
+    if args.ut3_beta90:
+        output_dir = (
+            UT3_DEFAULT_OUTPUT_DIR
+            if args.output_dir is None
+            else args.output_dir
+        ).resolve()
+        summary = _run_ut3_beta90(output_dir)
+        print(f"UT-3 status: {summary['ut3_status']}")
+        print(
+            "Overall unequal-thickness 1D validation: "
+            f"{summary['overall_unequal_thickness_1d_validation']}"
+        )
+        print(
+            "Unequal-thickness 1D validation phase: "
+            f"{summary['unequal_thickness_1d_phase']}"
+        )
+        print(
+            "standard_continuum_root_counts="
+            f"{summary['standard_continuum_spectrum_count']}x{UT3_NUM_ROOTS}"
+        )
+        print(
+            "exact_limit_root_counts="
+            f"{summary['exact_limit_spectrum_count']}x{UT3_NUM_ROOTS}"
+        )
+        print(
+            "root_quality_basis_counts="
+            f"{summary['root_quality_basis_counts']}"
+        )
+        print(f"fem_assembly_count={summary['fem_assembly_count']}")
+        print(f"output_dir={output_dir}")
+        return 0 if summary["ut3_status"] in ("PASS", "PARTIAL_PASS") else 4
 
     output_dir = (
         UT1_DEFAULT_OUTPUT_DIR if args.output_dir is None else args.output_dir

@@ -2,6 +2,17 @@
 
 ## 2026-08-01
 
+- Added the final one-dimensional unequal-thickness UT-3 quarter-turn gate to
+  the existing CLI. At `beta=+/-90 deg`, all 84 standard and 42 independent
+  exact-limit continuum roots pass unchanged quality checks; exact integer
+  joint/endpoint limits agree within `4.44e-16`, and standard/exact spectra
+  within `1.96e-14`. Six mesh-64 EB FEM systems pass the fixed structural and
+  accuracy gates, while reflection and oriented-relabeling matrices pass the
+  `1e-13` congruence threshold. UT-3 is `PASS`; the unequal-thickness 1D
+  phase is `COMPLETE` with overall `PARTIAL_PASS` because UT-1 remains
+  `PARTIAL_PASS` and UT-1a remains `INCONCLUSIVE_NUMERICAL_AUDIT`. The next
+  separate stage is limited 3D FEM anchor design; no 3D model, production
+  helper, solver setting, threshold, or release version changed.
 - Added the isolated unequal-thickness UT-2 `beta=+/-30 deg` angular-joint
   gate to the existing validation CLI. All 12 seven-root Timoshenko/EB
   spectra pass unchanged root-quality checks; continuum reflection and

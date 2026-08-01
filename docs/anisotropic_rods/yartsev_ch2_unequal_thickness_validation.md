@@ -1,6 +1,8 @@
 # Chapter-2 unequal-thickness validation
 
-Overall unequal-thickness validation: **IN_PROGRESS**
+Unequal-thickness 1D validation phase: **COMPLETE**
+
+Overall unequal-thickness 1D validation: **PARTIAL_PASS**
 
 UT-0 section-routing and beta=0 stepped-reference smoke:
 **PASS**
@@ -12,6 +14,9 @@ UT-1a beta=0 EB FEM matrix-level exchange audit:
 **INCONCLUSIVE_NUMERICAL_AUDIT**
 
 UT-2 beta=30 deg unequal-thickness angular-joint validation:
+**PASS**
+
+UT-3 beta=90 deg unequal-thickness quarter-turn joint validation:
 **PASS**
 
 ## 1. UT-0 scope
@@ -765,3 +770,212 @@ changes, production API work, and automatic transition to UT-3.
 
 The eight text-only evidence files are under
 `results/anisotropic_rods/yartsev_ch2_unequal_thickness_validation/ut2_beta30/`.
+
+## 35. UT-3 — beta=90 deg unequal-thickness quarter-turn joint validation
+
+UT-3 closes the declared one-dimensional phase at the quarter-turn limit.
+It retains elastic HMS/DX-209, `theta_1=theta_2=0`, `L_1=L_2=0.2 m`,
+`b_1=b_2=0.020 m`, the existing `5/6` shear factor, and `a_i || e_z`.
+The independently constructed section orders are `(5,5)`, `(4,6)`, and
+`(6,4) mm`. The only standard angles are `+90 deg` and `-90 deg`; the
+negative angle is a reflection/oriented-relabeling control, not a sweep.
+
+## 36. Exact quarter-turn joint and endpoint limits
+
+For state order `[w,psi,Phi,Q,M,M_T]` and column order `[y_1,y_2]`, the
+script-local exact `+90 deg` matrix implements
+
+```text
+w_1=w_2, Phi_1=psi_2, psi_1=-Phi_2, Q_1=-Q_2,
+M_T,1=-M_2, M_1=M_T,2.
+```
+
+The `-90 deg` matrix reverses the four exchanged-channel signs exactly as
+specified. Both references contain only integer entries. Production
+`J_book(±pi/2)` is evaluated without rounding `cos(pi/2)` or changing the
+helper.
+
+| exact limit | absolute Frobenius | absolute max entry | relative Frobenius | threshold | status |
+|---|---:|---:|---:|---:|---|
+| `J_book(+90)` versus exact | `1.224646799147e-16` | `6.123233995737e-17` | `3.535250795750e-17` | `1e-14` | PASS |
+| `J_book(-90)` versus exact | `1.224646799147e-16` | `6.123233995737e-17` | `3.535250795750e-17` | `1e-14` | PASS |
+| `F_2(+90)` versus `I_3` | `8.659560562355e-17` | `6.123233995737e-17` | `4.999599621739e-17` | `1e-14` | PASS |
+| `F_2(-90)` versus `diag(1,-1,-1)` | `8.659560562355e-17` | `6.123233995737e-17` | `4.999599621739e-17` | `1e-14` | PASS |
+| generic `H_rel(+90)` versus exact | `8.659560562355e-17` | `6.123233995737e-17` | `4.999599621739e-17` | `1e-14` | PASS |
+
+The exact relabeling joint block is
+
+```text
+H_rel^90 = [[1, 0, 0],
+            [0, 0, 1],
+            [0,-1, 0]].
+```
+
+It is orthogonal but not involutory; the inverse is its transpose. The exact
+endpoint identities `F_1 H_rel^90=F_2(+90)` and
+`F_2(-90) H_rel^90=F_1` have maximum absolute residual
+`6.123233995737e-17`. Four deterministic joint vectors, including all three
+basis vectors, verify
+`[w,psi,Phi]_1=[w_J,-theta_n,theta_t]` and
+`[w,psi,Phi]_2=[w_J,theta_t,theta_n]`; their maximum absolute residual is
+`4.440892098501e-16`, below `1e-14`.
+
+## 37. Standard and exact-limit continuum builders
+
+The standard spectra use the unchanged public coupled builders and
+`J_book(±pi/2)`. Independent script-local exact `+90 deg` builders form
+
+```text
+D_exact = J_exact blockdiag(H_1,H_2)
+```
+
+from the existing public `physical_end_map` or `eb_physical_end_map`. They do
+not call `joint_matrix_book` or either coupled boundary builder. Their raw
+physical matrices are `6 x 6`; root search applies the unchanged positive
+`equilibrate_matrix` and unchanged root finder.
+
+The scan uses `state_corrected`, seven roots, `10 Hz` steps, a `5000 Hz`
+initial maximum, and `100000 Hz` hard maximum. It produces 84 standard roots
+and 42 exact-limit roots.
+
+| case | beta | model | f1 | f2 | f3 | f4 | f5 | f6 | f7 | units |
+|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `(5,5)` | -90 | Timoshenko | 225.593842655 | 949.210197299 | 1315.168458890 | 1529.089541356 | 1561.617385099 | 2874.809555125 | 3017.188379018 | Hz |
+| `(5,5)` | -90 | EB | 225.268646848 | 970.423786884 | 1341.335451098 | 1531.012891217 | 1573.213768680 | 2994.270783199 | 3027.235182693 | Hz |
+| `(5,5)` | +90 | Timoshenko | 225.593842655 | 949.210197299 | 1315.168458890 | 1529.089541356 | 1561.617385099 | 2874.809555125 | 3017.188379018 | Hz |
+| `(5,5)` | +90 | EB | 225.268646848 | 970.423786884 | 1341.335451098 | 1531.012891217 | 1573.213768680 | 2994.270783199 | 3027.235182693 | Hz |
+| `(4,6)` | -90 | Timoshenko | 237.680373017 | 838.196576460 | 1248.015165254 | 1475.926572887 | 1746.043992770 | 2519.736739685 | 2570.729946374 | Hz |
+| `(4,6)` | -90 | EB | 237.294618020 | 851.614884187 | 1249.485542657 | 1524.770975368 | 1751.877732549 | 2521.864947074 | 2707.713037418 | Hz |
+| `(4,6)` | +90 | Timoshenko | 237.680373017 | 838.196576460 | 1248.015165254 | 1475.926572887 | 1746.043992770 | 2519.736739685 | 2570.729946374 | Hz |
+| `(4,6)` | +90 | EB | 237.294618020 | 851.614884187 | 1249.485542657 | 1524.770975368 | 1751.877732549 | 2521.864947074 | 2707.713037418 | Hz |
+| `(6,4)` | -90 | Timoshenko | 237.680373017 | 838.196576460 | 1248.015165254 | 1475.926572887 | 1746.043992770 | 2519.736739685 | 2570.729946374 | Hz |
+| `(6,4)` | -90 | EB | 237.294618020 | 851.614884187 | 1249.485542657 | 1524.770975368 | 1751.877732549 | 2521.864947074 | 2707.713037418 | Hz |
+| `(6,4)` | +90 | Timoshenko | 237.680373017 | 838.196576460 | 1248.015165254 | 1475.926572887 | 1746.043992770 | 2519.736739685 | 2570.729946374 | Hz |
+| `(6,4)` | +90 | EB | 237.294618020 | 851.614884187 | 1249.485542657 | 1524.770975368 | 1751.877732549 | 2521.864947074 | 2707.713037418 | Hz |
+
+All 126 roots are finite, positive, and accepted through the scaled quality
+branch. The accepted maxima are `5.573697387964e-15` for normalized
+determinant residual and `2.379328469958e-13` for relative singular residual,
+both below `1e-8`. No root requires the physical-raw fallback.
+
+## 38. Standard versus exact and continuum symmetry
+
+The largest standard-`J_book` versus exact-limit spectrum differences are:
+
+| model/case | maximum relative difference | threshold | status |
+|---|---:|---:|---|
+| Timoshenko `(5,5)` | `2.847302459171e-15` | `1e-8` | PASS |
+| Timoshenko `(4,6)` | `1.061365511833e-14` | `1e-8` | PASS |
+| Timoshenko `(6,4)` | `5.208887665712e-16` | `1e-8` | PASS |
+| EB `(5,5)` | `1.670597358067e-15` | `1e-8` | PASS |
+| EB `(4,6)` | `1.964958594891e-14` | `1e-8` | PASS |
+| EB `(6,4)` | `1.595479200979e-14` | `1e-8` | PASS |
+
+Cluster-aware matching retains the fixed `1e-3` neighbor-gap trigger; no MAC
+or branch identity is used. The continuum symmetry maxima are:
+
+| symmetry | maximum relative difference | threshold | status |
+|---|---:|---:|---|
+| reflection | `0` | `1e-8` | PASS |
+| oriented-angle arm relabeling | `7.252664330862e-15` | `1e-8` | PASS |
+| same-positive exchange | `7.252664330862e-15` | `1e-8` | PASS |
+| same-negative exchange | `7.252664330862e-15` | `1e-8` | PASS |
+
+## 39. Independent mesh-64 EB FEM
+
+Exactly six unchanged EB FEM systems are assembled with `N_1=N_2=64`, seven
+roots, 390 full DOFs, and 381 reduced DOFs. No mesh refinement is run.
+
+| case | beta | E3 | E6 | root-7 error (diagnostic) | status |
+|---|---:|---:|---:|---:|---|
+| `(5,5)` | -90 | `2.015246604558e-5` | `2.786108986987e-4` | `3.783843292948e-4` | PASS |
+| `(5,5)` | +90 | `2.015246604558e-5` | `2.786108986987e-4` | `3.783843292948e-4` | PASS |
+| `(4,6)` | -90 | `9.484647972175e-5` | `3.970581032953e-4` | `2.171822314112e-5` | PASS |
+| `(4,6)` | +90 | `9.484647972175e-5` | `3.970581032953e-4` | `2.171822314112e-5` | PASS |
+| `(6,4)` | -90 | `9.484496212238e-5` | `3.970585047644e-4` | `2.172030226885e-5` | PASS |
+| `(6,4)` | +90 | `9.484496212238e-5` | `3.970585047644e-4` | `2.172030226885e-5` | PASS |
+
+Every configuration passes `E3<=1e-4` and `E6<=5e-4`; root 7 is finite and
+positive and has no accuracy threshold. Structural maxima are stiffness
+symmetry `0`, mass symmetry `2.993771286954e-38`, joint kinematic residual
+`3.749399456655e-33`, joint equilibrium residual `5.832776275664e-9`, minimum
+mass eigenvalue `1.839988603392e-11`, and zero spurious modes. The respective
+fixed thresholds are `1e-12`, `1e-12`, `2e-14`, and `1e-7`.
+
+## 40. FEM reflection and relabeling congruence
+
+Reflection reuses `G_ref=diag(1,1,-1)` and
+`H_ref=diag(1,-1,1)`. Its endpoint, permutation, reduction-intertwining,
+full stiffness/mass, and reduced stiffness/mass residuals are all zero.
+
+Relabeling swaps full and internal arm blocks and uses the exact quarter-turn
+joint block above. Both directions `(4,6,+90)->(6,4,-90)` and the reverse
+pass. The grouped maxima are:
+
+| group | relative Frobenius | relative max entry | absolute max entry | threshold |
+|---|---:|---:|---:|---:|
+| endpoint maps/exact transform | `4.999599621739e-17` | `6.123233995737e-17` | `6.123233995737e-17` | `1e-13` |
+| permutation | `0` | `0` | `0` | `1e-13` |
+| reduction intertwining | `0` | `0` | `0` | `1e-13` |
+| full `K,M` | `0` | `0` | `0` | `1e-13` |
+| reduced `K,M` | `2.136528261411e-38` | `2.086492934456e-37` | `8.077935669463e-28` | `1e-13` |
+
+## 41. Native FEM and model-difference diagnostics
+
+Native FEM reflection difference is zero. Oriented relabeling,
+same-positive exchange, and same-negative exchange each reach
+`1.423889513294e-7`, above the historical `1e-8` marker. This remains
+diagnostic-only because matrix congruence and the paired analytic EB accuracy
+gates pass. No backward/Rayleigh, balancing, canonicalized, or high-precision
+UT-1a audit is repeated.
+
+The maximum first-six Timoshenko--EB differences at `+90 deg` are
+`4.155448414357e-2` for `(5,5)`, `3.309405994759e-2` for `(4,6)`, and
+`3.309405994759e-2` for `(6,4)`. They have no acceptance threshold or branch
+interpretation.
+
+## 42. UT-3 and final one-dimensional status
+
+All 84 standard roots, 42 exact-limit roots, exact quarter-turn matrices,
+endpoint/channel limits, standard--exact spectra, continuum symmetries, six
+FEM structural/accuracy gates, and reflection/relabeling matrix identities
+pass their fixed thresholds. Previous statuses reproduce unchanged.
+
+```text
+Unequal-thickness 1D validation phase:
+COMPLETE
+
+Overall unequal-thickness 1D validation:
+PARTIAL_PASS
+
+UT-0:
+PASS
+
+UT-1:
+PARTIAL_PASS
+
+UT-1a:
+INCONCLUSIVE_NUMERICAL_AUDIT
+
+UT-2:
+PASS
+
+UT-3:
+PASS
+```
+
+All continuum, root-quality, beta=30, beta=90, FEM accuracy, FEM convergence,
+and matrix-equivariance gates passed. The retained overall limitation is the
+historical beta=0 native FEM spectral-exchange threshold failure; its
+matrix-level follow-up found no assembly asymmetry but did not pass the
+declared backward/Rayleigh numerical audit.
+
+UT-3 excludes intermediate angles, parameter grids, refinement, Timoshenko
+FEM, 3D FEM, `theta != 0`, complex roots, damping, MAC, physical shapes,
+branch tracking, parameter maps, mass-preserving parametrization, plots,
+PDF, solver/model/threshold changes, and production API work. The next
+separately scoped stage is **limited 3D FEM anchor design**; it is not started
+in this task.
+
+The ten text-only evidence files are under
+`results/anisotropic_rods/yartsev_ch2_unequal_thickness_validation/ut3_beta90/`.

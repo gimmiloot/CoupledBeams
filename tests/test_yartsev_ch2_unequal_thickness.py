@@ -218,6 +218,10 @@ class YartsevChapter2UnequalThicknessUT0Test(unittest.TestCase):
             ["--smoke", "--ut2-beta30"],
             ["--ut1-beta0", "--ut2-beta30"],
             ["--ut1a-fem-exchange-audit", "--ut2-beta30"],
+            ["--smoke", "--ut3-beta90"],
+            ["--ut1-beta0", "--ut3-beta90"],
+            ["--ut1a-fem-exchange-audit", "--ut3-beta90"],
+            ["--ut2-beta30", "--ut3-beta90"],
         )
         for arguments in combinations:
             with self.subTest(arguments=arguments), self.assertRaises(
@@ -231,12 +235,15 @@ class YartsevChapter2UnequalThicknessUT0Test(unittest.TestCase):
             validation, "_run_ut1a_fem_exchange_audit"
         ) as ut1a, mock.patch.object(
             validation, "_run_ut2_beta30"
-        ) as ut2:
+        ) as ut2, mock.patch.object(
+            validation, "_run_ut3_beta90"
+        ) as ut3:
             self.assertEqual(validation.main([]), 2)
             smoke.assert_not_called()
             ut1.assert_not_called()
             ut1a.assert_not_called()
             ut2.assert_not_called()
+            ut3.assert_not_called()
 
     def test_ut1_section_cases_use_two_independent_points(self) -> None:
         cases = validation._make_ut1_section_cases()
@@ -268,6 +275,19 @@ class YartsevChapter2UnequalThicknessUT0Test(unittest.TestCase):
         )
         self.assertEqual(validation.UT2_NUM_ROOTS, 7)
         self.assertEqual(validation.UT2_FEM_ELEMENTS_PER_ARM, (64, 64))
+
+    def test_ut3_scope_constants_are_exact(self) -> None:
+        self.assertEqual(validation.UT3_ANGLES_DEG, (-90.0, 90.0))
+        self.assertEqual(
+            validation.UT3_SECTION_CASES,
+            {
+                "baseline_5_5": (0.005, 0.005),
+                "asymmetric_4_6": (0.004, 0.006),
+                "swapped_6_4": (0.006, 0.004),
+            },
+        )
+        self.assertEqual(validation.UT3_NUM_ROOTS, 7)
+        self.assertEqual(validation.UT3_FEM_ELEMENTS_PER_ARM, (64, 64))
 
     def test_ut1a_full_permutation_swaps_complete_arm_blocks(self) -> None:
         assembly_46, assembly_64 = self._small_ut1a_pair()
@@ -590,6 +610,176 @@ class YartsevChapter2UnequalThicknessUT0Test(unittest.TestCase):
                 regressions_ok=True,
             ),
             "PARTIAL_PASS",
+        )
+
+    def test_ut3_exact_joint_matrices_have_prescribed_integer_entries(self) -> None:
+        plus = np.array(
+            [
+                [1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0],
+                [0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0],
+                [0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0],
+                [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1],
+            ],
+            dtype=float,
+        )
+        minus = np.array(
+            [
+                [1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0],
+                [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                [0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0],
+                [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0],
+                [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+            ],
+            dtype=float,
+        )
+        np.testing.assert_array_equal(validation._ut3_joint_plus_90_exact(), plus)
+        np.testing.assert_array_equal(validation._ut3_joint_minus_90_exact(), minus)
+
+    def test_ut3_joint_book_and_endpoint_exact_limits(self) -> None:
+        rows = validation._ut3_exact_joint_limit_rows()
+        selected = {
+            row["check"]: row
+            for row in rows
+            if row["check"].startswith("J_book")
+            or row["check"]
+            in ("F2(+90) vs I", "F2(-90) vs diag(1,-1,-1)")
+        }
+        self.assertEqual(
+            set(selected),
+            {
+                "J_book(+90) vs J_plus_90_exact",
+                "J_book(-90) vs J_minus_90_exact",
+                "F2(+90) vs I",
+                "F2(-90) vs diag(1,-1,-1)",
+            },
+        )
+        self.assertTrue(all(row["status"] == "PASS" for row in selected.values()))
+        self.assertLessEqual(
+            max(row["absolute_max_residual"] for row in selected.values()),
+            1.0e-14,
+        )
+
+    def test_ut3_exact_continuum_builders_are_independent(self) -> None:
+        point_1, point_2 = self.points["a4"], self.points["a6"]
+        with mock.patch.object(
+            validation,
+            "joint_matrix_book",
+            side_effect=AssertionError("J_book entered exact builder"),
+        ), mock.patch.object(
+            validation,
+            "coupled_boundary_matrix",
+            side_effect=AssertionError("coupled builder entered exact builder"),
+        ), mock.patch.object(
+            validation,
+            "eb_coupled_boundary_matrix",
+            side_effect=AssertionError("EB coupled builder entered exact builder"),
+        ):
+            for model in ("Timoshenko", "EB"):
+                scaled, raw = validation._ut3_exact_continuum_factories(
+                    model, point_1, point_2
+                )
+                self.assertEqual(scaled(self.omega).shape, (6, 6))
+                self.assertEqual(raw(self.omega).shape, (6, 6))
+
+    def test_ut3_deterministic_channel_exchange_relations(self) -> None:
+        rows = [
+            row
+            for row in validation._ut3_exact_joint_limit_rows()
+            if row["check"].startswith("deterministic channel-exchange")
+        ]
+        self.assertEqual(len(rows), 4)
+        self.assertTrue(all(row["status"] == "PASS" for row in rows))
+        self.assertLessEqual(
+            max(row["absolute_max_residual"] for row in rows), 1.0e-14
+        )
+
+    def test_ut3_exact_relabel_joint_transform_is_not_involutory(self) -> None:
+        exact = np.array(
+            [[1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, -1.0, 0.0]]
+        )
+        computed = validation._ut2_relabel_joint_transform(math.pi / 2.0)
+        np.testing.assert_array_equal(validation._ut3_relabel_joint_exact(), exact)
+        np.testing.assert_allclose(computed, exact, rtol=0.0, atol=1.0e-14)
+        np.testing.assert_array_equal(exact.T @ exact, np.eye(3))
+        self.assertFalse(np.array_equal(exact @ exact, np.eye(3)))
+        np.testing.assert_array_equal(np.linalg.inv(exact), exact.T)
+
+    def test_ut3_reflection_and_relabel_endpoint_identities(self) -> None:
+        rows = validation._ut2_endpoint_map_rows(90.0)
+        self.assertEqual(len(rows), 4)
+        self.assertTrue(all(row["status"] == "PASS" for row in rows))
+        exact_rows = validation._ut3_exact_joint_limit_rows()
+        endpoint = [
+            row
+            for row in exact_rows
+            if row["check"].startswith(("F1 H_rel", "F2(-90) H_rel"))
+        ]
+        self.assertEqual(len(endpoint), 2)
+        self.assertTrue(all(row["status"] == "PASS" for row in endpoint))
+
+    def test_ut3_reflection_matrix_identities_on_small_mesh(self) -> None:
+        plus = self._small_ut2_assembly(0.004, 0.006, 90.0)
+        minus = self._small_ut2_assembly(0.004, 0.006, -90.0)
+        rows = validation._ut2_reflection_matrix_rows(
+            "asymmetric_4_6", plus, minus, beta_deg=90.0
+        )
+        self.assertEqual(len(rows), 9)
+        self.assertTrue(all(row["status"] == "PASS" for row in rows))
+
+    def test_ut3_relabel_matrix_identities_on_small_mesh(self) -> None:
+        source = self._small_ut2_assembly(0.004, 0.006, 90.0)
+        target = self._small_ut2_assembly(0.006, 0.004, -90.0)
+        rows = validation._ut2_relabeling_matrix_rows(
+            "asymmetric_4_6",
+            "swapped_6_4",
+            source,
+            target,
+            beta_deg=90.0,
+        )
+        self.assertEqual(len(rows), 7)
+        self.assertTrue(all(row["status"] == "PASS" for row in rows))
+
+    def test_ut3_driver_excludes_refinement_timoshenko_fem_and_ut1a_audit(self) -> None:
+        source = inspect.getsource(validation._run_ut3_beta90)
+        for forbidden in (
+            "UT1_FEM_MESHES",
+            "_run_eb_fem_case",
+            "_ut1a_native_and_transport_audit",
+            "_ut1a_transported_rayleigh",
+            "Timoshenko FEM",
+        ):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, source)
+        self.assertIn("_run_ut2_eb_fem_configuration", source)
+        self.assertGreaterEqual(
+            source.count("for beta_deg in UT3_ANGLES_DEG"), 2
+        )
+
+    def test_ut3_native_fem_symmetry_is_diagnostic_only_and_phase_completes(self) -> None:
+        parameters = inspect.signature(validation._classify_ut3_status).parameters
+        self.assertNotIn("native_fem_spectral_symmetry_ok", parameters)
+        self.assertEqual(
+            validation._classify_ut3_status(
+                continuum_hard_ok=True,
+                exact_limit_ok=True,
+                matrix_hard_ok=True,
+                fem_hard_ok=True,
+                regressions_ok=True,
+            ),
+            ("PASS", "PARTIAL_PASS", "COMPLETE"),
+        )
+        self.assertEqual(
+            validation._classify_ut3_status(
+                continuum_hard_ok=True,
+                exact_limit_ok=True,
+                matrix_hard_ok=True,
+                fem_hard_ok=False,
+                regressions_ok=True,
+            ),
+            ("PARTIAL_PASS", "PARTIAL_PASS", "COMPLETE_WITH_LIMITATIONS"),
         )
 
     def test_equal_section_stepped_matches_homogeneous_straight_matrices(self) -> None:

@@ -13,7 +13,7 @@ Rigid angular-joint gate: completed — PASS
 Coupled-rod code: small elastic diagnostic pilot only — PASS
 Final coupled-rod model or parameter study: not started
 Rectangular orthotropic Euler--Bernoulli--Saint-Venant gate: PARTIAL_PASS after targeted refinement
-Unequal-thickness validation: IN_PROGRESS; UT-0: PASS; UT-1: PARTIAL_PASS; UT-1a matrix audit: INCONCLUSIVE; UT-2: PASS
+Unequal-thickness 1D phase: COMPLETE; overall: PARTIAL_PASS; UT-0: PASS; UT-1: PARTIAL_PASS; UT-1a: INCONCLUSIVE; UT-2: PASS; UT-3: PASS
 Production anisotropic API: not started
 Independent rectangular EB + torsion 1D FEM: completed for the finite gate
 ```
@@ -62,7 +62,7 @@ dense-eigensolver conditioning floor. Its targeted status is
 is a project comparator, not a source reproduction, general anisotropic EB
 model, final coupled baseline, unequal-thickness study, or 3D validation.
 
-## Unequal-thickness UT-0 through UT-2
+## Unequal-thickness UT-0 through UT-3
 
 The isolated UT-0 gate constructs independent `a=4,5,6 mm` rectangular
 `RodPoint` objects at `theta=0` and verifies section properties, arm-specific
@@ -104,8 +104,18 @@ and stiffness/mass identities within the fixed `1e-13` relative matrix
 threshold; the largest relabeling relative matrix residual is `1.38e-19`.
 UT-2 is `PASS`. Native FEM spectral relabeling reaches `2.01e-7`, but remains
 diagnostic because the a-priori matrix congruence and FEM accuracy gates pass.
-No beta-zero status is changed, and overall unequal-thickness validation stays
-`IN_PROGRESS`.
+No beta-zero status is changed. At the UT-2 boundary the overall validation
+remained `IN_PROGRESS`, pending the separately scoped quarter-turn gate.
+
+UT-3 closes the one-dimensional phase at `beta=+/-90 deg`. Exact integer
+quarter-turn joint matrices agree with unchanged `J_book(±pi/2)` to a maximum
+entry residual of `6.12e-17`; 84 standard plus 42 independent exact-limit
+continuum roots are accepted, and their maximum spectral difference is
+`1.96e-14`. Six mesh-64 EB FEM systems pass structure and fixed accuracy
+gates. Reflection matrix residuals are zero and the largest relative
+relabeling residual is `6.12e-17`, below `1e-13`. UT-3 is `PASS`; the 1D
+phase is `COMPLETE`, while its overall status is `PARTIAL_PASS` because UT-1
+and the declared UT-1a numerical audit retain their historical limitations.
 
 ## Navigation
 
@@ -116,12 +126,12 @@ No beta-zero status is changed, and overall unequal-thickness validation stays
 - [Chapter-2 notation translation](yartsev_ch2_notation_translation.md)
 - [Rigid angular-joint theory and gate](yartsev_ch2_rigid_angular_joint.md)
 - [Rectangular orthotropic EB validation](yartsev_ch2_rectangular_eb_validation.md)
-- [Unequal-thickness validation (UT-0 through UT-2)](yartsev_ch2_unequal_thickness_validation.md)
+- [Unequal-thickness 1D validation (UT-0 through UT-3)](yartsev_ch2_unequal_thickness_validation.md)
 - [Free-free diagnostic CLI](../../scripts/analysis/anisotropic_rods/reproduce_yartsev_fig_2_2.py)
 - [Cantilever diagnostic CLI](../../scripts/analysis/anisotropic_rods/reproduce_yartsev_ch2_cantilever.py)
 - [Small coupled-joint pilot CLI](../../scripts/analysis/anisotropic_rods/pilot_yartsev_ch2_coupled_rods.py)
 - [Rectangular EB validation CLI](../../scripts/analysis/anisotropic_rods/validate_yartsev_ch2_rectangular_eb.py)
-- [Unequal-thickness UT-0/UT-1/UT-1a/UT-2 CLI](../../scripts/analysis/anisotropic_rods/validate_yartsev_ch2_unequal_thickness.py)
+- [Unequal-thickness UT-0/UT-1/UT-1a/UT-2/UT-3 CLI](../../scripts/analysis/anisotropic_rods/validate_yartsev_ch2_unequal_thickness.py)
 
 Generated local evidence, which may be absent from a fresh clone, is kept in:
 
@@ -136,15 +146,15 @@ Generated local evidence, which may be absent from a fresh clone, is kept in:
 ## Current boundary
 
 The rigid-point-joint pilot, finite `theta=0` rectangular EB/1D-FEM gate,
-unequal-thickness UT-0/UT-1/UT-1a beta-zero gates, and the isolated UT-2
-`beta=+/-30 deg` gate are complete. The rectangular gate closed its original strict accuracy shortfall under
+and unequal-thickness UT-0 through UT-3 one-dimensional gates are complete.
+The rectangular gate closed its original strict accuracy shortfall under
 equal-element-length refinement but was not promoted because the separate
-mode-1 monotonic-refinement gate failed. Unequal-thickness validation remains
-`IN_PROGRESS` after the UT-1 `PARTIAL_PASS`, inconclusive UT-1a numerical
-audit, and UT-2 `PASS`; other angles, off-axis material axes, and broad
-spectrum studies remain outside the completed scope. Any further unequal-
-thickness stage, final coupled-rod model, damping calculation, 3D validation, or production API
-requires a separately scoped next stage.
+mode-1 monotonic-refinement gate failed. The unequal-thickness 1D phase is
+`COMPLETE` with overall `PARTIAL_PASS`: UT-1 retains its historical native
+FEM exchange failure and UT-1a remains inconclusive under its fixed numerical
+quality gates. Other angles, off-axis material axes, and broad spectrum
+studies remain outside the completed scope. The next separate stage is
+limited 3D FEM anchor design; no 3D implementation is part of the 1D phase.
 
 ## Preservation rule
 
