@@ -19,6 +19,7 @@ class DiagnosticScriptImportTest(unittest.TestCase):
             "scripts.analysis.anisotropic_rods.reproduce_yartsev_ch2_cantilever",
             "scripts.analysis.anisotropic_rods.reproduce_yartsev_fig_2_2",
             "scripts.analysis.anisotropic_rods.validate_yartsev_ch2_rectangular_eb",
+            "scripts.analysis.anisotropic_rods.validate_yartsev_ch2_unequal_thickness",
             "scripts.analysis.plot_diagnostic_eta_mu_beta_frequency_maps",
             "scripts.analysis.plot_lambda_mu_eta_m0p5_with_single_beam_refs",
             "scripts.analysis.plot_mode_shapes_eta_beta_scan",

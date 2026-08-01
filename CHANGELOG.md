@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## 2026-08-01
+
+- Added the isolated Chapter-2 unequal-thickness UT-0 diagnostic gate. Three
+  independently constructed `a=4,5,6 mm` rectangular points pass section,
+  baseline-geometry, arm-specific Timoshenko/EB coefficient, torsion-series,
+  and physical-transfer-scaling checks. For only `(a_1,a_2)=(4,6) mm` at
+  `beta=0`, independent script-local stepped references agree with the first
+  three coupled sorted roots to `1.42e-13` for Timoshenko and `7.26e-14` for
+  EB; all roots pass the unchanged scaled-or-physical-raw quality rule. UT-0
+  is `PASS`, while overall unequal-thickness validation remains `IN_PROGRESS`.
+  No other angle, swapped spectrum, exchange gate, root 7, FEM, refinement,
+  shape/MAC/tracking study, parameter map, production API, or release-version
+  change was added or run.
+
 ## 2026-07-31
 
 - Extended the existing rectangular EB 1D-FEM helper to accept distinct arm

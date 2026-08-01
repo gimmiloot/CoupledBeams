@@ -13,6 +13,7 @@ Rigid angular-joint gate: completed — PASS
 Coupled-rod code: small elastic diagnostic pilot only — PASS
 Final coupled-rod model or parameter study: not started
 Rectangular orthotropic Euler--Bernoulli--Saint-Venant gate: PARTIAL_PASS after targeted refinement
+Unequal-thickness validation: IN_PROGRESS; UT-0 beta=0 stepped smoke: PASS
 Production anisotropic API: not started
 Independent rectangular EB + torsion 1D FEM: completed for the finite gate
 ```
@@ -61,6 +62,18 @@ dense-eigensolver conditioning floor. Its targeted status is
 is a project comparator, not a source reproduction, general anisotropic EB
 model, final coupled baseline, unequal-thickness study, or 3D validation.
 
+## Unequal-thickness UT-0
+
+The isolated UT-0 gate constructs independent `a=4,5,6 mm` rectangular
+`RodPoint` objects at `theta=0` and verifies section properties, arm-specific
+Timoshenko/EB state coefficients, and recovery of each physical transfer from
+the existing scaling. For the only spectral case `(a_1,a_2)=(4,6) mm` at
+`beta=0`, independent script-local stepped determinants agree with the coupled
+first-three sorted spectra to `1.42e-13` relatively for Timoshenko and
+`7.26e-14` for EB. UT-0 is `PASS`, while overall unequal-thickness validation
+remains `IN_PROGRESS`; other angles, the swapped case, root 7, FEM, shapes,
+tracking, and parameter studies were not run.
+
 ## Navigation
 
 - [Yartsev source note and local scan map](source_note_yartsev_2024.md)
@@ -70,10 +83,12 @@ model, final coupled baseline, unequal-thickness study, or 3D validation.
 - [Chapter-2 notation translation](yartsev_ch2_notation_translation.md)
 - [Rigid angular-joint theory and gate](yartsev_ch2_rigid_angular_joint.md)
 - [Rectangular orthotropic EB validation](yartsev_ch2_rectangular_eb_validation.md)
+- [Unequal-thickness validation (UT-0 only)](yartsev_ch2_unequal_thickness_validation.md)
 - [Free-free diagnostic CLI](../../scripts/analysis/anisotropic_rods/reproduce_yartsev_fig_2_2.py)
 - [Cantilever diagnostic CLI](../../scripts/analysis/anisotropic_rods/reproduce_yartsev_ch2_cantilever.py)
 - [Small coupled-joint pilot CLI](../../scripts/analysis/anisotropic_rods/pilot_yartsev_ch2_coupled_rods.py)
 - [Rectangular EB validation CLI](../../scripts/analysis/anisotropic_rods/validate_yartsev_ch2_rectangular_eb.py)
+- [Unequal-thickness UT-0 CLI](../../scripts/analysis/anisotropic_rods/validate_yartsev_ch2_unequal_thickness.py)
 
 Generated local evidence, which may be absent from a fresh clone, is kept in:
 
@@ -83,15 +98,17 @@ Generated local evidence, which may be absent from a fresh clone, is kept in:
 - [`results/anisotropic_rods/yartsev_ch2_cantilever_boundary_source_check/`](../../results/anisotropic_rods/yartsev_ch2_cantilever_boundary_source_check/)
 - [`results/anisotropic_rods/yartsev_ch2_coupled_joint_pilot/`](../../results/anisotropic_rods/yartsev_ch2_coupled_joint_pilot/)
 - [`results/anisotropic_rods/yartsev_ch2_rectangular_eb_validation/`](../../results/anisotropic_rods/yartsev_ch2_rectangular_eb_validation/)
+- [`results/anisotropic_rods/yartsev_ch2_unequal_thickness_validation/`](../../results/anisotropic_rods/yartsev_ch2_unequal_thickness_validation/)
 
 ## Current boundary
 
-The rigid-point-joint pilot and finite `theta=0` rectangular EB/1D-FEM gate
-are complete. The latter closed its original strict accuracy shortfall under
+The rigid-point-joint pilot, finite `theta=0` rectangular EB/1D-FEM gate, and
+unequal-thickness UT-0 smoke are complete. The rectangular gate closed its original strict accuracy shortfall under
 equal-element-length refinement but was not promoted because the separate
-mode-1 monotonic-refinement gate failed. Any off-axis or broad spectrum study, final coupled-rod model,
-damping calculation, unequal-thickness or 3D validation, or production API
-requires a separately scoped next stage.
+mode-1 monotonic-refinement gate failed. Unequal-thickness validation remains
+`IN_PROGRESS` after UT-0. Any UT-1 work, off-axis or broad spectrum study,
+final coupled-rod model, damping calculation, FEM/3D validation, or production
+API requires a separately scoped next stage.
 
 ## Preservation rule
 
