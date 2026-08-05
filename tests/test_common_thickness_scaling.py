@@ -106,6 +106,7 @@ class CommonThicknessScalingTest(unittest.TestCase):
             [
                 "ThicknessMismatchFactors",
                 "assemble_clamped_coupled_matrix_eta",
+                "assemble_clamped_coupled_matrix_eta_stable",
                 "det_eta",
                 "find_first_n_roots_eta",
                 "find_roots_scan_bisect_eta",

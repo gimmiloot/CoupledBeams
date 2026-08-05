@@ -211,6 +211,34 @@ is `5.18e-5`, while the modes-1--6 maximum is `3.71e-4`. The proportional
 allowance at the dense-eigensolver conditioning floor. No stiffness, mass,
 analytic coefficient, eigensolver tolerance, or threshold was changed.
 
+### Yartsev Chapter-2 supervisor figures and fast beta sweep
+
+- Task: reproduce the eight rectangular anisotropic Chapter-2 supervisor
+  figures, validate the diagnostic fast sorted-spectrum solver against all
+  saved Figure-2--4 oracle roots, and build only from saved CSV in reuse mode.
+- Status: `Fast beta-sweep optimization: PASS`; `Extended supervisor figures
+  5–8: PASS`.
+- Oracle command:
+  `python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --validate-fast-solver --jobs 1`.
+- Benchmark command: replace `--validate-fast-solver` by
+  `--benchmark-fast-solver`.
+- New figures:
+  `python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --figure new --solver-mode fast --resume --jobs 1`.
+- Plot-only all figures:
+  `python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --figure all --reuse-data`.
+- Results:
+  `results/anisotropic_rods/yartsev_ch2_supervisor_figures/`.
+- Use when: reporting the rectangular HMS/DX-209 or book-material Chapter-2
+  spectra, including the prescribed unequal arms or off-axis material cases.
+- Do not use when: working on the circular-isotropic EB/Timoshenko article,
+  tracked descendants, MAC, mode shapes, FEM, or a production anisotropic API.
+
+The fast helper retains the unchanged legacy global solver as oracle/fallback,
+uses exact transfer-matrix LRU caching, mandatory global anchors, local cluster
+inventories, atomic family checkpoints, and sorted roots rather than modal
+descendants. Full design, normalization, captions, benchmark values, and
+interpretation limits are in the [supervisor-figure note](../docs/anisotropic_rods/yartsev_ch2_supervisor_figures.md).
+
 ### Thickness-mismatch diagnostic model
 
 Thickness-mismatch scripts implement a diagnostic-only eta model with
@@ -252,7 +280,7 @@ smoke mode. Smoke runs use tiny grids and write under `results/_smoke/` or
 | Eta=0 positive-mu gap verification | `python scripts/analysis/audit_eta0_mu_positive_gap_rearrangement_verification.py` | Verifying adjacent sorted-root gaps for positive `mu`, with beta-local gap refinement, default/strict root comparison, and descendant-label tracking kept separate. |
 | Eta-parameter positive-gap verification | `python scripts/analysis/audit_eta_parameter_positive_gap_verification.py` | Verifying eta, beta, and mu adjacent sorted-root gaps with strict local root repairs, refined special windows, and descendant-label tracking kept separate from eigenvalue crossings. |
 | Eta-mu-beta sorted-frequency maps | `python scripts/analysis/plot_diagnostic_eta_mu_beta_frequency_maps.py` | Building diagnostic-only sorted `Lambda(eta)`, sorted `Lambda(beta)` slices, and eta-mu heatmaps of minimum adjacent gaps and beta sensitivities; close approaches are follow-up candidates, not crossing claims. |
-| In-plane EB vs Timoshenko sorted `Lambda(beta)` cases | `python scripts/analysis/thickness_mismatch/maps/plot_eb_vs_timoshenko_lambda_beta_cases.py` | Building diagnostic-only first-six sorted in-plane `Lambda(beta)` comparison plots for `(mu, eta)=(0,0),(0,0.1),(0.3,0.1)` and `epsilon=0.0025,0.05`; Timoshenko is solid, Euler-Bernoulli dashed, with root-cache reuse, plot-only regeneration, selected-case filters, timing CSV output, continuation-assisted Timoshenko solves, local beta refinement, spike audit CSV, dense retry/SVD recovery for missed roots, raw/plot CSV columns, and no descendant tracking or FEM. |
+| In-plane EB vs Timoshenko `Lambda(beta)` cases | `python scripts/analysis/thickness_mismatch/maps/plot_eb_vs_timoshenko_lambda_beta_cases.py` | The default builds the historical sorted-frequency diagnostics. `--beta-branch-pilot` runs the fixed P1--P4 descendant pilot. `--beta-sorted-spectrum-pilot` performs independent seed-free pointwise primary searches at each integer beta. `--beta-sorted-spectrum-refined-pilot` reuses those integer inventories, matrix-confirms fractional-beta base candidates, and scans only the fixed R1--R7 dense Lambda windows in a separate cache. The sorted presets do not use tracking, strict verification, FEM, energy, or PDF output. |
 | In-plane EB vs Timoshenko sorted `Lambda(mu)` eps scan | `python scripts/analysis/thickness_mismatch/maps/plot_eb_vs_timoshenko_lambda_mu_cases.py --beta-deg 45 --eta 0 --epsilon-values 0.005 0.01 0.02 0.03 0.04 --mu-min 0 --mu-max 0.7 --mu-step 0.005 --n-roots 6 --output-dir results/eb_vs_timoshenko_lambda_mu_beta45_eta0_eps_scan` | Building diagnostic-only first-six sorted in-plane `Lambda(mu)` comparison plots for `beta=45 deg`, `eta=0`, and `epsilon=0.005..0.04`; Timoshenko is solid, Euler-Bernoulli dashed, with root-cache reuse, plot-only regeneration, timing CSV output, continuation-assisted Timoshenko solves, spike audit CSV, local mu refinement only when needed, raw/plot CSV columns, and no single-rod references, descendant tracking, or FEM. |
 | Fixed-mu eta beta-scan mode shapes | `python scripts/analysis/plot_mode_shapes_eta_beta_scan.py` | Plotting diagnostic-only analytic Euler-Bernoulli mode shapes for one eta-aware descendant branch over a beta grid, with per-beta PNGs, a contact-sheet PNG, and a branch/sorted-index summary CSV. |
 | Fixed sorted 2/3 eta beta-scan mode shapes | `python scripts/analysis/plot_mode_shapes_eta_beta_scan_sorted_modes.py` | Plotting diagnostic-only analytic Euler-Bernoulli mode shapes for fixed sorted modes 2 and 3 at each beta; sorted roots select the shapes directly, the default `short-rod-up` sign convention orients plotted eigenvectors, and MAC plus sorted 2-3 gaps are diagnostic metadata only. |
@@ -582,6 +610,7 @@ plotter.
 | `scripts/plot_mu_sweep_beta0_four_radii_compare.py` | presentation/figure | Four-radius `mu` sweep at `beta = 0`. | `python scripts/run/run_mu_sweep_beta0_four_radii.py` | keep root; wrapper in `scripts/run/` |
 | `scripts/plot_mu_sweep_beta_fixed_four_radii_compare.py` | presentation/figure | Four-radius `mu` sweep for fixed positive beta values. | `python scripts/run/run_mu_sweep_fixed_beta_four_radii.py` | keep root; wrapper in `scripts/run/` |
 | `scripts/plot_mu_sweep_radius_fixed_four_betas_analytic.py` | presentation/figure | Analytic-only `mu` sweeps for selected betas at fixed radius. | `python scripts/run/run_mu_sweep_four_betas_analytic.py --betas 15 30 45 60` | keep root; wrapper in `scripts/run/` |
+| `scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py` | presentation/figure diagnostic | Eight reproducible Chapter-2 rectangular-rod supervisor figures, fast-oracle validation, checkpoints, and plot-only reuse. | `python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --figure all --reuse-data` | keep as the separate small supervisor entry point; do not merge into unequal-thickness or circular-article CLIs |
 | `scripts/run/run_analytic_coupled_rods_mode_shape_ru.py` | main user-facing command | Build one analytic coupled-rods mode shape directly from the determinant nullspace. | `python scripts/run/run_analytic_coupled_rods_mode_shape_ru.py` | keep |
 | `scripts/run/run_analytic_coupled_rods_vibration_shapes_beta15_mu06_eps0025_001_ru.py` | main user-facing command | Build the two-case beta=15, mu=0.6 descendant-5 vibration-shape overlay for epsilon 0.0025/root 6 and epsilon 0.01/root 5. | `python scripts/run/run_analytic_coupled_rods_vibration_shapes_beta15_mu06_eps0025_001_ru.py` | keep |
 | `scripts/plot_tracked_bending_descendant_shapes_ru.py` | main user-facing command | Parameterized Russian mode-shape plot for tracked bending descendants. | `python scripts/run/run_tracked_bending_descendant_shapes_ru.py --branch-id bending_desc_01` | keep root; wrapper in `scripts/run/` |
@@ -596,6 +625,7 @@ plotter.
 | `scripts/lib/yartsev_ch2_monoclinic_rod.py` | internal diagnostic helper | Chapter-2 one-rod material rotation, generalized torsional stiffness, state/eliminated boundary matrices, elastic/complex roots, and narrow shape-continuity diagnostics. | none | keep in `scripts/lib/`; do not promote to a general anisotropic API in this gate |
 | `scripts/lib/yartsev_ch2_coupled_rods.py` | internal diagnostic helper | Chapter-2 basis/notation transformations, ideal rigid-joint matrix, physical arm end maps, and coupled/straight-reference boundary matrices for the small elastic pilot. | none | keep script-owned; not a production anisotropic API or final coupled model |
 | `scripts/lib/yartsev_ch2_rectangular_eb.py` | internal diagnostic helper | `theta=0` rectangular EB/Saint-Venant state/end maps, exact fixed--fixed families, and independent Hermite-bending/linear-torsion 1D FEM. | none | keep script-owned; not a general anisotropic EB or production FEM API |
+| `scripts/lib/yartsev_ch2_fast_beta_sweep.py` | internal diagnostic helper | Generic sorted-spectrum predictor, connected-cluster inventories, mandatory global anchors/fallback, exact bounded transfer LRU, counters, and atomic checkpoints; contains no rod physics. | none | keep diagnostic-only; legacy root solver remains the oracle/fallback |
 | `scripts/lib/tracked_bending_descendant_shapes.py` | internal helper | Shared tracked-state extraction and one-case drawing for tracked bending descendant shape plots. | none | keep in `scripts/lib/` |
 | `scripts/sweep_grid_policy.py` | internal helper | Shared presentation/analysis grid policy. | none | keep root; moving would require broad import updates |
 

@@ -18,6 +18,7 @@ from my_project.analytic.formulas import (  # noqa: E402
 )
 from my_project.analytic.formulas_thickness_mismatch import (  # noqa: E402
     assemble_clamped_coupled_matrix_eta,
+    assemble_clamped_coupled_matrix_eta_stable,
     det_eta,
     local_epsilons,
     thickness_mismatch_factors,
@@ -25,6 +26,32 @@ from my_project.analytic.formulas_thickness_mismatch import (  # noqa: E402
 
 
 class ThicknessMismatchFormulaTest(unittest.TestCase):
+    def test_stable_eb_matrix_is_an_exact_invertible_column_transform(self) -> None:
+        for Lambda, beta_deg, mu, epsilon, eta in (
+            (4.2, 15.0, 0.3, 0.02, 0.1),
+            (3.5, 45.0, 0.7, 0.05, -0.5),
+            (3.0, 90.0, 0.9, 0.015, -0.5),
+        ):
+            with self.subTest(Lambda=Lambda, beta_deg=beta_deg, mu=mu, eta=eta):
+                beta = float(np.deg2rad(beta_deg))
+                raw = assemble_clamped_coupled_matrix_eta(Lambda, beta, mu, epsilon, eta)
+                stable = assemble_clamped_coupled_matrix_eta_stable(Lambda, beta, mu, epsilon, eta)
+                factors = thickness_mismatch_factors(mu, eta)
+                x1 = Lambda * (1.0 - mu) / np.sqrt(factors.tau1)
+                x2 = Lambda * (1.0 + mu) / np.sqrt(factors.tau2)
+                transform = np.eye(6)
+                transform[0, 0] = np.exp(-x1)
+                transform[0, 1] = -1.0
+                transform[2, 2] = np.exp(-x2)
+                transform[2, 3] = 1.0
+                np.testing.assert_allclose(stable, raw @ transform, rtol=3.0e-11, atol=3.0e-11)
+                determinant_factor = np.exp(-(x1 + x2))
+                self.assertGreater(determinant_factor, 0.0)
+                self.assertAlmostEqual(
+                    float(np.linalg.det(stable)),
+                    float(np.linalg.det(raw)) * determinant_factor,
+                    delta=2.0e-9 * max(1.0, abs(float(np.linalg.det(stable)))),
+                )
     def test_eta_zero_has_unit_thickness_factors(self) -> None:
         for mu in (-0.6, 0.0, 0.3):
             with self.subTest(mu=mu):

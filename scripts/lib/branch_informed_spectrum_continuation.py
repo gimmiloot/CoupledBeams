@@ -13,7 +13,7 @@ from scipy.optimize import brentq, linear_sum_assignment, minimize_scalar
 from scripts.lib import general_spectrum_completeness as complete
 
 
-BRANCH_CONTINUATION_ALGORITHM_VERSION = "branch_informed_continuation_v1"
+BRANCH_CONTINUATION_ALGORITHM_VERSION = "branch_informed_continuation_v5_floored_row_scaling"
 
 
 @dataclass(frozen=True)
@@ -1516,6 +1516,7 @@ class BranchContinuationCache:
     ) -> dict[str, object]:
         return {
             "algorithm_version": BRANCH_CONTINUATION_ALGORITHM_VERSION,
+            "timoshenko_basis_evaluator_version": complete.TIMO.TIMOSHENKO_BASIS_EVALUATOR_VERSION,
             "model": model,
             "geometry": {
                 "epsilon_0": float(geometry.epsilon_0),

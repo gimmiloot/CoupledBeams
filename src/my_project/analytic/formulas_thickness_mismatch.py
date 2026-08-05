@@ -134,6 +134,112 @@ def assemble_clamped_coupled_matrix_eta(
     )
 
 
+def assemble_clamped_coupled_matrix_eta_stable(
+    Lambda: float,
+    beta: float,
+    mu: float,
+    eps: float,
+    eta: float,
+) -> np.ndarray:
+    """Column-equivalent EB matrix without large ``cosh/sinh`` cancellation.
+
+    Relative to :func:`assemble_clamped_coupled_matrix_eta`, the bending
+    columns are transformed as
+
+    ``(C1, C2, C3, C4) -> (exp(-x1) C1, C2-C1, exp(-x2) C3, C4+C3)``.
+
+    The transform is invertible for every finite ``x1, x2`` and has positive
+    determinant ``exp(-(x1+x2))``.  Thus it preserves characteristic roots,
+    multiplicity, and determinant sign while evaluating ``cosh(x)-sinh(x)``
+    directly as ``exp(-x)``.  The frozen scientific matrix above remains the
+    legacy regression oracle.
+    """
+
+    Lambda_f = float(Lambda)
+    beta_f = float(beta)
+    eps_f = float(eps)
+    factors = thickness_mismatch_factors(mu, eta)
+    L1f, L2f = 1.0 - factors.mu, 1.0 + factors.mu
+    x1 = Lambda_f * L1f / np.sqrt(factors.tau1)
+    x2 = Lambda_f * L2f / np.sqrt(factors.tau2)
+    e1 = np.exp(-x1)
+    e2 = np.exp(-x2)
+    cos1, sin1 = np.cos(x1), np.sin(x1)
+    cos2, sin2 = np.cos(x2), np.sin(x2)
+    cosh_scaled1 = 0.5 * (1.0 + e1 * e1)
+    sinh_scaled1 = 0.5 * (1.0 - e1 * e1)
+    cosh_scaled2 = 0.5 * (1.0 + e2 * e2)
+    sinh_scaled2 = 0.5 * (1.0 - e2 * e2)
+
+    th1 = eps_f * (Lambda_f**2) * L1f
+    th2 = eps_f * (Lambda_f**2) * L2f
+    cb, sb = np.cos(beta_f), np.sin(beta_f)
+    rot1 = factors.tau1 ** (-0.5)
+    rot2 = factors.tau2 ** (-0.5)
+    mom1 = factors.tau1**3
+    mom2 = factors.tau2**3
+    shear1 = factors.tau1 ** 2.5
+    shear2 = factors.tau2 ** 2.5
+    axial1 = factors.tau1**2
+    axial2 = factors.tau2**2
+    shear_scale1 = eps_f * Lambda_f * shear1
+    shear_scale2 = eps_f * Lambda_f * shear2
+
+    matrix = np.zeros((6, 6), dtype=float)
+    # Rod 1: exp(-x1) C1 and C2-C1.
+    matrix[:, 0] = (
+        e1 * cos1 - cosh_scaled1,
+        0.0,
+        -rot1 * (e1 * sin1 + sinh_scaled1),
+        -mom1 * (e1 * cos1 + cosh_scaled1),
+        -shear_scale1 * (e1 * sin1 - sinh_scaled1),
+        0.0,
+    )
+    stable_difference1 = sin1 - cos1 + e1
+    matrix[:, 1] = (
+        stable_difference1,
+        0.0,
+        rot1 * (cos1 + sin1 - e1),
+        mom1 * (cos1 - sin1 + e1),
+        shear_scale1 * (cos1 + sin1 + e1),
+        0.0,
+    )
+
+    # Rod 2: exp(-x2) C3 and C4+C3.  The signs retain the frozen
+    # negative-coordinate coefficient convention of the legacy matrix.
+    e_cd2 = e2 * cos2 - cosh_scaled2
+    e_sd2 = e2 * sin2 - sinh_scaled2
+    e_cs2 = e2 * cos2 + cosh_scaled2
+    e_ss2 = e2 * sin2 + sinh_scaled2
+    matrix[:, 2] = (
+        -e_cd2 * cb,
+        e_cd2 * sb,
+        -rot2 * e_ss2,
+        mom2 * e_cs2,
+        -shear_scale2 * e_sd2 * cb,
+        shear_scale2 * e_sd2 * sb,
+    )
+    stable_difference2 = sin2 - cos2 + e2
+    matrix[:, 3] = (
+        stable_difference2 * cb,
+        -stable_difference2 * sb,
+        -rot2 * (sin2 + cos2 - e2),
+        mom2 * (cos2 - sin2 + e2),
+        -shear_scale2 * (sin2 + cos2 + e2) * cb,
+        shear_scale2 * (sin2 + cos2 + e2) * sb,
+    )
+    matrix[:, 4] = (0.0, np.sin(th1), 0.0, 0.0, 0.0, axial1 * np.cos(th1))
+    matrix[:, 5] = (
+        np.sin(th2) * sb,
+        np.sin(th2) * cb,
+        0.0,
+        0.0,
+        -axial2 * np.cos(th2) * sb,
+        -axial2 * np.cos(th2) * cb,
+    )
+    return matrix
+
+
 def det_eta(Lambda: float, beta: float, mu: float, epsilon: float, eta: float) -> float:
     return float(np.linalg.det(assemble_clamped_coupled_matrix_eta(Lambda, beta, mu, epsilon, eta)))
 
@@ -225,6 +331,7 @@ def find_first_n_roots_eta(
 __all__ = [
     "ThicknessMismatchFactors",
     "assemble_clamped_coupled_matrix_eta",
+    "assemble_clamped_coupled_matrix_eta_stable",
     "det_eta",
     "find_first_n_roots_eta",
     "find_roots_scan_bisect_eta",

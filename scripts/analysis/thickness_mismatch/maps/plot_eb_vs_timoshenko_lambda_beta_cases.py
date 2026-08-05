@@ -3,11 +3,13 @@ from __future__ import annotations
 import argparse
 import csv
 from collections import Counter
-from dataclasses import dataclass
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timezone
 import hashlib
 import json
 from math import isfinite
+import os
 from pathlib import Path
 import sys
 import time
@@ -32,8 +34,15 @@ if str(SRC_ROOT) not in sys.path:
 
 from my_project.analytic.formulas_thickness_mismatch import (  # noqa: E402
     assemble_clamped_coupled_matrix_eta,
+    find_first_n_roots_eta,
     find_roots_scan_bisect_eta,
     thickness_mismatch_factors,
+)
+from scripts.lib import analytic_branch_tracking as TRACK  # noqa: E402
+from scripts.lib import general_spectrum_completeness as COMPLETE  # noqa: E402
+from scripts.lib import straight_rod_factorized_spectrum as STRAIGHT  # noqa: E402
+from scripts.lib.thickness_mismatch_mac_tracking import (  # noqa: E402
+    analytic_shape_vector_eta,
 )
 from scripts.lib import variable_length_timoshenko as TIMO  # noqa: E402
 
@@ -49,6 +58,179 @@ DEFAULT_BETA_MAX = 90.0
 DEFAULT_BETA_STEP = 0.5
 DEFAULT_REFINED_BETA_STEP = 0.05
 DEFAULT_N_ROOTS = 6
+
+PILOT_OUTPUT_DIR = (
+    Path("results") / "article_epsilon_upper_envelope" / "beta_branch_pilot"
+)
+PILOT_CASES = (
+    ("P1", 0.010, 0.0, 0.0),
+    ("P2", 0.010, 0.9, -0.25),
+    ("P3", 0.024798906738281248, 0.5, -0.1),
+    ("P4", 0.050, 0.0, 0.0),
+)
+PILOT_N_TRACK = 12
+PILOT_N_SOLVE = 18
+PILOT_SHAPE_SAMPLES = 201
+PILOT_MAC_THRESHOLD = 0.8
+PILOT_MAC_MARGIN_THRESHOLD = 0.05
+PILOT_MAX_SORTED_JUMP = 1
+PILOT_MU_STEP = 0.025
+PILOT_CSV_FIELDS = (
+    "case_id",
+    "epsilon_0",
+    "mu",
+    "eta",
+    "beta_deg",
+    "branch_index",
+    "lambda_eb",
+    "lambda_timo",
+    "tracking_status",
+)
+
+SORTED_PILOT_OUTPUT_DIR = (
+    Path("results") / "article_epsilon_upper_envelope" / "beta_sorted_spectrum_pilot"
+)
+SORTED_PILOT_CASES = PILOT_CASES
+SORTED_PILOT_N_STORE = 12
+SORTED_PILOT_N_PLOT = 10
+SORTED_PILOT_CACHE_VERSION = "beta_sorted_spectrum_pointwise_primary_v1"
+SORTED_PILOT_NOTICEABLE_JUMP_REL = 0.03
+SORTED_PILOT_NOTICEABLE_JUMP_ABS = 0.5
+SORTED_PILOT_SINGLE_JUMP_REL = 0.08
+SORTED_PILOT_SIMULTANEOUS_COUNT = 3
+SORTED_PILOT_SUGGESTED_BETA_STEP = 0.25
+SORTED_PILOT_CSV_FIELDS = (
+    "case_id",
+    "epsilon_0",
+    "mu",
+    "eta",
+    "beta_deg",
+    "sorted_mode_index",
+    "lambda_eb",
+    "lambda_timo",
+    "eb_root_count",
+    "timo_root_count",
+    "eb_candidate_root_count",
+    "timo_candidate_root_count",
+    "eb_point_status",
+    "timo_point_status",
+    "eb_root_source",
+    "timo_root_source",
+    "eb_lambda_min",
+    "eb_lambda_max",
+    "timo_lambda_min",
+    "timo_lambda_max",
+    "scan_step",
+    "eb_matrix_evaluations",
+    "timo_matrix_evaluations",
+)
+SORTED_PILOT_STEP_FIELDS = (
+    "case_id",
+    "theory",
+    "sorted_mode_index",
+    "beta_left",
+    "beta_right",
+    "lambda_left",
+    "lambda_right",
+    "absolute_jump",
+    "relative_jump",
+    "root_count_left",
+    "root_count_right",
+    "simultaneous_shift_count",
+    "suspect_interval",
+    "suspect_reason",
+)
+SORTED_PILOT_SUSPECT_FIELDS = (
+    "case_id",
+    "theory",
+    "beta_left",
+    "beta_right",
+    "affected_sorted_modes",
+    "reason",
+    "max_relative_jump",
+    "root_count_change",
+    "suggested_local_beta_step",
+    "suggested_lambda_interval_left",
+    "suggested_lambda_interval_right",
+)
+
+REFINED_PILOT_OUTPUT_DIR = (
+    Path("results") / "article_epsilon_upper_envelope" / "beta_sorted_spectrum_refined_pilot"
+)
+REFINED_PILOT_SOURCE_DIR = SORTED_PILOT_OUTPUT_DIR
+REFINED_PILOT_CACHE_VERSION = "beta_sorted_spectrum_local_refinement_v2"
+REFINED_PILOT_ALGORITHM_VERSION = "dense_local_two_phase_primary_candidates_v2"
+REFINED_PILOT_CSV_FIELDS = (
+    "case_id",
+    "epsilon_0",
+    "mu",
+    "eta",
+    "beta_deg",
+    "beta_source",
+    "sorted_mode_index",
+    "lambda_eb",
+    "lambda_timo",
+    "eb_status",
+    "timo_status",
+    "eb_root_count",
+    "timo_root_count",
+    "eb_inventory_source",
+    "timo_inventory_source",
+    "eb_multiplicity",
+    "timo_multiplicity",
+    "eb_multiplicity_source",
+    "timo_multiplicity_source",
+    "eb_block_family",
+    "timo_block_family",
+    "eb_nullity",
+    "timo_nullity",
+    "eb_repeated_root_slot",
+    "timo_repeated_root_slot",
+    "local_region_id",
+)
+LOCAL_CANDIDATE_FIELDS = (
+    "region_id",
+    "case_id",
+    "theory",
+    "beta_deg",
+    "lambda_candidate",
+    "candidate_source",
+    "sign_change",
+    "sigma_min",
+    "sigma_ratio",
+    "residual",
+    "bracket_left",
+    "bracket_right",
+    "multiplicity",
+    "accepted",
+    "rejection_reason",
+    "block_family",
+    "nullity",
+    "multiplicity_source",
+)
+BEFORE_AFTER_FIELDS = (
+    "case_id",
+    "theory",
+    "beta_deg",
+    "sorted_mode_index",
+    "lambda_before",
+    "lambda_after",
+    "absolute_difference",
+    "status_before",
+    "status_after",
+    "root_inventory_shift",
+)
+LOCAL_REFINEMENT_SUMMARY_FIELDS = (
+    "region_id",
+    "beta_points",
+    "resolved_points",
+    "unresolved_points",
+    "recovered_root_count",
+    "multiplicity_two_count",
+    "max_before_after_difference",
+    "remaining_spike",
+    "status",
+)
 
 ROOT_SCAN_START = 0.2
 EB_LAMBDA_MAX = 35.0
@@ -173,6 +355,7 @@ class CaseSpec:
     mu: float
     eta: float
     epsilon: float
+    label: str = ""
 
 
 @dataclass(frozen=True)
@@ -207,6 +390,24 @@ class Args:
     mu_eta_cases: tuple[tuple[float, float], ...]
     epsilon_values: tuple[float, ...]
     smoke: bool
+    beta_branch_pilot: bool
+    beta_sorted_spectrum_pilot: bool
+    beta_sorted_spectrum_refined_pilot: bool
+
+
+@dataclass(frozen=True)
+class LocalRefinementRegion:
+    region_id: str
+    case_id: str
+    model: str
+    beta_min: float
+    beta_max: float
+    beta_step: float
+    lambda_min: float
+    lambda_max: float
+    lambda_step: float
+    expected_min_roots: int
+    purpose: str
 
 
 @dataclass(frozen=True)
@@ -370,6 +571,30 @@ def parse_args(argv: list[str] | None = None) -> Args:
     parser.add_argument("--epsilon-values", type=float, nargs="+", default=None)
     parser.add_argument("--mu-eta-cases", type=parse_mu_eta_case, nargs="+", default=None)
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument(
+        "--beta-branch-pilot",
+        action="store_true",
+        help=(
+            "run the fixed four-case, 12-descendant EB/Timoshenko beta pilot; "
+            "ambiguous tracking is saved as NaN and no strict/refinement workflow is used"
+        ),
+    )
+    parser.add_argument(
+        "--beta-sorted-spectrum-pilot",
+        action="store_true",
+        help=(
+            "run the fixed four-case independent pointwise sorted-spectrum pilot; "
+            "no branch tracking, strict verification, or beta refinement is used"
+        ),
+    )
+    parser.add_argument(
+        "--beta-sorted-spectrum-refined-pilot",
+        action="store_true",
+        help=(
+            "locally refine only the fixed R1-R7 windows of the independent "
+            "sorted-spectrum pilot; no tracking or strict workflow is used"
+        ),
+    )
     ns = parser.parse_args(argv)
 
     beta_min = float(ns.beta_min)
@@ -420,12 +645,24 @@ def parse_args(argv: list[str] | None = None) -> Args:
         mu_eta_cases=mu_eta_cases,
         epsilon_values=epsilon_values,
         smoke=bool(ns.smoke),
+        beta_branch_pilot=bool(ns.beta_branch_pilot),
+        beta_sorted_spectrum_pilot=bool(ns.beta_sorted_spectrum_pilot),
+        beta_sorted_spectrum_refined_pilot=bool(ns.beta_sorted_spectrum_refined_pilot),
     )
     validate_args(args)
     return args
 
 
 def validate_args(args: Args) -> None:
+    pilot_count = sum(
+        (
+            args.beta_branch_pilot,
+            args.beta_sorted_spectrum_pilot,
+            args.beta_sorted_spectrum_refined_pilot,
+        )
+    )
+    if pilot_count > 1:
+        raise ValueError("beta pilot presets are mutually exclusive.")
     if not (isfinite(args.beta_min) and isfinite(args.beta_max) and isfinite(args.beta_step)):
         raise ValueError("beta grid values must be finite.")
     if args.beta_step <= 0.0:
@@ -2407,10 +2644,2380 @@ def append_timing_section(report_path: Path, timing_path: Path, timing_rows: Seq
         handle.write("\n".join(lines) + "\n")
 
 
+def _pilot_normalized(vector: np.ndarray) -> np.ndarray:
+    values = np.asarray(vector, dtype=float)
+    norm = float(np.linalg.norm(values))
+    if not isfinite(norm) or norm <= 1.0e-28:
+        raise ValueError("non-finite or zero tracking vector")
+    return values / norm
+
+
+def _pilot_components(vector: np.ndarray) -> dict[str, np.ndarray]:
+    values = _pilot_normalized(vector)
+    split = len(values) // 2
+    return {
+        "w_left": values[:split],
+        "w_right": values[split:],
+    }
+
+
+def _pilot_roots(
+    case: CaseSpec,
+    beta_deg: float,
+    model: str,
+    previous_roots: Sequence[float] | None = None,
+) -> tuple[float, ...]:
+    if model == MODEL_EB:
+        roots = find_first_n_roots_eta(
+            beta=float(np.deg2rad(beta_deg)),
+            mu=case.mu,
+            epsilon=case.epsilon,
+            eta=case.eta,
+            n_roots=PILOT_N_SOLVE,
+            Lmin=ROOT_SCAN_START,
+            Lmax0=45.0,
+            scan_step=0.01,
+            grow_factor=1.35,
+            max_tries=8,
+        )
+    elif model == MODEL_TIMO:
+        result = solve_timo_continuation(
+            case,
+            beta_deg,
+            PILOT_N_SOLVE,
+            previous_roots,
+            upper_hint=(max(previous_roots) if previous_roots else None),
+        )
+        roots = result.roots
+    else:  # pragma: no cover - protected by the fixed model tuple
+        raise ValueError(f"unknown pilot model: {model}")
+    return tuple(sorted(float(value) for value in roots if isfinite(float(value))))
+
+
+def _pilot_state(
+    case: CaseSpec,
+    beta_deg: float,
+    model: str,
+    sorted_index: int,
+    Lambda: float,
+) -> TRACK.AnalyticModeState:
+    if model == MODEL_EB:
+        matrix = assemble_clamped_coupled_matrix_eta(
+            Lambda, float(np.deg2rad(beta_deg)), case.mu, case.epsilon, case.eta
+        )
+        _u, singular, vh = np.linalg.svd(np.asarray(matrix, dtype=float))
+        coeff = np.asarray(vh[-1], dtype=float)
+        vector = analytic_shape_vector_eta(
+            Lambda,
+            beta_rad=float(np.deg2rad(beta_deg)),
+            mu=case.mu,
+            epsilon=case.epsilon,
+            eta=case.eta,
+            s_norm=np.linspace(0.0, 1.0, PILOT_SHAPE_SAMPLES),
+        )
+    else:
+        mode = TIMO.timo_mode_coefficients(
+            Lambda, beta_deg, case.mu, case.epsilon, case.eta
+        )
+        fields = TIMO.timo_mode_fields(
+            Lambda,
+            beta_deg,
+            case.mu,
+            case.epsilon,
+            case.eta,
+            coeff=mode.coeff,
+            n_points=PILOT_SHAPE_SAMPLES,
+        )
+        rod1 = fields["rod1"]
+        rod2 = fields["rod2"]
+        vector = np.concatenate(
+            [
+                np.asarray(rod1["u"], dtype=float),  # type: ignore[index]
+                np.asarray(rod1["w"], dtype=float),  # type: ignore[index]
+                np.asarray(rod2["u"], dtype=float)[::-1],  # type: ignore[index]
+                np.asarray(rod2["w"], dtype=float)[::-1],  # type: ignore[index]
+            ]
+        )
+        coeff = np.asarray(mode.coeff, dtype=float)
+        singular = np.array(
+            [1.0, mode.smallest_singular_value], dtype=float
+        )
+    normalized = _pilot_normalized(vector)
+    components = _pilot_components(normalized)
+    smallest = float(singular[-1]) if len(singular) else float("nan")
+    ratio = (
+        float(singular[-1] / singular[-2])
+        if len(singular) >= 2 and abs(float(singular[-2])) > 1.0e-28
+        else float("nan")
+    )
+    return TRACK.AnalyticModeState(
+        epsilon=case.epsilon,
+        beta=beta_deg,
+        mu=case.mu,
+        current_sorted_index=sorted_index,
+        Lambda=Lambda,
+        coeff=coeff,
+        components=components,
+        shape_vector=normalized,
+        smallest_singular_value=smallest,
+        singular_value_ratio=ratio,
+    )
+
+
+def _pilot_states(
+    case: CaseSpec,
+    beta_deg: float,
+    model: str,
+    previous_roots: Sequence[float] | None = None,
+) -> tuple[list[TRACK.AnalyticModeState], tuple[float, ...]]:
+    roots = _pilot_roots(case, beta_deg, model, previous_roots)
+    states: list[TRACK.AnalyticModeState] = []
+    for sorted_index, root in enumerate(roots, start=1):
+        try:
+            states.append(
+                _pilot_state(case, beta_deg, model, sorted_index, float(root))
+            )
+        except (FloatingPointError, ValueError, OverflowError, np.linalg.LinAlgError):
+            continue
+    return states, roots
+
+
+def _pilot_seed_points(
+    case: CaseSpec, model: str
+) -> tuple[list[TRACK.BranchPoint], tuple[float, ...]]:
+    states, roots = _pilot_states(case, 0.0, model)
+    if len(states) < PILOT_N_TRACK:
+        raise RuntimeError(
+            f"{case.label} {model}: only {len(states)} usable seed states"
+        )
+    return [
+        TRACK.make_branch_point(
+            state=states[index],
+            branch_id=TRACK.branch_id_from_base_sorted_index(
+                index + 1, prefix="beta_desc"
+            ),
+            base_sorted_index=index + 1,
+            mac_to_previous=1.0,
+            relative_lambda_jump=0.0,
+            sorted_lambdas=roots,
+            step_type="base",
+            step_index=0,
+            mac_warning_threshold=PILOT_MAC_THRESHOLD,
+        )
+        for index in range(PILOT_N_TRACK)
+    ], roots
+
+
+def _pilot_transition(
+    previous: Sequence[TRACK.BranchPoint],
+    case: CaseSpec,
+    beta_deg: float,
+    model: str,
+    *,
+    step_type: str,
+    step_index: int,
+    previous_roots: Sequence[float] | None,
+) -> tuple[list[TRACK.BranchPoint], list[str], list[float], tuple[float, ...]]:
+    try:
+        states, roots = _pilot_states(case, beta_deg, model, previous_roots)
+        if len(states) < len(previous):
+            raise RuntimeError(f"only {len(states)} usable candidate states")
+        diagnostics = TRACK.assignment_diagnostics(
+            previous_points=previous,
+            current_states=states,
+            sorted_lambdas=roots,
+            freq_weight=TRACK.DEFAULT_FREQ_WEIGHT,
+            shape_metric="transverse",
+        )
+        proposed = TRACK.build_next_points_from_assignment(
+            source_points=previous,
+            current_states=states,
+            sorted_lambdas=roots,
+            diagnostics=diagnostics,
+            step_type=step_type,
+            step_index=step_index,
+            mac_warning_threshold=PILOT_MAC_THRESHOLD,
+            shape_metric="transverse",
+        )
+    except (FloatingPointError, ValueError, OverflowError, RuntimeError, np.linalg.LinAlgError) as exc:
+        return (
+            list(previous),
+            [f"gap_{model}:solve_or_assignment:{type(exc).__name__}"] * len(previous),
+            [float("nan")] * len(previous),
+            tuple(float(value) for value in (previous_roots or ())),
+        )
+
+    accepted: list[TRACK.BranchPoint] = []
+    statuses: list[str] = []
+    values: list[float] = []
+    for row, candidate in enumerate(proposed):
+        selected_col = int(diagnostics.assignment[row])
+        selected_mac = float(diagnostics.mac[row, selected_col])
+        other_macs = np.delete(np.asarray(diagnostics.mac[row], dtype=float), selected_col)
+        second_best = float(np.nanmax(other_macs)) if other_macs.size else float("nan")
+        margin = selected_mac - second_best if isfinite(second_best) else float("inf")
+        sorted_jump = abs(
+            int(candidate.current_sorted_index) - int(previous[row].current_sorted_index)
+        )
+        reasons: list[str] = []
+        if not isfinite(selected_mac) or selected_mac < PILOT_MAC_THRESHOLD:
+            reasons.append("low_continuity")
+        if isfinite(margin) and margin < PILOT_MAC_MARGIN_THRESHOLD:
+            reasons.append("ambiguous_margin")
+        if sorted_jump > PILOT_MAX_SORTED_JUMP:
+            reasons.append("large_sorted_jump")
+        if reasons:
+            retained_col = next(
+                (
+                    index
+                    for index, state in enumerate(diagnostics.current_states)
+                    if int(state.current_sorted_index)
+                    == int(previous[row].current_sorted_index)
+                ),
+                None,
+            )
+            if retained_col is None:
+                retained_point = previous[row]
+            else:
+                retained_state = TRACK.align_state_to_previous(
+                    diagnostics.current_states[retained_col],
+                    previous[row],
+                    shape_metric="transverse",
+                )
+                relative_jump = abs(
+                    float(retained_state.Lambda) - float(previous[row].Lambda)
+                ) / max(abs(float(previous[row].Lambda)), 1.0e-28)
+                retained_point = TRACK.make_branch_point(
+                    state=retained_state,
+                    branch_id=previous[row].branch_id,
+                    base_sorted_index=previous[row].base_sorted_index,
+                    mac_to_previous=float(diagnostics.mac[row, retained_col]),
+                    relative_lambda_jump=relative_jump,
+                    sorted_lambdas=roots,
+                    step_type=step_type,
+                    step_index=step_index,
+                    mac_warning_threshold=PILOT_MAC_THRESHOLD,
+                )
+            accepted.append(retained_point)
+            statuses.append(f"gap_{model}:" + ";".join(reasons))
+            values.append(float("nan"))
+        else:
+            accepted.append(candidate)
+            statuses.append("ok")
+            values.append(float(candidate.Lambda))
+    return accepted, statuses, values, roots
+
+
+def _pilot_track_model(case: CaseSpec, model: str) -> dict[str, object]:
+    for variable in (
+        "OMP_NUM_THREADS",
+        "MKL_NUM_THREADS",
+        "OPENBLAS_NUM_THREADS",
+        "NUMEXPR_NUM_THREADS",
+    ):
+        os.environ[variable] = "1"
+    seed_case = CaseSpec(mu=0.0, eta=case.eta, epsilon=case.epsilon, label=case.label)
+    previous, root_seeds = _pilot_seed_points(seed_case, model)
+    beta0_status = ["ok"] * PILOT_N_TRACK
+    beta0_values = [float(point.Lambda) for point in previous]
+    if abs(case.mu) > 1.0e-14:
+        mu_count = max(2, int(np.ceil(abs(case.mu) / PILOT_MU_STEP)) + 1)
+        for mu_index, mu_value in enumerate(np.linspace(0.0, case.mu, mu_count)[1:], start=1):
+            current_case = CaseSpec(
+                mu=float(mu_value), eta=case.eta, epsilon=case.epsilon, label=case.label
+            )
+            previous, beta0_status, beta0_values, root_seeds = _pilot_transition(
+                previous,
+                current_case,
+                0.0,
+                model,
+                step_type="mu_seed",
+                step_index=mu_index,
+                previous_roots=root_seeds,
+            )
+    values = np.full((PILOT_N_TRACK, 91), np.nan, dtype=float)
+    statuses = np.empty((PILOT_N_TRACK, 91), dtype=object)
+    values[:, 0] = np.asarray(beta0_values, dtype=float)
+    statuses[:, 0] = np.asarray(beta0_status, dtype=object)
+    for beta_index in range(1, 91):
+        previous, current_status, current_values, root_seeds = _pilot_transition(
+            previous,
+            case,
+            float(beta_index),
+            model,
+            step_type="beta",
+            step_index=beta_index,
+            previous_roots=root_seeds,
+        )
+        values[:, beta_index] = np.asarray(current_values, dtype=float)
+        statuses[:, beta_index] = np.asarray(current_status, dtype=object)
+    return {"model": model, "values": values, "statuses": statuses}
+
+
+def _pilot_case_worker(case_tuple: tuple[str, float, float, float]) -> dict[str, object]:
+    label, epsilon, mu, eta = case_tuple
+    case = CaseSpec(mu=mu, eta=eta, epsilon=epsilon, label=label)
+    print(
+        f"[{label}] tracking epsilon_0={epsilon:.17g}, mu={mu:g}, eta={eta:g}",
+        flush=True,
+    )
+    models = {
+        model: _pilot_track_model(case, model)
+        for model in MODELS
+    }
+    return {"case": case_tuple, "models": models}
+
+
+def _pilot_plot(
+    output_dir: Path,
+    case: CaseSpec,
+    eb_values: np.ndarray,
+    timo_values: np.ndarray,
+) -> Path:
+    beta = np.arange(91, dtype=float)
+    colors = plt.get_cmap("tab20")(np.linspace(0.0, 1.0, PILOT_N_TRACK))
+    fig, ax = plt.subplots(figsize=(12.0, 7.4))
+    for branch_zero in range(PILOT_N_TRACK):
+        color = colors[branch_zero]
+        ax.plot(beta, eb_values[branch_zero], color=color, lw=1.35, ls="-")
+        ax.plot(beta, timo_values[branch_zero], color=color, lw=1.35, ls="--")
+    ax.set_xlabel(r"$\beta$, deg")
+    ax.set_ylabel(r"$\Lambda$")
+    ax.set_xlim(0.0, 90.0)
+    ax.set_xticks(np.arange(0.0, 91.0, 10.0))
+    ax.grid(True, color="0.88", linewidth=0.6)
+    ax.set_title(
+        rf"{case.label}: $\epsilon_0={case.epsilon:.16g}$, "
+        rf"$\mu={case.mu:g}$, $\eta={case.eta:g}$"
+    )
+    branch_handles = [
+        Line2D([0], [0], color=colors[index], lw=2.0, label=f"branch {index + 1}")
+        for index in range(PILOT_N_TRACK)
+    ]
+    theory_handles = [
+        Line2D([0], [0], color="black", lw=1.8, ls="-", label="Euler–Bernoulli"),
+        Line2D([0], [0], color="black", lw=1.8, ls="--", label="Timoshenko"),
+    ]
+    theory_legend = ax.legend(handles=theory_handles, loc="upper left", fontsize=9, frameon=True)
+    ax.add_artist(theory_legend)
+    ax.legend(
+        handles=branch_handles,
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.13),
+        ncol=6,
+        fontsize=8,
+        frameon=False,
+    )
+    fig.tight_layout(rect=(0.0, 0.07, 1.0, 1.0))
+    path = output_dir / f"{case.label}_lambda_beta_comparison.png"
+    fig.savefig(path, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+    return path
+
+
+def sorted_pilot_search_settings() -> COMPLETE.SearchSettings:
+    """Fixed one-pass settings for the independent sorted-spectrum pilot."""
+
+    return COMPLETE.SearchSettings(
+        requested_roots=SORTED_PILOT_N_STORE,
+        candidate_roots=SORTED_PILOT_N_STORE,
+        verification_candidate_roots=SORTED_PILOT_N_STORE + 1,
+        max_upper_growth_tries=1,
+    )
+
+
+def _sorted_pilot_identity(case_tuple: tuple[str, float, float, float], beta_deg: int) -> dict[str, object]:
+    return {
+        "cache_version": SORTED_PILOT_CACHE_VERSION,
+        "general_spectrum_algorithm_version": COMPLETE.GENERAL_SPECTRUM_ALGORITHM_VERSION,
+        "eb_matrix_evaluator_version": COMPLETE.EB_MATRIX_EVALUATOR_VERSION,
+        "timoshenko_basis_evaluator_version": COMPLETE.TIMO.TIMOSHENKO_BASIS_EVALUATOR_VERSION,
+        "case": list(case_tuple),
+        "beta_deg": int(beta_deg),
+        "settings": asdict(sorted_pilot_search_settings()),
+        "independent_pointwise": True,
+        "seed_roots": [],
+        "verification_enabled": False,
+    }
+
+
+def _sorted_pilot_cache_path(output_dir: Path, case_id: str, beta_deg: int) -> Path:
+    return output_dir / "cache" / f"{case_id}_beta_{int(beta_deg):03d}.json"
+
+
+def _load_sorted_pilot_cache(
+    path: Path,
+    identity: dict[str, object],
+) -> dict[str, object] | None:
+    if not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        return None
+    if payload.get("identity") != identity:
+        return None
+    point = payload.get("point")
+    return point if isinstance(point, dict) else None
+
+
+def _save_sorted_pilot_cache(
+    path: Path,
+    identity: dict[str, object],
+    point: dict[str, object],
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f"{path.name}.tmp.{os.getpid()}")
+    temporary.write_text(
+        json.dumps({"identity": identity, "point": point}, sort_keys=True, indent=2),
+        encoding="utf-8",
+    )
+    os.replace(temporary, path)
+
+
+def _sorted_pilot_model_search(
+    model: str,
+    geometry: COMPLETE.Geometry,
+) -> dict[str, object]:
+    settings = sorted_pilot_search_settings()
+    result = COMPLETE.resolve_primary_spectrum(model, geometry, settings=settings)
+    roots = list(result.roots[:SORTED_PILOT_N_STORE])
+    accepted_count = len(result.roots)
+    relevant_upper = (
+        roots[-1].Lambda + max(settings.seed_half_width, 2.0 * settings.scan_step)
+        if roots
+        else float("inf")
+    )
+    relevant_unresolved = []
+    for entry in result.unresolved_intervals:
+        try:
+            interval_left = float(str(entry).split(":", 1)[0])
+        except (TypeError, ValueError):
+            interval_left = float("-inf")
+        if interval_left <= relevant_upper:
+            relevant_unresolved.append(str(entry))
+    resolved_cluster = any(root.cluster_size > 1 for root in roots)
+    if accepted_count < SORTED_PILOT_N_STORE:
+        status = "incomplete_root_inventory"
+    elif relevant_unresolved:
+        status = "diagnostic_unresolved_interval"
+    elif resolved_cluster:
+        status = "complete_with_resolved_cluster"
+    else:
+        status = "complete_root_inventory"
+    return {
+        "values": [float(root.Lambda) for root in roots],
+        "root_sources": ["+".join(root.detection_sources) for root in roots],
+        "root_count": int(accepted_count),
+        "candidate_root_count": int(len(result.candidates)),
+        "point_status": status,
+        "lambda_min": float(settings.lambda_min),
+        "lambda_max": float(result.lambda_upper),
+        "scan_step": float(result.scan_step),
+        "matrix_evaluations": int(result.operations.characteristic_matrix_evaluations),
+        "unresolved_intervals": relevant_unresolved,
+        "resolved_cluster_count": int(sum(root.cluster_size > 1 for root in roots)),
+        "independent_verification_runs": int(result.operations.independent_verification_runs),
+    }
+
+
+def _sorted_pilot_case_worker(
+    case_tuple: tuple[str, float, float, float],
+    output_dir_text: str,
+) -> dict[str, object]:
+    label, epsilon, mu, eta = case_tuple
+    output_dir = Path(output_dir_text)
+    points: list[dict[str, object]] = []
+    cache_hits = 0
+    for beta_deg in range(91):
+        identity = _sorted_pilot_identity(case_tuple, beta_deg)
+        cache_path = _sorted_pilot_cache_path(output_dir, label, beta_deg)
+        point = _load_sorted_pilot_cache(cache_path, identity)
+        if point is None:
+            geometry = COMPLETE.Geometry(
+                epsilon_0=float(epsilon),
+                beta_deg=float(beta_deg),
+                mu=float(mu),
+                eta=float(eta),
+            )
+            point = {
+                "case_id": label,
+                "epsilon_0": float(epsilon),
+                "mu": float(mu),
+                "eta": float(eta),
+                "beta_deg": int(beta_deg),
+                "models": {
+                    MODEL_EB: _sorted_pilot_model_search(MODEL_EB, geometry),
+                    MODEL_TIMO: _sorted_pilot_model_search(MODEL_TIMO, geometry),
+                },
+            }
+            _save_sorted_pilot_cache(cache_path, identity, point)
+        else:
+            cache_hits += 1
+        points.append(point)
+        if beta_deg % 15 == 0 or beta_deg == 90:
+            print(f"[{label}] beta={beta_deg:02d}/90, cache_hits={cache_hits}", flush=True)
+    return {"case": case_tuple, "points": points, "cache_hits": cache_hits}
+
+
+def _sorted_pilot_values(
+    case_result: dict[str, object],
+    model: str,
+) -> np.ndarray:
+    values = np.full((SORTED_PILOT_N_STORE, 91), np.nan, dtype=float)
+    for beta_index, point in enumerate(case_result["points"]):  # type: ignore[index]
+        roots = point["models"][model]["values"]  # type: ignore[index]
+        values[: min(len(roots), SORTED_PILOT_N_STORE), beta_index] = roots[:SORTED_PILOT_N_STORE]
+    return values
+
+
+def _sorted_pilot_plot(
+    output_dir: Path,
+    case: CaseSpec,
+    eb_values: np.ndarray,
+    timo_values: np.ndarray,
+) -> Path:
+    beta = np.arange(91, dtype=float)
+    colors = plt.get_cmap("tab10")(np.arange(SORTED_PILOT_N_PLOT))
+    fig, ax = plt.subplots(figsize=(12.4, 7.6))
+    for mode_zero in range(SORTED_PILOT_N_PLOT):
+        color = colors[mode_zero]
+        ax.plot(beta, eb_values[mode_zero], color=color, lw=1.35, ls="-")
+        ax.plot(beta, timo_values[mode_zero], color=color, lw=1.35, ls="--")
+    ax.set_xlabel(r"$\beta$, deg")
+    ax.set_ylabel(r"$\Lambda$")
+    ax.set_xlim(0.0, 90.0)
+    ax.set_xticks(np.arange(0.0, 91.0, 10.0))
+    ax.grid(True, color="0.88", linewidth=0.6)
+    ax.set_title(
+        rf"{case.label}: sorted spectra, $\epsilon_0={case.epsilon:.16g}$, "
+        rf"$\mu={case.mu:g}$, $\eta={case.eta:g}$"
+    )
+    theory_handles = [
+        Line2D([0], [0], color="black", lw=1.8, ls="-", label="Euler-Bernoulli"),
+        Line2D([0], [0], color="black", lw=1.8, ls="--", label="Timoshenko"),
+    ]
+    mode_handles = [
+        Line2D([0], [0], color=colors[index], lw=2.0, label=f"sorted mode {index + 1}")
+        for index in range(SORTED_PILOT_N_PLOT)
+    ]
+    theory_legend = ax.legend(handles=theory_handles, loc="upper left", fontsize=9, frameon=True)
+    ax.add_artist(theory_legend)
+    ax.legend(
+        handles=mode_handles,
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.13),
+        ncol=5,
+        fontsize=8,
+        frameon=False,
+    )
+    fig.tight_layout(rect=(0.0, 0.07, 1.0, 1.0))
+    path = output_dir / f"{case.label}_sorted_lambda_beta_comparison.png"
+    fig.savefig(path, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+    return path
+
+
+def _sorted_pilot_csv_rows(
+    results: dict[str, dict[str, object]],
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for label, epsilon, mu, eta in SORTED_PILOT_CASES:
+        for point in results[label]["points"]:  # type: ignore[index]
+            eb = point["models"][MODEL_EB]  # type: ignore[index]
+            tm = point["models"][MODEL_TIMO]  # type: ignore[index]
+            for mode_zero in range(SORTED_PILOT_N_STORE):
+                eb_value = eb["values"][mode_zero] if mode_zero < len(eb["values"]) else float("nan")
+                tm_value = tm["values"][mode_zero] if mode_zero < len(tm["values"]) else float("nan")
+                eb_source = eb["root_sources"][mode_zero] if mode_zero < len(eb["root_sources"]) else "missing"
+                tm_source = tm["root_sources"][mode_zero] if mode_zero < len(tm["root_sources"]) else "missing"
+                rows.append(
+                    {
+                        "case_id": label,
+                        "epsilon_0": epsilon,
+                        "mu": mu,
+                        "eta": eta,
+                        "beta_deg": point["beta_deg"],
+                        "sorted_mode_index": mode_zero + 1,
+                        "lambda_eb": eb_value,
+                        "lambda_timo": tm_value,
+                        "eb_root_count": eb["root_count"],
+                        "timo_root_count": tm["root_count"],
+                        "eb_candidate_root_count": eb["candidate_root_count"],
+                        "timo_candidate_root_count": tm["candidate_root_count"],
+                        "eb_point_status": eb["point_status"],
+                        "timo_point_status": tm["point_status"],
+                        "eb_root_source": eb_source,
+                        "timo_root_source": tm_source,
+                        "eb_lambda_min": eb["lambda_min"],
+                        "eb_lambda_max": eb["lambda_max"],
+                        "timo_lambda_min": tm["lambda_min"],
+                        "timo_lambda_max": tm["lambda_max"],
+                        "scan_step": eb["scan_step"],
+                        "eb_matrix_evaluations": eb["matrix_evaluations"],
+                        "timo_matrix_evaluations": tm["matrix_evaluations"],
+                    }
+                )
+    return rows
+
+
+def _sorted_pilot_step_rows(
+    results: dict[str, dict[str, object]],
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for label, _epsilon, _mu, _eta in SORTED_PILOT_CASES:
+        case_result = results[label]
+        for model in MODELS:
+            theory = "EB" if model == MODEL_EB else "Timoshenko"
+            values = _sorted_pilot_values(case_result, model)
+            counts = [
+                int(point["models"][model]["root_count"])  # type: ignore[index]
+                for point in case_result["points"]  # type: ignore[index]
+            ]
+            statuses = [
+                str(point["models"][model]["point_status"])  # type: ignore[index]
+                for point in case_result["points"]  # type: ignore[index]
+            ]
+            unresolved_by_beta = [
+                list(point["models"][model]["unresolved_intervals"])  # type: ignore[index]
+                for point in case_result["points"]  # type: ignore[index]
+            ]
+            for beta_left in range(90):
+                left_values = values[:, beta_left]
+                right_values = values[:, beta_left + 1]
+                jumps = np.abs(right_values - left_values)
+                scale = np.maximum(np.maximum(np.abs(left_values), np.abs(right_values)), 1.0e-12)
+                relative = jumps / scale
+                directions = np.sign(right_values - left_values)
+                noticeable = np.isfinite(jumps) & (
+                    (relative >= SORTED_PILOT_NOTICEABLE_JUMP_REL)
+                    | (jumps >= SORTED_PILOT_NOTICEABLE_JUMP_ABS)
+                )
+                positive_count = int(np.count_nonzero(noticeable & (directions > 0.0)))
+                negative_count = int(np.count_nonzero(noticeable & (directions < 0.0)))
+                incomplete = counts[beta_left] < SORTED_PILOT_N_STORE or counts[beta_left + 1] < SORTED_PILOT_N_STORE
+                simultaneous = max(positive_count, negative_count)
+                diagnostic_ranges: list[tuple[float, float]] = []
+                for entry in (*unresolved_by_beta[beta_left], *unresolved_by_beta[beta_left + 1]):
+                    try:
+                        range_left, range_right, *_rest = str(entry).split(":")
+                        diagnostic_ranges.append((float(range_left), float(range_right)))
+                    except (TypeError, ValueError):
+                        continue
+                diagnostic_status = (
+                    statuses[beta_left] == "diagnostic_unresolved_interval"
+                    or statuses[beta_left + 1] == "diagnostic_unresolved_interval"
+                )
+                diagnostic_affected = {
+                    mode_zero
+                    for mode_zero in range(SORTED_PILOT_N_STORE)
+                    if any(
+                        interval_left - 0.5
+                        <= value
+                        <= interval_right + 0.5
+                        for interval_left, interval_right in diagnostic_ranges
+                        for value in (left_values[mode_zero], right_values[mode_zero])
+                        if isfinite(float(value))
+                    )
+                }
+                if diagnostic_status and not diagnostic_affected:
+                    diagnostic_affected = {SORTED_PILOT_N_STORE - 2, SORTED_PILOT_N_STORE - 1}
+                for mode_zero in range(SORTED_PILOT_N_STORE):
+                    same_direction_count = 0
+                    if noticeable[mode_zero] and directions[mode_zero] > 0.0:
+                        same_direction_count = positive_count
+                    elif noticeable[mode_zero] and directions[mode_zero] < 0.0:
+                        same_direction_count = negative_count
+                    reasons: list[str] = []
+                    if incomplete:
+                        reasons.append("incomplete_root_inventory")
+                    if diagnostic_status and mode_zero in diagnostic_affected:
+                        reasons.append("pointwise_unresolved_interval")
+                    if simultaneous >= SORTED_PILOT_SIMULTANEOUS_COUNT:
+                        reasons.append("simultaneous_sorted_mode_shift")
+                    if np.isfinite(relative[mode_zero]) and relative[mode_zero] >= SORTED_PILOT_SINGLE_JUMP_REL:
+                        reasons.append("sharp_single_mode_jump")
+                    rows.append(
+                        {
+                            "case_id": label,
+                            "theory": theory,
+                            "sorted_mode_index": mode_zero + 1,
+                            "beta_left": beta_left,
+                            "beta_right": beta_left + 1,
+                            "lambda_left": left_values[mode_zero],
+                            "lambda_right": right_values[mode_zero],
+                            "absolute_jump": jumps[mode_zero],
+                            "relative_jump": relative[mode_zero],
+                            "root_count_left": counts[beta_left],
+                            "root_count_right": counts[beta_left + 1],
+                            "simultaneous_shift_count": same_direction_count,
+                            "suspect_interval": bool(reasons),
+                            "suspect_reason": "+".join(reasons),
+                        }
+                    )
+    return rows
+
+
+def _sorted_pilot_suspect_rows(
+    step_rows: Sequence[dict[str, object]],
+) -> list[dict[str, object]]:
+    grouped: dict[tuple[str, str, int, int], list[dict[str, object]]] = {}
+    for row in step_rows:
+        if not bool(row["suspect_interval"]):
+            continue
+        key = (str(row["case_id"]), str(row["theory"]), int(row["beta_left"]), int(row["beta_right"]))
+        grouped.setdefault(key, []).append(row)
+
+    interval_records: list[dict[str, object]] = []
+    for (case_id, theory, beta_left, beta_right), rows in sorted(grouped.items()):
+        affected: set[int] = set()
+        reasons: set[str] = set()
+        relative_values: list[float] = []
+        lambda_values: list[float] = []
+        count_changes: set[str] = set()
+        for row in rows:
+            reasons.update(filter(None, str(row["suspect_reason"]).split("+")))
+            relative = float(row["relative_jump"])
+            if isfinite(relative):
+                relative_values.append(relative)
+            left_value = float(row["lambda_left"])
+            right_value = float(row["lambda_right"])
+            if isfinite(left_value):
+                lambda_values.append(left_value)
+            if isfinite(right_value):
+                lambda_values.append(right_value)
+            if (
+                not isfinite(left_value)
+                or not isfinite(right_value)
+                or relative >= SORTED_PILOT_SINGLE_JUMP_REL
+                or int(row["simultaneous_shift_count"]) >= SORTED_PILOT_SIMULTANEOUS_COUNT
+                or "pointwise_unresolved_interval" in str(row["suspect_reason"])
+            ):
+                affected.add(int(row["sorted_mode_index"]))
+            left_count = int(row["root_count_left"])
+            right_count = int(row["root_count_right"])
+            if left_count != right_count or left_count < SORTED_PILOT_N_STORE:
+                count_changes.add(f"{left_count}->{right_count}")
+        interval_records.append(
+            {
+                "case_id": case_id,
+                "theory": theory,
+                "beta_left": beta_left,
+                "beta_right": beta_right,
+                "affected": affected,
+                "reasons": reasons,
+                "relative_values": relative_values,
+                "lambda_values": lambda_values,
+                "count_changes": count_changes,
+            }
+        )
+
+    merged: list[dict[str, object]] = []
+    for record in interval_records:
+        if (
+            merged
+            and merged[-1]["case_id"] == record["case_id"]
+            and merged[-1]["theory"] == record["theory"]
+            and int(record["beta_left"]) <= int(merged[-1]["beta_right"])
+        ):
+            merged[-1]["beta_right"] = record["beta_right"]
+            for key in ("affected", "reasons", "relative_values", "lambda_values", "count_changes"):
+                if isinstance(merged[-1][key], set):
+                    merged[-1][key].update(record[key])
+                else:
+                    merged[-1][key].extend(record[key])
+        else:
+            merged.append(
+                {
+                    **record,
+                    "affected": set(record["affected"]),
+                    "reasons": set(record["reasons"]),
+                    "relative_values": list(record["relative_values"]),
+                    "lambda_values": list(record["lambda_values"]),
+                    "count_changes": set(record["count_changes"]),
+                }
+            )
+
+    output: list[dict[str, object]] = []
+    for record in merged:
+        lambdas = list(record["lambda_values"])
+        output.append(
+            {
+                "case_id": record["case_id"],
+                "theory": record["theory"],
+                "beta_left": record["beta_left"],
+                "beta_right": record["beta_right"],
+                "affected_sorted_modes": ",".join(str(item) for item in sorted(record["affected"])),
+                "reason": "+".join(sorted(record["reasons"])),
+                "max_relative_jump": max(record["relative_values"], default=float("nan")),
+                "root_count_change": ",".join(sorted(record["count_changes"])) or "none",
+                "suggested_local_beta_step": SORTED_PILOT_SUGGESTED_BETA_STEP,
+                "suggested_lambda_interval_left": min(lambdas) if lambdas else float("nan"),
+                "suggested_lambda_interval_right": max(lambdas) if lambdas else float("nan"),
+            }
+        )
+    return output
+
+
+def validate_sorted_pilot_artifacts(
+    csv_rows: Sequence[dict[str, object]],
+    png_paths: Sequence[Path],
+    output_dir: Path,
+) -> dict[str, object]:
+    expected_rows = len(SORTED_PILOT_CASES) * 91 * SORTED_PILOT_N_STORE
+    if len(csv_rows) != expected_rows:
+        raise AssertionError(f"expected {expected_rows} CSV rows, found {len(csv_rows)}")
+    for label, _epsilon, _mu, _eta in SORTED_PILOT_CASES:
+        case_rows = [row for row in csv_rows if row["case_id"] == label]
+        betas = sorted({int(row["beta_deg"]) for row in case_rows})
+        if betas != list(range(91)):
+            raise AssertionError(f"{label}: beta grid is not exactly 0..90")
+        for beta_deg in betas:
+            point_rows = [row for row in case_rows if int(row["beta_deg"]) == beta_deg]
+            for field in ("lambda_eb", "lambda_timo"):
+                finite = [float(row[field]) for row in point_rows if isfinite(float(row[field]))]
+                if any(right <= left for left, right in zip(finite, finite[1:])):
+                    raise AssertionError(f"{label}, beta={beta_deg}, {field}: roots are not strictly sorted")
+                if any(right - left <= COMPLETE.DEFAULT_ROOT_DEDUP_TOL for left, right in zip(finite, finite[1:])):
+                    raise AssertionError(f"{label}, beta={beta_deg}, {field}: duplicate roots exceed dedup policy")
+    if len(png_paths) != 4 or len(list(output_dir.glob("*.png"))) != 4:
+        raise AssertionError("sorted pilot must produce exactly four PNG files")
+    forbidden = [*output_dir.glob("*.pdf"), *output_dir.glob("*.svg"), *output_dir.glob("*.eps")]
+    if forbidden:
+        raise AssertionError(f"forbidden vector/PDF outputs found: {forbidden}")
+    return {
+        "csv_rows": len(csv_rows),
+        "png_count": len(png_paths),
+        "force_strict_verification_calls": 0,
+        "tracking_function_calls": 0,
+        "mac_function_calls": 0,
+        "shape_reconstruction_calls": 0,
+        "adaptive_beta_refinement_calls": 0,
+    }
+
+
+def run_beta_sorted_spectrum_pilot() -> dict[str, object]:
+    output_dir = _repo_output_dir(SORTED_PILOT_OUTPUT_DIR)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    results: dict[str, dict[str, object]] = {}
+    with ProcessPoolExecutor(max_workers=4) as pool:
+        futures = {
+            pool.submit(_sorted_pilot_case_worker, case, str(output_dir)): case[0]
+            for case in SORTED_PILOT_CASES
+        }
+        for future in as_completed(futures):
+            result = future.result()
+            label = str(result["case"][0])  # type: ignore[index]
+            results[label] = result
+            print(f"[{label}] independent sorted spectrum complete", flush=True)
+
+    csv_rows = _sorted_pilot_csv_rows(results)
+    csv_path = output_dir / "beta_sorted_spectrum_pilot.csv"
+    _write_csv(csv_path, csv_rows, SORTED_PILOT_CSV_FIELDS)
+    step_rows = _sorted_pilot_step_rows(results)
+    diagnostics_path = output_dir / "beta_step_diagnostics.csv"
+    _write_csv(diagnostics_path, step_rows, SORTED_PILOT_STEP_FIELDS)
+    suspect_rows = _sorted_pilot_suspect_rows(step_rows)
+    suspect_path = output_dir / "suspect_beta_intervals.csv"
+    _write_csv(suspect_path, suspect_rows, SORTED_PILOT_SUSPECT_FIELDS)
+
+    png_paths: list[Path] = []
+    for label, epsilon, mu, eta in SORTED_PILOT_CASES:
+        case = CaseSpec(mu=mu, eta=eta, epsilon=epsilon, label=label)
+        png_paths.append(
+            _sorted_pilot_plot(
+                output_dir,
+                case,
+                _sorted_pilot_values(results[label], MODEL_EB),
+                _sorted_pilot_values(results[label], MODEL_TIMO),
+            )
+        )
+
+    full_eb = 0
+    full_timo = 0
+    fewer_than_12_eb = 0
+    fewer_than_12_timo = 0
+    nan_eb = 0
+    nan_timo = 0
+    eb_evaluations = 0
+    timo_evaluations = 0
+    verification_runs = 0
+    status_counts: Counter[str] = Counter()
+    for label, _epsilon, _mu, _eta in SORTED_PILOT_CASES:
+        for point in results[label]["points"]:  # type: ignore[index]
+            eb = point["models"][MODEL_EB]  # type: ignore[index]
+            tm = point["models"][MODEL_TIMO]  # type: ignore[index]
+            full_eb += int(
+                int(eb["root_count"]) >= SORTED_PILOT_N_STORE
+                and str(eb["point_status"]).startswith("complete_")
+            )
+            full_timo += int(
+                int(tm["root_count"]) >= SORTED_PILOT_N_STORE
+                and str(tm["point_status"]).startswith("complete_")
+            )
+            fewer_than_12_eb += int(int(eb["root_count"]) < SORTED_PILOT_N_STORE)
+            fewer_than_12_timo += int(int(tm["root_count"]) < SORTED_PILOT_N_STORE)
+            nan_eb += max(0, SORTED_PILOT_N_STORE - len(eb["values"]))
+            nan_timo += max(0, SORTED_PILOT_N_STORE - len(tm["values"]))
+            eb_evaluations += int(eb["matrix_evaluations"])
+            timo_evaluations += int(tm["matrix_evaluations"])
+            verification_runs += int(eb["independent_verification_runs"]) + int(tm["independent_verification_runs"])
+            status_counts[f"EB:{eb['point_status']}"] += 1
+            status_counts[f"Timoshenko:{tm['point_status']}"] += 1
+
+    validation = validate_sorted_pilot_artifacts(csv_rows, png_paths, output_dir)
+    if verification_runs != 0:
+        raise AssertionError(f"primary-only pilot unexpectedly executed {verification_runs} verification runs")
+    settings = sorted_pilot_search_settings()
+    report_lines = [
+        "# Independent beta sorted-spectrum pilot",
+        "",
+        "Curves show sorted spectral positions, not physical descendant branches.",
+        "",
+        "Each beta point was solved independently with the production EB/Timoshenko matrix evaluators and the ordinary two-phase pointwise primary root search. No neighboring-beta seeds or assignments were used.",
+        "",
+        "## Search configuration",
+        "",
+        f"- stored sorted modes: {SORTED_PILOT_N_STORE}",
+        f"- plotted sorted modes: {SORTED_PILOT_N_PLOT}",
+        f"- lambda_min: {settings.lambda_min:g}",
+        "- initial and only lambda_max: 22",
+        f"- scan_step: {settings.scan_step:g}",
+        f"- grid phases: 0 and {settings.shifted_grid_phase:g}",
+        "- upper-range growth attempts: disabled (one primary range only)",
+        "- independent verification/full strict/force strict: disabled",
+        "",
+        "## Inventory summary",
+        "",
+        f"- complete EB beta-points: {full_eb}/364",
+        f"- complete Timoshenko beta-points: {full_timo}/364",
+        f"- EB beta-points with fewer than 12 roots: {fewer_than_12_eb}",
+        f"- Timoshenko beta-points with fewer than 12 roots: {fewer_than_12_timo}",
+        f"- EB missing-value NaNs: {nan_eb}",
+        f"- Timoshenko missing-value NaNs: {nan_timo}",
+        f"- EB matrix evaluations: {eb_evaluations}",
+        f"- Timoshenko matrix evaluations: {timo_evaluations}",
+        f"- cache hits: {sum(int(results[label]['cache_hits']) for label, *_ in SORTED_PILOT_CASES)}",
+        f"- point statuses: {dict(sorted(status_counts.items()))}",
+        "",
+        "## Suspect-interval diagnostic",
+        "",
+        f"A jump is noticeable when relative jump >= {SORTED_PILOT_NOTICEABLE_JUMP_REL:g} or absolute jump >= {SORTED_PILOT_NOTICEABLE_JUMP_ABS:g}. An interval is flagged for an incomplete endpoint inventory, at least {SORTED_PILOT_SIMULTANEOUS_COUNT} noticeable same-direction sorted-mode shifts, or a single relative jump >= {SORTED_PILOT_SINGLE_JUMP_REL:g}. Adjacent flagged one-degree intervals are merged. These flags are diagnostic only; they do not assert crossing or veering and trigger no recalculation.",
+        f"- merged suspect intervals: {len(suspect_rows)}",
+        f"- suggested manual follow-up beta step: {SORTED_PILOT_SUGGESTED_BETA_STEP:g} deg",
+        "",
+        "## Prohibited-operation counters",
+        "",
+        "- branch tracking calls: 0",
+        "- MAC calls: 0",
+        "- shape reconstruction calls: 0",
+        "- force_strict_verification calls: 0",
+        "- independent verification calls: 0",
+        "- adaptive beta refinement calls: 0",
+        "",
+        "## Outputs",
+        "",
+    ]
+    report_lines.extend(f"- `{_rel(path)}`" for path in png_paths)
+    report_lines.extend(
+        [
+            f"- `{_rel(csv_path)}`",
+            f"- `{_rel(diagnostics_path)}`",
+            f"- `{_rel(suspect_path)}`",
+            f"- `{_rel(output_dir / 'report.md')}`",
+            "",
+        ]
+    )
+    report_path = output_dir / "report.md"
+    report_path.write_text("\n".join(report_lines), encoding="utf-8")
+    return {
+        "png_paths": png_paths,
+        "csv_path": csv_path,
+        "diagnostics_path": diagnostics_path,
+        "suspect_path": suspect_path,
+        "report_path": report_path,
+        "suspect_rows": suspect_rows,
+        "full_eb": full_eb,
+        "full_timo": full_timo,
+        "fewer_than_12_eb": fewer_than_12_eb,
+        "fewer_than_12_timo": fewer_than_12_timo,
+        "nan_eb": nan_eb,
+        "nan_timo": nan_timo,
+        "eb_evaluations": eb_evaluations,
+        "timo_evaluations": timo_evaluations,
+        "validation": validation,
+    }
+
+
+def refined_pilot_regions() -> tuple[LocalRefinementRegion, ...]:
+    return (
+        LocalRefinementRegion("R1", "P1", MODEL_TIMO, 58.0, 60.0, 0.25, 9.8, 10.3, 1.0e-4, 2, "recover close pair near beta=59"),
+        LocalRefinementRegion("R2", "P1", MODEL_EB, 87.0, 89.0, 0.25, 12.0, 12.4, 1.0e-4, 2, "recover close pair near beta=88"),
+        LocalRefinementRegion("R3", "P3", MODEL_TIMO, 0.0, 3.0, 0.1, 7.9, 8.5, 1.0e-4, 2, "resolve beta=0 block-family pair"),
+        LocalRefinementRegion("R4", "P4", MODEL_TIMO, 56.0, 58.0, 0.25, 3.4, 4.1, 1.0e-4, 2, "recover low pair near beta=57"),
+        LocalRefinementRegion("R5", "P4", MODEL_EB, 58.0, 60.0, 0.25, 5.2, 5.8, 1.0e-4, 2, "recover close pair near beta=59"),
+        LocalRefinementRegion("R6", "P4", MODEL_TIMO, 71.0, 74.0, 0.25, 9.2, 9.8, 1.0e-4, 1, "recover root or close pair near beta=72-73"),
+        LocalRefinementRegion("R7", "P4", MODEL_TIMO, 84.0, 86.0, 0.25, 5.0, 5.7, 1.0e-4, 2, "recover low pair near beta=85"),
+    )
+
+
+def _refined_case_tuple(case_id: str) -> tuple[str, float, float, float]:
+    for case in SORTED_PILOT_CASES:
+        if case[0] == case_id:
+            return case
+    raise KeyError(case_id)
+
+
+def _region_beta_values(region: LocalRefinementRegion) -> tuple[float, ...]:
+    return tuple(float(value) for value in regular_grid(region.beta_min, region.beta_max, region.beta_step))
+
+
+def _is_integer_beta(beta_deg: float) -> bool:
+    return abs(float(beta_deg) - round(float(beta_deg))) <= 1.0e-10
+
+
+def _model_csv_prefix(model: str) -> str:
+    return "eb" if model == MODEL_EB else "timo"
+
+
+def _load_original_sorted_inventory(source_dir: Path) -> dict[tuple[str, int, str], dict[str, object]]:
+    path = source_dir / "beta_sorted_spectrum_pilot.csv"
+    grouped: dict[tuple[str, int, str], list[dict[str, str]]] = {}
+    with path.open(newline="", encoding="utf-8") as handle:
+        for row in csv.DictReader(handle):
+            case_id = str(row["case_id"])
+            beta_deg = int(round(float(row["beta_deg"])))
+            for model in MODELS:
+                grouped.setdefault((case_id, beta_deg, model), []).append(row)
+    result: dict[tuple[str, int, str], dict[str, object]] = {}
+    for key, rows in grouped.items():
+        model = key[2]
+        prefix = _model_csv_prefix(model)
+        ordered = sorted(rows, key=lambda row: int(row["sorted_mode_index"]))
+        entries: list[dict[str, object]] = []
+        for row in ordered:
+            value = float(row[f"lambda_{prefix}"])
+            entries.append(
+                {
+                    "value": value,
+                    "source": str(row[f"{prefix}_root_source"]),
+                    "multiplicity": 1,
+                    "multiplicity_source": "original_scalar_inventory",
+                    "block_family": "full_matrix",
+                    "nullity": 1,
+                    "repeated_root_slot": 1,
+                }
+            )
+        result[key] = {
+            "entries": entries,
+            "status": str(ordered[0][f"{prefix}_point_status"]),
+            "root_count": int(ordered[0][f"{prefix}_root_count"]),
+            "inventory_source": "original_pointwise_primary",
+        }
+    return result
+
+
+def _local_refinement_settings(region: LocalRefinementRegion) -> COMPLETE.SearchSettings:
+    return replace(
+        sorted_pilot_search_settings(),
+        lambda_min=float(region.lambda_min),
+        lambda_max=float(region.lambda_max),
+        scan_step=float(region.lambda_step),
+        max_upper_growth_tries=1,
+    )
+
+
+def _candidate_nullity(candidate: COMPLETE.RootCandidate, settings: COMPLETE.SearchSettings) -> int:
+    diagnostics = candidate.diagnostics
+    return 2 if (
+        diagnostics.sigma_2 <= settings.nullity_sigma
+        and isfinite(diagnostics.sigma_3)
+        and diagnostics.sigma_3 > 0.0
+        and diagnostics.sigma_2 / diagnostics.sigma_3 <= settings.sigma_ratio_accept
+    ) else 1
+
+
+def _root_entries_from_records(
+    roots: Sequence[COMPLETE.RootRecord],
+    *,
+    source: str,
+    block_family: str = "full_6x6",
+) -> list[dict[str, object]]:
+    entries: list[dict[str, object]] = []
+    slot_counter: dict[tuple[float, int], int] = {}
+    for root in roots:
+        multiplicity = max(1, int(root.detected_nullity))
+        key = (round(float(root.Lambda), 10), multiplicity)
+        slot_counter[key] = slot_counter.get(key, 0) + 1
+        entries.append(
+            {
+                "value": float(root.Lambda),
+                "source": source + "+" + "+".join(root.detection_sources),
+                "multiplicity": multiplicity,
+                "multiplicity_source": (
+                    "full_matrix_nullity_2" if multiplicity > 1 else "simple_full_matrix_root"
+                ),
+                "block_family": block_family,
+                "nullity": multiplicity,
+                "repeated_root_slot": slot_counter[key] if multiplicity > 1 else 1,
+            }
+        )
+    return entries
+
+
+def _dense_local_candidate_search(
+    provider,
+    settings: COMPLETE.SearchSettings,
+    *,
+    candidate_source_prefix: str,
+    block_family: str,
+) -> dict[str, object]:
+    operations = COMPLETE.OperationCounts()
+    evaluator = COMPLETE._MatrixEvaluator(provider, operations)
+    candidates, interval_rows, unresolved = COMPLETE._global_candidates(
+        evaluator,
+        settings,
+        configuration="primary",
+        scan_step=settings.scan_step,
+        phases=(0.0, settings.shifted_grid_phase),
+        upper=float(settings.lambda_max),
+        seed_roots=(),
+        seed_source="local_refinement_no_seeds",
+    )
+    merged = COMPLETE._merge_candidates(candidates, settings)
+    roots = COMPLETE._root_records(merged, settings)
+    entries = _root_entries_from_records(
+        roots,
+        source=candidate_source_prefix,
+        block_family=block_family,
+    )
+    candidate_rows: list[dict[str, object]] = []
+    for candidate in candidates:
+        nullity = _candidate_nullity(candidate, settings)
+        accepted = candidate.acceptance_status == "accepted_full_matrix_svd"
+        candidate_rows.append(
+            {
+                "lambda_candidate": float(candidate.Lambda),
+                "candidate_source": candidate_source_prefix + ":" + "+".join(candidate.detection_sources),
+                "sign_change": any("sign_change" in item or "grid_zero" in item for item in candidate.detection_sources),
+                "sigma_min": float(candidate.diagnostics.sigma_1),
+                "sigma_ratio": float(candidate.diagnostics.sigma_ratio),
+                "residual": float(candidate.diagnostics.sigma_1),
+                "bracket_left": float(candidate.interval_left),
+                "bracket_right": float(candidate.interval_right),
+                "multiplicity": nullity,
+                "accepted": accepted,
+                "rejection_reason": "" if accepted else candidate.acceptance_status,
+                "block_family": block_family,
+                "nullity": nullity,
+                "multiplicity_source": "full_matrix_SVD" if block_family == "full_6x6" else "block_SVD",
+            }
+        )
+    return {
+        "entries": entries,
+        "candidate_rows": candidate_rows,
+        "interval_rows": list(interval_rows),
+        "unresolved_intervals": list(unresolved),
+        "matrix_evaluations": int(operations.characteristic_matrix_evaluations),
+        "operations": asdict(operations),
+    }
+
+
+def _annotate_p3_beta0_block_provenance(
+    full_result: dict[str, object],
+    bending_result: dict[str, object],
+    axial_result: dict[str, object],
+    settings: COMPLETE.SearchSettings,
+) -> tuple[list[dict[str, object]], str]:
+    bending_values = [float(entry["value"]) for entry in bending_result["entries"]]  # type: ignore[index]
+    axial_values = [float(entry["value"]) for entry in axial_result["entries"]]  # type: ignore[index]
+    annotated: list[dict[str, object]] = []
+    for raw_entry in full_result["entries"]:  # type: ignore[index]
+        entry = dict(raw_entry)
+        value = float(entry["value"])
+        families: list[str] = []
+        if any(abs(value - item) <= settings.root_match_tol for item in bending_values):
+            families.append("bending_block")
+        if any(abs(value - item) <= settings.root_match_tol for item in axial_values):
+            families.append("axial_block")
+        entry["block_family"] = "+".join(families) if families else "full_6x6_only"
+        if int(entry["multiplicity"]) > 1 and len(families) == 2:
+            entry["multiplicity_source"] = "full_6x6_nullity_2+cross_block_coincidence"
+        elif families:
+            entry["multiplicity_source"] = "simple_full_matrix_root+" + "+".join(families)
+        annotated.append(entry)
+    has_confirmed_double = any(
+        int(entry["multiplicity"]) > 1
+        and entry["block_family"] == "bending_block+axial_block"
+        for entry in annotated
+    )
+    family_values = sorted(
+        float(entry["value"])
+        for entry in annotated
+        if entry["block_family"] in {"bending_block", "axial_block", "bending_block+axial_block"}
+    )
+    has_distinct_pair = any(
+        right - left > settings.root_match_tol
+        for left, right in zip(family_values, family_values[1:])
+    )
+    if has_confirmed_double:
+        status = "resolved_double_root"
+    elif has_distinct_pair:
+        status = "resolved_distinct_pair"
+    else:
+        status = "local_refinement_unresolved"
+    return annotated, status
+
+
+def merge_primary_and_local_inventory(
+    primary_entries: Sequence[dict[str, object]],
+    local_entries: Sequence[dict[str, object]],
+    *,
+    lambda_min: float,
+    lambda_max: float,
+    settings: COMPLETE.SearchSettings,
+) -> list[dict[str, object]]:
+    kept = [
+        dict(entry)
+        for entry in primary_entries
+        if not (
+            isfinite(float(entry["value"]))
+            and float(lambda_min) - settings.root_match_tol
+            <= float(entry["value"])
+            <= float(lambda_max) + settings.root_match_tol
+        )
+    ]
+    combined = kept + [dict(entry) for entry in local_entries]
+    combined.sort(key=lambda entry: (float(entry["value"]), int(entry.get("repeated_root_slot", 1))))
+    deduplicated: list[dict[str, object]] = []
+    for entry in combined:
+        if not deduplicated:
+            deduplicated.append(entry)
+            continue
+        previous = deduplicated[-1]
+        gap = abs(float(entry["value"]) - float(previous["value"]))
+        preserve_slots = (
+            int(entry.get("multiplicity", 1)) > 1
+            and int(previous.get("multiplicity", 1)) > 1
+            and int(entry.get("repeated_root_slot", 1)) != int(previous.get("repeated_root_slot", 1))
+        )
+        if gap <= settings.root_dedup_tol and not preserve_slots:
+            previous_local = "local_dense" in str(previous.get("source", ""))
+            entry_local = "local_dense" in str(entry.get("source", ""))
+            if entry_local and not previous_local:
+                deduplicated[-1] = entry
+            continue
+        deduplicated.append(entry)
+    return deduplicated[:SORTED_PILOT_N_STORE]
+
+
+def merge_confirmed_inventory_union(
+    primary_entries: Sequence[dict[str, object]],
+    recovered_entries: Sequence[dict[str, object]],
+    *,
+    settings: COMPLETE.SearchSettings,
+) -> list[dict[str, object]]:
+    combined = [dict(entry) for entry in primary_entries] + [dict(entry) for entry in recovered_entries]
+    combined.sort(key=lambda entry: (float(entry["value"]), int(entry.get("repeated_root_slot", 1))))
+    result: list[dict[str, object]] = []
+    for entry in combined:
+        if not result:
+            result.append(entry)
+            continue
+        previous = result[-1]
+        gap = abs(float(entry["value"]) - float(previous["value"]))
+        preserve_slots = (
+            int(entry.get("multiplicity", 1)) > 1
+            and int(previous.get("multiplicity", 1)) > 1
+            and int(entry.get("repeated_root_slot", 1)) != int(previous.get("repeated_root_slot", 1))
+        )
+        if gap <= settings.root_dedup_tol and not preserve_slots:
+            if "base_candidate_local_dense" in str(entry.get("source", "")):
+                result[-1] = entry
+            continue
+        result.append(entry)
+    return result
+
+
+def unresolved_inventory_from_position(
+    primary_entries: Sequence[dict[str, object]],
+    *,
+    lambda_min: float,
+) -> list[dict[str, object]]:
+    entries = [dict(entry) for entry in primary_entries[:SORTED_PILOT_N_STORE]]
+    first = next(
+        (
+            index
+            for index, entry in enumerate(entries)
+            if isfinite(float(entry["value"])) and float(entry["value"]) >= float(lambda_min)
+        ),
+        len(entries),
+    )
+    for index in range(first, len(entries)):
+        entries[index] = {
+            "value": float("nan"),
+            "source": "local_refinement_unresolved",
+            "multiplicity": 0,
+            "multiplicity_source": "unresolved",
+            "block_family": "unresolved",
+            "nullity": 0,
+            "repeated_root_slot": 0,
+        }
+    return entries
+
+
+def _refined_cache_path(output_dir: Path, region_id: str, beta_deg: float) -> Path:
+    beta_token = f"{float(beta_deg):08.3f}".replace(".", "p")
+    return output_dir / "cache" / region_id / f"beta_{beta_token}.json"
+
+
+def _refined_cache_identity(
+    region: LocalRefinementRegion,
+    beta_deg: float,
+    source_csv_sha256: str,
+) -> dict[str, object]:
+    settings = _local_refinement_settings(region)
+    return {
+        "cache_version": REFINED_PILOT_CACHE_VERSION,
+        "algorithm_version": REFINED_PILOT_ALGORITHM_VERSION,
+        "region": asdict(region),
+        "beta_deg": float(beta_deg),
+        "source_csv_sha256": source_csv_sha256,
+        "general_spectrum_algorithm_version": COMPLETE.GENERAL_SPECTRUM_ALGORITHM_VERSION,
+        "eb_matrix_evaluator_version": COMPLETE.EB_MATRIX_EVALUATOR_VERSION,
+        "timoshenko_basis_evaluator_version": COMPLETE.TIMO.TIMOSHENKO_BASIS_EVALUATOR_VERSION,
+        "settings": asdict(settings),
+        "force_strict_enabled": False,
+        "tracking_enabled": False,
+    }
+
+
+def _load_refined_cache(path: Path, identity: dict[str, object]) -> dict[str, object] | None:
+    if not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, TypeError, ValueError):
+        return None
+    point = payload.get("point")
+    return point if payload.get("identity") == identity and isinstance(point, dict) else None
+
+
+def _save_refined_cache(path: Path, identity: dict[str, object], point: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f"{path.name}.tmp.{os.getpid()}")
+    temporary.write_text(
+        json.dumps({"identity": identity, "point": point}, sort_keys=True, indent=2),
+        encoding="utf-8",
+    )
+    os.replace(temporary, path)
+
+
+def _primary_entries_for_fractional_beta(
+    region: LocalRefinementRegion,
+    beta_deg: float,
+    source_inventory: dict[tuple[str, int, str], dict[str, object]],
+) -> tuple[list[dict[str, object]], str, int, int, list[dict[str, object]]]:
+    _label, epsilon, mu, eta = _refined_case_tuple(region.case_id)
+    geometry = COMPLETE.Geometry(epsilon_0=epsilon, beta_deg=beta_deg, mu=mu, eta=eta)
+    primary = COMPLETE.resolve_primary_spectrum(
+        region.model,
+        geometry,
+        settings=sorted_pilot_search_settings(),
+    )
+    entries = _root_entries_from_records(
+        primary.roots[:SORTED_PILOT_N_STORE],
+        source="fractional_pointwise_primary",
+    )
+    base_candidate_rows: list[dict[str, object]] = []
+    base_candidate_evaluations = 0
+    recovered_entries: list[dict[str, object]] = []
+    beta_left = int(np.floor(float(beta_deg)))
+    beta_right = int(np.ceil(float(beta_deg)))
+    endpoint_entries = [
+        source_inventory[(region.case_id, beta_left, region.model)]["entries"],
+        source_inventory[(region.case_id, beta_right, region.model)]["entries"],
+    ]
+    windows: list[tuple[float, float]] = []
+    base_settings = sorted_pilot_search_settings()
+    for mode_zero in range(SORTED_PILOT_N_STORE):
+        endpoint_values = [
+            float(endpoint[mode_zero]["value"])
+            for endpoint in endpoint_entries
+            if mode_zero < len(endpoint) and isfinite(float(endpoint[mode_zero]["value"]))
+        ]
+        if not endpoint_values:
+            continue
+        center_left = min(endpoint_values)
+        center_right = max(endpoint_values)
+        if center_right >= region.lambda_min - base_settings.root_match_tol and center_left <= region.lambda_max + base_settings.root_match_tol:
+            continue
+        windows.append(
+            (
+                max(base_settings.lambda_min, center_left - base_settings.seed_half_width),
+                min(22.0, center_right + base_settings.seed_half_width),
+            )
+        )
+    merged_windows: list[list[float]] = []
+    for left, right in sorted(windows):
+        if merged_windows and left <= merged_windows[-1][1] + base_settings.root_match_tol:
+            merged_windows[-1][1] = max(merged_windows[-1][1], right)
+        else:
+            merged_windows.append([left, right])
+    for window_left, window_right in merged_windows:
+        window_settings = replace(
+            base_settings,
+            lambda_min=float(window_left),
+            lambda_max=float(window_right),
+            scan_step=1.0e-3,
+            max_upper_growth_tries=1,
+        )
+        recovered = _dense_local_candidate_search(
+            COMPLETE.model_matrix_provider(region.model, geometry),
+            window_settings,
+            candidate_source_prefix="fractional_base_candidate_local_dense",
+            block_family="full_6x6",
+        )
+        recovered_entries.extend(recovered["entries"])
+        base_candidate_rows.extend(recovered["candidate_rows"])
+        base_candidate_evaluations += int(recovered["matrix_evaluations"])
+    entries = merge_confirmed_inventory_union(entries, recovered_entries, settings=base_settings)
+    status = "fractional_primary_complete" if len(entries) >= SORTED_PILOT_N_STORE else "fractional_primary_incomplete"
+    return (
+        entries,
+        status,
+        len(entries),
+        int(primary.operations.characteristic_matrix_evaluations) + base_candidate_evaluations,
+        base_candidate_rows,
+    )
+
+
+def _run_refinement_point(
+    region: LocalRefinementRegion,
+    beta_deg: float,
+    source_inventory: dict[tuple[str, int, str], dict[str, object]],
+) -> dict[str, object]:
+    label, epsilon, mu, eta = _refined_case_tuple(region.case_id)
+    settings = _local_refinement_settings(region)
+    if _is_integer_beta(beta_deg):
+        original = source_inventory[(region.case_id, int(round(beta_deg)), region.model)]
+        primary_entries = [dict(entry) for entry in original["entries"]]  # type: ignore[index]
+        primary_status = str(original["status"])
+        primary_root_count = int(original["root_count"])
+        base_primary_evaluations = 0
+        base_candidate_rows: list[dict[str, object]] = []
+        primary_source = "original_pointwise_primary"
+    else:
+        primary_entries, primary_status, primary_root_count, base_primary_evaluations, base_candidate_rows = (
+            _primary_entries_for_fractional_beta(region, beta_deg, source_inventory)
+        )
+        primary_source = "fractional_pointwise_primary+base_candidate_matrix_recovery"
+
+    geometry = COMPLETE.Geometry(epsilon_0=epsilon, beta_deg=beta_deg, mu=mu, eta=eta)
+    provider = COMPLETE.model_matrix_provider(region.model, geometry)
+    full = _dense_local_candidate_search(
+        provider,
+        settings,
+        candidate_source_prefix=f"{region.region_id}_local_dense",
+        block_family="full_6x6",
+    )
+    all_candidate_rows = list(base_candidate_rows) + list(full["candidate_rows"])
+    local_matrix_evaluations = int(full["matrix_evaluations"])
+    local_entries = [dict(entry) for entry in full["entries"]]
+    special_status = ""
+    block_details: dict[str, object] = {}
+    if region.region_id == "R3" and abs(beta_deg) <= 1.0e-12:
+        def bending_provider(value: float) -> np.ndarray:
+            return provider(value)[np.ix_(STRAIGHT.BENDING_ROWS, STRAIGHT.BENDING_COLUMNS)]
+
+        def axial_provider(value: float) -> np.ndarray:
+            return provider(value)[np.ix_(STRAIGHT.AXIAL_ROWS, STRAIGHT.AXIAL_COLUMNS)]
+
+        bending = _dense_local_candidate_search(
+            bending_provider,
+            settings,
+            candidate_source_prefix="R3_bending_block_local_dense",
+            block_family="bending_block",
+        )
+        axial = _dense_local_candidate_search(
+            axial_provider,
+            settings,
+            candidate_source_prefix="R3_axial_block_local_dense",
+            block_family="axial_block",
+        )
+        local_entries, special_status = _annotate_p3_beta0_block_provenance(full, bending, axial, settings)
+        all_candidate_rows.extend(bending["candidate_rows"])
+        all_candidate_rows.extend(axial["candidate_rows"])
+        local_matrix_evaluations += int(bending["matrix_evaluations"]) + int(axial["matrix_evaluations"])
+        block_details = {
+            "bending_entries": bending["entries"],
+            "axial_entries": axial["entries"],
+            "bending_unresolved": bending["unresolved_intervals"],
+            "axial_unresolved": axial["unresolved_intervals"],
+        }
+
+    local_slot_count = len(local_entries)
+    unique_local_values: list[float] = []
+    for entry in local_entries:
+        value = float(entry["value"])
+        if not unique_local_values or abs(value - unique_local_values[-1]) > settings.root_dedup_tol:
+            unique_local_values.append(value)
+    unresolved = bool(full["unresolved_intervals"])
+    resolved = (
+        len(primary_entries) >= SORTED_PILOT_N_STORE
+        and local_slot_count >= region.expected_min_roots
+        and not unresolved
+        and special_status != "local_refinement_unresolved"
+    )
+    if resolved:
+        merged = merge_primary_and_local_inventory(
+            primary_entries,
+            local_entries,
+            lambda_min=region.lambda_min,
+            lambda_max=region.lambda_max,
+            settings=settings,
+        )
+        resolved = len(merged) >= SORTED_PILOT_N_STORE
+    else:
+        merged = []
+    if not resolved:
+        merged = unresolved_inventory_from_position(primary_entries, lambda_min=region.lambda_min)
+        point_status = "local_refinement_unresolved"
+    elif special_status:
+        point_status = special_status
+    elif any(int(entry["multiplicity"]) > 1 for entry in local_entries):
+        point_status = "resolved_double_root"
+    elif len(unique_local_values) >= 2:
+        point_status = "resolved_distinct_pair"
+    else:
+        point_status = "resolved_local_root"
+
+    base_window_count = sum(
+        region.lambda_min - settings.root_match_tol
+        <= float(entry["value"])
+        <= region.lambda_max + settings.root_match_tol
+        for entry in primary_entries
+        if isfinite(float(entry["value"]))
+    )
+    multiplicity_two_groups = len(
+        {
+            round(float(entry["value"]), 10)
+            for entry in local_entries
+            if int(entry["multiplicity"]) > 1
+        }
+    )
+    return {
+        "region_id": region.region_id,
+        "case_id": label,
+        "model": region.model,
+        "beta_deg": float(beta_deg),
+        "beta_source": "original_integer" if _is_integer_beta(beta_deg) else "local_refinement",
+        "primary_entries": primary_entries,
+        "primary_status": primary_status,
+        "primary_root_count": primary_root_count,
+        "primary_source": primary_source,
+        "entries": merged,
+        "status": point_status,
+        "root_count": sum(isfinite(float(entry["value"])) for entry in merged),
+        "inventory_source": primary_source + f"+{region.region_id}_local_dense",
+        "candidate_rows": all_candidate_rows,
+        "unresolved_intervals": full["unresolved_intervals"],
+        "local_matrix_evaluations": local_matrix_evaluations,
+        "base_primary_matrix_evaluations": base_primary_evaluations,
+        "recovered_root_count": max(0, local_slot_count - base_window_count) if resolved else 0,
+        "multiplicity_two_count": multiplicity_two_groups,
+        "block_details": block_details,
+        "force_strict_calls": 0,
+        "tracking_calls": 0,
+        "mac_calls": 0,
+        "shape_calls": 0,
+        "continuation_calls": 0,
+    }
+
+
+def _refinement_region_worker(
+    region: LocalRefinementRegion,
+    source_dir_text: str,
+    output_dir_text: str,
+    source_csv_sha256: str,
+) -> dict[str, object]:
+    source_dir = Path(source_dir_text)
+    output_dir = Path(output_dir_text)
+    source_inventory = _load_original_sorted_inventory(source_dir)
+    points: list[dict[str, object]] = []
+    cache_hits = 0
+    for beta_deg in _region_beta_values(region):
+        identity = _refined_cache_identity(region, beta_deg, source_csv_sha256)
+        path = _refined_cache_path(output_dir, region.region_id, beta_deg)
+        point = _load_refined_cache(path, identity)
+        if point is None:
+            point = _run_refinement_point(region, beta_deg, source_inventory)
+            _save_refined_cache(path, identity, point)
+        else:
+            cache_hits += 1
+        points.append(point)
+        print(
+            f"[{region.region_id}] beta={beta_deg:g}, status={point['status']}, cache_hits={cache_hits}",
+            flush=True,
+        )
+    return {
+        "region": asdict(region),
+        "points": points,
+        "cache_hits": cache_hits,
+    }
+
+
+def _refinement_point_index(
+    region_results: dict[str, dict[str, object]],
+) -> dict[tuple[str, str, float], dict[str, object]]:
+    index: dict[tuple[str, str, float], dict[str, object]] = {}
+    for region in refined_pilot_regions():
+        for point in region_results[region.region_id]["points"]:  # type: ignore[index]
+            key = (region.case_id, region.model, round(float(point["beta_deg"]), 10))
+            if key in index:
+                raise AssertionError(f"duplicate local refinement target: {key}")
+            index[key] = point
+    return index
+
+
+def _regions_at_case_beta(case_id: str, beta_deg: float) -> list[str]:
+    result = []
+    beta_key = round(float(beta_deg), 10)
+    for region in refined_pilot_regions():
+        if region.case_id == case_id and beta_key in {round(value, 10) for value in _region_beta_values(region)}:
+            result.append(region.region_id)
+    return result
+
+
+def _assemble_refined_rows(
+    source_inventory: dict[tuple[str, int, str], dict[str, object]],
+    region_results: dict[str, dict[str, object]],
+) -> list[dict[str, object]]:
+    point_index = _refinement_point_index(region_results)
+    rows: list[dict[str, object]] = []
+    for case_id, epsilon, mu, eta in SORTED_PILOT_CASES:
+        beta_values = {float(value) for value in range(91)}
+        for region in refined_pilot_regions():
+            if region.case_id == case_id:
+                beta_values.update(_region_beta_values(region))
+        for beta_deg in sorted(beta_values):
+            model_inventories: dict[str, dict[str, object] | None] = {}
+            for model in MODELS:
+                local = point_index.get((case_id, model, round(beta_deg, 10)))
+                if local is not None:
+                    model_inventories[model] = {
+                        "entries": local["entries"],
+                        "status": local["status"],
+                        "root_count": local["root_count"],
+                        "inventory_source": local["inventory_source"],
+                    }
+                elif _is_integer_beta(beta_deg):
+                    model_inventories[model] = source_inventory[(case_id, int(round(beta_deg)), model)]
+                else:
+                    model_inventories[model] = None
+            region_ids = "+".join(_regions_at_case_beta(case_id, beta_deg))
+            for mode_zero in range(SORTED_PILOT_N_STORE):
+                row: dict[str, object] = {
+                    "case_id": case_id,
+                    "epsilon_0": epsilon,
+                    "mu": mu,
+                    "eta": eta,
+                    "beta_deg": beta_deg,
+                    "beta_source": "original_integer" if _is_integer_beta(beta_deg) else "local_refinement",
+                    "sorted_mode_index": mode_zero + 1,
+                    "local_region_id": region_ids,
+                }
+                for model in MODELS:
+                    prefix = _model_csv_prefix(model)
+                    inventory = model_inventories[model]
+                    if inventory is None:
+                        entry = None
+                        status = "not_evaluated_at_fractional_beta"
+                        root_count = 0
+                        inventory_source = "original_integer_series_only"
+                    else:
+                        entries = inventory["entries"]  # type: ignore[index]
+                        entry = entries[mode_zero] if mode_zero < len(entries) else None
+                        status = str(inventory["status"])
+                        root_count = int(inventory["root_count"])
+                        inventory_source = str(inventory["inventory_source"])
+                    row[f"lambda_{prefix}"] = float(entry["value"]) if entry is not None else float("nan")
+                    row[f"{prefix}_status"] = status
+                    row[f"{prefix}_root_count"] = root_count
+                    row[f"{prefix}_inventory_source"] = inventory_source
+                    row[f"{prefix}_multiplicity"] = int(entry["multiplicity"]) if entry is not None else 0
+                    row[f"{prefix}_multiplicity_source"] = (
+                        str(entry["multiplicity_source"]) if entry is not None else "not_evaluated"
+                    )
+                    row[f"{prefix}_block_family"] = str(entry["block_family"]) if entry is not None else "not_evaluated"
+                    row[f"{prefix}_nullity"] = int(entry["nullity"]) if entry is not None else 0
+                    row[f"{prefix}_repeated_root_slot"] = (
+                        int(entry["repeated_root_slot"]) if entry is not None else 0
+                    )
+                rows.append(row)
+    return rows
+
+
+def _candidate_output_rows(
+    region_results: dict[str, dict[str, object]],
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for region in refined_pilot_regions():
+        theory = "Euler-Bernoulli" if region.model == MODEL_EB else "Timoshenko"
+        points = sorted(
+            region_results[region.region_id]["points"],  # type: ignore[index]
+            key=lambda point: float(point["beta_deg"]),
+        )
+        for point in points:
+            candidates = sorted(
+                point["candidate_rows"],
+                key=lambda row: (float(row["lambda_candidate"]), str(row["candidate_source"])),
+            )
+            for candidate in candidates:
+                rows.append(
+                    {
+                        "region_id": region.region_id,
+                        "case_id": region.case_id,
+                        "theory": theory,
+                        "beta_deg": point["beta_deg"],
+                        **candidate,
+                    }
+                )
+    return rows
+
+
+def _before_after_rows(
+    source_inventory: dict[tuple[str, int, str], dict[str, object]],
+    region_results: dict[str, dict[str, object]],
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    settings_by_region = {region.region_id: _local_refinement_settings(region) for region in refined_pilot_regions()}
+    for region in refined_pilot_regions():
+        settings = settings_by_region[region.region_id]
+        for point in sorted(
+            region_results[region.region_id]["points"],  # type: ignore[index]
+            key=lambda item: float(item["beta_deg"]),
+        ):
+            beta_deg = float(point["beta_deg"])
+            if not _is_integer_beta(beta_deg):
+                continue
+            before = source_inventory[(region.case_id, int(round(beta_deg)), region.model)]
+            before_entries = before["entries"]  # type: ignore[index]
+            after_entries = point["entries"]
+            changed_indices: list[int] = []
+            for index in range(SORTED_PILOT_N_STORE):
+                before_value = float(before_entries[index]["value"])
+                after_value = float(after_entries[index]["value"])
+                if not (isfinite(before_value) and isfinite(after_value)) or abs(after_value - before_value) > settings.root_match_tol:
+                    changed_indices.append(index)
+            first_changed = min(changed_indices) if changed_indices else None
+            for index in range(SORTED_PILOT_N_STORE):
+                before_value = float(before_entries[index]["value"])
+                after_value = float(after_entries[index]["value"])
+                difference = (
+                    abs(after_value - before_value)
+                    if isfinite(before_value) and isfinite(after_value)
+                    else float("nan")
+                )
+                if first_changed is None:
+                    shift = "unchanged"
+                elif index < first_changed:
+                    shift = "unchanged_prefix"
+                elif isfinite(difference) and difference <= settings.root_match_tol:
+                    shift = "retained_after_reindex"
+                else:
+                    shift = "shifted_after_local_recovery"
+                rows.append(
+                    {
+                        "case_id": region.case_id,
+                        "theory": "Euler-Bernoulli" if region.model == MODEL_EB else "Timoshenko",
+                        "beta_deg": beta_deg,
+                        "sorted_mode_index": index + 1,
+                        "lambda_before": before_value,
+                        "lambda_after": after_value,
+                        "absolute_difference": difference,
+                        "status_before": before["status"],
+                        "status_after": point["status"],
+                        "root_inventory_shift": shift,
+                    }
+                )
+    return rows
+
+
+def _inventory_is_sorted(entries: Sequence[dict[str, object]]) -> bool:
+    finite = [float(entry["value"]) for entry in entries if isfinite(float(entry["value"]))]
+    return all(right >= left for left, right in zip(finite, finite[1:]))
+
+
+def _inventory_has_invalid_duplicate(
+    entries: Sequence[dict[str, object]],
+    settings: COMPLETE.SearchSettings,
+) -> bool:
+    finite = [entry for entry in entries if isfinite(float(entry["value"]))]
+    for left, right in zip(finite, finite[1:]):
+        if float(right["value"]) - float(left["value"]) <= settings.root_dedup_tol:
+            valid_multiplicity = (
+                int(left.get("multiplicity", 1)) > 1
+                and int(right.get("multiplicity", 1)) > 1
+                and int(left.get("repeated_root_slot", 1)) != int(right.get("repeated_root_slot", 1))
+            )
+            if not valid_multiplicity:
+                return True
+    return False
+
+
+def _remaining_simultaneous_spike(
+    points: Sequence[dict[str, object]],
+) -> bool:
+    ordered = sorted(points, key=lambda item: float(item["beta_deg"]))
+    for left, right in zip(ordered, ordered[1:]):
+        left_values = np.asarray([float(entry["value"]) for entry in left["entries"]], dtype=float)
+        right_values = np.asarray([float(entry["value"]) for entry in right["entries"]], dtype=float)
+        if left_values.size < SORTED_PILOT_N_STORE or right_values.size < SORTED_PILOT_N_STORE:
+            return True
+        jump = np.abs(right_values - left_values)
+        scale = np.maximum(np.maximum(np.abs(left_values), np.abs(right_values)), 1.0e-12)
+        relative = jump / scale
+        direction = np.sign(right_values - left_values)
+        noticeable = np.isfinite(jump) & (
+            (relative >= SORTED_PILOT_NOTICEABLE_JUMP_REL)
+            | (jump >= SORTED_PILOT_NOTICEABLE_JUMP_ABS)
+        )
+        positive = int(np.count_nonzero(noticeable & (direction > 0.0)))
+        negative = int(np.count_nonzero(noticeable & (direction < 0.0)))
+        if max(positive, negative) >= SORTED_PILOT_SIMULTANEOUS_COUNT:
+            return True
+    return False
+
+
+def _refinement_summary_rows(
+    source_inventory: dict[tuple[str, int, str], dict[str, object]],
+    region_results: dict[str, dict[str, object]],
+    before_after: Sequence[dict[str, object]],
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for region in refined_pilot_regions():
+        points = sorted(
+            region_results[region.region_id]["points"],  # type: ignore[index]
+            key=lambda item: float(item["beta_deg"]),
+        )
+        unresolved = sum(point["status"] == "local_refinement_unresolved" for point in points)
+        settings = _local_refinement_settings(region)
+        sorted_ok = all(_inventory_is_sorted(point["entries"]) for point in points)
+        duplicate_ok = not any(_inventory_has_invalid_duplicate(point["entries"], settings) for point in points)
+        endpoints_match = True
+        for beta_deg in (region.beta_min, region.beta_max):
+            point = next(item for item in points if abs(float(item["beta_deg"]) - beta_deg) <= 1.0e-10)
+            original = source_inventory[(region.case_id, int(round(beta_deg)), region.model)]["entries"]
+            for before_entry, after_entry in zip(original, point["entries"]):
+                before_value = float(before_entry["value"])
+                after_value = float(after_entry["value"])
+                if not (isfinite(before_value) and isfinite(after_value)) or abs(before_value - after_value) > settings.root_match_tol:
+                    endpoints_match = False
+                    break
+        remaining_spike = _remaining_simultaneous_spike(points)
+        relevant_before_after = [
+            row
+            for row in before_after
+            if row["case_id"] == region.case_id
+            and row["theory"] == ("Euler-Bernoulli" if region.model == MODEL_EB else "Timoshenko")
+            and region.beta_min <= float(row["beta_deg"]) <= region.beta_max
+        ]
+        finite_differences = [
+            float(row["absolute_difference"])
+            for row in relevant_before_after
+            if isfinite(float(row["absolute_difference"]))
+        ]
+        if unresolved:
+            status = "local_refinement_unresolved"
+        elif not sorted_ok or not duplicate_ok:
+            status = "integrity_failure"
+        elif remaining_spike:
+            status = "resolved_with_remaining_spike"
+        elif not endpoints_match:
+            status = "resolved_edge_changed"
+        else:
+            status = "resolved"
+        rows.append(
+            {
+                "region_id": region.region_id,
+                "beta_points": len(points),
+                "resolved_points": len(points) - unresolved,
+                "unresolved_points": unresolved,
+                "recovered_root_count": sum(int(point["recovered_root_count"]) for point in points),
+                "multiplicity_two_count": sum(int(point["multiplicity_two_count"]) for point in points),
+                "max_before_after_difference": max(finite_differences, default=0.0),
+                "remaining_spike": remaining_spike,
+                "status": status,
+            }
+        )
+    return rows
+
+
+def _plot_refined_case(
+    output_dir: Path,
+    case: CaseSpec,
+    rows: Sequence[dict[str, object]],
+) -> Path:
+    case_rows = [row for row in rows if row["case_id"] == case.label]
+    colors = plt.get_cmap("tab10")(np.arange(SORTED_PILOT_N_PLOT))
+    fig, ax = plt.subplots(figsize=(12.4, 7.6))
+    for mode_zero in range(SORTED_PILOT_N_PLOT):
+        mode_rows = [row for row in case_rows if int(row["sorted_mode_index"]) == mode_zero + 1]
+        for model, linestyle in ((MODEL_EB, "-"), (MODEL_TIMO, "--")):
+            prefix = _model_csv_prefix(model)
+            finite_points = sorted(
+                (
+                    (float(row["beta_deg"]), float(row[f"lambda_{prefix}"]))
+                    for row in mode_rows
+                    if isfinite(float(row[f"lambda_{prefix}"]))
+                ),
+                key=lambda item: item[0],
+            )
+            ax.plot(
+                [item[0] for item in finite_points],
+                [item[1] for item in finite_points],
+                color=colors[mode_zero],
+                lw=1.35,
+                ls=linestyle,
+            )
+    ax.set_xlabel(r"$\beta$, deg")
+    ax.set_ylabel(r"$\Lambda$")
+    ax.set_xlim(0.0, 90.0)
+    ax.set_xticks(np.arange(0.0, 91.0, 10.0))
+    ax.grid(True, color="0.88", linewidth=0.6)
+    ax.set_title(
+        rf"{case.label}: locally refined sorted spectra, $\epsilon_0={case.epsilon:.16g}$, "
+        rf"$\mu={case.mu:g}$, $\eta={case.eta:g}$"
+    )
+    theory_handles = [
+        Line2D([0], [0], color="black", lw=1.8, ls="-", label="Euler-Bernoulli"),
+        Line2D([0], [0], color="black", lw=1.8, ls="--", label="Timoshenko"),
+    ]
+    mode_handles = [
+        Line2D([0], [0], color=colors[index], lw=2.0, label=f"sorted mode {index + 1}")
+        for index in range(SORTED_PILOT_N_PLOT)
+    ]
+    theory_legend = ax.legend(handles=theory_handles, loc="upper left", fontsize=9, frameon=True)
+    ax.add_artist(theory_legend)
+    ax.legend(
+        handles=mode_handles,
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.13),
+        ncol=5,
+        fontsize=8,
+        frameon=False,
+    )
+    fig.tight_layout(rect=(0.0, 0.07, 1.0, 1.0))
+    path = output_dir / f"{case.label}_refined_sorted_lambda_beta_comparison.png"
+    fig.savefig(path, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+    return path
+
+
+def validate_refined_pilot_outputs(
+    refined_rows: Sequence[dict[str, object]],
+    source_inventory: dict[tuple[str, int, str], dict[str, object]],
+    region_results: dict[str, dict[str, object]],
+    png_paths: Sequence[Path],
+    output_dir: Path,
+) -> dict[str, object]:
+    point_index = _refinement_point_index(region_results)
+    unaffected_mismatches = 0
+    p2_mismatches = 0
+    for case_id, _epsilon, _mu, _eta in SORTED_PILOT_CASES:
+        for beta_deg in range(91):
+            point_rows = [
+                row
+                for row in refined_rows
+                if row["case_id"] == case_id and abs(float(row["beta_deg"]) - beta_deg) <= 1.0e-12
+            ]
+            for model in MODELS:
+                targeted = (case_id, model, round(float(beta_deg), 10)) in point_index
+                prefix = _model_csv_prefix(model)
+                original = source_inventory[(case_id, beta_deg, model)]["entries"]
+                for mode_zero, row in enumerate(point_rows):
+                    value = float(row[f"lambda_{prefix}"])
+                    original_value = float(original[mode_zero]["value"])
+                    if not targeted and value != original_value:
+                        unaffected_mismatches += 1
+                    if case_id == "P2" and value != original_value:
+                        p2_mismatches += 1
+    if unaffected_mismatches:
+        raise AssertionError(f"{unaffected_mismatches} unaffected integer values changed")
+    if p2_mismatches:
+        raise AssertionError(f"P2 changed in {p2_mismatches} values")
+    if len(png_paths) != 4 or len(list(output_dir.glob("*.png"))) != 4:
+        raise AssertionError("refined pilot must contain exactly four PNG files")
+    forbidden = [p for p in output_dir.rglob("*") if p.suffix.lower() in {".pdf", ".svg", ".eps"}]
+    if forbidden:
+        raise AssertionError(f"forbidden output formats: {forbidden}")
+    for region in refined_pilot_regions():
+        settings = _local_refinement_settings(region)
+        for point in region_results[region.region_id]["points"]:  # type: ignore[index]
+            entries = point["entries"]
+            if not _inventory_is_sorted(entries):
+                raise AssertionError(f"{region.region_id} beta={point['beta_deg']}: inventory is not sorted")
+            if _inventory_has_invalid_duplicate(entries, settings):
+                raise AssertionError(f"{region.region_id} beta={point['beta_deg']}: invalid duplicate")
+            if point["status"] != "local_refinement_unresolved" and (
+                len(entries) < SORTED_PILOT_N_STORE
+                or any(not isfinite(float(entry["value"])) for entry in entries)
+            ):
+                raise AssertionError(f"{region.region_id} beta={point['beta_deg']}: resolved inventory is incomplete")
+    return {
+        "unaffected_integer_mismatches": unaffected_mismatches,
+        "p2_mismatches": p2_mismatches,
+        "png_count": len(png_paths),
+        "force_strict_calls": 0,
+        "tracking_calls": 0,
+        "mac_calls": 0,
+        "shape_calls": 0,
+        "continuation_calls": 0,
+    }
+
+
+def _accepted_target_local_slots(
+    point: dict[str, object],
+    region: LocalRefinementRegion,
+) -> int:
+    settings = _local_refinement_settings(region)
+    candidates = sorted(
+        (
+            row
+            for row in point["candidate_rows"]  # type: ignore[index]
+            if bool(row["accepted"])
+            and str(row["candidate_source"]).startswith(region.region_id + "_local_dense:")
+            and str(row["block_family"]) == "full_6x6"
+        ),
+        key=lambda row: float(row["lambda_candidate"]),
+    )
+    groups: list[dict[str, object]] = []
+    for candidate in candidates:
+        if groups and abs(float(candidate["lambda_candidate"]) - float(groups[-1]["lambda_candidate"])) <= settings.root_dedup_tol:
+            if int(candidate["multiplicity"]) > int(groups[-1]["multiplicity"]):
+                groups[-1] = candidate
+        else:
+            groups.append(candidate)
+    return sum(max(1, int(candidate["multiplicity"])) for candidate in groups)
+
+
+def run_beta_sorted_spectrum_refined_pilot() -> dict[str, object]:
+    source_dir = _repo_output_dir(REFINED_PILOT_SOURCE_DIR)
+    output_dir = _repo_output_dir(REFINED_PILOT_OUTPUT_DIR)
+    source_csv = source_dir / "beta_sorted_spectrum_pilot.csv"
+    if not source_csv.exists():
+        raise FileNotFoundError(f"source sorted pilot is missing: {source_csv}")
+    source_csv_sha256 = hashlib.sha256(source_csv.read_bytes()).hexdigest()
+    output_dir.mkdir(parents=True, exist_ok=True)
+    region_results: dict[str, dict[str, object]] = {}
+    with ProcessPoolExecutor(max_workers=4) as pool:
+        futures = {
+            pool.submit(
+                _refinement_region_worker,
+                region,
+                str(source_dir),
+                str(output_dir),
+                source_csv_sha256,
+            ): region.region_id
+            for region in refined_pilot_regions()
+        }
+        for future in as_completed(futures):
+            result = future.result()
+            region_id = str(result["region"]["region_id"])  # type: ignore[index]
+            region_results[region_id] = result
+            print(f"[{region_id}] local refinement complete", flush=True)
+
+    source_inventory = _load_original_sorted_inventory(source_dir)
+    refined_rows = _assemble_refined_rows(source_inventory, region_results)
+    refined_csv = output_dir / "refined_beta_sorted_spectrum.csv"
+    _write_csv(refined_csv, refined_rows, REFINED_PILOT_CSV_FIELDS)
+    candidate_rows = _candidate_output_rows(region_results)
+    candidates_csv = output_dir / "local_root_candidates.csv"
+    _write_csv(candidates_csv, candidate_rows, LOCAL_CANDIDATE_FIELDS)
+    before_after = _before_after_rows(source_inventory, region_results)
+    before_after_csv = output_dir / "before_after_integer_beta.csv"
+    _write_csv(before_after_csv, before_after, BEFORE_AFTER_FIELDS)
+    summary_rows = _refinement_summary_rows(source_inventory, region_results, before_after)
+    summary_csv = output_dir / "local_refinement_summary.csv"
+    _write_csv(summary_csv, summary_rows, LOCAL_REFINEMENT_SUMMARY_FIELDS)
+
+    png_paths: list[Path] = []
+    for label, epsilon, mu, eta in SORTED_PILOT_CASES:
+        png_paths.append(
+            _plot_refined_case(
+                output_dir,
+                CaseSpec(mu=mu, eta=eta, epsilon=epsilon, label=label),
+                refined_rows,
+            )
+        )
+    validation = validate_refined_pilot_outputs(
+        refined_rows,
+        source_inventory,
+        region_results,
+        png_paths,
+        output_dir,
+    )
+
+    local_matrix_evaluations = sum(
+        int(point["local_matrix_evaluations"])
+        for region in refined_pilot_regions()
+        for point in region_results[region.region_id]["points"]  # type: ignore[index]
+    )
+    base_primary_evaluations = sum(
+        int(point["base_primary_matrix_evaluations"])
+        for region in refined_pilot_regions()
+        for point in region_results[region.region_id]["points"]  # type: ignore[index]
+    )
+    sign_change_candidates = sum(bool(row["sign_change"]) for row in candidate_rows)
+    sigma_candidates = sum(
+        not bool(row["sign_change"]) and "sigma" in str(row["candidate_source"])
+        for row in candidate_rows
+    )
+    rejected_candidates = sum(not bool(row["accepted"]) for row in candidate_rows)
+    accepted_local_roots = sum(
+        _accepted_target_local_slots(point, region)
+        for region in refined_pilot_regions()
+        for point in region_results[region.region_id]["points"]  # type: ignore[index]
+    )
+    distinct_pairs = sum(
+        point["status"] == "resolved_distinct_pair"
+        for region in refined_pilot_regions()
+        for point in region_results[region.region_id]["points"]  # type: ignore[index]
+    )
+    double_roots = sum(
+        int(point["multiplicity_two_count"])
+        for region in refined_pilot_regions()
+        for point in region_results[region.region_id]["points"]  # type: ignore[index]
+    )
+    unresolved_points = sum(
+        point["status"] == "local_refinement_unresolved"
+        for region in refined_pilot_regions()
+        for point in region_results[region.region_id]["points"]  # type: ignore[index]
+    )
+    additional_betas = sum(
+        not _is_integer_beta(float(point["beta_deg"]))
+        for region in refined_pilot_regions()
+        for point in region_results[region.region_id]["points"]  # type: ignore[index]
+    )
+    p3_beta0 = next(
+        point
+        for point in region_results["R3"]["points"]  # type: ignore[index]
+        if abs(float(point["beta_deg"])) <= 1.0e-12
+    )
+    cache_hits = sum(int(region_results[region.region_id]["cache_hits"]) for region in refined_pilot_regions())
+    report_lines = [
+        "# Locally refined independent beta sorted-spectrum pilot",
+        "",
+        "Curves show sorted spectral positions, not physical descendant branches.",
+        "",
+        "Only R1-R7 were refined. Integer data outside those theory-specific windows come directly from the original sorted-spectrum pilot. Fractional-beta primary inventories and all accepted local candidates are matrix-confirmed at their own beta; no frequency interpolation is used.",
+        "",
+        "## Operation summary",
+        "",
+        f"- additional fractional beta-points: {additional_betas}",
+        f"- local dense-window matrix evaluations: {local_matrix_evaluations}",
+        f"- fractional base-primary matrix evaluations: {base_primary_evaluations}",
+        f"- raw sign-change candidates: {sign_change_candidates}",
+        f"- raw sigma-minimum-only candidates: {sigma_candidates}",
+        f"- rejected candidates: {rejected_candidates}",
+        f"- accepted deduplicated target-local root slots: {accepted_local_roots}",
+        f"- resolved distinct-pair points: {distinct_pairs}",
+        f"- confirmed double-root groups: {double_roots}",
+        f"- unresolved local points: {unresolved_points}",
+        f"- P3 beta=0 status: {p3_beta0['status']}",
+        f"- cache hits in this invocation: {cache_hits}",
+        "",
+        "## Region summary",
+        "",
+    ]
+    for row in summary_rows:
+        report_lines.append(
+            f"- {row['region_id']}: beta_points={row['beta_points']}, resolved={row['resolved_points']}, "
+            f"unresolved={row['unresolved_points']}, recovered={row['recovered_root_count']}, "
+            f"multiplicity_two={row['multiplicity_two_count']}, remaining_spike={row['remaining_spike']}, "
+            f"status={row['status']}"
+        )
+    report_lines.extend(
+        [
+            "",
+            "## Prohibited-operation counters",
+            "",
+            "- branch tracking calls: 0",
+            "- MAC calls: 0",
+            "- shape reconstruction calls: 0",
+            "- continuation calls: 0",
+            "- force/full strict calls: 0",
+            "- global K12 strict scans: 0",
+            "",
+            "## Outputs",
+            "",
+        ]
+    )
+    report_lines.extend(f"- `{_rel(path)}`" for path in png_paths)
+    report_lines.extend(
+        [
+            f"- `{_rel(refined_csv)}`",
+            f"- `{_rel(candidates_csv)}`",
+            f"- `{_rel(before_after_csv)}`",
+            f"- `{_rel(summary_csv)}`",
+            f"- `{_rel(output_dir / 'report.md')}`",
+            "",
+        ]
+    )
+    report_path = output_dir / "report.md"
+    report_path.write_text("\n".join(report_lines), encoding="utf-8")
+    return {
+        "png_paths": png_paths,
+        "refined_csv": refined_csv,
+        "candidates_csv": candidates_csv,
+        "before_after_csv": before_after_csv,
+        "summary_csv": summary_csv,
+        "report_path": report_path,
+        "summary_rows": summary_rows,
+        "additional_betas": additional_betas,
+        "local_matrix_evaluations": local_matrix_evaluations,
+        "base_primary_evaluations": base_primary_evaluations,
+        "sign_change_candidates": sign_change_candidates,
+        "sigma_candidates": sigma_candidates,
+        "accepted_local_roots": accepted_local_roots,
+        "rejected_candidates": rejected_candidates,
+        "distinct_pairs": distinct_pairs,
+        "double_roots": double_roots,
+        "unresolved_points": unresolved_points,
+        "p3_beta0_status": p3_beta0["status"],
+        "cache_hits": cache_hits,
+        "validation": validation,
+    }
+
+
+def run_beta_branch_pilot() -> dict[str, object]:
+    output_dir = _repo_output_dir(PILOT_OUTPUT_DIR)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    results: dict[str, dict[str, object]] = {}
+    with ProcessPoolExecutor(max_workers=4) as pool:
+        futures = {pool.submit(_pilot_case_worker, case): case[0] for case in PILOT_CASES}
+        for future in as_completed(futures):
+            result = future.result()
+            label = str(result["case"][0])  # type: ignore[index]
+            results[label] = result
+            print(f"[{label}] complete", flush=True)
+
+    csv_rows: list[dict[str, object]] = []
+    png_paths: list[Path] = []
+    full_by_case: dict[str, list[int]] = {}
+    gaps_by_case: dict[str, list[int]] = {}
+    for label, epsilon, mu, eta in PILOT_CASES:
+        case = CaseSpec(mu=mu, eta=eta, epsilon=epsilon, label=label)
+        models = results[label]["models"]
+        eb = np.asarray(models[MODEL_EB]["values"], dtype=float)  # type: ignore[index]
+        tm = np.asarray(models[MODEL_TIMO]["values"], dtype=float)  # type: ignore[index]
+        eb_status = np.asarray(models[MODEL_EB]["statuses"], dtype=object)  # type: ignore[index]
+        tm_status = np.asarray(models[MODEL_TIMO]["statuses"], dtype=object)  # type: ignore[index]
+        png_paths.append(_pilot_plot(output_dir, case, eb, tm))
+        full: list[int] = []
+        gaps: list[int] = []
+        for branch_zero in range(PILOT_N_TRACK):
+            if np.all(np.isfinite(eb[branch_zero])) and np.all(np.isfinite(tm[branch_zero])):
+                full.append(branch_zero + 1)
+            else:
+                gaps.append(branch_zero + 1)
+            for beta_index in range(91):
+                status_parts = []
+                if str(eb_status[branch_zero, beta_index]) != "ok":
+                    status_parts.append(str(eb_status[branch_zero, beta_index]))
+                if str(tm_status[branch_zero, beta_index]) != "ok":
+                    status_parts.append(str(tm_status[branch_zero, beta_index]))
+                csv_rows.append(
+                    {
+                        "case_id": label,
+                        "epsilon_0": epsilon,
+                        "mu": mu,
+                        "eta": eta,
+                        "beta_deg": beta_index,
+                        "branch_index": branch_zero + 1,
+                        "lambda_eb": eb[branch_zero, beta_index],
+                        "lambda_timo": tm[branch_zero, beta_index],
+                        "tracking_status": ";".join(status_parts) if status_parts else "ok",
+                    }
+                )
+        full_by_case[label] = full
+        gaps_by_case[label] = gaps
+    csv_path = output_dir / "beta_branch_pilot.csv"
+    _write_csv(csv_path, csv_rows, PILOT_CSV_FIELDS)
+    gap_rows = [row for row in csv_rows if row["tracking_status"] != "ok"]
+    report_lines = [
+        "# Beta branch pilot",
+        "",
+        "Diagnostic-only EB/Timoshenko descendant-frequency comparison.",
+        "Branches are seeded at beta=0, mu=0 for each epsilon and fixed eta, continued to the requested mu, then followed over beta=0..90 deg in one-degree steps.",
+        "Internal shape continuity is used only for branch assignment; no shape, MAC, energy, gap, veering, FEM, strict, refinement, or article figure is emitted.",
+        "",
+        "- plotted branches per theory: 12",
+        "- candidate roots per tracking step: 18",
+        f"- ambiguous CSV rows saved as NaN gaps: {len(gap_rows)}",
+        "- force_strict_verification calls: 0",
+        "- adaptive refinement calls: 0",
+        "",
+        "## Coverage",
+        "",
+    ]
+    for label, epsilon, mu, eta in PILOT_CASES:
+        report_lines.append(
+            f"- {label} (epsilon_0={epsilon:.17g}, mu={mu:g}, eta={eta:g}): "
+            f"full branches={full_by_case[label] or 'none'}; branches with gaps={gaps_by_case[label] or 'none'}"
+        )
+    report_lines.extend(["", "## Outputs", ""])
+    report_lines.extend(f"- `{_rel(path)}`" for path in png_paths)
+    report_lines.extend([f"- `{_rel(csv_path)}`", f"- `{_rel(output_dir / 'report.md')}`", ""])
+    report_path = output_dir / "report.md"
+    report_path.write_text("\n".join(report_lines), encoding="utf-8")
+    return {
+        "png_paths": png_paths,
+        "csv_path": csv_path,
+        "report_path": report_path,
+        "gap_row_count": len(gap_rows),
+        "full_by_case": full_by_case,
+        "gaps_by_case": gaps_by_case,
+    }
+
+
 def main(argv: list[str] | None = None) -> None:
     run_start = time.perf_counter()
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     args = parse_args(argv)
+    if args.beta_branch_pilot:
+        result = run_beta_branch_pilot()
+        print(f"saved {len(result['png_paths'])} PNG files")
+        print(f"CSV: {_rel(result['csv_path'])}")
+        print(f"tracking gaps: {result['gap_row_count']}")
+        print("force_strict=0; refinement=0; FEM=0; PDF=0")
+        return
+    if args.beta_sorted_spectrum_pilot:
+        result = run_beta_sorted_spectrum_pilot()
+        print(f"saved {len(result['png_paths'])} PNG files")
+        print(f"CSV: {_rel(result['csv_path'])}")
+        print(f"suspect intervals: {len(result['suspect_rows'])}")
+        print(
+            f"complete inventories EB/Timoshenko: {result['full_eb']}/364, "
+            f"{result['full_timo']}/364"
+        )
+        print("tracking=0; MAC=0; shapes=0; force_strict=0; refinement=0; FEM=0; PDF=0")
+        return
+    if args.beta_sorted_spectrum_refined_pilot:
+        result = run_beta_sorted_spectrum_refined_pilot()
+        print(f"saved {len(result['png_paths'])} refined PNG files")
+        print(f"CSV: {_rel(result['refined_csv'])}")
+        print(
+            f"additional_beta={result['additional_betas']}; local_matrix_evaluations="
+            f"{result['local_matrix_evaluations']}; unresolved={result['unresolved_points']}"
+        )
+        print(
+            f"distinct_pairs={result['distinct_pairs']}; double_roots={result['double_roots']}; "
+            f"P3_beta0={result['p3_beta0_status']}"
+        )
+        print("tracking=0; MAC=0; shapes=0; continuation=0; force_strict=0; FEM=0; PDF=0")
+        return
     cases = default_cases(args.mu_eta_cases, args.epsilon_values)
     beta_values_by_case = beta_grids_by_case(cases, args)
     cache_path = cache_file_path(cases, beta_values_by_case, args)

@@ -132,6 +132,161 @@ This workflow remains a research diagnostic and is not a production
 recommendation or a continuous-domain certificate. Do not continue empirical
 selector refinement under the unchanged problem statement.
 
+## Article epsilon upper-envelope coarse-grid workflow
+
+The sorted-family inventory local-repair audit is a diagnostic-only precursor
+to any future coarse-grid orchestration change:
+
+```bash
+python scripts/analysis/thickness_mismatch/audits/audit_family_inventory_local_repair.py --threshold-profile nominal
+```
+
+It compares sorted spectral positions across a beta family, detects a coherent
+upper-tail index displacement, infers a narrow Lambda window from neighboring
+sorted roots, and applies staged local matrix searches before classifying a
+case as deferred. Physical descendant branches, MAC, shapes, interpolation,
+global K12 scans, and force/full strict verification are not used. The manual
+R1--R7 refined pilot is opened only as a post-run oracle. The passing audit in
+`results/article_epsilon_upper_envelope/family_inventory_local_repair_audit/`
+does not change the production runner and did not resume the coarse grid.
+
+The article-facing epsilon upper-envelope workflow is a new finite-grid
+diagnostic and is not a continuation, recalibration, or reopening of the
+closed Rule A/B/S selector study. Its primary entry point is
+`audits/run_article_epsilon_upper_envelope_grid.py`; CSV-only analysis and
+plot regeneration use
+`postprocess/analyze_article_epsilon_upper_envelope.py`. Outputs are confined
+to `results/article_epsilon_upper_envelope/`, while smoke outputs are confined
+to `results/_smoke/article_epsilon_upper_envelope/`.
+
+The runner builds the deterministic 1554-point manifest before root work,
+uses the versioned `general_complete_svd_v6_floored_row_scaling`
+primary/independent spectrum
+search with epsilon continuation seeds, and invokes the existing
+branch-informed gateway only for unresolved root-11 or cluster/order cases and
+the exact regressions. The comparison always uses the first ten sorted
+frequencies and root 11 as the right completeness guard. `s_max <= 0.1` and
+Timoshenko cutoff ratios are saved diagnostic columns, never filters.
+
+Run the finite smoke and exact regressions with:
+
+```bash
+python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_envelope_grid.py --smoke --reuse-cache
+python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_envelope_grid.py --regressions-only --reuse-cache
+```
+
+The authorized coarse run used the explicit paired+auto prefix mode. It was
+manually interrupted after 320/1554 completed points; its cache remains under
+`results/article_epsilon_upper_envelope/coarse_grid_v1/` and must not be
+confused with a complete article-facing envelope. Full K10 remains the default
+when no mode flag is supplied.
+
+```bash
+python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_envelope_grid.py --output-dir results/article_epsilon_upper_envelope/coarse_grid_v1 --prefix-until-failure --prefix-strategy paired --strict-policy auto --workers 1 --reuse-cache
+```
+
+Rebuild tables, report, and four diagnostic plots without a root call with:
+
+```bash
+python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_envelope_grid.py --postprocess-only
+# or directly:
+python scripts/analysis/thickness_mismatch/postprocess/analyze_article_epsilon_upper_envelope.py
+python scripts/analysis/thickness_mismatch/postprocess/analyze_article_epsilon_upper_envelope.py --output-dir results/article_epsilon_upper_envelope/coarse_grid_v1 --partial-cache
+```
+
+The historical 16-point smoke had four unresolved controls. Solver-readiness
+v2 now resolves those controls, the three blocked ordinary points, and all 24
+fixed validation references. S3_12 and S3_14 remain `N_true=4` within the
+pre-existing tolerance. The partial coarse grid is incomplete; no finite
+validation, partial resolved subset, or runtime projection is a
+continuous-domain bound.
+
+### Prefix optimization audit
+
+`--full-k10` remains the reference and default mode. The explicit
+`--prefix-until-failure` mode is only a computational optimization of the same
+sorted-frequency `N_true`: it compares actually resolved EB/Timoshenko roots,
+uses staged blocks `1..4 + guard 5`, `1..7 + guard 8`, and `1..10 + guard 11`,
+and never uses a predictor as a scientific decision. Both staged strategies
+remain available:
+
+```bash
+python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_envelope_grid.py --regressions-only --prefix-until-failure --prefix-strategy paired --strict-policy auto --reuse-cache
+python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_envelope_grid.py --regressions-only --prefix-until-failure --prefix-strategy full-eb-progressive-timo --strict-policy auto --reuse-cache
+```
+
+Partial point caches are atomic compact JSON/gzip snapshots. They retain roots,
+clusters, brackets/interval metadata, and evaluated determinant/SVD data, so a
+later full-K10 request can extend an early prefix rather than recomputing it.
+`not_attempted_cases.csv` is separate from attempted failures; modes beyond a
+confirmed first failure carry `not_needed_after_first_failure`. Optional
+`--envelope-only` saturation at `N_true=10` is complete only for the upper
+envelope, never for distributions, all argmax geometries, or thinness splits.
+
+Prepare the fixed 24-point validation manifest, or run a bounded benchmark,
+with:
+
+```bash
+python scripts/analysis/thickness_mismatch/benchmarks/benchmark_article_epsilon_prefix_optimization.py --prepare-only
+python scripts/analysis/thickness_mismatch/benchmarks/benchmark_article_epsilon_prefix_optimization.py --case-limit 1 --force
+```
+
+The benchmark and solver-readiness audit report independent equivalence and
+readiness gates. In the versioned v2 results, full K10 resolves 24/24 fixed
+validation points and paired+auto reproduces `N_true`, first failure, right
+guard, and roots through the guard for all 24 with the existing tolerances.
+Both gates are `PASS`; an optimized result still cannot be accepted without a
+resolved full reference.
+
+The interruption-safe postprocessor separates `execution_status`, exact
+`n_true_status`, required-prefix guard status, optional upper-spectrum audit,
+and later full-K10 control. A full-strict problem above the required right
+guard can no longer erase an independently proved prefix; conversely, the 11
+saved unresolved cases all fail at/below the required guard or lack a proved
+first failure, so zero-solve reclassification accepts none of them.
+
+The diagnostic-only process benchmark
+`benchmarks/benchmark_article_epsilon_prefix_parallelism.py` assigns whole
+geometry chains to processes, fixes BLAS/OpenMP thread counts to one, and uses
+isolated worker caches. On eight fresh chains (64 points per setting), workers
+1/2/4 produced identical roots, statuses, and `N_true`; measured wall times
+were 275.668/151.714/88.390 s. Four workers are the bounded resume candidate.
+One case was consistently prefix-affecting unresolved, so it remains visible
+without a false `N_true`. A separate extreme thick probe was interrupted and
+retained as tail-risk provenance rather than removed from the approved main
+manifest.
+
+The same Timoshenko characteristic equation is now represented by mixed,
+cutoff-limit, and two-trigonometric-pair local bases. The derivation and
+validation are recorded in the
+[status note](../../../docs/thickness_mismatch/timoshenko_basis_regime_extension_status.md),
+with artifacts under
+`results/article_epsilon_upper_envelope/solver_readiness_v2/`. Paired+auto is
+the future candidate because it retains warning escalation, but full K10
+remains the default. Coarse-grid roots compute no shapes, energy integrals,
+dense fields, or MAC histories.
+
+Resume the ordinary validation cache, regenerate benchmark tables without any
+root solve, or repeat the separate smoke postprocessing with:
+
+```bash
+python scripts/analysis/thickness_mismatch/benchmarks/benchmark_article_epsilon_prefix_optimization.py --reuse-cache
+python scripts/analysis/thickness_mismatch/benchmarks/benchmark_article_epsilon_prefix_optimization.py --postprocess-only
+python scripts/analysis/thickness_mismatch/audits/audit_article_epsilon_smoke_failures.py --postprocess-only
+python scripts/analysis/thickness_mismatch/audits/audit_article_epsilon_solver_readiness_v2.py --output-dir results/article_epsilon_upper_envelope/solver_readiness_v2 --session-id readiness_final_v3 --postprocess-only
+```
+
+The current `resume_readiness_gate=PASS` supports the following future command,
+but this command was not executed in the interruption/parallel-audit step:
+
+```bash
+python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_envelope_grid.py --output-dir results/article_epsilon_upper_envelope/coarse_grid_v1 --prefix-until-failure --prefix-strategy paired --strict-policy auto --workers 4 --reuse-cache
+```
+
+This optimization does not reopen Rule A/B/S and does not alter EB or
+Timoshenko equations, normalization, shear coefficient, geometry, or strict
+tolerances.
+
 ## Historical EB safe-prefix workflow
 
 The following commands and descriptions preserve the completed workflow for
@@ -428,7 +583,7 @@ when the Stage-1 data are present.
 | --- | --- | --- | --- | --- |
 | Out-of-plane EB+torsion sorted `Lambda(beta)` maps | `python scripts/analysis/thickness_mismatch/maps/plot_out_of_plane_lambda_beta_mu_eta.py` | none | `results/out_of_plane_lambda_beta_mu_eta/out_of_plane_lambda_beta_mu_eta_sorted_roots.csv`, `results/out_of_plane_lambda_beta_mu_eta/out_of_plane_lambda_beta_gap_summary.csv`, low/extended eta-panel PNGs, overview PNG, and report | Diagnostic-only sorted-frequency beta maps for the out-of-plane Euler--Bernoulli plus Saint-Venant torsion determinant across selected `mu` and eta values. It includes low-spectrum first roots, extended plots reaching the first torsion-root region, and adjacent sorted-gap summaries. It does not use descendant tracking, crossing verification, 3D FEM, or article styling. |
 | In-plane vs out-of-plane analytic `Lambda(beta)` maps | `python scripts/analysis/thickness_mismatch/maps/plot_in_plane_vs_out_of_plane_lambda_beta.py` | none | `results/in_plane_vs_out_of_plane_lambda_beta/in_plane_vs_out_of_plane_lambda_beta_sorted_roots.csv`, `in_plane_vs_out_of_plane_lambda_beta_case_summary.csv`, `in_plane_vs_out_of_plane_lambda_beta_spike_audit.csv`, `full_analytic_union_lambda_beta.csv`, per-case PNGs, overview PNG, and report | Diagnostic-only sorted-frequency comparison of the in-plane EB determinant roots against the out-of-plane EB+torsion determinant roots. In-plane curves are solid, out-of-plane curves are dashed, and spike handling uses CSV-first raw roots plus NaN plot segmentation without descendant tracking, smoothing, FEM, or article styling. |
-| In-plane EB vs Timoshenko sorted `Lambda(beta)` cases | `python scripts/analysis/thickness_mismatch/maps/plot_eb_vs_timoshenko_lambda_beta_cases.py` | reuses `formulas_thickness_mismatch.py` and `scripts/lib/variable_length_timoshenko.py` | `results/eb_vs_timoshenko_lambda_beta_cases/lambda_beta_eb_vs_timo_*.png`, matching per-case CSVs, `eb_vs_timo_lambda_beta_case_summary.csv`, `eb_vs_timo_lambda_beta_spike_audit.csv`, `eb_vs_timo_lambda_beta_timing_report.csv`, cache NPZ files under `cache/`, `eb_vs_timo_lambda_beta_overview.png`, and `eb_vs_timo_lambda_beta_cases_report.md` | Diagnostic-only sorted-frequency comparison for `(mu, eta)=(0,0),(0,0.1),(0.3,0.1)` and `epsilon=0.0025,0.05` on `beta=0..90 deg`. Timoshenko curves are solid, Euler-Bernoulli curves are dashed, same sorted index uses the same color, and the optimized workflow supports cache reuse, plot-only regeneration, selected-case filters, timing output, continuation-assisted Timoshenko solves, local beta refinement, dense retry, raw/plot CSV columns, and targeted row-normalized smallest-singular-value recovery for missed close roots without descendant tracking, FEM/3D FEM, article styling, determinant changes, or shear-coefficient changes. |
+| In-plane EB vs Timoshenko sorted `Lambda(beta)` cases | `python scripts/analysis/thickness_mismatch/maps/plot_eb_vs_timoshenko_lambda_beta_cases.py` | reuses `formulas_thickness_mismatch.py`, `scripts/lib/general_spectrum_completeness.py`, and `scripts/lib/variable_length_timoshenko.py` | default outputs under `results/eb_vs_timoshenko_lambda_beta_cases/`; pilot outputs under `results/article_epsilon_upper_envelope/beta_branch_pilot/`, `beta_sorted_spectrum_pilot/`, and `beta_sorted_spectrum_refined_pilot/` | The default is the historical sorted-frequency comparison. `--beta-branch-pilot` writes the fixed P1--P4 descendant pilot. `--beta-sorted-spectrum-pilot` independently runs the ordinary pointwise primary root search at each integer beta and stores sorted positions 1--12 plus adjacent-step diagnostics. `--beta-sorted-spectrum-refined-pilot` preserves those source files, matrix-confirms fractional-beta base candidates, and applies dense local scans only in R1--R7 with multiplicity/block provenance and a separate atomic cache. The sorted presets use no continuation, tracking, strict verification, FEM, energy, or PDF output. |
 | In-plane EB vs Timoshenko sorted `Lambda(mu)` eps scan | `python scripts/analysis/thickness_mismatch/maps/plot_eb_vs_timoshenko_lambda_mu_cases.py --beta-deg 45 --eta 0 --epsilon-values 0.005 0.01 0.02 0.03 0.04 --mu-min 0 --mu-max 0.7 --mu-step 0.005 --n-roots 6 --output-dir results/eb_vs_timoshenko_lambda_mu_beta45_eta0_eps_scan` | reuses the EB-vs-Timoshenko `Lambda(beta)` diagnostic solve wrappers, `formulas_thickness_mismatch.py`, and `scripts/lib/variable_length_timoshenko.py` | `results/eb_vs_timoshenko_lambda_mu_beta45_eta0_eps_scan/lambda_mu_eb_vs_timo_beta45_eta0_eps*.png`, matching per-case CSVs, `eb_vs_timo_lambda_mu_beta45_eta0_eps_scan_summary.csv`, `eb_vs_timo_lambda_mu_beta45_eta0_eps_scan_spike_audit.csv`, `timing_report.csv`, cache NPZ files under `cache/`, `eb_vs_timo_lambda_mu_beta45_eta0_eps_scan_overview.png`, and `eb_vs_timo_lambda_mu_beta45_eta0_eps_scan_report.md` | Diagnostic-only sorted-frequency comparison for `beta=45 deg`, `eta=0`, and `epsilon=0.005,0.01,0.02,0.03,0.04` on `mu=0..0.7`. Timoshenko curves are solid, Euler-Bernoulli curves are dashed, same sorted index uses the same color, and the workflow supports `--beta-deg`, cache reuse, plot-only regeneration, timing output, continuation-assisted Timoshenko solves, spike audit, local mu refinement only when needed, dense retry/local SVD fallback only on suspicious points, and requested raw/plot CSV columns without single-rod references, descendant tracking, FEM/3D FEM, article styling, determinant changes, or shear-coefficient changes. |
 | Stage-1 EB applicability relative to Timoshenko | `python scripts/analysis/thickness_mismatch/audits/audit_eb_validity_vs_timoshenko_stage1.py` | reuses the existing in-plane EB root solver, Timoshenko root solver, sorted shape/energy reconstruction helpers, shape MAC helpers, and `thickness_mismatch_factors` | `results/eb_validity_vs_timoshenko_stage1/eb_timo_mode_level_metrics.csv`, `eb_timo_validity_summary.csv`, `eb_timo_critical_thickness_by_branch.csv`, `epsilon_branch_tracking_audit.csv`, `critical_threshold_refinement_audit.csv`, `chi_scaling_fit_summary.csv`, diagnostic PNGs, root cache under `cache/`, timing CSVs, and `eb_validity_vs_timoshenko_stage1_report.md` | Diagnostic-only `beta=45 deg`, `eta=0` applicability scan over `mu=0..0.7` and `epsilon_0=0.0025..0.06`. It keeps sorted-spectrum metrics separate from physical-branch metrics, seeds `base_branch_1..8` at the thin limit, continues EB and Timoshenko branches independently by shape MAC over candidate roots 1..12, computes energy character and chi metrics, refines 10% `delta_f` threshold brackets, and supports `--smoke`, `--reuse-cache`, `--force-recompute`, `--plot-only`, `--skip-critical-refinement`, grid overrides, and output-dir overrides. It does not run FEM/3D FEM/Gmsh/CalculiX, change formulas/determinants/root solvers/k', or touch article workspaces. |
 | Fixed-epsilon EB applicability geometry scan | `python scripts/analysis/thickness_mismatch/audits/audit_eb_validity_fixed_epsilon_geometry_scan.py` | reuses the existing EB/Timoshenko root wrappers, tau-aware geometry factors, analytic shape reconstruction, energy helpers, and shape-MAC utilities | `results/eb_validity_fixed_epsilon_geometry_scan/fixed_epsilon_mode_metrics.csv`, `fixed_epsilon_matching_audit.csv`, `fixed_epsilon_point_summary.csv`, predictor fit/CV/threshold/runtime CSVs, diagnostic PNGs, root cache under `cache/`, and `eb_validity_fixed_epsilon_geometry_scan_report.md` | Diagnostic-only follow-up scan at fixed `epsilon_0=0.02` over `beta=0..90 deg`, `mu=0..0.7`, and `eta=-0.1,0,0.1`. It keeps sorted metrics separate from per-point homologous EB/Timoshenko matching, uses mass-weighted local `[u,w]` MAC with one-to-one assignment and close-cluster subspace rows, computes EB-only `Theta_max_EB` and `Pi_EB` predictors, supports cache reuse, `--smoke`, `--plot-only`, optional local Timoshenko benchmarking, and grid overrides. It does not use descendant tracking, FEM/3D FEM/Gmsh/CalculiX, article styling, determinant changes, root-solver changes, or shear-coefficient changes. |

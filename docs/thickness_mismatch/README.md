@@ -13,6 +13,18 @@ Current diagnostic plans and status notes:
 - [EB safe-spectrum-prefix research plan](eb_safe_spectrum_prefix_research_plan.md);
 - [EB safe-prefix stage closure](eb_safe_prefix_stage_closure.md);
 - [frequency-crossing positive-gap verification status](frequency_crossing_verification_status.md).
+- [Timoshenko basis-regime extension status](timoshenko_basis_regime_extension_status.md).
+
+The article epsilon solver-readiness v2 audit resolves all 24 fixed validation
+references and verifies paired+auto equivalence on all 24. The same Timoshenko
+equations are now represented in mixed, cutoff-limit, and
+two-trigonometric-pair spatial regimes; full K10 remains the default and the
+authorized 1554-point grid was manually interrupted after 320 completed
+points. Zero-solve audit accepts 309 exact prefixes, leaves 11
+prefix-affecting unresolved cases plus one interrupted cache, and does not
+promote the partial resolved subset to an article-facing envelope. An isolated
+workers=1/2/4 geometry-chain benchmark is deterministic and gives
+`resume_readiness_gate=PASS`; the main grid was not resumed in that audit.
 
 The EB safe-prefix stage is closed. The branch-informed completeness gateway
 resolved the `K=10` plus root-11 guard, Step 3A found two quality-approved

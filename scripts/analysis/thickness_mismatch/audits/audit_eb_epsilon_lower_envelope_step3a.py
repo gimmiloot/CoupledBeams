@@ -29,6 +29,10 @@ from scripts.lib import straight_rod_factorized_spectrum as factorized  # noqa: 
 
 
 STEP3A_ALGORITHM_VERSION = "epsilon_lower_envelope_step3a_v1"
+# The checked-in Step-3A manifest is immutable historical provenance.  Its
+# recorded solver identity must not become invalid when a later, separate
+# scientific cache identity advances.
+STEP3A_MANIFEST_ALGORITHM_VERSION = "branch_informed_continuation_v1"
 DEFAULT_MANIFEST = (
     REPO_ROOT
     / "scripts"
@@ -457,7 +461,7 @@ def validate_manifest_contract(cases: Sequence[ManifestCase]) -> None:
         raise ValueError("Step-3A manifest prefix groups differ from the explicit seven-group mapping")
     for case in cases:
         case.geometry.validate()
-        if case.required_spectrum_method != branch.BRANCH_CONTINUATION_ALGORITHM_VERSION:
+        if case.required_spectrum_method != STEP3A_MANIFEST_ALGORITHM_VERSION:
             raise ValueError(f"{case.case_id} does not require branch_informed_continuation_v1")
         if not case.required_K10_guard:
             raise ValueError(f"{case.case_id} does not require the K10 guard")
@@ -629,7 +633,7 @@ def load_baseline_data(
 def validate_gateway_provenance(gateway_dir: Path) -> None:
     rows = read_csv(gateway_dir / GATEWAY_SUMMARY)
     if not rows or any(
-        row.get("algorithm_version") != branch.BRANCH_CONTINUATION_ALGORITHM_VERSION for row in rows
+        row.get("algorithm_version") != STEP3A_MANIFEST_ALGORITHM_VERSION for row in rows
     ):
         raise ValueError("gateway summary is not uniformly branch_informed_continuation_v1")
     report = (gateway_dir / GATEWAY_REPORT).read_text(encoding="utf-8")

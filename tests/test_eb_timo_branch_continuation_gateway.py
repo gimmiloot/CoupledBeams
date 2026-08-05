@@ -91,7 +91,7 @@ def test_straight_parent_spectrum_matches_factorized_oracle(
 def test_seed_point_is_not_directly_accepted_in_general_helper() -> None:
     source = inspect.getsource(complete._global_candidates)
     assert "direct_full_matrix_SVD" not in source
-    assert complete.GENERAL_SPECTRUM_ALGORITHM_VERSION == "general_complete_svd_v2"
+    assert complete.GENERAL_SPECTRUM_ALGORITHM_VERSION == "general_complete_svd_v6_floored_row_scaling"
 
 
 def _synthetic_branch(root: float = 3.0) -> tuple[branch._Evaluator, branch.ContinuedBranch, branch.BranchOperationCounts]:
@@ -423,6 +423,6 @@ def test_operation_counter_categories_are_separate() -> None:
 
 
 def test_algorithm_version_and_import_contract() -> None:
-    assert branch.BRANCH_CONTINUATION_ALGORITHM_VERSION == "branch_informed_continuation_v1"
+    assert branch.BRANCH_CONTINUATION_ALGORITHM_VERSION == "branch_informed_continuation_v5_floored_row_scaling"
     assert callable(gateway.main)
     assert callable(pilot.main)

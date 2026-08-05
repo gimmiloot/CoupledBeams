@@ -20,6 +20,11 @@ L_SEGMENT = 1.0
 ROOT_SCAN_START = 0.2
 ROOT_SCAN_STEP = 0.01
 ROOT_DEDUP_TOL = 1.0e-7
+TIMOSHENKO_BASIS_EVALUATOR_VERSION = "closed_form_regime_complete_v2"
+TIMO_REGIME_MIXED = "mixed_hyperbolic_trigonometric"
+TIMO_REGIME_CUTOFF = "cutoff_limit"
+TIMO_REGIME_TWO_TRIG = "two_trigonometric_pairs"
+TIMO_BASIS_COLUMN_SCALE_CAP = 1.0e3
 
 
 @dataclass(frozen=True)
@@ -62,10 +67,15 @@ class Section:
 
 @dataclass(frozen=True)
 class TimoshenkoBasis:
+    regime: str
     a: float
     b: float
     h: float
     q: float
+    z_a: float
+    z_b: float
+    omega: float
+    alpha: float
     warnings: tuple[str, ...]
 
 
@@ -75,6 +85,33 @@ class TimoshenkoModeCoefficients:
     smallest_singular_value: float
     singular_value_ratio: float
     warnings: tuple[str, ...]
+
+
+def bending_column_scales(basis: TimoshenkoBasis) -> np.ndarray:
+    """Invertible scales from the canonical cutoff-continuous columns.
+
+    The mixed-regime values reproduce the historical production columns until
+    their second scale reaches a purely numerical cap.  On both sides of the
+    cutoff the capped second column has the same orientation, so the local
+    fundamental matrix remains continuous instead of diverging or flipping.
+    """
+
+    if basis.regime == TIMO_REGIME_MIXED:
+        scale_0 = basis.a * basis.a + basis.b * basis.b
+        raw_scale_1 = basis.a - (basis.h / basis.q) * basis.b
+        scale_1 = math.copysign(min(abs(raw_scale_1), TIMO_BASIS_COLUMN_SCALE_CAP), raw_scale_1)
+    elif basis.regime == TIMO_REGIME_CUTOFF:
+        scale_0 = basis.b * basis.b
+        scale_1 = -TIMO_BASIS_COLUMN_SCALE_CAP
+    elif basis.regime == TIMO_REGIME_TWO_TRIG:
+        scale_0 = basis.b * basis.b - basis.a * basis.a
+        raw_scale_1 = basis.a - (basis.h / basis.q) * basis.b
+        scale_1 = -min(abs(raw_scale_1), TIMO_BASIS_COLUMN_SCALE_CAP)
+    else:  # pragma: no cover - guarded by the basis constructor
+        raise ValueError(f"Unknown Timoshenko basis regime: {basis.regime!r}.")
+    if not (math.isfinite(scale_0) and math.isfinite(scale_1) and scale_0 != 0.0 and scale_1 != 0.0):
+        raise ValueError(f"Singular Timoshenko basis-column scaling in regime {basis.regime!r}.")
+    return np.array([scale_0, scale_1], dtype=float)
 
 
 def circular_shear_coefficient(nu: float) -> float:
@@ -182,30 +219,62 @@ def timo_basis(Lambda: float, epsilon: float, section: Section) -> TimoshenkoBas
     j = section.rotary_inertia_per_length
     c2 = omega**2 * (b_stiff * m / k_stiff + j)
     c0 = j * m * omega**4 / k_stiff - m * omega**2
-    roots = np.roots([b_stiff, c2, c0])
     warnings: list[str] = []
-    scale = max(1.0, float(np.max(np.abs(roots))))
-    if np.max(np.abs(np.imag(roots))) > 1.0e-8 * scale:
-        warnings.append(f"Timoshenko lambda^2 roots have non-negligible imaginary parts at Lambda={Lambda:.8g}.")
-    z_values = np.real(roots)
-    positives = [float(z) for z in z_values if z > 1.0e-12]
-    negatives = [float(z) for z in z_values if z < -1.0e-12]
-    if len(positives) != 1 or len(negatives) != 1:
-        warnings.append(f"Expected one positive and one negative lambda^2 root at Lambda={Lambda:.8g}.")
-        z_positive = float(np.max(z_values))
-        z_negative = float(np.min(z_values))
-        if z_positive <= 0.0 or z_negative >= 0.0:
-            raise ValueError(warnings[-1])
+    discriminant = c2**2 - 4.0 * b_stiff * c0
+    discriminant_scale = max(c2**2, abs(4.0 * b_stiff * c0), 1.0)
+    if discriminant < -64.0 * np.finfo(float).eps * discriminant_scale:
+        raise ValueError(
+            f"Timoshenko spatial-root discriminant is negative at Lambda={Lambda:.8g}."
+        )
+    sqrt_discriminant = math.sqrt(max(0.0, discriminant))
+    stable_product_root = -0.5 * (c2 + sqrt_discriminant)
+    if stable_product_root == 0.0:
+        raise ValueError("Timoshenko zero-frequency basis is not defined by the dynamic evaluator.")
+    z_b = stable_product_root / b_stiff
+    z_a = c0 / stable_product_root
+    if z_a < z_b:
+        z_a, z_b = z_b, z_a
+
+    root_scale = max(1.0, abs(z_a), abs(z_b))
+    zero_tol = 64.0 * np.finfo(float).eps * root_scale
+    alpha = m * omega**2 / k_stiff
+    if abs(z_a) <= zero_tol:
+        regime = TIMO_REGIME_CUTOFF
+        a = 0.0
+        b = math.sqrt(-z_b)
+        h = alpha
+        q = b - alpha / b
+    elif z_a > 0.0 and z_b < 0.0:
+        regime = TIMO_REGIME_MIXED
+        a = math.sqrt(z_a)
+        b = math.sqrt(-z_b)
+        h = a + alpha / a
+        q = b - alpha / b
+    elif z_a < 0.0 and z_b < 0.0:
+        regime = TIMO_REGIME_TWO_TRIG
+        a = math.sqrt(-z_a)
+        b = math.sqrt(-z_b)
+        h = a - alpha / a
+        q = b - alpha / b
     else:
-        z_positive = positives[0]
-        z_negative = negatives[0]
-    a = math.sqrt(z_positive)
-    b = math.sqrt(-z_negative)
-    h = a + m * omega**2 / (k_stiff * a)
-    q = b - m * omega**2 / (k_stiff * b)
-    if abs(q) <= 1.0e-12 * max(1.0, abs(b)):
-        warnings.append(f"Timoshenko trigonometric coupling q is close to zero at Lambda={Lambda:.8g}.")
-    return TimoshenkoBasis(a=float(a), b=float(b), h=float(h), q=float(q), warnings=tuple(warnings))
+        raise ValueError(
+            "Unsupported Timoshenko spatial-root regime "
+            f"z_a={z_a:.17g}, z_b={z_b:.17g} at Lambda={Lambda:.8g}."
+        )
+    if abs(q) <= 64.0 * np.finfo(float).eps * max(1.0, abs(b), abs(alpha / b)):
+        warnings.append(f"Timoshenko second trigonometric coupling q is close to zero at Lambda={Lambda:.8g}.")
+    return TimoshenkoBasis(
+        regime=regime,
+        a=float(a),
+        b=float(b),
+        h=float(h),
+        q=float(q),
+        z_a=float(z_a),
+        z_b=float(z_b),
+        omega=float(omega),
+        alpha=float(alpha),
+        warnings=tuple(warnings),
+    )
 
 
 def bending_endpoint_columns(x: float, basis: TimoshenkoBasis) -> dict[str, np.ndarray]:
@@ -213,18 +282,76 @@ def bending_endpoint_columns(x: float, basis: TimoshenkoBasis) -> dict[str, np.n
     b = basis.b
     h = basis.h
     q = basis.q
-    ax = a * float(x)
-    bx = b * float(x)
-    cosh_ax = np.cosh(ax)
-    sinh_ax = np.sinh(ax)
-    cos_bx = np.cos(bx)
-    sin_bx = np.sin(bx)
-    return {
-        "w": np.array([cosh_ax - cos_bx, sinh_ax - (h / q) * sin_bx], dtype=float),
-        "psi": np.array([h * sinh_ax + q * sin_bx, h * (cosh_ax - cos_bx)], dtype=float),
-        "w_prime": np.array([a * sinh_ax + b * sin_bx, a * cosh_ax - (h / q) * b * cos_bx], dtype=float),
-        "psi_prime": np.array([h * a * cosh_ax + q * b * cos_bx, h * (a * sinh_ax + b * sin_bx)], dtype=float),
-    }
+    x_f = float(x)
+    bx = b * x_f
+    cos_bx = float(np.cos(bx))
+    sin_bx = float(np.sin(bx))
+
+    if basis.regime == TIMO_REGIME_CUTOFF:
+        b2 = b * b
+        one_minus_cos_bx = 2.0 * float(np.sin(0.5 * bx)) ** 2
+        canonical = {
+            "w": np.array([one_minus_cos_bx / b2, sin_bx / b], dtype=float),
+            "psi": np.array(
+                [(basis.alpha * x_f + q * sin_bx) / b2, -q * one_minus_cos_bx / b],
+                dtype=float,
+            ),
+            "w_prime": np.array([sin_bx / b, cos_bx], dtype=float),
+            "psi_prime": np.array(
+                [(basis.alpha + q * b * cos_bx) / b2, -q * sin_bx],
+                dtype=float,
+            ),
+        }
+        scales = bending_column_scales(basis)
+        return {field: values * scales for field, values in canonical.items()}
+
+    if basis.regime == TIMO_REGIME_MIXED:
+        ax = a * x_f
+        cosh_ax = float(np.cosh(ax))
+        sinh_ax = float(np.sinh(ax))
+        cosh_minus_cos = 2.0 * float(np.sinh(0.5 * ax)) ** 2 + 2.0 * float(np.sin(0.5 * bx)) ** 2
+        d0 = a * a + b * b
+        ratio = h / q
+        d1 = a - ratio * b
+        canonical = {
+            "w": np.array([cosh_minus_cos / d0, (sinh_ax - ratio * sin_bx) / d1], dtype=float),
+            "psi": np.array([(h * sinh_ax + q * sin_bx) / d0, h * cosh_minus_cos / d1], dtype=float),
+            "w_prime": np.array(
+                [(a * sinh_ax + b * sin_bx) / d0, (a * cosh_ax - ratio * b * cos_bx) / d1],
+                dtype=float,
+            ),
+            "psi_prime": np.array(
+                [(h * a * cosh_ax + q * b * cos_bx) / d0, h * (a * sinh_ax + b * sin_bx) / d1],
+                dtype=float,
+            ),
+        }
+        scales = bending_column_scales(basis)
+        return {field: values * scales for field, values in canonical.items()}
+
+    if basis.regime == TIMO_REGIME_TWO_TRIG:
+        ax = a * x_f
+        cos_ax = float(np.cos(ax))
+        sin_ax = float(np.sin(ax))
+        cos_difference = -2.0 * float(np.sin(0.5 * (ax + bx))) * float(np.sin(0.5 * (ax - bx)))
+        d0 = b * b - a * a
+        ratio = h / q
+        d1 = a - ratio * b
+        canonical = {
+            "w": np.array([cos_difference / d0, (sin_ax - ratio * sin_bx) / d1], dtype=float),
+            "psi": np.array([(-h * sin_ax + q * sin_bx) / d0, h * cos_difference / d1], dtype=float),
+            "w_prime": np.array(
+                [(-a * sin_ax + b * sin_bx) / d0, (a * cos_ax - ratio * b * cos_bx) / d1],
+                dtype=float,
+            ),
+            "psi_prime": np.array(
+                [(-h * a * cos_ax + q * b * cos_bx) / d0, h * (-a * sin_ax + b * sin_bx) / d1],
+                dtype=float,
+            ),
+        }
+        scales = bending_column_scales(basis)
+        return {field: values * scales for field, values in canonical.items()}
+
+    raise ValueError(f"Unknown Timoshenko basis regime: {basis.regime!r}.")
 
 
 def endpoint_columns(x: float, theta: float, basis: TimoshenkoBasis, section: Section) -> dict[str, np.ndarray]:

@@ -14,12 +14,13 @@ from scripts.analysis.compare_single_rod_eb_timoshenko import fixed_fixed_eb_roo
 from scripts.lib import straight_rod_factorized_spectrum as straight_factorized
 from scripts.lib import variable_length_timoshenko as TIMO
 from src.my_project.analytic.formulas_thickness_mismatch import (
-    assemble_clamped_coupled_matrix_eta,
+    assemble_clamped_coupled_matrix_eta_stable,
 )
 
 
-GENERAL_SPECTRUM_ALGORITHM_VERSION = "general_complete_svd_v2"
+GENERAL_SPECTRUM_ALGORITHM_VERSION = "general_complete_svd_v6_floored_row_scaling"
 AUTO_SPECTRUM_ALGORITHM_VERSION = "auto_complete_spectrum_v1"
+EB_MATRIX_EVALUATOR_VERSION = "eb_column_equivalent_stable_v2"
 
 MODEL_EB = "Euler-Bernoulli"
 MODEL_TIMO = "Timoshenko"
@@ -252,6 +253,33 @@ def row_normalized(matrix: np.ndarray) -> np.ndarray:
     return out / norms[:, None]
 
 
+def signed_root_determinant(matrix: np.ndarray) -> float:
+    """Continuous sign-preserving determinant scale for root bracketing."""
+
+    raw = np.asarray(matrix, dtype=float)
+    sign, log_abs = np.linalg.slogdet(raw)
+    if sign == 0.0:
+        return 0.0
+    if not math.isfinite(float(log_abs)):
+        return float("nan")
+    return float(sign * math.exp(float(log_abs) / raw.shape[0]))
+
+
+def diagnostic_scaled_matrix(matrix: np.ndarray) -> np.ndarray:
+    """Continuously equilibrate rows without dividing a zero-row residual."""
+
+    raw = np.asarray(matrix, dtype=float)
+    norms = np.linalg.norm(raw, axis=1)
+    finite = norms[np.isfinite(norms)]
+    maximum = float(np.max(finite)) if finite.size else 0.0
+    if not math.isfinite(maximum) or maximum <= 0.0:
+        return raw.copy()
+    floor = np.finfo(float).eps ** 0.25 * maximum
+    scales = np.maximum(norms, floor)
+    scales[~np.isfinite(scales)] = maximum
+    return raw / scales[:, None]
+
+
 def coefficient_self_mac(left: Sequence[float], right: Sequence[float]) -> float:
     a = np.asarray(left, dtype=float)
     b = np.asarray(right, dtype=float)
@@ -269,7 +297,7 @@ def model_matrix_provider(model: str, geometry: Geometry) -> MatrixProvider:
         beta_rad = float(np.deg2rad(geometry.beta_deg))
 
         def eb_matrix(value: float) -> np.ndarray:
-            return assemble_clamped_coupled_matrix_eta(
+            return assemble_clamped_coupled_matrix_eta_stable(
                 float(value), beta_rad, geometry.mu, geometry.epsilon_0, geometry.eta
             )
 
@@ -314,7 +342,7 @@ class _MatrixEvaluator:
         if matrix is None:
             return float("nan")
         try:
-            result = float(np.linalg.det(row_normalized(matrix)))
+            result = signed_root_determinant(matrix)
         except (ValueError, np.linalg.LinAlgError):
             result = float("nan")
         self._determinant_cache[key] = result
@@ -335,8 +363,8 @@ class _MatrixEvaluator:
             self._diagnostic_cache[key] = result
             return result
         try:
-            scaled = row_normalized(matrix)
-            determinant = float(np.linalg.det(scaled))
+            scaled = diagnostic_scaled_matrix(matrix)
+            determinant = signed_root_determinant(matrix)
             _u, singular_values, vh = np.linalg.svd(scaled, full_matrices=True)
         except (ValueError, np.linalg.LinAlgError):
             result = MatrixDiagnostics(
@@ -734,12 +762,17 @@ def _global_candidates(
             merged_intervals.append((float(left), float(right), {str(reason)}))
     for left, right, reasons in merged_intervals:
         reason = "+".join(sorted(reasons))
-        accepted_before = [
+        accepted_before_raw = [
             item
             for item in candidates
             if item.acceptance_status == "accepted_full_matrix_svd"
             and float(left) - settings.root_match_tol <= item.Lambda <= float(right) + settings.root_match_tol
         ]
+        # Detection records are not roots: the same root can arrive through a
+        # sign change, a shifted grid, and a sigma minimum.  Count distinct
+        # accepted roots before deciding whether several close seeds have all
+        # been resolved.
+        accepted_before = _merge_candidates(accepted_before_raw, settings)
         seeds_inside = sum(float(left) <= float(seed) <= float(right) for seed in seed_roots)
         grid_zero_requires_pair_check = any(
             any("grid_zero" in source for source in item.detection_sources)
@@ -779,6 +812,22 @@ def _global_candidates(
         if accepted:
             row["resolution_status"] = "resolved_root_interval"
         elif (
+            int(row["local_minima_count"]) == 0
+            and int(row["determinant_sign_left"]) == int(row["determinant_sign_right"])
+            and int(row["determinant_sign_left"]) != 0
+            and math.isclose(
+                float(row["minimum_sigma"]),
+                min(float(row["sigma_left"]), float(row["sigma_right"])),
+                rel_tol=1.0e-12,
+                abs_tol=1.0e-18,
+            )
+        ):
+            # A low value inherited from a root just outside a seed window is
+            # not an unresolved root inside that window.  With no interior
+            # sigma minimum and no determinant sign change, the adaptively
+            # sampled interval is a monotone boundary tail.
+            row["resolution_status"] = "closed_monotone_boundary_tail"
+        elif (
             float(row["minimum_sigma"]) <= settings.sigma_accept
             and float(row["minimum_sigma_ratio"]) <= 10.0 * settings.sigma_ratio_accept
         ):
@@ -800,11 +849,15 @@ def _run_configuration(
     phases: Sequence[float],
     seed_roots: Sequence[float],
     seed_source: str,
+    evaluator: _MatrixEvaluator | None = None,
 ) -> SearchConfigurationResult:
-    operations = OperationCounts()
+    if evaluator is None:
+        operations = OperationCounts()
+        evaluator = _MatrixEvaluator(provider, operations)
+    else:
+        operations = evaluator.operations
     if configuration == "verification":
         operations.independent_verification_runs += 1
-    evaluator = _MatrixEvaluator(provider, operations)
     upper = _initial_upper(settings, candidate_target)
     selected_candidates: list[RootCandidate] = []
     interval_rows: list[dict[str, object]] = []
@@ -849,6 +902,105 @@ def _run_configuration(
         unresolved_intervals=tuple(unresolved),
         operations=operations,
     )
+
+
+def _cross_validate_configuration_roots(
+    target: SearchConfigurationResult,
+    source_roots: Sequence[RootRecord],
+    evaluator: _MatrixEvaluator,
+    settings: SearchSettings,
+    *,
+    source_configuration: str,
+) -> SearchConfigurationResult:
+    """Recover roots found by the other scan using this configuration's evaluator.
+
+    Discovery remains independent: only a root already accepted by one scan is
+    used to open a local window in the other evaluator.  The unchanged full
+    matrix SVD and existing quality tolerances must accept the recovered root.
+    """
+
+    candidates = list(target.candidates)
+    interval_rows = list(target.interval_rows)
+    unresolved = list(target.unresolved_intervals)
+    known = list(target.roots)
+    half_width = max(settings.seed_half_width, 2.0 * target.scan_step)
+    for source_root in source_roots:
+        value = float(source_root.Lambda)
+        if any(abs(value - item.Lambda) <= settings.root_match_tol for item in known):
+            continue
+        left = max(settings.lambda_min, value - half_width)
+        right = min(target.lambda_upper, value + half_width)
+        if right <= left:
+            continue
+        source = f"{target.configuration}_cross_validation_from_{source_configuration}"
+        local_candidates, row = _adaptive_interval_candidates(
+            evaluator,
+            left,
+            right,
+            source,
+            settings,
+        )
+        accepted = [
+            item
+            for item in local_candidates
+            if item.acceptance_status == "accepted_full_matrix_svd"
+            and abs(item.Lambda - value) <= half_width + settings.root_match_tol
+        ]
+        if accepted:
+            candidates.extend(accepted)
+            row["resolution_status"] = "resolved_cross_configuration_root"
+        else:
+            row["resolution_status"] = "unresolved_cross_configuration_root"
+            unresolved.append(f"{left:.12g}:{right:.12g}:{source}")
+        interval_rows.append(row)
+        merged = _merge_candidates(candidates, settings)
+        known = list(_root_records(merged, settings))
+    merged = _merge_candidates(candidates, settings)
+    roots = _root_records(merged, settings)
+    keep_count = int(target.candidate_root_target) + 4
+    if len(roots) > keep_count:
+        cutoff = roots[keep_count - 1].Lambda + settings.root_match_tol
+        roots = tuple(roots[:keep_count])
+        merged = [item for item in merged if item.Lambda <= cutoff]
+    return replace(
+        target,
+        roots=roots,
+        candidates=tuple(merged),
+        interval_rows=tuple(interval_rows),
+        unresolved_intervals=tuple(unresolved),
+    )
+
+
+def reconcile_independent_configurations(
+    primary: SearchConfigurationResult,
+    verification: SearchConfigurationResult,
+    primary_evaluator: _MatrixEvaluator,
+    verification_evaluator: _MatrixEvaluator,
+    settings: SearchSettings,
+) -> tuple[SearchConfigurationResult, SearchConfigurationResult]:
+    primary = _cross_validate_configuration_roots(
+        primary,
+        verification.roots,
+        primary_evaluator,
+        settings,
+        source_configuration="verification",
+    )
+    verification = _cross_validate_configuration_roots(
+        verification,
+        primary.roots,
+        verification_evaluator,
+        settings,
+        source_configuration="primary",
+    )
+    # One final primary pass handles any root first recovered into verification.
+    primary = _cross_validate_configuration_roots(
+        primary,
+        verification.roots,
+        primary_evaluator,
+        settings,
+        source_configuration="verification",
+    )
+    return primary, verification
 
 
 def _compare_configurations(
@@ -912,6 +1064,8 @@ def resolve_matrix_spectrum(
     active = settings or SearchSettings()
     active.validate()
     synthetic_geometry = geometry or Geometry(1.0, 0.0, 0.0, 0.0)
+    primary_evaluator = _MatrixEvaluator(matrix_provider, OperationCounts())
+    verification_evaluator = _MatrixEvaluator(matrix_provider, OperationCounts())
     primary = _run_configuration(
         matrix_provider,
         active,
@@ -921,6 +1075,7 @@ def resolve_matrix_spectrum(
         phases=(0.0, active.shifted_grid_phase),
         seed_roots=primary_seeds,
         seed_source=primary_seed_source,
+        evaluator=primary_evaluator,
     )
     verification = _run_configuration(
         matrix_provider,
@@ -931,6 +1086,14 @@ def resolve_matrix_spectrum(
         phases=(active.shifted_grid_phase,),
         seed_roots=verification_seeds,
         seed_source=verification_seed_source,
+        evaluator=verification_evaluator,
+    )
+    primary, verification = reconcile_independent_configurations(
+        primary,
+        verification,
+        primary_evaluator,
+        verification_evaluator,
+        active,
     )
     comparison, agreement = _compare_configurations(primary, verification, active)
     roots = tuple(primary.roots[: active.requested_roots])
@@ -986,6 +1149,36 @@ def resolve_matrix_spectrum(
         exclusion_reason=";".join(dict.fromkeys(reasons)),
         cache_status=cache_status,
         operations=operations,
+    )
+
+
+def resolve_primary_spectrum(
+    model: str,
+    geometry: Geometry,
+    *,
+    settings: SearchSettings | None = None,
+) -> SearchConfigurationResult:
+    """Run only the ordinary pointwise primary search, without verification.
+
+    This is the public, diagnostic-facing entry point for workflows that need
+    an independent sorted inventory at one geometry but must not launch the
+    second scan, cross-configuration reconciliation, or any branch-informed
+    continuation.  It deliberately accepts no seed roots.
+    """
+
+    active = settings or SearchSettings()
+    active.validate()
+    geometry.validate()
+    provider = model_matrix_provider(model, geometry)
+    return _run_configuration(
+        provider,
+        active,
+        configuration="primary",
+        candidate_target=active.candidate_roots,
+        scan_step=active.scan_step,
+        phases=(0.0, active.shifted_grid_phase),
+        seed_roots=(),
+        seed_source="pointwise_primary_no_seeds",
     )
 
 
@@ -1093,6 +1286,8 @@ def straight_oracle_values(model: str, geometry: Geometry, count: int) -> tuple[
 def _result_to_payload(result: CompleteSpectrumResult, identity: Mapping[str, object]) -> dict[str, object]:
     return {
         "algorithm_version": GENERAL_SPECTRUM_ALGORITHM_VERSION,
+        "eb_matrix_evaluator_version": EB_MATRIX_EVALUATOR_VERSION,
+        "timoshenko_basis_evaluator_version": TIMO.TIMOSHENKO_BASIS_EVALUATOR_VERSION,
         "identity": dict(identity),
         "result": asdict(result),
     }
@@ -1246,6 +1441,12 @@ class GeneralSpectrumCache:
         if payload.get("algorithm_version") != GENERAL_SPECTRUM_ALGORITHM_VERSION:
             self.last_load_status = "stale_cache_algorithm_version"
             return None
+        if payload.get("timoshenko_basis_evaluator_version") != TIMO.TIMOSHENKO_BASIS_EVALUATOR_VERSION:
+            self.last_load_status = "stale_cache_timoshenko_basis_evaluator"
+            return None
+        if payload.get("eb_matrix_evaluator_version") != EB_MATRIX_EVALUATOR_VERSION:
+            self.last_load_status = "stale_cache_eb_matrix_evaluator"
+            return None
         if payload.get("identity") != self.identity(model, geometry, settings):
             self.last_load_status = "stale_cache_settings"
             return None
@@ -1293,6 +1494,7 @@ class GeneralSpectrumCache:
 __all__ = [
     "AUTO_SPECTRUM_ALGORITHM_VERSION",
     "CompleteSpectrumResult",
+    "EB_MATRIX_EVALUATOR_VERSION",
     "GENERAL_SPECTRUM_ALGORITHM_VERSION",
     "GeneralSpectrumCache",
     "Geometry",
@@ -1309,6 +1511,8 @@ __all__ = [
     "model_matrix_provider",
     "resolve_general_spectrum",
     "resolve_matrix_spectrum",
+    "resolve_primary_spectrum",
+    "reconcile_independent_configurations",
     "row_normalized",
     "straight_oracle_values",
 ]

@@ -34,6 +34,18 @@ Project-wide branch identity and diagnostic-tracking rules are summarized in
   their boundary-condition family, such as clamped-supported / clamped-pinned
   (CS/CP) or clamped-clamped / fixed-fixed (CC/FF).
 - `tracked_bending_descendant_shapes.py` provides the shared tracked-state extraction, one-case normalization, one-case drawing, and output-path helpers used by both the single-shape and multi-panel tracked bending descendant commands.
+- `family_inventory_local_repair.py` provides the diagnostic sorted-family
+  missing-root detector, source-derived local-window inference, staged local
+  matrix repair, multiplicity-aware merge, and isolated atomic cache used by
+  `audit_family_inventory_local_repair.py`. It does not define descendant
+  identity and does not call tracking, MAC, shapes, or strict verification.
+- `yartsev_ch2_fast_beta_sweep.py` is the diagnostic-only generic coordinator
+  for the Chapter-2 supervisor `Lambda(beta)` calculations. It provides
+  sorted-frequency prediction windows, connected close-root clusters,
+  mandatory global anchors and fallback, exact bounded transfer-matrix LRU
+  caching, separate performance counters, and atomic family checkpoints. It
+  contains no physical equations or boundary matrices, does not define modal
+  descendants, and retains the existing global solver as oracle/fallback.
 
 FEM comparison logic is intentionally split: reusable FEM model code stays in
 `../../src/my_project/fem/python_fem.py`, while diagnostic comparison and

@@ -1,7 +1,142 @@
 # CHANGELOG
 
+## 2026-08-04
+
+- Added a diagnostic-only fast beta-sweep coordinator for the Chapter-2
+  rectangular-rod supervisor workflow. Exact transfer-matrix LRU caching,
+  sorted-spectrum predictors, connected-cluster inventories, mandatory global
+  anchors/fallback, counters, and atomic checkpoints reproduce all 6335 saved
+  Figure-2--4 oracle roots with maximum relative frequency error `6.50e-9`.
+  Sequential runtime is `139.714 s` versus the recorded `860.775 s`
+  (`6.161x`). After this gate passed, added Figures 5--8 for unequal lengths,
+  direct unequal thickness, the diagnostic theta=5 orthotropic-EB
+  approximation, and theta=15 versus theta=0 within Chapter-2 theory. The
+  existing legacy solver, physical models, article workspaces, UT/3D statuses,
+  and release version were not changed.
+- Added a separate reproducible supervisor-figure workflow for the Yartsev
+  Chapter-2 monoclinic rectangular-rod line. It reuses the verified Figure-2.2
+  evidence, compares the two Timoshenko clamp definitions, and compares the
+  existing state-corrected generalized-torsion model with the rectangular EB
+  Saint-Venant comparator on a 0.5-degree grid. Seven accepted sorted roots
+  are checked at every angle and six are plotted; independent section-clamp
+  straight references, CSV/manifest/report outputs, legend-free PDF/PNG plots,
+  reuse-only plotting, and isolation from the circular-isotropic article are
+  regression-tested. No scientific model, UT status, 3D-A0 status, or article
+  result was changed.
+- Added a diagnostic-only sorted-family inventory detector and staged local
+  beta/Lambda repair audit. Without receiving the manual R1--R7 windows, it
+  detects all seven known defect regions, leaves P2 unchanged, reproduces the
+  integer-beta refined oracle, preserves the immutable readiness references,
+  and passes detector, repair, preservation, unresolved-classification, cost,
+  and integration-readiness gates. Force/full strict execution remains zero;
+  the production runner, coarse grid, equations, basis, and tolerances are
+  unchanged.
+- Added an opt-in local-refinement preset for the independent sorted-spectrum
+  beta pilot. It reuses original integer inventories, matrix-confirms
+  fractional-beta base candidates, scans only the seven declared dense
+  Lambda windows, preserves explicit multiplicity/block provenance, and emits
+  refined CSV/PNG diagnostics in a separate resumable cache. All seven prior
+  simultaneous-shift spikes are removed; P3 at beta=0 resolves as distinct
+  axial and bending roots rather than a double root. No tracking, MAC, shapes,
+  continuation, strict verification, FEM, energy, or scientific-model change
+  is involved.
+- Added a second opt-in four-case `Lambda(beta)` pilot to the existing map
+  entry point. `--beta-sorted-spectrum-pilot` uses independent, seed-free
+  production primary searches at each integer beta, stores sorted positions
+  1--12 and transparent adjacent-step suspect diagnostics, and plots positions
+  1--10. It does not call descendant tracking, MAC, shapes, continuation,
+  independent/force-strict verification, automatic beta refinement, FEM, or
+  energy workflows.
+- Added an opt-in four-case `Lambda(beta)` descendant pilot to the existing
+  EB/Timoshenko beta-map entry point. It tracks 12 branches from the
+  `beta=0, mu=0` seed, records ambiguous assignments as CSV NaN gaps, and
+  writes only four comparison PNGs plus one CSV/report under
+  `results/article_epsilon_upper_envelope/beta_branch_pilot/`. The pilot uses
+  no force-strict verification, adaptive refinement, energy calculation, FEM,
+  PDF output, or scientific-solver change.
+
+## 2026-08-03
+
+- Added zero-solve interruption postprocessing for the article epsilon coarse
+  grid. It records all 1554 manifest rows independently as exact prefix/full,
+  genuinely unresolved, interrupted, or not attempted; the saved 320-point
+  run contains 309 exact `N_true`, 11 prefix-affecting unresolved cases, one
+  interrupted cache, and 1233 not-attempted points. Required-prefix strict
+  acceptance is now separate from an optional full-K10 upper-spectrum audit;
+  none of the 11 existing unresolved caches qualified for reclassification.
+- Added an isolated process-parallel geometry-chain benchmark and bounded
+  workers 1/2/4 support to the explicit prefix runner. Across eight fresh
+  chains, all 64 per-worker results matched exactly; wall times were
+  275.668/151.714/88.390 s, so the non-default future resume candidate uses
+  four workers. An extreme thick timing probe was preserved as interrupted
+  tail-risk evidence, and one benchmark case remained consistently
+  prefix-affecting unresolved. The main 1554-point run was not resumed.
+- Rechecked the versioned 24-point readiness result and S3_12/S3_14 entirely
+  from immutable caches with zero production root solves. The readiness file
+  hash and every prior `N_true` remained unchanged; the new
+  `resume_readiness_gate` is `PASS`. EB/Timoshenko equations, the Timoshenko
+  basis, K, scientific tolerances, full-K10 default, Rule A/B/S, FEM, energy,
+  shapes, and anisotropic work were not changed.
+
+- Completed solver-readiness v2 for the article epsilon workflow. The unchanged
+  Timoshenko characteristic problem now has mixed, analytic cutoff-limit, and
+  two-trigonometric-pair real bases, checked against an independent first-order
+  state-space matrix-exponential oracle. Added exactly column-equivalent stable
+  EB evaluation, continuous floored row diagnostics, independent-scan local
+  reconciliation, close-seed detection deduplication, and monotone-boundary
+  interval closure without changing any root-quality tolerance.
+- Resolved all seven former blockers and all 24 full K10/root-11 references;
+  paired+auto matches `N_true`, first failure, guard, and strict roots on 24/24.
+  S3_12/S3_14 retain `N_true=4` and their prior `delta_f,5` values within the
+  existing tolerance. All four staged gates, optimization equivalence, and
+  full-grid solver readiness are `PASS`.
+- Added versioned solver-readiness artifacts, 80-digit targeted EB checks,
+  zero-solve postprocessing provenance, cutoff/conditioning audits, former-
+  blocker benchmarks, and a 24-point quantile runtime forecast. Full K10 remains
+  the default; paired+auto is only a future candidate. The 1554-point grid,
+  Rule A/B/S, FEM/3D FEM, energy/shape workflows, and anisotropic scope were not
+  run or changed.
+
+## 2026-08-02
+
+- Added an opt-in staged prefix computation audit for the article epsilon
+  upper-envelope workflow while retaining full K10/root-11 as the reference
+  and default. The new path reuses the existing complete-matrix and
+  branch-informed strict infrastructure, persists atomic resumable partial
+  SVD/determinant caches, separates not-attempted from attempted-unresolved
+  cases, provides paired and full-EB/progressive-Timoshenko strategies plus
+  local/full/auto strict policies, and writes an isolated 24-case optimization
+  benchmark manifest. S3_12/S3_14 reproduced the unchanged `N_true=4` and
+  `delta_f,5` in all five benchmark modes with exact agreement for 169 compared
+  roots. Only 2/24 validation points were run, so the accuracy gate remains
+  `FAIL` (incomplete), the 1554-point grid was not run, and the optimized mode
+  did not become the default. No model equation,
+  shear coefficient, normalization, Rule A/B/S result, anisotropic workflow,
+  mode shape, energy calculation, or 3D FEM implementation changed.
+
+- Added the separate article-facing finite-grid epsilon upper-envelope
+  workflow for isotropic circular coupled rods. It reuses the existing
+  complete EB/Timoshenko spectrum and branch-informed strict caches, writes a
+  deterministic 1554-point manifest, preserves root 11 as the K=10 guard,
+  keeps thinness/cutoff quantities diagnostic-only, and supports CSV-only
+  postprocessing. The 16-point smoke completed with 12 resolved and 4
+  unresolved points; exact S3_12/S3_14 regressions passed within `3.89e-12`.
+  The full coarse grid was not run because the measured sequential projection
+  was about 54 hours; no EB/Timoshenko equation, shear coefficient, old
+  safe-prefix result, FEM model, or anisotropic workflow changed.
+
 ## 2026-08-01
 
+- Added the separate design-only 3D-A0 limited 3D FEM anchor readiness audit.
+  The tracked HMS/DX-209 data and Chapter-1 Table 1.1 confirm `E1`, `E2`,
+  `G12`, `G13`, `G23`, `nu12`, and density but do not supply `E3`, `nu13`, or
+  `nu23`; no constitutive completion was assumed. Passive executable/package
+  inventory found no capable local 3D solver, so 3D-A0 is
+  `BLOCKED_MATERIAL_AND_SOLVER`. The ideal overlapping-prism joint, local axes,
+  full-face clamps, section-clamped Timoshenko reference, parity extraction,
+  four cases, three mesh levels, staged plan, and future thresholds are frozen.
+  No mesh, solver job, eigenfrequency, package installation, production API,
+  release version, or completed 1D status changed.
 - Added the final one-dimensional unequal-thickness UT-3 quarter-turn gate to
   the existing CLI. At `beta=+/-90 deg`, all 84 standard and 42 independent
   exact-limit continuum roots pass unchanged quality checks; exact integer

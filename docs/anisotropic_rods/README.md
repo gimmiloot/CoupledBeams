@@ -14,6 +14,10 @@ Coupled-rod code: small elastic diagnostic pilot only — PASS
 Final coupled-rod model or parameter study: not started
 Rectangular orthotropic Euler--Bernoulli--Saint-Venant gate: PARTIAL_PASS after targeted refinement
 Unequal-thickness 1D phase: COMPLETE; overall: PARTIAL_PASS; UT-0: PASS; UT-1: PARTIAL_PASS; UT-1a: INCONCLUSIVE; UT-2: PASS; UT-3: PASS
+Limited 3D FEM anchor: DESIGN_ONLY; 3D-A0: BLOCKED_MATERIAL_AND_SOLVER
+Supervisor Chapter-2 rectangular-rod figures: completed — PASS
+Fast Chapter-2 beta-sweep oracle validation: completed — PASS
+Extended supervisor Figures 5–8: completed — PASS
 Production anisotropic API: not started
 Independent rectangular EB + torsion 1D FEM: completed for the finite gate
 ```
@@ -127,11 +131,15 @@ and the declared UT-1a numerical audit retain their historical limitations.
 - [Rigid angular-joint theory and gate](yartsev_ch2_rigid_angular_joint.md)
 - [Rectangular orthotropic EB validation](yartsev_ch2_rectangular_eb_validation.md)
 - [Unequal-thickness 1D validation (UT-0 through UT-3)](yartsev_ch2_unequal_thickness_validation.md)
+- [Limited 3D FEM anchor design and 3D-A0 readiness](yartsev_ch2_limited_3d_fem_anchor_design.md)
+- [Supervisor Chapter-2 rectangular-rod figures](yartsev_ch2_supervisor_figures.md)
 - [Free-free diagnostic CLI](../../scripts/analysis/anisotropic_rods/reproduce_yartsev_fig_2_2.py)
 - [Cantilever diagnostic CLI](../../scripts/analysis/anisotropic_rods/reproduce_yartsev_ch2_cantilever.py)
 - [Small coupled-joint pilot CLI](../../scripts/analysis/anisotropic_rods/pilot_yartsev_ch2_coupled_rods.py)
 - [Rectangular EB validation CLI](../../scripts/analysis/anisotropic_rods/validate_yartsev_ch2_rectangular_eb.py)
 - [Unequal-thickness UT-0/UT-1/UT-1a/UT-2/UT-3 CLI](../../scripts/analysis/anisotropic_rods/validate_yartsev_ch2_unequal_thickness.py)
+- [Limited 3D FEM 3D-A0 readiness CLI](../../scripts/analysis/anisotropic_rods/audit_yartsev_ch2_limited_3d_fem_readiness.py)
+- [Supervisor-figure CLI](../../scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py)
 
 Generated local evidence, which may be absent from a fresh clone, is kept in:
 
@@ -142,6 +150,8 @@ Generated local evidence, which may be absent from a fresh clone, is kept in:
 - [`results/anisotropic_rods/yartsev_ch2_coupled_joint_pilot/`](../../results/anisotropic_rods/yartsev_ch2_coupled_joint_pilot/)
 - [`results/anisotropic_rods/yartsev_ch2_rectangular_eb_validation/`](../../results/anisotropic_rods/yartsev_ch2_rectangular_eb_validation/)
 - [`results/anisotropic_rods/yartsev_ch2_unequal_thickness_validation/`](../../results/anisotropic_rods/yartsev_ch2_unequal_thickness_validation/)
+- [`results/anisotropic_rods/yartsev_ch2_limited_3d_fem_anchor/design_readiness/`](../../results/anisotropic_rods/yartsev_ch2_limited_3d_fem_anchor/design_readiness/)
+- [`results/anisotropic_rods/yartsev_ch2_supervisor_figures/`](../../results/anisotropic_rods/yartsev_ch2_supervisor_figures/)
 
 ## Current boundary
 
@@ -153,8 +163,21 @@ mode-1 monotonic-refinement gate failed. The unequal-thickness 1D phase is
 `COMPLETE` with overall `PARTIAL_PASS`: UT-1 retains its historical native
 FEM exchange failure and UT-1a remains inconclusive under its fixed numerical
 quality gates. Other angles, off-axis material axes, and broad spectrum
-studies remain outside the completed scope. The next separate stage is
-limited 3D FEM anchor design; no 3D implementation is part of the 1D phase.
+angles beyond the explicitly reported `theta=5` and `15 deg` diagnostics, and
+broad spectrum studies remain outside the completed scope. The separate 3D-A0
+design/readiness audit is complete with `BLOCKED_MATERIAL_AND_SOLVER`: the
+local HMS/DX-209 source lacks `E3`, `nu13`, and `nu23`, and no capable local
+3D solver stack was detected. Geometry, ideal-joint, clamp, target-parity,
+case, mesh, and future acceptance contracts are frozen, but mesh generation
+and eigenfrequency calculations remain `NOT_STARTED`. No 3D implementation is
+part of the completed 1D phase. The separate supervisor-figure workflow is a
+presentation/report layer over the verified Chapter-2 rectangular-rod
+builders; it does not alter these 1D or 3D statuses and is explicitly separate
+from the circular-isotropic article workflow. Its diagnostic-only fast
+beta-sweep reproduces all 6335 saved Figure-2--4 oracle roots within `1e-8`
+and reduces the recorded sequential runtime from `860.775 s` to `139.714 s`;
+Figures 5--8 then add the prescribed unequal-length, direct unequal-thickness,
+weak-monoclinic approximation, and within-Chapter-2 material-rotation plots.
 
 ## Preservation rule
 
