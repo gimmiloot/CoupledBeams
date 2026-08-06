@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## 2026-08-06
+
+- Added an explicit, zero-solve, isotropic-circular-only reconciliation mode
+  for the article epsilon grid. It validates the verified family-repair shadow
+  gates, manifest/cache fingerprints, and full promotion provenance; writes an
+  immutable seven-case promotion overlay plus a deterministic 1554-row
+  article-facing table; retains 18 unresolved cases with `N_true=NaN`; and
+  prepares, but does not execute, an 845-case production resume queue. Original
+  684 accepted results and all source caches remain byte-preserved. Repeated
+  reconciliation is SHA-idempotent and rejects solver, matrix, repair, strict,
+  or resume options. No coarse-grid, rectangular-anisotropic, FEM, branch,
+  shape, energy, scientific-equation, basis, or tolerance work was run.
+- Integrated the validated sorted-family inventory detector and staged local
+  matrix repair at the parent orchestration level of the isotropic circular
+  EB/Timoshenko article epsilon runner. The default policy remains `off`;
+  opt-in `shadow` processing preserves point caches and accepted `N_true`, and
+  the production-candidate `local-repair` policy requires explicit expensive-
+  strict deferral. Added isolated provenance/gate artifacts and focused tests;
+  the zero-solve index found 708 cached grid case IDs (684 previously accepted,
+  24 unresolved/deferred), resolved seven cases in the overlay, and retained 18
+  deferred after adding the saved external benchmark; all seven gates pass.
+  The remaining coarse grid was not resumed and no scientific solver, basis,
+  tolerance, FEM, tracking, MAC, shape, or rectangular-anisotropic workflow
+  changed.
+
 ## 2026-08-04
 
 - Added a diagnostic-only fast beta-sweep coordinator for the Chapter-2

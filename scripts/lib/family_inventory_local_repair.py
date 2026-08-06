@@ -16,6 +16,7 @@ from scripts.lib import general_spectrum_completeness as COMPLETE
 DETECTOR_VERSION = "sorted_family_inventory_detector_v2"
 REPAIR_ALGORITHM_VERSION = "staged_local_matrix_repair_v3_timed_cache"
 CACHE_SCHEMA_VERSION = "family_inventory_local_repair_cache_v1"
+SCIENTIFIC_SCOPE = "isotropic_circular_coupled_rods_eb_timoshenko"
 SIGNED_SHIFT_CANDIDATES = (-2, -1, 1, 2)
 MISSING_COUNTS = tuple(sorted({abs(value) for value in SIGNED_SHIFT_CANDIDATES}))
 
@@ -991,7 +992,9 @@ def cache_identity(
     window: RepairWindow,
     base_settings: COMPLETE.SearchSettings,
     beta_probes: Sequence[float] = (),
+    scientific_scope: str = SCIENTIFIC_SCOPE,
 ) -> dict[str, object]:
+    validate_scientific_scope(scientific_scope)
     tolerance_payload = {
         key: value
         for key, value in asdict(base_settings).items()
@@ -1002,6 +1005,7 @@ def cache_identity(
     ).hexdigest()
     identity = {
         "cache_schema_version": CACHE_SCHEMA_VERSION,
+        "scientific_scope": scientific_scope,
         "detector_version": DETECTOR_VERSION,
         "repair_algorithm_version": REPAIR_ALGORITHM_VERSION,
         "family_id": family_id,
@@ -1022,6 +1026,23 @@ def cache_identity(
     # same canonical JSON-native structure prevents a false identity miss on
     # every resume.
     return json.loads(json.dumps(identity, sort_keys=True, separators=(",", ":")))
+
+
+def validate_scientific_scope(scientific_scope: str) -> str:
+    """Accept only the isotropic circular EB/Timoshenko research scope.
+
+    The family repair helper is intentionally not a generic constitutive-model
+    dispatcher.  Keeping this boundary explicit prevents a diagnostic cache or
+    orchestration preset from being reused for a different section/material
+    model merely because the numerical arrays happen to have a similar shape.
+    """
+
+    if scientific_scope != SCIENTIFIC_SCOPE:
+        raise ValueError(
+            "family inventory repair supports only "
+            f"{SCIENTIFIC_SCOPE!r}; received {scientific_scope!r}"
+        )
+    return scientific_scope
 
 
 def load_cache(path: Path, identity: Mapping[str, object]) -> LocalSearchResult | None:
@@ -1135,6 +1156,8 @@ __all__ = [
     "THRESHOLD_PROFILES",
     "boundary_events",
     "cache_identity",
+    "SCIENTIFIC_SCOPE",
+    "validate_scientific_scope",
     "compute_n_true",
     "detect_family_inventory",
     "direct_window_from_inventory",

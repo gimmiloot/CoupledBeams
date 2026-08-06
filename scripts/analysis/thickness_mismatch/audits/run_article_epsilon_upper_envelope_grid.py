@@ -50,11 +50,13 @@ if str(SRC) not in sys.path:
 from scripts.lib import article_epsilon_upper_envelope as workflow  # noqa: E402
 from scripts.lib import article_epsilon_prefix_optimization as prefix  # noqa: E402
 from scripts.lib import branch_informed_spectrum_continuation as branch  # noqa: E402
+from scripts.lib import article_epsilon_family_inventory_integration as family_integration  # noqa: E402
+from scripts.lib import article_epsilon_family_reconciliation as family_reconciliation  # noqa: E402
 from scripts.lib import general_spectrum_completeness as complete  # noqa: E402
 from scripts.lib import variable_length_timoshenko as timo  # noqa: E402
 
 
-COARSE_GRID_RUNNER_VERSION = "article_epsilon_coarse_grid_runner_v2_main_regular_pass"
+COARSE_GRID_RUNNER_VERSION = "article_epsilon_coarse_grid_runner_v3_family_inventory_policy"
 COARSE_GRID_OUTPUT_DIR = (
     Path("results") / "article_epsilon_upper_envelope" / "coarse_grid_v1"
 )
@@ -337,6 +339,9 @@ def _pre_run_metadata(
             "solver_mode": "prefix-until-failure" if args.prefix_until_failure else "full-k10",
             "prefix_strategy": args.prefix_strategy,
             "strict_policy": args.strict_policy,
+            "family_inventory_policy": args.family_inventory_policy,
+            "defer_expensive_strict": bool(args.defer_expensive_strict),
+            "model_scientific_scope": family_integration.SCIENTIFIC_SCOPE,
             "workers": int(args.workers),
             "envelope_only": bool(args.envelope_only),
             "readiness_sanity_required": not bool(args.smoke or args.main_pass_only),
@@ -392,6 +397,17 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     mode.add_argument("--prefix-until-failure", action="store_true")
     parser.add_argument("--prefix-strategy", choices=prefix.PREFIX_STRATEGIES, default="paired")
     parser.add_argument("--strict-policy", choices=prefix.STRICT_POLICIES, default="auto")
+    parser.add_argument(
+        "--family-inventory-policy",
+        choices=family_integration.FAMILY_POLICIES,
+        default="off",
+        help="Opt-in parent-process sorted-family post-stage; default 'off' preserves legacy behavior.",
+    )
+    parser.add_argument(
+        "--defer-expensive-strict",
+        action="store_true",
+        help="With family local-repair, defer an unresolved required prefix instead of executing expensive strict.",
+    )
     parser.add_argument("--envelope-only", action="store_true")
     parser.add_argument(
         "--main-pass-only",
@@ -402,7 +418,45 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--skip-deferred", action="store_true")
     parser.add_argument("--skip-interrupted", action="store_true")
     parser.add_argument("--defer-case-list", type=Path)
+    parser.add_argument(
+        "--reconcile-family-local-repair-shadow",
+        action="store_true",
+        help="Explicitly promote verified shadow results without running scientific code.",
+    )
+    parser.add_argument("--shadow-dir", type=Path)
+    parser.add_argument(
+        "--promotion-policy",
+        choices=(family_reconciliation.PROMOTION_POLICY,),
+        default=family_reconciliation.PROMOTION_POLICY,
+    )
+    parser.add_argument("--reconcile-only", action="store_true")
+    parser.add_argument("--no-new-point-solves", action="store_true")
     args = parser.parse_args(argv)
+    reconciliation_auxiliary = (
+        args.shadow_dir is not None or args.reconcile_only or args.no_new_point_solves
+    )
+    if reconciliation_auxiliary and not args.reconcile_family_local_repair_shadow:
+        parser.error(
+            "--shadow-dir/--reconcile-only/--no-new-point-solves require "
+            "--reconcile-family-local-repair-shadow"
+        )
+    if args.reconcile_family_local_repair_shadow:
+        if not args.reconcile_only or not args.no_new_point_solves:
+            parser.error(
+                "reconciliation requires --reconcile-only --no-new-point-solves"
+            )
+        incompatible = (
+            args.smoke or args.reuse_cache or args.force or args.base_only
+            or args.low_angle_only or args.regressions_only or args.postprocess_only
+            or args.workers != 1 or args.readiness_sanity_only or args.full_k10
+            or args.prefix_until_failure or args.envelope_only or args.main_pass_only
+            or args.skip_existing_unresolved or args.skip_deferred
+            or args.skip_interrupted or args.defer_case_list is not None
+            or args.family_inventory_policy != "off" or args.defer_expensive_strict
+        )
+        if incompatible:
+            parser.error("--reconcile-only cannot be combined with solve or resume options")
+        return args
     if args.force and args.postprocess_only:
         parser.error("--force cannot be combined with --postprocess-only")
     if args.smoke and (args.base_only or args.low_angle_only or args.regressions_only):
@@ -413,6 +467,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         parser.error("workers>1 is supported only for prefix-until-failure or postprocess-only")
     if args.readiness_sanity_only and args.postprocess_only:
         parser.error("--readiness-sanity-only cannot be combined with --postprocess-only")
+    if args.family_inventory_policy == "shadow" and not args.postprocess_only:
+        parser.error("--family-inventory-policy shadow requires --postprocess-only")
+    if args.family_inventory_policy == "local-repair" and not args.main_pass_only:
+        parser.error("--family-inventory-policy local-repair requires --main-pass-only")
+    if args.family_inventory_policy == "local-repair" and not args.defer_expensive_strict:
+        parser.error("--family-inventory-policy local-repair requires --defer-expensive-strict")
+    if args.defer_expensive_strict and args.family_inventory_policy != "local-repair":
+        parser.error("--defer-expensive-strict requires --family-inventory-policy local-repair")
     if args.main_pass_only and not args.prefix_until_failure and not args.postprocess_only:
         parser.error("--main-pass-only requires --prefix-until-failure")
     if args.main_pass_only and (args.force or args.envelope_only or args.full_k10):
@@ -3006,7 +3068,19 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
     }
     default_output = workflow.SMOKE_OUTPUT_DIR if args.smoke else COARSE_GRID_OUTPUT_DIR
     output_dir = repo_path(args.output_dir or default_output)
+    if args.reconcile_family_local_repair_shadow:
+        result = family_reconciliation.reconcile(
+            output_dir,
+            shadow_dir=(repo_path(args.shadow_dir) if args.shadow_dir else None),
+            promotion_policy=args.promotion_policy,
+        )
+        result["root_calculations"] = 0
+        return result
     if args.postprocess_only:
+        if args.family_inventory_policy == "shadow":
+            result = family_integration.run_shadow(output_dir)
+            result["root_calculations"] = int(result.get("root_calculations", 0))
+            return result
         result = (
             main_pass_postprocess_only(
                 output_dir, defer_case_list=args.defer_case_list
@@ -3131,6 +3205,16 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
         ) + initial_deferred_expensive
         initial_completed = initial_resolved + initial_unresolved + initial_deferred_expensive
         selected = _main_pass_selection(selected, existing_statuses, deferred_case_ids)
+        reconciliation_resume_ids: set[str] | None = None
+        if args.family_inventory_policy == "local-repair":
+            reconciliation_dir = output_dir / family_reconciliation.OUTPUT_DIRECTORY_NAME
+            if reconciliation_dir.exists():
+                reconciliation_resume_ids = family_reconciliation.load_ready_resume_ids(
+                    output_dir
+                )
+                selected = [
+                    point for point in selected if point.case_id in reconciliation_resume_ids
+                ]
         progress_context = {
             "manifest_total": len(manifest),
             "initial_completed": initial_completed,
@@ -3165,6 +3249,20 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
         )
         metadata["deferred_case_ids"] = sorted(deferred_case_ids)
         metadata["main_pass_selected_count"] = len(selected)
+        metadata["reconciliation_resume_filter"] = {
+            "used": reconciliation_resume_ids is not None,
+            "ready_case_count": (
+                len(reconciliation_resume_ids)
+                if reconciliation_resume_ids is not None else None
+            ),
+            "source": (
+                str(
+                    (output_dir / family_reconciliation.OUTPUT_DIRECTORY_NAME / "resume_plan.csv")
+                    .relative_to(REPO_ROOT)
+                ).replace("\\", "/")
+                if reconciliation_resume_ids is not None else None
+            ),
+        }
         metadata["selected_point_count"] = len(selected)
         metadata["run_state"] = "main_pass_preflight_passed"
         workflow.atomic_write_json(output_dir / "run_metadata.json", metadata)
@@ -3355,6 +3453,17 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
         if args.main_pass_only
         else postprocess_only(output_dir)
     )
+    family_result: dict[str, object] | None = None
+    if args.family_inventory_policy == "local-repair":
+        # The point caches and ordinary post-processing remain immutable inputs.
+        # The accepted repair is an explicit provenance overlay; promotion into
+        # an article result remains separately reviewable.
+        family_result = family_integration.run_shadow(output_dir)
+        family_result["reconciliation"] = family_reconciliation.reconcile(
+            output_dir,
+            shadow_dir=output_dir / family_integration.SHADOW_DIRECTORY_NAME,
+            promotion_policy=family_reconciliation.PROMOTION_POLICY,
+        )
     post_seconds = time.perf_counter() - post_started
     metadata["timings_seconds"]["postprocess"] = post_seconds  # type: ignore[index]
     metadata["timings_seconds"]["total"] = time.perf_counter() - started  # type: ignore[index]
@@ -3404,6 +3513,7 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
         "counters": dict(aggregate_counters),
         "metadata": metadata,
         "postprocess": post_result,
+        "family_inventory": family_result,
     }
 
 

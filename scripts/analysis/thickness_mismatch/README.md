@@ -134,8 +134,9 @@ selector refinement under the unchanged problem statement.
 
 ## Article epsilon upper-envelope coarse-grid workflow
 
-The sorted-family inventory local-repair audit is a diagnostic-only precursor
-to any future coarse-grid orchestration change:
+The sorted-family inventory local-repair audit and its orchestration integration
+belong only to the isotropic circular two-rod EB/Timoshenko study. Rectangular
+anisotropic rods are a separate research scope. Run the standalone audit with:
 
 ```bash
 python scripts/analysis/thickness_mismatch/audits/audit_family_inventory_local_repair.py --threshold-profile nominal
@@ -148,7 +149,41 @@ case as deferred. Physical descendant branches, MAC, shapes, interpolation,
 global K12 scans, and force/full strict verification are not used. The manual
 R1--R7 refined pilot is opened only as a post-run oracle. The passing audit in
 `results/article_epsilon_upper_envelope/family_inventory_local_repair_audit/`
-does not change the production runner and did not resume the coarse grid.
+is now reused by the parent orchestration layer without copying its detector
+formula. The coarse grid was not resumed.
+
+The runner default is still `--family-inventory-policy off`. A source-preserving
+shadow pass reads only already-calculated point caches, groups them by
+`(epsilon_0, mu, eta, theory)` over available beta nodes, and writes a separate
+overlay under `coarse_grid_v1/family_local_repair_shadow/`:
+
+```bash
+python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_envelope_grid.py --output-dir results/article_epsilon_upper_envelope/coarse_grid_v1 --postprocess-only --family-inventory-policy shadow
+```
+
+The sorted-rank comparison remains primary. Matrix-confirmed local family
+repair precedes any expensive-strict request; unresolved required guards remain
+without `N_true`. `--family-inventory-policy local-repair` is an opt-in
+production candidate and requires `--main-pass-only --defer-expensive-strict`.
+Scientific point caches remain immutable and repair provenance is separate.
+
+Promotion into the article-facing layer is a separate, explicit zero-solve
+operation. It validates all shadow gates and cache/manifest fingerprints, then
+combines the immutable cache with a verified-only overlay in
+`coarse_grid_v1/family_local_repair_reconciliation/`:
+
+```bash
+python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_envelope_grid.py --output-dir results/article_epsilon_upper_envelope/coarse_grid_v1 --reconcile-family-local-repair-shadow --shadow-dir results/article_epsilon_upper_envelope/coarse_grid_v1/family_local_repair_shadow --promotion-policy verified-only --reconcile-only --no-new-point-solves
+```
+
+`reconciled_case_results.csv` is the versioned article-facing case table;
+`promotion_overlay.csv` is its immutable seven-case promotion input, while the
+scientific point cache remains the raw source of truth. The reconciled table
+preserves 684 accepted results, promotes seven matrix-confirmed repairs, keeps
+18 failed repairs as `deferred_expensive_strict` with `N_true=NaN`, and places
+845 cases in the future resume queue. Reconciliation neither reruns the family
+detector/local repair nor calls a matrix evaluator or point solver. Its CLI
+rejects solve/resume options. The default runner behavior is unchanged.
 
 The article-facing epsilon upper-envelope workflow is a new finite-grid
 diagnostic and is not a continuation, recalibration, or reopening of the
@@ -175,8 +210,10 @@ python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_enve
 python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_envelope_grid.py --regressions-only --reuse-cache
 ```
 
-The authorized coarse run used the explicit paired+auto prefix mode. It was
-manually interrupted after 320/1554 completed points; its cache remains under
+The saved partial CSV records the historical 320/1554 checkpoint. A later
+zero-solve shadow index finds 708 unique case IDs in the immutable cache (684
+with accepted `N_true`, 24 unresolved/deferred), leaving 846 manifest IDs with
+no point cache. The cache remains under
 `results/article_epsilon_upper_envelope/coarse_grid_v1/` and must not be
 confused with a complete article-facing envelope. Full K10 remains the default
 when no mode flag is supplied.
@@ -276,11 +313,12 @@ python scripts/analysis/thickness_mismatch/audits/audit_article_epsilon_smoke_fa
 python scripts/analysis/thickness_mismatch/audits/audit_article_epsilon_solver_readiness_v2.py --output-dir results/article_epsilon_upper_envelope/solver_readiness_v2 --session-id readiness_final_v3 --postprocess-only
 ```
 
-The current `resume_readiness_gate=PASS` supports the following future command,
-but this command was not executed in the interruption/parallel-audit step:
+After passing shadow and reconciliation gates, the explicit production-
+candidate command is the following. It consumes the reconciled resume plan
+and has not been executed:
 
 ```bash
-python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_envelope_grid.py --output-dir results/article_epsilon_upper_envelope/coarse_grid_v1 --prefix-until-failure --prefix-strategy paired --strict-policy auto --workers 4 --reuse-cache
+python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_envelope_grid.py --output-dir results/article_epsilon_upper_envelope/coarse_grid_v1 --prefix-until-failure --prefix-strategy paired --strict-policy main-pass --family-inventory-policy local-repair --defer-expensive-strict --workers 4 --reuse-cache --main-pass-only --skip-existing-unresolved --skip-deferred --skip-interrupted
 ```
 
 This optimization does not reopen Rule A/B/S and does not alter EB or

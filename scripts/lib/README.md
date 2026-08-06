@@ -38,7 +38,22 @@ Project-wide branch identity and diagnostic-tracking rules are summarized in
   missing-root detector, source-derived local-window inference, staged local
   matrix repair, multiplicity-aware merge, and isolated atomic cache used by
   `audit_family_inventory_local_repair.py`. It does not define descendant
-  identity and does not call tracking, MAC, shapes, or strict verification.
+  identity and does not call tracking, MAC, shapes, or strict verification. Its
+  cache identity explicitly accepts only the isotropic circular coupled-rod
+  EB/Timoshenko scope.
+- `article_epsilon_family_inventory_integration.py` is the parent-process
+  orchestration adapter for the article epsilon grid. It groups immutable
+  pointwise sorted spectra by `(epsilon_0, mu, eta, theory)`, reuses the family
+  detector and local matrix repair before an expensive-strict defer decision,
+  and writes a separate shadow/provenance overlay. It contains no scientific
+  matrices and does not import the rectangular-anisotropic research workflow.
+- `article_epsilon_family_reconciliation.py` is the explicit zero-solve
+  promotion layer for that verified shadow. It accepts only the isotropic
+  circular EB/Timoshenko scope, validates source fingerprints and shadow gates,
+  promotes only provenance-complete matrix-confirmed rows, preserves deferred
+  rows with `N_true=NaN`, and writes the deterministic article-facing table and
+  future resume plan without importing or calling a solver, matrix evaluator,
+  detector, or local repair. The source point cache remains immutable.
 - `yartsev_ch2_fast_beta_sweep.py` is the diagnostic-only generic coordinator
   for the Chapter-2 supervisor `Lambda(beta)` calculations. It provides
   sorted-frequency prediction windows, connected close-root clusters,
