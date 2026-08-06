@@ -52,11 +52,12 @@ from scripts.lib import article_epsilon_prefix_optimization as prefix  # noqa: E
 from scripts.lib import branch_informed_spectrum_continuation as branch  # noqa: E402
 from scripts.lib import article_epsilon_family_inventory_integration as family_integration  # noqa: E402
 from scripts.lib import article_epsilon_family_reconciliation as family_reconciliation  # noqa: E402
+from scripts.lib import article_epsilon_compact_certificates as compact_certificates  # noqa: E402
 from scripts.lib import general_spectrum_completeness as complete  # noqa: E402
 from scripts.lib import variable_length_timoshenko as timo  # noqa: E402
 
 
-COARSE_GRID_RUNNER_VERSION = "article_epsilon_coarse_grid_runner_v3_family_inventory_policy"
+COARSE_GRID_RUNNER_VERSION = "article_epsilon_coarse_grid_runner_v4_compact_certificates"
 COARSE_GRID_OUTPUT_DIR = (
     Path("results") / "article_epsilon_upper_envelope" / "coarse_grid_v1"
 )
@@ -431,9 +432,17 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--reconcile-only", action="store_true")
     parser.add_argument("--no-new-point-solves", action="store_true")
+    parser.add_argument("--build-compact-point-certificates", action="store_true")
+    parser.add_argument("--compact-certificate-dir", type=Path)
+    compact_mode = parser.add_mutually_exclusive_group()
+    compact_mode.add_argument("--compact-only", action="store_true")
+    compact_mode.add_argument("--family-post-stage-only", action="store_true")
+    compact_mode.add_argument("--epsilon-005-target-diagnostics-only", action="store_true")
+    compact_mode.add_argument("--epsilon-005-targeted-resolution", action="store_true")
+    parser.add_argument("--use-compact-point-certificates", action="store_true")
     args = parser.parse_args(argv)
     reconciliation_auxiliary = (
-        args.shadow_dir is not None or args.reconcile_only or args.no_new_point_solves
+        args.shadow_dir is not None or args.reconcile_only
     )
     if reconciliation_auxiliary and not args.reconcile_family_local_repair_shadow:
         parser.error(
@@ -457,6 +466,59 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         if incompatible:
             parser.error("--reconcile-only cannot be combined with solve or resume options")
         return args
+    if args.compact_only:
+        if not args.build_compact_point_certificates or not args.no_new_point_solves:
+            parser.error("--compact-only requires --build-compact-point-certificates --no-new-point-solves")
+        incompatible = (
+            args.smoke or args.reuse_cache or args.force or args.base_only
+            or args.low_angle_only or args.regressions_only or args.postprocess_only
+            or args.workers != 1 or args.readiness_sanity_only or args.full_k10
+            or args.prefix_until_failure or args.envelope_only or args.main_pass_only
+            or args.skip_existing_unresolved or args.skip_deferred
+            or args.skip_interrupted or args.defer_case_list is not None
+            or args.family_inventory_policy != "off" or args.defer_expensive_strict
+            or args.use_compact_point_certificates
+        )
+        if incompatible:
+            parser.error("--compact-only cannot be combined with solve, resume, or postprocess options")
+        return args
+    if args.family_post_stage_only:
+        if not args.use_compact_point_certificates or not args.no_new_point_solves:
+            parser.error("--family-post-stage-only requires --use-compact-point-certificates --no-new-point-solves")
+        if not args.defer_expensive_strict:
+            parser.error("--family-post-stage-only requires --defer-expensive-strict")
+        incompatible = (
+            args.smoke or args.reuse_cache or args.force or args.base_only
+            or args.low_angle_only or args.regressions_only or args.postprocess_only
+            or args.workers != 1 or args.readiness_sanity_only or args.full_k10
+            or args.prefix_until_failure or args.envelope_only or args.main_pass_only
+            or args.skip_existing_unresolved or args.skip_deferred
+            or args.skip_interrupted or args.defer_case_list is not None
+            or args.family_inventory_policy != "off" or args.build_compact_point_certificates
+        )
+        if incompatible:
+            parser.error("--family-post-stage-only cannot be combined with primary solve or resume options")
+        return args
+    if args.epsilon_005_target_diagnostics_only or args.epsilon_005_targeted_resolution:
+        incompatible = (
+            args.smoke or args.force or args.base_only or args.low_angle_only
+            or args.regressions_only or args.postprocess_only or args.workers != 1
+            or args.readiness_sanity_only or args.full_k10 or args.prefix_until_failure
+            or args.envelope_only or args.main_pass_only
+            or args.skip_existing_unresolved or args.skip_deferred
+            or args.skip_interrupted or args.defer_case_list is not None
+            or args.family_inventory_policy != "off" or args.defer_expensive_strict
+            or args.build_compact_point_certificates or args.compact_certificate_dir
+            or args.use_compact_point_certificates or args.no_new_point_solves
+            or args.reconcile_family_local_repair_shadow
+        )
+        if incompatible:
+            parser.error("epsilon_0=0.050 target modes are isolated workers=1 workflows")
+        return args
+    if args.no_new_point_solves:
+        parser.error("--no-new-point-solves requires reconciliation, --compact-only, or --family-post-stage-only")
+    if args.build_compact_point_certificates or args.compact_certificate_dir or args.use_compact_point_certificates:
+        parser.error("compact-certificate options require --compact-only or --family-post-stage-only")
     if args.force and args.postprocess_only:
         parser.error("--force cannot be combined with --postprocess-only")
     if args.smoke and (args.base_only or args.low_angle_only or args.regressions_only):
@@ -530,15 +592,33 @@ def _existing_prefix_records(
     *,
     strategy: str,
     strict_policy: str,
-) -> tuple[dict[str, str], dict[str, dict[str, object]]]:
-    """Read execution status from cache without invoking either root solver."""
+) -> dict[str, str]:
+    """Read scalar statuses without retaining decompressed solver payloads."""
 
     runtime_case_ids = _prefix_runtime_case_ids(output_dir)
+    compact_index = output_dir / "compact_point_certificates_v1" / "compact_index.csv"
+    compact_statuses: dict[str, str] = {}
+    if compact_index.exists():
+        compact_statuses = {
+            str(row.get("case_id", "")): str(row.get("execution_status", "attempted_unresolved"))
+            for row in workflow.read_csv(compact_index)
+            if row.get("case_id")
+        }
     point_cache = prefix.PartialPointCache(output_dir / "cache" / "prefix", reuse_cache=True, force=False)
     policies = tuple(dict.fromkeys((strict_policy, "auto")))
     statuses: dict[str, str] = {}
-    raw_payloads: dict[str, dict[str, object]] = {}
     for point in manifest:
+        if point.case_id in compact_statuses:
+            raw_status = compact_statuses[point.case_id]
+            if raw_status == "deferred_expensive_strict":
+                statuses[point.case_id] = raw_status
+            elif point.case_id not in runtime_case_ids and raw_status not in {
+                "resolved_prefix_early_stop", "resolved_full_K10",
+            }:
+                statuses[point.case_id] = "interrupted_incomplete"
+            else:
+                statuses[point.case_id] = raw_status
+            continue
         raw = None
         for policy in policies:
             raw = point_cache.load(point, strategy=strategy, strict_policy=policy)
@@ -547,7 +627,6 @@ def _existing_prefix_records(
         if raw is None:
             statuses[point.case_id] = "not_attempted"
             continue
-        raw_payloads[point.case_id] = raw
         raw_status = str(raw.get("execution_status", "attempted_unresolved"))
         if raw_status == "deferred_expensive_strict":
             statuses[point.case_id] = raw_status
@@ -558,7 +637,8 @@ def _existing_prefix_records(
             statuses[point.case_id] = "interrupted_incomplete"
         else:
             statuses[point.case_id] = raw_status
-    return statuses, raw_payloads
+        del raw
+    return statuses
 
 
 def _resolved_root_values(raw: Mapping[str, object], model: str) -> list[float]:
@@ -694,7 +774,7 @@ def build_deferred_complex_cases_current(
     seed = seed_path or output_dir / "deferred_complex_cases_pre_run.csv"
     seed_rows = workflow.read_csv(seed) if seed.exists() else []
     seed_by_id = {str(row["case_id"]): row for row in seed_rows}
-    statuses, payloads = _existing_prefix_records(
+    statuses = _existing_prefix_records(
         manifest, output_dir, strategy="paired", strict_policy="main-pass"
     )
     included = set(seed_by_id)
@@ -713,12 +793,28 @@ def build_deferred_complex_cases_current(
     cache = prefix.PartialPointCache(
         output_dir / "cache" / "prefix", reuse_cache=True, force=False
     )
+    compact_index_path = output_dir / "compact_point_certificates_v1" / "compact_index.csv"
+    compact_paths = {
+        str(row.get("case_id", "")): repo_path(Path(str(row.get("certificate_path", ""))))
+        for row in (workflow.read_csv(compact_index_path) if compact_index_path.exists() else [])
+        if row.get("case_id") and row.get("certificate_path")
+    }
     rows: list[dict[str, object]] = []
     for case_id in sorted(included):
         point = by_id.get(case_id)
         if point is None:
             raise RuntimeError(f"deferred case is outside the manifest: {case_id}")
-        raw = payloads.get(case_id, {})
+        raw: Mapping[str, object] = {}
+        compact_path = compact_paths.get(case_id)
+        if compact_path is not None and compact_path.exists():
+            certificate = compact_certificates.load_certificate(compact_path)
+            raw = compact_certificates.compact_pseudo_payload(certificate)
+        else:
+            for policy in ("main-pass", "auto"):
+                loaded = cache.load(point, strategy="paired", strict_policy=policy)
+                if loaded is not None:
+                    raw = loaded
+                    break
         seed_row = seed_by_id.get(case_id, {})
         selected_policy = "main-pass"
         cache_path = cache.path(point, strategy="paired", strict_policy=selected_policy)
@@ -768,6 +864,7 @@ def build_deferred_complex_cases_current(
                 ),
             }
         )
+        del raw
     rows.sort(
         key=lambda row: (
             float(row["epsilon_0"]),
@@ -3076,6 +3173,52 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
         )
         result["root_calculations"] = 0
         return result
+    if args.compact_only:
+        compact_dir = (
+            repo_path(args.compact_certificate_dir)
+            if args.compact_certificate_dir
+            else output_dir / "compact_point_certificates_v1"
+        )
+        run = compact_certificates.build_compact_certificates(
+            output_dir, compact_dir=compact_dir,
+        )
+        return {
+            "output_dir": run.output_dir,
+            "certificate_count": run.certificate_count,
+            "converted_count": run.converted_count,
+            "cache_hit_count": run.cache_hit_count,
+            "failure_count": run.failure_count,
+            "peak_rss_bytes": run.peak_rss,
+            "wall_seconds": run.wall_seconds,
+            "root_calculations": 0,
+            "matrix_evaluator_calls": 0,
+            "local_repair_calls": 0,
+        }
+    if args.family_post_stage_only:
+        from scripts.lib import article_epsilon_compact_poststage as compact_poststage  # noqa: WPS433
+
+        compact_dir = (
+            repo_path(args.compact_certificate_dir)
+            if args.compact_certificate_dir
+            else output_dir / "compact_point_certificates_v1"
+        )
+        result = compact_poststage.run_compact_family_poststage(
+            output_dir, compact_dir=compact_dir,
+        )
+        result["root_calculations"] = 0
+        return result
+    if args.epsilon_005_target_diagnostics_only:
+        from scripts.lib import article_epsilon_targeted_resolution as targeted  # noqa: WPS433
+
+        result = targeted.prepare_target_diagnostics(output_dir)
+        result["root_calculations"] = 0
+        return result
+    if args.epsilon_005_targeted_resolution:
+        from scripts.lib import article_epsilon_targeted_resolution as targeted  # noqa: WPS433
+
+        result = targeted.run_targeted_resolution(output_dir)
+        result["root_calculations"] = 0
+        return result
     if args.postprocess_only:
         if args.family_inventory_policy == "shadow":
             result = family_integration.run_shadow(output_dir)
@@ -3175,7 +3318,7 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
             effective_defer_path = default_current
         deferred_rows = _deferred_case_rows(effective_defer_path, manifest)
         deferred_case_ids = {str(row["case_id"]) for row in deferred_rows}
-        existing_statuses, _raw_existing = _existing_prefix_records(
+        existing_statuses = _existing_prefix_records(
             manifest,
             output_dir,
             strategy=args.prefix_strategy,
@@ -3455,15 +3598,23 @@ def main(argv: Sequence[str] | None = None) -> dict[str, object]:
     )
     family_result: dict[str, object] | None = None
     if args.family_inventory_policy == "local-repair":
-        # The point caches and ordinary post-processing remain immutable inputs.
-        # The accepted repair is an explicit provenance overlay; promotion into
-        # an article result remains separately reviewable.
-        family_result = family_integration.run_shadow(output_dir)
-        family_result["reconciliation"] = family_reconciliation.reconcile(
-            output_dir,
-            shadow_dir=output_dir / family_integration.SHADOW_DIRECTORY_NAME,
-            promotion_policy=family_reconciliation.PROMOTION_POLICY,
+        # Never hand the family stage a process-wide collection of decompressed
+        # solver traces.  Stream the immutable point caches into compact
+        # certificates, then load only one small beta-family at a time.
+        from scripts.lib import article_epsilon_compact_poststage as compact_poststage  # noqa: WPS433
+
+        compact_run = compact_certificates.build_compact_certificates(output_dir)
+        family_result = compact_poststage.run_compact_family_poststage(
+            output_dir, compact_dir=compact_run.output_dir,
         )
+        family_result["compaction"] = {
+            "certificate_count": compact_run.certificate_count,
+            "converted_count": compact_run.converted_count,
+            "cache_hit_count": compact_run.cache_hit_count,
+            "failure_count": compact_run.failure_count,
+            "peak_rss_bytes": compact_run.peak_rss,
+            "point_solver_calls": 0,
+        }
     post_seconds = time.perf_counter() - post_started
     metadata["timings_seconds"]["postprocess"] = post_seconds  # type: ignore[index]
     metadata["timings_seconds"]["total"] = time.perf_counter() - started  # type: ignore[index]

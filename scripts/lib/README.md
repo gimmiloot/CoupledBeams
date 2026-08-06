@@ -54,6 +54,23 @@ Project-wide branch identity and diagnostic-tracking rules are summarized in
   rows with `N_true=NaN`, and writes the deterministic article-facing table and
   future resume plan without importing or calling a solver, matrix evaluator,
   detector, or local repair. The source point cache remains immutable.
+- `article_epsilon_compact_certificates.py` is the zero-solve streaming
+  migration layer for the same isotropic circular grid. It reads one full gzip
+  trace at a time and writes a versioned per-case certificate containing only
+  sorted roots through the scientific guard, `delta_f`, `N_true`, compact
+  quality flags, and provenance. `article_epsilon_compact_poststage.py` groups
+  only these compact records one beta-family at a time, permits narrow local
+  matrix repair only for unresolved cases, and emits the scalar article-facing
+  table plus a non-destructive raw-cache retention proposal. Neither module
+  contains scientific matrices or imports the rectangular-anisotropic scope.
+- `article_epsilon_targeted_resolution.py` is the target-only orchestration
+  layer for deferred `epsilon_0=0.050` compact cases. It selects IDs from the
+  unresolved table, reads at most one raw payload at a time, verifies only the
+  required sorted prefix with four shifted local determinant/SVD phases and
+  two refinement levels, and writes an immutable overlay plus a versioned
+  finalization. It does not change the production matrices or tolerances; all
+  target caches are isolated and force/full strict remains unused when T1 and
+  the stored independent configuration agree.
 - `yartsev_ch2_fast_beta_sweep.py` is the diagnostic-only generic coordinator
   for the Chapter-2 supervisor `Lambda(beta)` calculations. It provides
   sorted-frequency prediction windows, connected close-root clusters,

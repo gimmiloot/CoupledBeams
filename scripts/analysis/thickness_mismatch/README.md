@@ -167,6 +167,44 @@ without `N_true`. `--family-inventory-policy local-repair` is an opt-in
 production candidate and requires `--main-pass-only --defer-expensive-strict`.
 Scientific point caches remain immutable and repair provenance is separate.
 
+After the production primary queue completed, retaining all decompressed point
+payloads in the parent process caused a `MemoryError`. The article-facing
+scientific result is now the versioned compact certificate rather than the
+dense determinant/SVD trace. Build the certificates with zero solves:
+
+```bash
+python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_envelope_grid.py --output-dir results/article_epsilon_upper_envelope/coarse_grid_v1 --build-compact-point-certificates --compact-certificate-dir results/article_epsilon_upper_envelope/coarse_grid_v1/compact_point_certificates_v1 --compact-only --no-new-point-solves
+```
+
+Then run only the family detector and unresolved-case narrow repair from the
+compact index:
+
+```bash
+python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_envelope_grid.py --output-dir results/article_epsilon_upper_envelope/coarse_grid_v1 --compact-certificate-dir results/article_epsilon_upper_envelope/coarse_grid_v1/compact_point_certificates_v1 --family-post-stage-only --use-compact-point-certificates --no-new-point-solves --defer-expensive-strict
+```
+
+The first command imports no evaluator and performs zero matrix work. The
+second performs zero primary point solves and forbids force/full strict; only
+matrix-confirmed narrow local repair of unresolved certificates is allowed.
+Raw payloads remain immutable. `raw_cache_prune_plan.csv` is an unexecuted
+retention proposal, not a deletion instruction.
+
+The two deferred cases that alone blocked the `epsilon_0=0.050` envelope are
+handled by an isolated target mode. Selection is data-driven from the compact
+unresolved table; workers and BLAS threads remain one, and T1 uses only narrow
+exact-beta four-phase/two-level searches through the required guard:
+
+```bash
+python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_envelope_grid.py --output-dir results/article_epsilon_upper_envelope/coarse_grid_v1 --epsilon-005-targeted-resolution --reuse-cache
+```
+
+Both target cases resolved locally, so T2 independent-oracle escalation and
+T3/T4 strict paths were not needed. The original `compact_finalization/` and
+all raw caches remain unchanged; the promoted table and exact raw/suffix
+envelopes are versioned under `compact_finalization_epsilon_005_resolved/`.
+This remains a finite sorted-rank result, not descendant tracking or a
+continuous-domain proof.
+
 Promotion into the article-facing layer is a separate, explicit zero-solve
 operation. It validates all shadow gates and cache/manifest fingerprints, then
 combines the immutable cache with a verified-only overlay in
@@ -252,9 +290,11 @@ python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_enve
 python scripts/analysis/thickness_mismatch/audits/run_article_epsilon_upper_envelope_grid.py --regressions-only --prefix-until-failure --prefix-strategy full-eb-progressive-timo --strict-policy auto --reuse-cache
 ```
 
-Partial point caches are atomic compact JSON/gzip snapshots. They retain roots,
+Partial point caches are atomic full solver JSON/gzip snapshots. They retain roots,
 clusters, brackets/interval metadata, and evaluated determinant/SVD data, so a
 later full-K10 request can extend an early prefix rather than recomputing it.
+They are transient computational caches; compact point certificates are the
+memory-bounded persistent scientific layer.
 `not_attempted_cases.csv` is separate from attempted failures; modes beyond a
 confirmed first failure carry `not_needed_after_first_failure`. Optional
 `--envelope-only` saturation at `N_true=10` is complete only for the upper

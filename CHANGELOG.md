@@ -2,6 +2,23 @@
 
 ## 2026-08-06
 
+- Added a target-only isotropic-circular resolution workflow for the two
+  deferred `epsilon_0=0.050` article-envelope cases. Targets are selected from
+  the compact unresolved table, one raw payload is inspected at a time, and
+  exact-beta four-phase/two-level local determinant/SVD searches verify only
+  the required sorted prefix. Both cases resolve without force/full strict as
+  `N_true=2` and `N_true=1`, making the observed `epsilon_0=0.050` maximum 4
+  exact. A separate immutable overlay and versioned finalization preserve the
+  original compact/raw caches; repeat execution performs zero matrix work.
+- Added the isotropic-circular article-grid compact-certificate workflow after
+  the completed 845-case primary pass exposed a parent-side `MemoryError` while
+  retaining decompressed solver traces. The versioned streaming compactor reads
+  one immutable point cache at a time, writes one small per-case scientific
+  certificate, and supplies a scalar index to the family post-stage. Explicit
+  compact-only and family-post-stage-only CLI modes forbid new primary solves;
+  raw-cache retention/prune planning is report-only and deletes nothing. The EB
+  and Timoshenko equations, circular basis/coefficient, tolerances, and separate
+  rectangular-anisotropic scope are unchanged.
 - Added an explicit, zero-solve, isotropic-circular-only reconciliation mode
   for the article epsilon grid. It validates the verified family-repair shadow
   gates, manifest/cache fingerprints, and full promotion provenance; writes an
