@@ -1,7 +1,46 @@
 # CHANGELOG
 
+## 2026-08-08
+
+- Added the separate `--additional-angle-pilot` extension for the
+  isotropic-circular longitudinal-energy audit. It deduplicates the immutable
+  coupled ranking by case ID, selects the `epsilon_0=0.030`, `beta>=30 deg`,
+  `s_max<=0.1`, sorted-`k=5` local frequency minimum before reading prior
+  energy values, and reconstructs only its three saved-root Timoshenko forms.
+  The v3 bundle compares the fixed `(epsilon_0, mu, eta)` geometry at
+  `beta=15` and `30 deg`, supplies compact six-bar and extended nine-bar
+  600-dpi PNG candidates plus source tables, and preserves the v1/v2 pilots
+  byte-for-byte. No article section, root/strict/MAC/tracking/shape/FEM/
+  anisotropic call, formula, basis, tolerance, or saved root was added or
+  changed.
+- Extended the isotropic-circular longitudinal-energy triplet audit with an
+  explicit `--coupled-angle-pilot` mode. Frequency-only ranking selects one
+  `beta=15 deg` geometry at each of `epsilon_0=0.030` and `0.050` before
+  reconstructing exactly six saved-root Timoshenko forms; the latter case is
+  explicitly retained in the extended `s_max>0.1` one-dimensional-model
+  range. The versioned bundle includes 801/1601 convergence, mode residuals,
+  sign invariance, a zero-solve immutable `beta=0` control, compact tables,
+  and one 600-dpi PNG. No root/strict/MAC/tracking/shape/FEM/anisotropic call,
+  physical-branch matching, or formal 70% classification is used; the result
+  is illustrative rather than statistical.
+- Added an article-facing longitudinal-energy triplet pilot for the isotropic
+  circular coupled-rod EB/Timoshenko scope. It selects one finalized geometry
+  at `epsilon_0=0.030` and one at `epsilon_0=0.050` from compact frequency
+  certificates before reconstructing exactly six sorted Timoshenko modes. The
+  bundle records 801/1601 integration convergence, null/clamp/joint/sign
+  checks, one 600-dpi stacked-bar PNG, compact tables, and zero root/strict/MAC/
+  shape/FEM/anisotropic calls. No physical-branch tracking or 70% mode
+  classification is used; the result is illustrative rather than statistical.
+
 ## 2026-08-06
 
+- Added the first versioned article-ready bundle for the isotropic circular
+  EB/Timoshenko epsilon upper-envelope study. A dedicated zero-solve generator
+  reads only the final compact tables, keeps the eight complete epsilon levels
+  separate from the two S3 regression controls, and emits deterministic 600-dpi
+  PNGs, source CSVs, Word-friendly/Markdown/LaTeX tables, and cautiously scoped
+  Russian article text. No raw cache, solver, matrix evaluator, repair, strict,
+  FEM, tracking, shape, energy, or rectangular-anisotropic workflow is used.
 - Added a target-only isotropic-circular resolution workflow for the two
   deferred `epsilon_0=0.050` article-envelope cases. Targets are selected from
   the compact unresolved table, one raw payload is inspected at a time, and

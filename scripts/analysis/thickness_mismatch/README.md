@@ -37,6 +37,9 @@ lambda_mu/
 
 postprocess/
   CSV-only summaries and global trend analysis
+
+article/
+  stable zero-solve generators for versioned article-facing asset bundles
 ```
 
 Existing flat scripts in `scripts/analysis/` remain supported for
@@ -46,6 +49,87 @@ breaking moves.
 Diagnostic scripts must explicitly state whether they use sorted frequencies
 or descendant branches. Sorted frequencies are used for spectral maps and gap
 metrics; descendant branches are used for tracking modal character.
+
+## Article-ready epsilon upper-envelope assets v1
+
+`article/build_article_epsilon_upper_envelope_assets.py` is the stable
+article-facing postprocessor for the isotropic circular coupled-rod
+EB/Timoshenko study. It reads only
+`compact_finalization_epsilon_005_resolved`, never imports the scientific
+solver, and writes the versioned bundle under
+`results/article_epsilon_upper_envelope/article_ready_v1/`. The main curve
+contains only the eight complete 194-geometry epsilon levels; S3_14 and S3_12
+remain separate regression controls. Generation is zero-solve and does not
+read or modify raw point caches.
+
+```powershell
+D:\python\Pycharm\pythonProject\.venv\Scripts\python.exe -B `
+  scripts/analysis/thickness_mismatch/article/build_article_epsilon_upper_envelope_assets.py `
+  --source-dir results/article_epsilon_upper_envelope/coarse_grid_v1/compact_finalization_epsilon_005_resolved `
+  --output-dir results/article_epsilon_upper_envelope/article_ready_v1 `
+  --language ru --dpi 600 --overwrite
+```
+
+## Article-facing longitudinal-energy triplet pilot
+
+`audits/audit_article_longitudinal_energy_examples.py` is the stable entry
+point for the isotropic circular coupled-rod EB/Timoshenko energy pilot. Its
+zero-solve selection phase reads only finalized compact certificates and fixes
+one geometry for `epsilon_0=0.030`, sorted `k=5`, and one for
+`epsilon_0=0.050`, sorted `k=4`. The reconstruction phase then evaluates only
+the two neighboring positions and the central position: two geometries and six
+Timoshenko forms in total.
+
+```powershell
+D:\python\Pycharm\pythonProject\.venv\Scripts\python.exe -B `
+  scripts/analysis/thickness_mismatch/audits/audit_article_longitudinal_energy_examples.py
+```
+
+Outputs are written to
+`results/article_epsilon_upper_envelope/energy_triplet_pilot_v1/`. The pilot
+uses same-index sorted frequencies and does not track physical branches. It
+reports the actual axial and combined bending-plus-shear potential-energy
+contributions without a formal 70% classification. The two selected examples
+illustrate a mechanism; they do not establish a statistical or universal
+relationship.
+
+The explicit coupled-angle extension is run with:
+
+```powershell
+D:\python\Pycharm\pythonProject\.venv\Scripts\python.exe -B `
+  scripts/analysis/thickness_mismatch/audits/audit_article_longitudinal_energy_examples.py `
+  --coupled-angle-pilot
+```
+
+It writes
+`results/article_epsilon_upper_envelope/energy_triplet_coupled_pilot_v2/`
+without changing or recalculating the `beta=0` v1 bundle. The two main
+geometries both have `beta=15 deg`; only their six same-index sorted
+Timoshenko forms are reconstructed. The `epsilon_0=0.030` example satisfies
+`s_max<=0.1`, whereas the `epsilon_0=0.050` example is explicitly reported in
+the extended one-dimensional-model range because no main-grid geometry at
+that epsilon satisfies the thinness limit. The coupled result remains an
+illustration, uses no physical-branch tracking, and assigns no formal 70%
+mode classification.
+
+One additional fixed-geometry angle comparison is available through:
+
+```powershell
+D:\python\Pycharm\pythonProject\.venv\Scripts\python.exe -B `
+  scripts/analysis/thickness_mismatch/audits/audit_article_longitudinal_energy_examples.py `
+  --additional-angle-pilot
+```
+
+The v3 output under
+`results/article_epsilon_upper_envelope/energy_triplet_angle_extension_v3/`
+deduplicates the frequency ranking by case ID and fixes one
+`epsilon_0=0.030`, `beta>=30 deg`, `s_max<=0.1` geometry before prior energy
+tables are read. Only its saved sorted modes `k=4,5,6` are reconstructed. Two
+PNG candidates compare the fixed `(epsilon_0, mu, eta)` geometry at
+`beta=15` and `30 deg`, either alone or together with the previous
+`epsilon_0=0.050` coupled example. The v1/v2 bundles remain immutable, and
+the generated notes are internal figure-selection guidance rather than an
+article section.
 
 ## Smoke Mode Convention
 
@@ -675,6 +759,7 @@ when the Stage-1 data are present.
 | Branch-informed spectrum-continuation gateway to targeted step 3 | `python scripts/analysis/thickness_mismatch/audits/audit_eb_timo_branch_continuation_gateway.py --min-beta-step 0.005 --run-pilot --reuse-cache --force-strict-verification --write-step3-manifest-if-ready --force` | reuses unchanged EB/Timoshenko matrices, exact beta=0 axial/bending parent blocks, the historical and auto-complete pilot outputs, the pilot matching/postprocessor, and the corrected straight thresholds | 12 `branch_*.csv` audit tables and `eb_timo_branch_continuation_gateway_report.md` under `results/eb_timo_branch_continuation_gateway/`; separate branch-informed pilot outputs; conditional future manifest under `audits/data/` | Research-step-2.5b numerical gateway. Seeds create windows only; isolated and null-subspace cluster continuation both require full-matrix refinement. `K10_guard_resolved` remains separate from `full12_resolved`; global guard, triggered fallback, force verification, and cache scopes are separately audited. The completed run passed all readiness items (122/122 model/geometries at K10 and 21/21 included pilot cases), so it wrote but did not execute the 28-case future manifest. No physical model, determinant, FEM, article, or lower-envelope search changed or ran. |
 | Targeted epsilon lower-envelope Step 3A | `python scripts/analysis/thickness_mismatch/audits/audit_eb_epsilon_lower_envelope_step3a.py --write-step3b-followup-manifest --reuse-cache` | consumes the fixed 28-case Step-3 manifest, corrected full-precision straight thresholds, and verified branch-gateway provenance; reuses the branch continuation and corrected factorized straight oracle | 11 Step-3A audit CSVs, the unexecuted `step3b_followup_case_manifest.csv`, six diagnostic PNGs, separate primary/verification caches, and `eb_epsilon_lower_envelope_step3a_report.md` under `results/eb_epsilon_lower_envelope_step3a/` | Finite targeted screening only. K10 plus root 11 is mandatory; root 12 is diagnostic. Provisional/near/quality/worst cases receive independent force-recompute verification. Adversarial near/buffer rows are paired only when geometry matches. No Step 3B solve, optimizer, continuous-envelope proof, FEM, formula, matrix, or shared-solver change. |
 | S3_12/S3_14 dimensional frequency versus beta | `python scripts/analysis/thickness_mismatch/maps/plot_counterexample_dimensional_frequency_beta.py --beta-min 0 --beta-max 90 --beta-step 0.5 --k-max 10 --n-spectrum-roots 12 --spectrum-method branch_informed_continuation_v1 --reuse-cache` | consumes the full-precision confirmed Step-3A cases and verified branch gateway; reuses branch-informed local/cluster continuation, strict fallback, root-11 guard, `BeamParams`, and `lambdas_to_frequencies` | exactly two PDFs, `counterexample_dimensional_frequency_beta.csv`, scale/quality audit CSVs, and a report under `results/eb_timo_counterexample_dimensional_frequency_beta/` | Sorted positions 1--10 only. EB is dashed, Timoshenko solid, and each theory pair shares its sorted-index color. The common project dimensional scale is in Hz. Figures contain axis labels and ticks but no title, legend, annotations, markers, or grid. Root 11 is a guard and root 12 is diagnostic; neither is plotted. No legacy substitution, FEM, formula, matrix, solver-default, shear-coefficient, or article change. |
+| Article-facing longitudinal-energy triplet pilot | `python scripts/analysis/thickness_mismatch/audits/audit_article_longitudinal_energy_examples.py` | finalized compact certificates, `scripts/lib/variable_length_timoshenko.py`, and the existing joint-residual helper | `results/article_epsilon_upper_envelope/energy_triplet_pilot_v1/` with candidate/selection, six-mode energy, convergence/residual, gate/counter CSVs, one 600-dpi PNG, compact TSV/TeX/Markdown tables, and report | Isotropic circular rods only. Selection is frequency-only and precedes reconstruction of exactly six same-index sorted Timoshenko forms. It uses no branch tracking, 70% classification, shape plot, root solve, strict verification, MAC, FEM, or anisotropic workflow; the result is illustrative rather than statistical. |
 | Longitudinal-character audit for EB/Timoshenko `Lambda(mu)` suspect modes | `python scripts/analysis/thickness_mismatch/audits/audit_longitudinal_suspect_modes_eb_timo.py` | reuses the existing sorted EB/Timoshenko `Lambda(mu)` CSVs when available, the EB eta determinant for coefficients, and `scripts/lib/variable_length_timoshenko.py` for Timoshenko fields and section/kappa data | `results/eb_vs_timoshenko_longitudinal_suspect_modes/suspect_mode_energy_fractions.csv`, `control_mode_energy_fractions.csv`, `suspect_mode_shape_summary.csv`, `timoshenko_joint_continuity_audit.csv`, per-mode shape PNGs, `suspect_shapes_eps*_grid.png`, `longitudinal_suspect_modes_report.tex`, and optional PDF | Diagnostic-only sorted-frequency mode-shape and energy audit for the beta=45 deg, eta=0 suspect cases `epsilon=0.03` sorted 5 and `epsilon=0.05` sorted 4. It computes axial, bending, and Timoshenko shear energy fractions plus displacement fractions, audits Timoshenko joint compatibility before plotting, blocks Timoshenko shape figures with normalized kinematic joint gap above `1e-6`, includes neighboring sorted modes at `mu=0.35` as controls, and writes a Russian TeX report. It does not use descendant tracking, FEM/3D FEM/Gmsh/CalculiX, article outputs, determinant changes, root-solver changes, or shear-coefficient changes. |
 | Timoshenko thin-limit shape-bug audit | `python scripts/analysis/thickness_mismatch/audits/audit_timoshenko_shape_bug_thin_limit.py` | reuses the sorted EB/Timoshenko root provider, analytic EB reconstruction, `scripts/lib/variable_length_timoshenko.py`, and `scripts/lib/in_plane_shape_geometry.py` | `results/timoshenko_shape_bug_audit/beta_unit_audit.md`, `display_transform_regression.csv`, `thin_limit_eb_timo_shape_mac.csv`, `timoshenko_null_vector_audit.csv`, `timoshenko_shape_residual_audit.csv`, three thin-limit full-centerline PNG grids, and `timoshenko_shape_bug_audit_report.md` | Diagnostic-only sorted-mode audit at `epsilon=0.0025` and comparison with `epsilon=0.03` for beta=45 deg, eta=0, mu=0,0.2,0.4,0.6, and modes 4-6. It checks explicit beta units, same-index local and corrected-display EB/Timoshenko MAC, rod-2-only display MAC, shear convergence, both smallest singular values, null residuals, clamp/joint residuals, and plot regularity. Corrected Timoshenko display normals are reflected relative to determinant components; older Timoshenko global plots are invalid for physical interpretation. It does not use descendant tracking, FEM/3D FEM/Gmsh/CalculiX, article outputs, determinant changes, root-solver changes, or shear-coefficient changes. |
 | Clean corrected EB/Timoshenko full shape grids | `python scripts/analysis/thickness_mismatch/shapes/plot_eb_timo_full_mode_shapes_eps0p03_beta45_eta0_modes4_6.py --epsilon 0.03 --mode-indices 4 5 6 --mu-values 0 0.2 0.4 0.6 --clean-style --output-dir results/eb_timo_clean_mode_shapes` | reuses the sorted shape-construction audit and shared in-plane display geometry | `results/eb_timo_clean_mode_shapes/` clean EB, Timoshenko, and optional combined PNG grids, `clean_mode_shape_summary.csv`, and `clean_mode_shape_report.md` | Diagnostic-only full-displacement centerlines from sorted frequencies. The entrypoint also accepts `--epsilon 0.04 --mode-indices 3 4 5`, `--epsilon 0.02 --mode-indices 5 6 7`, `--epsilon 0.05 --mode-indices 3 4 5`, and other sorted-mode/mu selections. Scale 0.08 is checked across all EB+Timoshenko shapes for the requested epsilon; if any shape fails, the whole epsilon set checks 0.05, then 0.02, and uses one common scale. Panel titles are clean (`mu`, sorted `k`, `Lambda`) and the corrected in-plane display mapping is used. |
