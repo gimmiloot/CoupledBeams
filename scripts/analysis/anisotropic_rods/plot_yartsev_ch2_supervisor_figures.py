@@ -48,6 +48,8 @@ from scripts.lib.yartsev_ch2_monoclinic_rod import (  # noqa: E402
     find_elastic_roots,
     hms_dx_209_material,
     make_rod_point,
+    physical_state_energy_components,
+    physical_state_trajectory_from_initial,
     physical_state_transfer_matrix,
 )
 from scripts.lib.yartsev_ch2_rectangular_eb import (  # noqa: E402
@@ -99,8 +101,12 @@ FIGURE_BASENAMES = {
     6: "figure_06_timoshenko_vs_eb_unequal_lengths_and_thickness_book_slope",
     7: "figure_07_monoclinic_theta5_vs_orthotropic_eb_approximation",
     8: "figure_08_chapter2_theta15_vs_theta0",
+    9: "figure_09_monoclinic_theta1_vs_orthotropic_eb_approximation",
+    10: "figure_10_monoclinic_theta2_vs_orthotropic_eb_approximation",
+    11: "figure_11_monoclinic_theta3_vs_orthotropic_eb_approximation",
+    12: "figure_12_monoclinic_theta4_vs_orthotropic_eb_approximation",
 }
-DATA_FILENAMES = {number: f"figure_{number:02d}_data.csv" for number in range(1, 9)}
+DATA_FILENAMES = {number: f"figure_{number:02d}_data.csv" for number in range(1, 13)}
 
 DEFAULT_BETA_STEP_DEG = 0.5
 PLOTTED_ROOT_COUNT = 6
@@ -139,6 +145,13 @@ REFERENCE_B_M = 0.020
 FAST_FAMILY_DIRNAME = "fast_family_checkpoints"
 FAST_VALIDATION_FILENAME = "fast_solver_validation.csv"
 FAST_BENCHMARK_FILENAME = "fast_solver_benchmark.json"
+THETA_SMALL_CHARACTER_FILENAME = "theta_small_beta0_mode_character.csv"
+SMALL_THETA_FIGURE_NUMBERS = (9, 10, 11, 12)
+SMALL_THETA_ANGLES_DEG = (1.0, 2.0, 3.0, 4.0)
+SMALL_THETA_CLAMP = "book_slope_clamp"
+MODE_CHARACTER_SAMPLES = 401
+DOMINANT_CHARACTER_FRACTION = 0.6
+FIGURE_7_Y_LIMITS_KEY = "figures_7_8_shared"
 LEGACY_RECORDED_RUNTIME_S = 860.7748033000062
 ARTICLE_WORKSPACES = (
     ROOT / "paper_dorofeev_style",
@@ -228,6 +241,33 @@ FIGURE_8_PRESET = FigurePreset(
     theta_1_deg=15.0,
     theta_2_deg=15.0,
 )
+
+
+def monoclinic_vs_orthotropic_eb_preset(
+    theta_deg: float, figure_number: int
+) -> FigurePreset:
+    """Return an exact Figure-7 preset with only ``theta`` and number changed."""
+
+    if figure_number not in SMALL_THETA_FIGURE_NUMBERS:
+        raise ValueError("small-theta Figure number must lie in 9..12")
+    if float(theta_deg) not in SMALL_THETA_ANGLES_DEG:
+        raise ValueError("small-theta material angle must be one of 1, 2, 3, 4 deg")
+    return replace(
+        FIGURE_7_PRESET,
+        figure_numbers=(int(figure_number),),
+        theta_1_deg=float(theta_deg),
+        theta_2_deg=float(theta_deg),
+    )
+
+
+SMALL_THETA_PRESETS = {
+    figure: monoclinic_vs_orthotropic_eb_preset(theta, figure)
+    for figure, theta in zip(SMALL_THETA_FIGURE_NUMBERS, SMALL_THETA_ANGLES_DEG)
+}
+FIGURE_9_PRESET = SMALL_THETA_PRESETS[9]
+FIGURE_10_PRESET = SMALL_THETA_PRESETS[10]
+FIGURE_11_PRESET = SMALL_THETA_PRESETS[11]
+FIGURE_12_PRESET = SMALL_THETA_PRESETS[12]
 FIGURE_PRESETS = (
     FIGURE_2_PRESET,
     FIGURES_3_4_PRESET,
@@ -235,6 +275,7 @@ FIGURE_PRESETS = (
     FIGURE_6_PRESET,
     FIGURE_7_PRESET,
     FIGURE_8_PRESET,
+    *SMALL_THETA_PRESETS.values(),
 )
 
 
@@ -290,7 +331,10 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--figure",
-        choices=("1", "2", "3", "4", "5", "6", "7", "8", "new", "all"),
+        choices=(
+            "1", "2", "3", "4", "5", "6", "7", "8",
+            "9", "10", "11", "12", "new", "theta-small", "all",
+        ),
         default="all",
     )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
@@ -1682,7 +1726,9 @@ def _figure_3_4_rows(
 def _fixed_reference_lambda_for_root(
     root: RootResult, preset: FigurePreset
 ) -> float:
-    reference_point = _point(FIGURES_3_4_PRESET, 1)
+    reference_point = _point(
+        replace(preset, theta_1_deg=0.0, theta_2_deg=0.0), 1
+    )
     return float(
         lambda_from_omega(
             float(root.omega.real),
@@ -1736,6 +1782,7 @@ def _extended_figure_rows(
     right_fast: FastSweepResult[SpectrumResult] | None = None,
     reused_figure_3_rows: Sequence[Mapping[str, Any]] | None = None,
     reused_prefix: str | None = None,
+    relative_difference_key: str = "relative_lambda_difference",
 ) -> list[dict[str, Any]]:
     if (right_fast is None) == (reused_figure_3_rows is None):
         raise ValueError("exactly one right-side source must be supplied")
@@ -1801,7 +1848,7 @@ def _extended_figure_rows(
                     "right_lambda": right_lambda,
                     **_quality_columns("right", right_quality),
                     "absolute_lambda_difference": absolute,
-                    "relative_lambda_difference": absolute
+                    relative_difference_key: absolute
                     / max(abs(right_lambda), np.finfo(float).tiny),
                     "data_origin": data_origin,
                     "left_data_origin": left_origin,
@@ -1825,6 +1872,7 @@ def _extended_rows_as_numbers(
         "right_lambda",
         "absolute_lambda_difference",
         "relative_lambda_difference",
+        "relative_difference_to_theta0_EB_baseline",
     }
     for row in rows:
         item = dict(row)
@@ -1833,7 +1881,8 @@ def _extended_rows_as_numbers(
         if item["figure"] != figure:
             raise ValueError(f"saved row does not belong to Figure {figure}")
         for field in float_fields:
-            item[field] = float(item[field])
+            if field in item:
+                item[field] = float(item[field])
         converted.append(item)
     return converted
 
@@ -1896,12 +1945,19 @@ def _minimum_relative_neighbor_gap(
 def _extended_figure_performance(
     figure: int, metadata: Mapping[str, Any]
 ) -> dict[str, Any]:
-    family_ids = {
+    family_ids_by_figure = {
         5: ("figure05_timoshenko", "figure05_eb"),
         6: ("figure06_timoshenko", "figure06_eb"),
         7: ("figure07_timoshenko_theta5",),
         8: ("figure08_timoshenko_theta15",),
-    }[figure]
+        **{
+            number: (f"figure{number:02d}_timoshenko_theta{int(theta)}",)
+            for number, theta in zip(
+                SMALL_THETA_FIGURE_NUMBERS, SMALL_THETA_ANGLES_DEG
+            )
+        },
+    }
+    family_ids = family_ids_by_figure[figure]
     families = metadata.get("families", {})
     selected = [families[name] for name in family_ids if name in families]
     counter_names = tuple(PerformanceCounters.__dataclass_fields__)
@@ -1934,6 +1990,259 @@ def _extended_figure_performance(
         ),
         "fallback_reasons": fallback_reasons,
         "performance_counters": counters,
+    }
+
+
+def _smallest_right_singular_vector(
+    matrix: NDArray[np.complex128],
+) -> NDArray[np.complex128]:
+    """Return a deterministic normalized right singular vector."""
+
+    _, _, vh = np.linalg.svd(np.asarray(matrix, dtype=np.complex128))
+    vector = vh.conj().T[:, -1]
+    pivot = int(np.argmax(np.abs(vector)))
+    if abs(vector[pivot]) > 0.0:
+        vector *= np.exp(-1j * np.angle(vector[pivot]))
+    norm = np.linalg.norm(vector)
+    return vector / norm if norm else vector
+
+
+def _dominant_mode_character(
+    bending_fraction: float, shear_fraction: float, torsion_fraction: float
+) -> str:
+    """Return a diagnostic label, never a modal-descendant identity."""
+
+    values = np.asarray(
+        [bending_fraction, shear_fraction, torsion_fraction], dtype=float
+    )
+    dominant = int(np.argmax(values))
+    if values[dominant] < DOMINANT_CHARACTER_FRACTION:
+        return "mixed"
+    if dominant == 0:
+        return "bending-like"
+    if dominant == 2:
+        return "torsion-like"
+    return "mixed"
+
+
+def _beta_zero_mode_character_rows(
+    preset: FigurePreset,
+    frequencies_hz: Sequence[float],
+    quality: Sequence[Mapping[str, Any]],
+    *,
+    samples: int = MODE_CHARACTER_SAMPLES,
+) -> list[dict[str, Any]]:
+    """Evaluate existing Chapter-2 energy fractions for coupled beta=0 roots."""
+
+    if len(frequencies_hz) != GUARD_ROOT_COUNT or len(quality) != GUARD_ROOT_COUNT:
+        raise ValueError("beta-zero mode-character diagnostic requires seven roots")
+    point_1 = _point(preset, 1)
+    point_2 = _point(preset, 2)
+    grid = np.linspace(0.0, 1.0, samples)
+    rows: list[dict[str, Any]] = []
+    for sorted_position, (frequency_hz, root_quality) in enumerate(
+        zip(frequencies_hz, quality), start=1
+    ):
+        omega = complex(2.0 * np.pi * float(frequency_hz))
+        raw = coupled_boundary_matrix_raw(omega, 0.0, point_1, point_2)
+        reactions = _smallest_right_singular_vector(raw)
+        initial_1 = cantilever_clamp_matrix(
+            point_1, "book_slope_clamp", scaled=False
+        ) @ reactions[:3]
+        initial_2 = cantilever_clamp_matrix(
+            point_2, "book_slope_clamp", scaled=False
+        ) @ reactions[3:]
+        trajectory_1 = physical_state_trajectory_from_initial(
+            omega, point_1, initial_1, grid
+        )
+        trajectory_2 = physical_state_trajectory_from_initial(
+            omega, point_2, initial_2, grid
+        )
+        components = np.asarray(
+            physical_state_energy_components(trajectory_1, point_1, grid)
+        ) + np.asarray(
+            physical_state_energy_components(trajectory_2, point_2, grid)
+        )
+        total = float(np.sum(components))
+        if not math.isfinite(total) or total <= 0.0:
+            raise RuntimeError("non-positive coupled strain energy at beta=0")
+        fractions = components / total
+        if np.any(~np.isfinite(fractions)) or np.any(fractions < 0.0):
+            raise RuntimeError("invalid coupled strain-energy fractions at beta=0")
+        bending, shear, torsion = (float(value) for value in fractions)
+        rows.append(
+            {
+                "theta_deg": preset.theta_1_deg,
+                "sorted_position": sorted_position,
+                "frequency_hz": float(frequency_hz),
+                "lambda_ref": _fixed_reference_lambda_for_root(
+                    RootResult(
+                        omega=omega,
+                        frequency_hz=float(frequency_hz),
+                        determinant_residual=float(
+                            root_quality["accepted_determinant_residual"]
+                        ),
+                        raw_determinant_abs=math.nan,
+                        sigma_min=math.nan,
+                        sigma_max=math.nan,
+                        relative_singular_residual=float(
+                            root_quality["accepted_relative_singular_residual"]
+                        ),
+                        min_neighbor_distance_hz=math.nan,
+                        refinements=0,
+                        status=str(root_quality["root_status"]),
+                    ),
+                    preset,
+                ),
+                "bending_fraction": bending,
+                "shear_fraction": shear,
+                "torsion_fraction": torsion,
+                "dominant_character": _dominant_mode_character(
+                    bending, shear, torsion
+                ),
+                "determinant_residual": float(
+                    root_quality["accepted_determinant_residual"]
+                ),
+                "singular_residual": float(
+                    root_quality["accepted_relative_singular_residual"]
+                ),
+            }
+        )
+    return rows
+
+
+def _character_rows_from_fast_result(
+    preset: FigurePreset, result: FastSweepResult[SpectrumResult]
+) -> list[dict[str, Any]]:
+    spectrum = result.spectra[0.0]
+    return _beta_zero_mode_character_rows(
+        preset,
+        [root.frequency_hz for root in spectrum.roots],
+        spectrum.quality,
+    )
+
+
+def _character_rows_from_saved_rows(
+    preset: FigurePreset,
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    prefix: str,
+) -> list[dict[str, Any]]:
+    beta_zero = sorted(
+        (row for row in rows if float(row["beta_deg"]) == 0.0),
+        key=lambda row: int(row["mode"]),
+    )
+    return _beta_zero_mode_character_rows(
+        preset,
+        [float(row[f"{prefix}_frequency_hz"]) for row in beta_zero],
+        [_saved_quality(row, prefix) for row in beta_zero],
+    )
+
+
+def _theta_character_rows_as_numbers(
+    rows: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    float_fields = (
+        "theta_deg",
+        "frequency_hz",
+        "lambda_ref",
+        "bending_fraction",
+        "shear_fraction",
+        "torsion_fraction",
+        "determinant_residual",
+        "singular_residual",
+    )
+    result: list[dict[str, Any]] = []
+    for source in rows:
+        row = dict(source)
+        row["sorted_position"] = int(row["sorted_position"])
+        for field in float_fields:
+            row[field] = float(row[field])
+        result.append(row)
+    return result
+
+
+def _validate_theta_small_character_rows(
+    rows: Sequence[Mapping[str, Any]],
+    expected_angles: Sequence[float] = SMALL_THETA_ANGLES_DEG,
+) -> None:
+    for theta in expected_angles:
+        selected = sorted(
+            (row for row in rows if float(row["theta_deg"]) == float(theta)),
+            key=lambda row: int(row["sorted_position"]),
+        )
+        if [int(row["sorted_position"]) for row in selected] != list(
+            range(1, GUARD_ROOT_COUNT + 1)
+        ):
+            raise RuntimeError(f"theta={theta:g}: mode-character rows are incomplete")
+        for row in selected:
+            fractions = np.asarray(
+                [
+                    float(row["bending_fraction"]),
+                    float(row["shear_fraction"]),
+                    float(row["torsion_fraction"]),
+                ]
+            )
+            if np.any(~np.isfinite(fractions)) or np.any(fractions < 0.0):
+                raise RuntimeError(f"theta={theta:g}: invalid energy fraction")
+            if not np.isclose(np.sum(fractions), 1.0, rtol=1.0e-10, atol=1.0e-12):
+                raise RuntimeError(f"theta={theta:g}: energy fractions do not sum to one")
+
+
+def _mode_character_evolution(
+    rows: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    table = [
+        dict(row)
+        for row in rows
+        if 3 <= int(row["sorted_position"]) <= GUARD_ROOT_COUNT
+    ]
+    baseline = {
+        int(row["sorted_position"]): str(row["dominant_character"])
+        for row in table
+        if float(row["theta_deg"]) == 0.0
+    }
+    first_change: float | None = None
+    positive_angles = sorted(
+        {float(row["theta_deg"]) for row in table if float(row["theta_deg"]) > 0.0}
+    )
+    for theta in positive_angles:
+        current = {
+            int(row["sorted_position"]): str(row["dominant_character"])
+            for row in table
+            if float(row["theta_deg"]) == theta
+        }
+        if current != baseline:
+            first_change = theta
+            break
+    pair_changes: dict[str, float | None] = {}
+    for left_position, right_position in ((3, 4), (5, 6)):
+        baseline_pair = (
+            baseline.get(left_position),
+            baseline.get(right_position),
+        )
+        pair_change: float | None = None
+        for theta in positive_angles:
+            current_pair = tuple(
+                str(row["dominant_character"])
+                for position in (left_position, right_position)
+                for row in table
+                if float(row["theta_deg"]) == theta
+                and int(row["sorted_position"]) == position
+            )
+            if current_pair != baseline_pair:
+                pair_change = theta
+                break
+        pair_changes[f"positions_{left_position}_{right_position}"] = pair_change
+    return {
+        "positions": [3, 4, 5, 6, 7],
+        "rows": table,
+        "first_diagnostic_character_sequence_change_theta_deg": first_change,
+        "first_pair_order_change_theta_deg": pair_changes,
+        "interpretation": (
+            "energy-character labels for independently sorted positions; "
+            "not modal-descendant tracking"
+        ),
     }
 
 
@@ -2621,12 +2930,12 @@ def _require_fast_solver_pass(output_dir: Path) -> dict[str, Any]:
     path = output_dir / FAST_BENCHMARK_FILENAME
     if not path.is_file():
         raise RuntimeError(
-            "Figures 5-8 require completed --validate-fast-solver evidence"
+            "Figures 5-12 require completed --validate-fast-solver evidence"
         )
     benchmark = json.loads(path.read_text(encoding="utf-8"))
     if benchmark.get("status") != "FAST_SOLVER_PASS":
         raise RuntimeError(
-            "Figures 5-8 are blocked because fast solver status is not PASS"
+            "Figures 5-12 are blocked because fast solver status is not PASS"
         )
     if float(benchmark.get("maximum_relative_frequency_error", math.inf)) > 1.0e-8:
         raise RuntimeError("saved fast solver oracle error exceeds 1e-8")
@@ -2653,6 +2962,7 @@ def _compute_extended_figure_data(
     )
     rows_by_figure: dict[int, list[dict[str, Any]]] = {}
     family_metadata: dict[str, Any] = {}
+    theta_small_character_rows: list[dict[str, Any]] = []
     current_scientific_runtime = 0.0
     normalization = _normalization_manifest(
         FIGURES_3_4_PRESET, fixed_reference=True
@@ -2764,12 +3074,54 @@ def _compute_extended_figure_data(
             reused_figure_3_rows=rows_3,
             reused_prefix="timoshenko",
         )
+    for figure in sorted(figures & set(SMALL_THETA_FIGURE_NUMBERS)):
+        preset = SMALL_THETA_PRESETS[figure]
+        theta_deg = preset.theta_1_deg
+        family_id = f"figure{figure:02d}_timoshenko_theta{int(theta_deg)}"
+        left = run_family(family_id, preset, SMALL_THETA_CLAMP)
+        rows_by_figure[figure] = _extended_figure_rows(
+            figure,
+            preset,
+            beta_values,
+            left,
+            comparison_type=(
+                "diagnostic_orthotropic_theta0_EB_baseline_for_"
+                f"monoclinic_theta{int(theta_deg)}"
+            ),
+            left_model=(
+                "Chapter2_monoclinic_Timoshenko_state_corrected_"
+                f"generalized_torsion_theta{int(theta_deg)}"
+            ),
+            left_theta_deg=theta_deg,
+            right_model="rectangular_orthotropic_EB_theta0_Saint_Venant_baseline",
+            right_theta_deg=0.0,
+            reused_figure_3_rows=rows_3,
+            reused_prefix="eb",
+            relative_difference_key=(
+                "relative_difference_to_theta0_EB_baseline"
+            ),
+        )
+        theta_small_character_rows.extend(
+            _character_rows_from_fast_result(preset, left)
+        )
 
     source_eb = np.asarray(
         [float(row["eb_frequency_hz"]) for row in rows_3], dtype=float
     )
     source_timo = np.asarray(
         [float(row["timoshenko_frequency_hz"]) for row in rows_3], dtype=float
+    )
+    source_eb_full = np.asarray(
+        [
+            (
+                float(row["beta_deg"]),
+                int(row["mode"]),
+                float(row["eb_frequency_hz"]),
+                float(row["eb_lambda"]),
+            )
+            for row in rows_3
+        ],
+        dtype=float,
     )
     reuse_checks = {
         "figure_7_eb_equals_figure_3_eb": (
@@ -2798,17 +3150,115 @@ def _compute_extended_figure_data(
             if 8 in rows_by_figure
             else None
         ),
+        **{
+            f"figure_{figure}_eb_equals_figure_3_eb": bool(
+                np.array_equal(
+                    np.asarray(
+                        [
+                            (
+                                float(row["beta_deg"]),
+                                int(row["mode"]),
+                                float(row["right_frequency_hz"]),
+                                float(row["right_lambda"]),
+                            )
+                            for row in rows_by_figure[figure]
+                        ],
+                        dtype=float,
+                    ),
+                    source_eb_full,
+                )
+            )
+            for figure in SMALL_THETA_FIGURE_NUMBERS
+            if figure in rows_by_figure
+        },
     }
     if any(value is False for value in reuse_checks.values()):
-        raise RuntimeError("Figure 7/8 reused baseline arrays are not exactly identical")
+        raise RuntimeError("reused baseline arrays are not exactly identical")
+    beta_zero_reference_rows: list[dict[str, Any]] = []
+    mode_character_evolution: dict[str, Any] = {}
+    if figures & set(SMALL_THETA_FIGURE_NUMBERS):
+        figure_7_path = output_dir / DATA_FILENAMES[7]
+        if not figure_7_path.is_file():
+            raise FileNotFoundError(
+                "Figures 9-12 require saved Figure-7 data for beta-zero comparison"
+            )
+        figure_7_rows = _extended_rows_as_numbers(
+            _read_csv(figure_7_path), 7
+        )
+        beta_zero_reference_rows = (
+            _character_rows_from_saved_rows(
+                FIGURES_3_4_PRESET, rows_3, prefix="timoshenko"
+            )
+            + _character_rows_from_saved_rows(
+                FIGURE_7_PRESET, figure_7_rows, prefix="left"
+            )
+        )
+        all_character_rows = beta_zero_reference_rows + theta_small_character_rows
+        mode_character_evolution = _mode_character_evolution(all_character_rows)
     metadata = {
         "solver_version": FAST_SOLVER_VERSION,
         "fixed_reference_normalization": normalization,
         "families": family_metadata,
         "reuse_checks": reuse_checks,
+        "theta_small_mode_character_rows": theta_small_character_rows,
+        "beta_zero_reference_character_rows": beta_zero_reference_rows,
+        "mode_character_evolution": mode_character_evolution,
+        "mode_character_definition": {
+            "energy_decomposition": (
+                "existing Chapter-2 bending/shear/generalized-torsion "
+                "strain-energy densities"
+            ),
+            "dominant_fraction_threshold": DOMINANT_CHARACTER_FRACTION,
+            "samples_per_arm": MODE_CHARACTER_SAMPLES,
+            "labels_are_mode_tracking": False,
+        },
         "current_run_performance_counters": aggregate.to_dict(),
     }
     return rows_by_figure, metadata, current_scientific_runtime
+
+
+def _merge_extended_metadata(
+    previous: Mapping[str, Any], current: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Merge a partial fast-family run without discarding prior evidence."""
+
+    merged = dict(previous)
+    merged.update(current)
+    families = dict(previous.get("families", {}))
+    families.update(current.get("families", {}))
+    merged["families"] = families
+    reuse_checks = dict(previous.get("reuse_checks", {}))
+    reuse_checks.update(current.get("reuse_checks", {}))
+    merged["reuse_checks"] = reuse_checks
+    previous_character = {
+        float(row["theta_deg"]): []
+        for row in previous.get("theta_small_mode_character_rows", [])
+    }
+    for row in previous.get("theta_small_mode_character_rows", []):
+        previous_character[float(row["theta_deg"])].append(dict(row))
+    for row in current.get("theta_small_mode_character_rows", []):
+        previous_character.setdefault(float(row["theta_deg"]), [])
+        previous_character[float(row["theta_deg"])] = []
+    for row in current.get("theta_small_mode_character_rows", []):
+        previous_character[float(row["theta_deg"])].append(dict(row))
+    merged_character = [
+        row
+        for theta in sorted(previous_character)
+        for row in sorted(
+            previous_character[theta], key=lambda item: int(item["sorted_position"])
+        )
+    ]
+    merged["theta_small_mode_character_rows"] = merged_character
+    references = current.get(
+        "beta_zero_reference_character_rows",
+        previous.get("beta_zero_reference_character_rows", []),
+    )
+    merged["beta_zero_reference_character_rows"] = references
+    if references and merged_character:
+        merged["mode_character_evolution"] = _mode_character_evolution(
+            [*references, *merged_character]
+        )
+    return merged
 
 
 def eb_arrays_are_identical(
@@ -2891,6 +3341,7 @@ def _reference_manifest(reference: SectionReferenceResult) -> dict[str, Any]:
 def _preset_manifest(preset: FigurePreset) -> dict[str, Any]:
     material = preset.material_factory()
     point = _point(preset, 1)
+    reference_point = _point(FIGURES_3_4_PRESET, 1)
     arm_1_area, arm_1_inertia_y = rectangular_reference_section(
         preset.a_m, preset.b_m
     )
@@ -2902,7 +3353,16 @@ def _preset_manifest(preset: FigurePreset) -> dict[str, Any]:
         "material_factory": preset.material_factory.__name__,
         "material_mode": preset.material_mode,
         "rho_kg_m3": material.rho,
-        "elastic_Ex_theta0_pa": float(np.real(point.properties.Ex)),
+        "elastic_Ex_theta0_pa": float(np.real(reference_point.properties.Ex)),
+        "actual_rotated_properties_arm_1": {
+            "Sbar11_1_per_pa": float(np.real(point.properties.Sbar11)),
+            "Sbar16_1_per_pa": float(np.real(point.properties.Sbar16)),
+            "Sbar66_1_per_pa": float(np.real(point.properties.Sbar66)),
+            "Sbar55_1_per_pa": float(np.real(point.properties.Sbar55)),
+            "E_x_pa": float(np.real(point.properties.Ex)),
+            "G_xz_pa": float(np.real(point.properties.Gxz)),
+            "C_T_N_m2": float(np.real(point.torsion.C_T)),
+        },
         "theta_1_deg": preset.theta_1_deg,
         "theta_2_deg": preset.theta_2_deg,
         "a_1_m": preset.a_m,
@@ -2954,9 +3414,11 @@ def _report_text(manifest: Mapping[str, Any]) -> str:
         "",
         f"**Extended supervisor figures 5–8: {manifest.get('extended_figures_status', 'FAIL')}**",
         "",
+        f"**Small-theta supervisor figures: {manifest.get('small_theta_figures_status', 'FAIL')}**",
+        "",
         "Этот отчёт относится только к анизотропным/ортотропным прямоугольным стержням главы 2. Параллельная статья о круглых изотропных стержнях, её scripts и результаты не использовались и не изменялись.",
         "",
-        "Для Figures 2–8 показаны первые шесть sorted spectral positions при каждом фиксированном угле. The plotted curves are sorted spectral positions 1–6 at every beta, not tracked modal descendants. Седьмой положительный корень является completeness guard.",
+        "Для Figures 2–12 показаны первые шесть sorted spectral positions при каждом фиксированном угле. The plotted curves are sorted spectral positions 1–6 at every beta, not tracked modal descendants. Седьмой положительный корень является completeness guard.",
         "",
         "## Fast solver и oracle-validation",
         "",
@@ -2984,7 +3446,7 @@ def _report_text(manifest: Mapping[str, Any]) -> str:
         "l = (L1+L2)/2, A=a*b, I_y=a^3*b/12, omega=2*pi*f",
         "```",
         "",
-        "Для Figures 5–8 используется единый fixed rectangular reference: `a0=5 mm`, `b0=20 mm`, `A0=a0*b0`, `I_y0=a0^3*b0/12`, `E_x0=E_x(theta=0)` и `l=(L1+L2)/2`. Эта нормировка одинакова для обеих кривых каждого рисунка и не зависит от фактической толщины плеча Figure 6 или угла theta Figures 7–8.",
+        "Для Figures 5–12 используется единый fixed rectangular reference: `a0=5 mm`, `b0=20 mm`, `A0=a0*b0`, `I_y0=a0^3*b0/12`, `E_x0=E_x(theta=0)=191 GPa` и `l=(L1+L2)/2`. Эта нормировка одинакова для обеих кривых каждого рисунка. В solid Chapter-2 model при theta>0 используются фактические rotated `E_x(theta)`, `G_xz(theta)`, `Sbar16(theta)` и `C_T(theta)`; `E_x0` служит только reference normalization.",
         "",
         "Старый thickness-mismatch parameter с именем eta в presets отсутствует; обозначение модального коэффициента потерь на Figure 1 относится только к книжному Figure 2.2.",
         "",
@@ -3006,7 +3468,17 @@ def _report_text(manifest: Mapping[str, Any]) -> str:
         "",
         "**Рисунок 8.** Влияние поворота материальных осей в полной модели главы 2. Сплошные линии — `theta1=theta2=15°`; пунктирные линии — `theta1=theta2=0°`. Обе группы кривых рассчитаны по одной модели Тимошенко с обобщённым кручением и `book_slope_clamp`. Показаны первые шесть sorted spectral positions при каждом фиксированном beta; это не отслеженные модальные ветви.",
         "",
-        "Во всех восьми рисунках legends отсутствуют. Один цвет соответствует одной sorted spectral position; Figures 2–8 используют один детерминированный шестицветный цикл.",
+    ]
+    for figure in SMALL_THETA_FIGURE_NUMBERS:
+        theta = int(SMALL_THETA_PRESETS[figure].theta_1_deg)
+        lines += [
+            f"**Рисунок {figure}.** Малый поворот главных материальных осей относительно локальной продольной оси каждого прямоугольного стержня: `theta1=theta2={theta}°`. Сплошные линии — модель моноклинного прямоугольного стержня Тимошенко с обобщённым кручением (`state_corrected`); пунктирные линии — точно переиспользованный Figure-3 baseline: прямоугольная ортотропная модель Эйлера–Бернулли при `theta=0°` с кручением Сен-Венана. Внешняя заделка — `book_slope_clamp`. Геометрический угол сопряжения стержней обозначен beta. Показаны independently sorted spectral positions 1–6, а не modal descendants.",
+            "",
+        ]
+    lines += [
+        "Во всех двенадцати рисунках legends отсутствуют. Один цвет соответствует одной sorted spectral position; Figures 2–12 используют один детерминированный шестицветный цикл.",
+        "",
+        "Equal color/index across the two models denotes the same sorted spectral position, not necessarily the same physical modal descendant.",
         "",
         "## Численные diagnostics",
         "",
@@ -3029,7 +3501,7 @@ def _report_text(manifest: Mapping[str, Any]) -> str:
             f"- Figure 4 per-mode maxima: `{json.dumps(fig4['per_mode'], ensure_ascii=False, sort_keys=True)}`.",
             f"- EB arrays used in Figures 3 and 4 are exactly identical: `{manifest['eb_arrays_figures_3_4_exactly_identical']}`.",
         ]
-    for figure in range(5, 9):
+    for figure in range(5, 13):
         item = diagnostics.get(f"figure_{figure}")
         if not item:
             continue
@@ -3054,6 +3526,53 @@ def _report_text(manifest: Mapping[str, Any]) -> str:
             f"- Figure 7 reused EB array is exactly identical to Figure-3 EB: `{reuse.get('figure_7_eb_equals_figure_3_eb')}`.",
             f"- Figure 8 reused theta=0 Timoshenko array is exactly identical to Figure-3 Timoshenko: `{reuse.get('figure_8_theta0_timoshenko_equals_figure_3_timoshenko')}`.",
         ]
+        for figure in SMALL_THETA_FIGURE_NUMBERS:
+            lines.append(
+                f"- Figure {figure} reused theta=0 EB baseline is bitwise equal to Figure-3 EB: `{reuse.get(f'figure_{figure}_eb_equals_figure_3_eb')}`."
+            )
+    evolution = extended.get("mode_character_evolution", {})
+    theta_small_character_rows = sorted(
+        extended.get("theta_small_mode_character_rows", []),
+        key=lambda row: (float(row["theta_deg"]), int(row["sorted_position"])),
+    )
+    if theta_small_character_rows:
+        lines += [
+            "",
+            "### Small-theta beta=0: семь guard-complete roots",
+            "",
+            "| theta, deg | position | frequency, Hz | Lambda_ref | bending | shear | torsion | character | det residual | singular residual |",
+            "|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|",
+        ]
+        for row in theta_small_character_rows:
+            lines.append(
+                f"| {float(row['theta_deg']):g} | {int(row['sorted_position'])} | {float(row['frequency_hz']):.9f} | {float(row['lambda_ref']):.9f} | {float(row['bending_fraction']):.6f} | {float(row['shear_fraction']):.6f} | {float(row['torsion_fraction']):.6f} | {row['dominant_character']} | {float(row['determinant_residual']):.3e} | {float(row['singular_residual']):.3e} |"
+            )
+    evolution_rows = sorted(
+        evolution.get("rows", []),
+        key=lambda row: (float(row["theta_deg"]), int(row["sorted_position"])),
+    )
+    if evolution_rows:
+        lines += [
+            "",
+            "### Эволюция beta=0, sorted positions 3–7",
+            "",
+            "Энергетические labels являются только диагностикой independently sorted positions; MAC и mode tracking не выполнялись.",
+            "",
+            "| theta, deg | position | frequency, Hz | bending | shear | torsion | diagnostic character |",
+            "|---:|---:|---:|---:|---:|---:|---|",
+        ]
+        for row in evolution_rows:
+            lines.append(
+                f"| {float(row['theta_deg']):g} | {int(row['sorted_position'])} | {float(row['frequency_hz']):.9f} | {float(row['bending_fraction']):.6f} | {float(row['shear_fraction']):.6f} | {float(row['torsion_fraction']):.6f} | {row['dominant_character']} |"
+            )
+        lines += [
+            "",
+            "Первое изменение последовательности диагностических energy-character labels относительно theta=0: "
+            f"`{evolution.get('first_diagnostic_character_sequence_change_theta_deg')}` deg. Это не утверждение о modal descendants.",
+            "Первые изменения порядка diagnostic labels по целевым парам: "
+            f"positions 3–4 — `{evolution.get('first_pair_order_change_theta_deg', {}).get('positions_3_4')}` deg; "
+            f"positions 5–6 — `{evolution.get('first_pair_order_change_theta_deg', {}).get('positions_5_6')}` deg. Значение угла означает первый рассчитанный grid angle после соответствующей перестановки.",
+        ]
     lines += [
         "",
         "Различия между теориями и заделками являются diagnostics без acceptance threshold и не ранжируют физическую точность моделей.",
@@ -3067,6 +3586,7 @@ def _report_text(manifest: Mapping[str, Any]) -> str:
         "- Figure 6: `hms_dx_209_material()`, `L1=0.3 m`, `L2=0.5 m`, `a1=4 mm`, `a2=6 mm`, `b1=b2=20 mm`, `theta1=theta2=0`, elastic, `mu=0.25`, direct geometry, `book_slope_clamp`.",
         "- Figure 7: full Chapter-2 Timoshenko at `theta1=theta2=5°` versus the exactly reused Figure-3 orthotropic EB `theta=0°` approximation; all geometric dimensions are `a=5 mm`, `b=20 mm`, `L1=L2=0.4 m`.",
         "- Figure 8: Chapter-2 Timoshenko at `theta1=theta2=15°` versus the exactly reused Figure-3 Chapter-2 Timoshenko array at `theta1=theta2=0°`; the same `5×20 mm`, `L1=L2=0.4 m` geometry is used.",
+        "- Figures 9–12: `hms_dx_209_material()`, `material_mode=elastic`, `a1=a2=5 mm`, `b1=b2=20 mm`, `L1=L2=0.4 m`, `mu=0`, `book_slope_clamp`; only the local material-axis angles change to `theta1=theta2=1,2,3,4°`. The geometric rod-joint angle remains `beta=0…90°` with step `0.5°`.",
         "- Figure 1 uses the canonical verified Figure-2.2 source-reproduction CSV and remains in the book coordinates `(theta, f, modal loss factor)`; it is not converted to Lambda(beta).",
         "- Root quality passes when the scaled branch or normalized physical-raw branch has determinant and relative singular residuals no greater than `1e-8`, and the root status is not rejected.",
         "- No interpolation is used for missing or rejected roots.",
@@ -3081,6 +3601,8 @@ def _report_text(manifest: Mapping[str, Any]) -> str:
         "python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --validate-fast-solver --jobs 1",
         "python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --benchmark-fast-solver --jobs 1",
         "python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --figure new --solver-mode fast --resume --jobs 1",
+        "python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --figure theta-small --solver-mode fast --resume --jobs 1",
+        "python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --figure theta-small --reuse-data --jobs 1",
         "python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --figure all --reuse-data",
         "```",
         "",
@@ -3108,9 +3630,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             "path must be validated and benchmarked first"
         )
     if args.figure == "all":
-        selected = set(range(1, 9))
+        selected = set(range(1, 13))
     elif args.figure == "new":
         selected = {5, 6, 7, 8}
+    elif args.figure == "theta-small":
+        selected = set(SMALL_THETA_FIGURE_NUMBERS)
     else:
         selected = {int(args.figure)}
     beta_values = beta_grid(args.beta_step_deg)
@@ -3356,7 +3880,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             if "figures_3_4_hms_dx_209" not in references:
                 raise RuntimeError("saved Figure 4 data lack section-clamp reference evidence")
 
-        extended_selected = selected & {5, 6, 7, 8}
+        extended_selected = selected & set(range(5, 13))
+        theta_small_selected = extended_selected & set(SMALL_THETA_FIGURE_NUMBERS)
         extended_metadata: dict[str, Any] = dict(
             old_manifest.get("extended_fast_solver", {})
         )
@@ -3367,8 +3892,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 for figure in extended_selected
                 if not (output_dir / DATA_FILENAMES[figure]).is_file()
             }
+            character_path = output_dir / THETA_SMALL_CHARACTER_FILENAME
+            missing_character = bool(
+                theta_small_selected and not character_path.is_file()
+            )
             need_compute_extended = bool(
-                args.force_recompute or missing
+                args.force_recompute or missing or missing_character
             )
             if need_compute_extended:
                 if args.reuse_data:
@@ -3376,15 +3905,21 @@ def main(argv: Sequence[str] | None = None) -> int:
                         str(output_dir / DATA_FILENAMES[figure])
                         for figure in sorted(missing)
                     ]
+                    if missing_character:
+                        missing_paths.append(str(character_path))
                     raise FileNotFoundError(
                         "--reuse-data requires saved extended CSV: "
                         + ", ".join(missing_paths)
                     )
                 if args.solver_mode != "fast":
                     raise RuntimeError(
-                        "Figures 5-8 may be computed only with --solver-mode fast"
+                        "Figures 5-12 may be computed only with --solver-mode fast"
                     )
-                to_compute = set(extended_selected) if args.force_recompute else missing
+                to_compute = (
+                    set(extended_selected)
+                    if args.force_recompute
+                    else missing | (theta_small_selected if missing_character else set())
+                )
                 built, metadata, extended_runtime = _compute_extended_figure_data(
                     output_dir,
                     beta_values,
@@ -3393,7 +3928,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
                 for figure, rows in built.items():
                     _write_csv(output_dir / DATA_FILENAMES[figure], rows)
-                extended_metadata = metadata
+                extended_metadata = _merge_extended_metadata(
+                    extended_metadata, metadata
+                )
+                character_rows = extended_metadata.get(
+                    "theta_small_mode_character_rows", []
+                )
+                if character_rows:
+                    _write_csv(character_path, character_rows)
                 scientific_runtime += extended_runtime
                 scientific_counts["extended_fast_solver"] = metadata[
                     "current_run_performance_counters"
@@ -3405,10 +3947,35 @@ def main(argv: Sequence[str] | None = None) -> int:
                 rows = _extended_rows_as_numbers(_read_csv(path), figure)
                 _validate_saved_extended_rows(rows, beta_values, figure)
                 extended_rows[figure] = rows
+            if theta_small_selected:
+                if not character_path.is_file():
+                    raise FileNotFoundError(
+                        f"--reuse-data requires {character_path}"
+                    )
+                character_rows = _theta_character_rows_as_numbers(
+                    _read_csv(character_path)
+                )
+                expected_angles = [
+                    SMALL_THETA_PRESETS[figure].theta_1_deg
+                    for figure in sorted(theta_small_selected)
+                ]
+                _validate_theta_small_character_rows(
+                    character_rows, expected_angles
+                )
+                extended_metadata["theta_small_mode_character_rows"] = character_rows
+                reference_character_rows = extended_metadata.get(
+                    "beta_zero_reference_character_rows", []
+                )
+                if reference_character_rows:
+                    extended_metadata["mode_character_evolution"] = (
+                        _mode_character_evolution(
+                            [*reference_character_rows, *character_rows]
+                        )
+                    )
 
         plotting_started = time.perf_counter()
         output_paths: list[Path] = []
-        y_limits: dict[str, list[float]] = {}
+        y_limits: dict[str, list[float]] = dict(old_manifest.get("y_limits", {}))
         if 1 in selected:
             figure_1 = create_figure_1(rows_1)
             output_paths.extend(
@@ -3489,10 +4056,36 @@ def main(argv: Sequence[str] | None = None) -> int:
                         extended_figure, output_dir, FIGURE_BASENAMES[figure]
                     )
                 )
+        if theta_small_selected:
+            saved_figure_7_limits = old_manifest.get("y_limits", {}).get(
+                FIGURE_7_Y_LIMITS_KEY
+            )
+            if (
+                not isinstance(saved_figure_7_limits, list)
+                or len(saved_figure_7_limits) != 2
+                or not all(math.isfinite(float(value)) for value in saved_figure_7_limits)
+            ):
+                raise RuntimeError(
+                    "Figures 9-12 require the saved Figure-7 y-limits"
+                )
+            figure_7_ylim = tuple(float(value) for value in saved_figure_7_limits)
+            y_limits["figures_9_12_equal_figure_7"] = list(figure_7_ylim)
+            for figure in sorted(theta_small_selected):
+                theta_figure = create_comparison_figure(
+                    extended_rows[figure],
+                    solid_key="left_lambda",
+                    dashed_key="right_lambda",
+                    ylim=figure_7_ylim,
+                )
+                output_paths.extend(
+                    _save_figure(
+                        theta_figure, output_dir, FIGURE_BASENAMES[figure]
+                    )
+                )
         plotting_runtime = time.perf_counter() - plotting_started
 
-        diagnostics: dict[str, Any] = {}
-        quality: dict[str, Any] = {}
+        diagnostics: dict[str, Any] = dict(old_manifest.get("diagnostics", {}))
+        quality: dict[str, Any] = dict(old_manifest.get("root_quality", {}))
         if rows_2:
             diagnostics["figure_2"] = _relative_diagnostics(
                 rows_2, "relative_clamp_difference"
@@ -3511,10 +4104,20 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             quality["figure_4"] = _quality_summary(rows_4, ("timoshenko", "eb"))
         for figure, rows in sorted(extended_rows.items()):
+            difference_key = (
+                "relative_difference_to_theta0_EB_baseline"
+                if figure in SMALL_THETA_FIGURE_NUMBERS
+                else "relative_lambda_difference"
+            )
             diagnostics[f"figure_{figure}"] = {
-                **_relative_diagnostics(rows, "relative_lambda_difference"),
+                **_relative_diagnostics(rows, difference_key),
                 "minimum_gap": _minimum_relative_neighbor_gap(
-                    rows, ("left_frequency_hz", "right_frequency_hz")
+                    rows,
+                    (
+                        ("left_frequency_hz",)
+                        if figure in SMALL_THETA_FIGURE_NUMBERS
+                        else ("left_frequency_hz", "right_frequency_hz")
+                    ),
                 ),
                 **_extended_figure_performance(figure, extended_metadata),
                 "data_origin_counts": {
@@ -3537,12 +4140,24 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "effective properties and Sbar16 coupling inside the "
                     "Chapter-2 model"
                 )
+            if figure in SMALL_THETA_FIGURE_NUMBERS:
+                diagnostics[f"figure_{figure}"]["interpretation"] = (
+                    "difference to the exactly reused theta=0 Figure-3 EB "
+                    "baseline at equal sorted spectral position"
+                )
             quality[f"figure_{figure}"] = _quality_summary(
                 rows, ("left", "right")
             )
 
         figures_manifest = []
-        for number in sorted(selected):
+        available_figures = {
+            number
+            for number in range(1, 13)
+            if (output_dir / DATA_FILENAMES[number]).is_file()
+            and (output_dir / f"{FIGURE_BASENAMES[number]}.pdf").is_file()
+            and (output_dir / f"{FIGURE_BASENAMES[number]}.png").is_file()
+        }
+        for number in sorted(available_figures):
             figures_manifest.append(
                 {
                     "number": number,
@@ -3588,6 +4203,23 @@ def main(argv: Sequence[str] | None = None) -> int:
                 is True
                 else "FAIL"
             ),
+            "small_theta_figures_status": (
+                "PASS"
+                if all(
+                    (output_dir / DATA_FILENAMES[number]).is_file()
+                    and (output_dir / f"{FIGURE_BASENAMES[number]}.pdf").is_file()
+                    and (output_dir / f"{FIGURE_BASENAMES[number]}.png").is_file()
+                    and extended_metadata.get("reuse_checks", {}).get(
+                        f"figure_{number}_eb_equals_figure_3_eb"
+                    )
+                    is True
+                    for number in SMALL_THETA_FIGURE_NUMBERS
+                )
+                and (output_dir / THETA_SMALL_CHARACTER_FILENAME).is_file()
+                and y_limits.get("figures_9_12_equal_figure_7")
+                == y_limits.get(FIGURE_7_Y_LIMITS_KEY)
+                else "FAIL"
+            ),
             "research_line_separation": {
                 "chapter_2_rectangular_anisotropic_only": True,
                 "circular_isotropic_article_used": False,
@@ -3605,6 +4237,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "figure_6": _preset_manifest(FIGURE_6_PRESET),
                 "figure_7": _preset_manifest(FIGURE_7_PRESET),
                 "figure_8": _preset_manifest(FIGURE_8_PRESET),
+                **{
+                    f"figure_{number}": _preset_manifest(
+                        SMALL_THETA_PRESETS[number]
+                    )
+                    for number in SMALL_THETA_FIGURE_NUMBERS
+                },
             },
             "lambda_definition": {
                 "formula": "(rho*A*omega^2*l^4/(E_x*I_y))^(1/4)",
@@ -3614,7 +4252,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "reference_second_moment": "I_y=a^3*b/12",
                 "elastic_modulus": "E_x at theta=0",
                 "omega": "2*pi*f",
-                "figures_5_8_fixed_reference": {
+                "figures_5_12_fixed_reference": {
                     "a0_m": REFERENCE_A_M,
                     "b0_m": REFERENCE_B_M,
                     "A0_m2": REFERENCE_A_M * REFERENCE_B_M,
@@ -3660,6 +4298,21 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "figure_7_dashed": "reused Figure-3 rectangular orthotropic EB theta=0 approximation",
                 "figure_8_solid": "Chapter-2 Timoshenko theta=15 deg",
                 "figure_8_dashed": "reused Figure-3 Chapter-2 Timoshenko theta=0 deg",
+                **{
+                    f"figure_{number}_solid": (
+                        "Chapter-2 monoclinic rectangular-rod Timoshenko "
+                        "with generalized torsion at "
+                        f"theta={int(SMALL_THETA_PRESETS[number].theta_1_deg)} deg"
+                    )
+                    for number in SMALL_THETA_FIGURE_NUMBERS
+                },
+                **{
+                    f"figure_{number}_dashed": (
+                        "exactly reused Figure-3 rectangular orthotropic EB "
+                        "theta=0 with Saint-Venant torsion"
+                    )
+                    for number in SMALL_THETA_FIGURE_NUMBERS
+                },
                 "solid_linewidth": SOLID_LINEWIDTH,
                 "dashed_linewidth": DASHED_LINEWIDTH,
                 "dashed_pattern": list(DASH_PATTERN),
@@ -3684,6 +4337,18 @@ def main(argv: Sequence[str] | None = None) -> int:
                 else {}
             ),
             "extended_fast_solver": extended_metadata,
+            "theta_small_beta0_mode_character": {
+                "csv": str(
+                    (output_dir / THETA_SMALL_CHARACTER_FILENAME).relative_to(ROOT)
+                ),
+                "row_count": len(
+                    extended_metadata.get("theta_small_mode_character_rows", [])
+                ),
+                "energy_fraction_labels_are_mode_tracking": False,
+                "evolution_positions_3_7": extended_metadata.get(
+                    "mode_character_evolution", {}
+                ),
+            },
             "runtimes_seconds": {
                 "scientific_total": scientific_runtime
                 if scientific_runtime
@@ -3694,9 +4359,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             "output_paths": [str(path.relative_to(ROOT)) for path in output_paths]
             + [
                 str((output_dir / DATA_FILENAMES[number]).relative_to(ROOT))
-                for number in sorted(selected)
+                for number in sorted(available_figures)
             ]
             + [
+                str((output_dir / THETA_SMALL_CHARACTER_FILENAME).relative_to(ROOT)),
                 str((output_dir / "plot_manifest.json").relative_to(ROOT)),
                 str((output_dir / "report.md").relative_to(ROOT)),
             ],
@@ -3731,10 +4397,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"figures={','.join(str(value) for value in sorted(selected))}")
     print(f"beta_points={len(beta_values)}")
     print("Supervisor figure workflow: PASS")
-    if extended_selected:
+    if extended_selected & {5, 6, 7, 8}:
         print(
             "Extended supervisor figures 5–8: "
             f"{manifest['extended_figures_status']}"
+        )
+    if theta_small_selected:
+        print(
+            "Small-theta supervisor figures: "
+            f"{manifest['small_theta_figures_status']}"
         )
     return 0
 

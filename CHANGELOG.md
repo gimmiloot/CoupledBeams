@@ -1,5 +1,28 @@
 # CHANGELOG
 
+## 2026-08-09
+
+- Added the isolated AP-0 `theta=2 deg` spectral-applicability screening for
+  Chapter-2 rectangular HMS/DX-209 rods. The finite grid contains nine
+  volume-preserving similar-section geometries and 19 coupling angles, with
+  T2/T0/rectangular-EB0 seven-root quality gates, fixed reference
+  normalization, exact reuse from supervisor Figures 3/5/10, atomic fast
+  checkpoints, three compact diagnostics, focused tests, and plot-only replay.
+  All nine cases remain within the 10% Lambda criterion on this grid; no exact
+  theta boundary, refinement, tracking, shapes, energy analysis, FEM, circular
+  article workflow, or next gate was run, and supervisor Figures 1--12 were
+  unchanged.
+- Extended the isolated Yartsev Chapter-2 rectangular-anisotropic supervisor
+  workflow with Figures 9--12 at local material-axis orientations
+  `theta1=theta2=1,2,3,4 deg`. Each solid family is a new validated fast
+  determinant solution; each dashed family bitwise reuses the Figure-3
+  theta-zero rectangular EB/Saint-Venant baseline. Added fixed-reference
+  normalization checks, Figure-7-identical limits, beta-zero seven-root
+  bending/shear/generalized-torsion diagnostics, plot-only reuse, focused
+  tests, and documentation. Chapter-2 equations, `J_book`, clamps, material
+  rotation, EB comparator, Figures 1--8, article workspaces, FEM, and unrelated
+  validation statuses were not changed.
+
 ## 2026-08-08
 
 - Added the separate `--additional-angle-pilot` extension for the

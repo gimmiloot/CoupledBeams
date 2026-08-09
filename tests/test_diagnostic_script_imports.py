@@ -17,6 +17,7 @@ class DiagnosticScriptImportTest(unittest.TestCase):
         modules = [
             "scripts.analysis.anisotropic_rods.pilot_yartsev_ch2_coupled_rods",
             "scripts.analysis.anisotropic_rods.plot_yartsev_ch2_supervisor_figures",
+            "scripts.analysis.anisotropic_rods.screen_yartsev_ch2_spectral_applicability",
             "scripts.analysis.anisotropic_rods.reproduce_yartsev_ch2_cantilever",
             "scripts.analysis.anisotropic_rods.reproduce_yartsev_fig_2_2",
             "scripts.analysis.anisotropic_rods.validate_yartsev_ch2_rectangular_eb",

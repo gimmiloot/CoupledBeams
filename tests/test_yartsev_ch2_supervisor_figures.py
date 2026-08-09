@@ -382,9 +382,9 @@ class YartsevChapter2SupervisorFiguresTest(unittest.TestCase):
         finally:
             plt.close(figure)
 
-    def test_manifest_contract_lists_eight_figures(self) -> None:
-        self.assertEqual(sorted(supervisor.FIGURE_BASENAMES), list(range(1, 9)))
-        self.assertEqual(sorted(supervisor.DATA_FILENAMES), list(range(1, 9)))
+    def test_manifest_contract_lists_twelve_figures(self) -> None:
+        self.assertEqual(sorted(supervisor.FIGURE_BASENAMES), list(range(1, 13)))
+        self.assertEqual(sorted(supervisor.DATA_FILENAMES), list(range(1, 13)))
 
     def test_figures_5_and_6_exact_direct_geometry(self) -> None:
         figure_5 = supervisor.FIGURE_5_PRESET
@@ -428,7 +428,23 @@ class YartsevChapter2SupervisorFiguresTest(unittest.TestCase):
             self.assertEqual((preset.a_m, preset.b_m), (0.005, 0.020))
             self.assertEqual((preset.length_1_m, preset.length_2_m), (0.4, 0.4))
 
-    def test_fixed_reference_lambda_is_used_for_figures_5_8(self) -> None:
+    def test_figures_9_12_change_only_figure_number_and_material_angle(self) -> None:
+        expected = {9: 1.0, 10: 2.0, 11: 3.0, 12: 4.0}
+        excluded = {"figure_numbers", "theta_1_deg", "theta_2_deg"}
+        for figure, theta in expected.items():
+            preset = supervisor.SMALL_THETA_PRESETS[figure]
+            self.assertEqual(preset.figure_numbers, (figure,))
+            self.assertEqual((preset.theta_1_deg, preset.theta_2_deg), (theta, theta))
+            self.assertIs(preset.material_factory, hms_dx_209_material)
+            self.assertEqual(supervisor.SMALL_THETA_CLAMP, "book_slope_clamp")
+            for field in fields(supervisor.FigurePreset):
+                if field.name not in excluded:
+                    self.assertEqual(
+                        getattr(preset, field.name),
+                        getattr(supervisor.FIGURE_7_PRESET, field.name),
+                    )
+
+    def test_fixed_reference_lambda_is_used_for_figures_5_12(self) -> None:
         root = self._synthetic_fast_result((0.0,)).spectra[0.0].roots[0]
         values = [
             supervisor._fixed_reference_lambda_for_root(root, preset)
@@ -437,9 +453,10 @@ class YartsevChapter2SupervisorFiguresTest(unittest.TestCase):
                 supervisor.FIGURE_6_PRESET,
                 supervisor.FIGURE_7_PRESET,
                 supervisor.FIGURE_8_PRESET,
+                *supervisor.SMALL_THETA_PRESETS.values(),
             )
         ]
-        np.testing.assert_array_equal(values, np.full(4, values[0]))
+        np.testing.assert_array_equal(values, np.full(len(values), values[0]))
         normalization = supervisor._normalization_manifest(
             supervisor.FIGURE_6_PRESET, fixed_reference=True
         )
@@ -486,6 +503,61 @@ class YartsevChapter2SupervisorFiguresTest(unittest.TestCase):
         self.assertTrue(all(row["data_origin"] == "reused_figure_03" for row in figure_7))
         self.assertTrue(all(row["data_origin"] == "reused_figure_03" for row in figure_8))
 
+    def test_figures_9_12_reuse_exact_figure_3_eb_array_and_schema(self) -> None:
+        beta_values = np.asarray([0.0, 90.0])
+        rows_3 = self._synthetic_comparison_rows(3)
+        source = np.asarray(
+            [
+                (
+                    row["beta_deg"],
+                    row["mode"],
+                    row["eb_frequency_hz"],
+                    row["eb_lambda"],
+                )
+                for row in rows_3
+            ],
+            dtype=float,
+        )
+        for figure, preset in supervisor.SMALL_THETA_PRESETS.items():
+            rows = supervisor._extended_figure_rows(
+                figure,
+                preset,
+                beta_values,
+                self._synthetic_fast_result(
+                    (0.0, 90.0), preset.theta_1_deg
+                ),
+                comparison_type="small_theta",
+                left_model="Chapter2_monoclinic_Timoshenko",
+                left_theta_deg=preset.theta_1_deg,
+                right_model="rectangular_orthotropic_EB_theta0",
+                right_theta_deg=0.0,
+                reused_figure_3_rows=rows_3,
+                reused_prefix="eb",
+                relative_difference_key=(
+                    "relative_difference_to_theta0_EB_baseline"
+                ),
+            )
+            reused = np.asarray(
+                [
+                    (
+                        row["beta_deg"],
+                        row["mode"],
+                        row["right_frequency_hz"],
+                        row["right_lambda"],
+                    )
+                    for row in rows
+                ],
+                dtype=float,
+            )
+            self.assertTrue(np.array_equal(reused, source))
+            self.assertTrue(
+                all(
+                    "relative_difference_to_theta0_EB_baseline" in row
+                    and "relative_theory_difference" not in row
+                    for row in rows
+                )
+            )
+
     def test_figures_5_8_plot_twelve_lines_without_legends(self) -> None:
         rows = [
             {
@@ -510,6 +582,102 @@ class YartsevChapter2SupervisorFiguresTest(unittest.TestCase):
             self.assertFalse(figure.legends)
         finally:
             plt.close(figure)
+
+    def test_figures_9_12_plot_style_and_figure_7_y_limits(self) -> None:
+        rows = [
+            {
+                "beta_deg": beta,
+                "mode": mode,
+                "left_lambda": 0.8 * mode + beta / 900.0,
+                "right_lambda": 0.82 * mode + beta / 900.0,
+            }
+            for beta in (0.0, 90.0)
+            for mode in range(1, supervisor.GUARD_ROOT_COUNT + 1)
+        ]
+        figure_7_limits = (1.208572405120738, 7.808086968882901)
+        figures = [
+            supervisor.create_comparison_figure(
+                rows,
+                solid_key="left_lambda",
+                dashed_key="right_lambda",
+                ylim=figure_7_limits,
+            )
+            for _ in supervisor.SMALL_THETA_FIGURE_NUMBERS
+        ]
+        try:
+            for figure in figures:
+                self.assertEqual(figure.get_size_inches().tolist(), [7.2, 4.8])
+                self.assertEqual(figure.axes[0].get_ylim(), figure_7_limits)
+                self.assertEqual(len(figure.axes[0].lines), 12)
+                self.assertIsNone(figure.axes[0].get_legend())
+                self.assertFalse(figure.legends)
+        finally:
+            for figure in figures:
+                plt.close(figure)
+
+    def test_theta_small_character_table_contract_and_energy_fractions(self) -> None:
+        rows = []
+        for theta in supervisor.SMALL_THETA_ANGLES_DEG:
+            for position in range(1, supervisor.GUARD_ROOT_COUNT + 1):
+                rows.append(
+                    {
+                        "theta_deg": theta,
+                        "sorted_position": position,
+                        "frequency_hz": 100.0 * position,
+                        "lambda_ref": float(position),
+                        "bending_fraction": 0.7,
+                        "shear_fraction": 0.1,
+                        "torsion_fraction": 0.2,
+                        "dominant_character": "bending-like",
+                        "determinant_residual": 1.0e-12,
+                        "singular_residual": 2.0e-12,
+                    }
+                )
+        supervisor._validate_theta_small_character_rows(rows)
+        self.assertEqual(len(rows), 4 * 7)
+        fractions = np.asarray(
+            [
+                [
+                    row["bending_fraction"],
+                    row["shear_fraction"],
+                    row["torsion_fraction"],
+                ]
+                for row in rows
+            ]
+        )
+        self.assertTrue(np.all(np.isfinite(fractions)))
+        self.assertTrue(np.all(fractions >= 0.0))
+        np.testing.assert_allclose(np.sum(fractions, axis=1), 1.0)
+
+    def test_mode_character_evolution_reports_target_pair_changes(self) -> None:
+        rows = []
+        labels = {
+            0.0: {3: "torsion-like", 4: "bending-like", 5: "torsion-like", 6: "bending-like", 7: "bending-like"},
+            1.0: {3: "torsion-like", 4: "bending-like", 5: "bending-like", 6: "torsion-like", 7: "bending-like"},
+            4.0: {3: "bending-like", 4: "torsion-like", 5: "bending-like", 6: "torsion-like", 7: "bending-like"},
+        }
+        for theta, by_position in labels.items():
+            for position, character in by_position.items():
+                rows.append(
+                    {
+                        "theta_deg": theta,
+                        "sorted_position": position,
+                        "frequency_hz": 100.0 * position,
+                        "dominant_character": character,
+                    }
+                )
+        evolution = supervisor._mode_character_evolution(rows)
+        self.assertEqual(
+            evolution["first_pair_order_change_theta_deg"],
+            {"positions_3_4": 4.0, "positions_5_6": 1.0},
+        )
+
+    def test_small_theta_scientific_path_has_no_interpolation_or_fitting(self) -> None:
+        source = inspect.getsource(supervisor._compute_extended_figure_data)
+        for forbidden in ("interp", "polyfit", "curve_fit", "minimize"):
+            self.assertNotIn(forbidden, source)
+        self.assertIn("run_family", source)
+        self.assertIn("SMALL_THETA_PRESETS", source)
 
     def test_figure_7_caption_classifies_diagnostic_approximation(self) -> None:
         source = inspect.getsource(supervisor._report_text)
@@ -536,6 +704,10 @@ class YartsevChapter2SupervisorFiguresTest(unittest.TestCase):
         self.assertFalse(arguments.resume)
         self.assertFalse(arguments.validate_fast_solver)
         self.assertFalse(arguments.benchmark_fast_solver)
+        self.assertEqual(
+            supervisor.parse_args(["--figure", "theta-small"]).figure,
+            "theta-small",
+        )
 
     def test_saved_full_oracle_validation_evidence(self) -> None:
         output_dir = supervisor.DEFAULT_OUTPUT_DIR
@@ -623,6 +795,106 @@ class YartsevChapter2SupervisorFiguresTest(unittest.TestCase):
                 (output_dir / "plot_manifest.json").read_text(encoding="utf-8")
             )
             self.assertEqual(manifest["execution_mode"], "reuse_data")
+
+    def test_theta_small_reuse_data_does_not_call_scientific_solver(self) -> None:
+        beta_values = np.asarray([0.0, 90.0])
+        rows_3 = self._synthetic_comparison_rows(3)
+        results_root = supervisor.ROOT / "results"
+        results_root.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=results_root) as temporary:
+            output_dir = Path(temporary)
+            character_rows: list[dict[str, object]] = []
+            reuse_checks: dict[str, bool] = {}
+            for figure, preset in supervisor.SMALL_THETA_PRESETS.items():
+                rows = supervisor._extended_figure_rows(
+                    figure,
+                    preset,
+                    beta_values,
+                    self._synthetic_fast_result(
+                        (0.0, 90.0), preset.theta_1_deg
+                    ),
+                    comparison_type="small_theta",
+                    left_model="Chapter2_monoclinic_Timoshenko",
+                    left_theta_deg=preset.theta_1_deg,
+                    right_model="rectangular_orthotropic_EB_theta0",
+                    right_theta_deg=0.0,
+                    reused_figure_3_rows=rows_3,
+                    reused_prefix="eb",
+                    relative_difference_key=(
+                        "relative_difference_to_theta0_EB_baseline"
+                    ),
+                )
+                supervisor._write_csv(
+                    output_dir / supervisor.DATA_FILENAMES[figure], rows
+                )
+                reuse_checks[
+                    f"figure_{figure}_eb_equals_figure_3_eb"
+                ] = True
+                for position in range(1, supervisor.GUARD_ROOT_COUNT + 1):
+                    character_rows.append(
+                        {
+                            "theta_deg": preset.theta_1_deg,
+                            "sorted_position": position,
+                            "frequency_hz": 100.0 * position,
+                            "lambda_ref": float(position),
+                            "bending_fraction": 0.7,
+                            "shear_fraction": 0.1,
+                            "torsion_fraction": 0.2,
+                            "dominant_character": "bending-like",
+                            "determinant_residual": 1.0e-12,
+                            "singular_residual": 2.0e-12,
+                        }
+                    )
+            supervisor._write_csv(
+                output_dir / supervisor.THETA_SMALL_CHARACTER_FILENAME,
+                character_rows,
+            )
+            (output_dir / "plot_manifest.json").write_text(
+                json.dumps(
+                    {
+                        "y_limits": {
+                            supervisor.FIGURE_7_Y_LIMITS_KEY: [1.0, 8.0]
+                        },
+                        "extended_fast_solver": {
+                            "reuse_checks": reuse_checks,
+                            "families": {},
+                        },
+                        "runtimes_seconds": {"scientific_total": 0.0},
+                        "matrix_evaluation_counts": {},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with mock.patch.object(
+                supervisor,
+                "_run_fast_family",
+                side_effect=AssertionError(
+                    "scientific solver called under --reuse-data"
+                ),
+            ), mock.patch.object(
+                supervisor,
+                "find_elastic_roots",
+                side_effect=AssertionError("root solver called under --reuse-data"),
+            ):
+                status = supervisor.main(
+                    [
+                        "--figure",
+                        "theta-small",
+                        "--output-dir",
+                        str(output_dir),
+                        "--reuse-data",
+                        "--beta-step-deg",
+                        "90",
+                        "--jobs",
+                        "1",
+                    ]
+                )
+            self.assertEqual(status, 0)
+            manifest = json.loads(
+                (output_dir / "plot_manifest.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(manifest["execution_mode"], "reuse_data")
+            self.assertEqual(manifest["small_theta_figures_status"], "PASS")
 
     def test_figure_1_uses_canonical_csv_without_fitting_logic(self) -> None:
         source = inspect.getsource(supervisor._build_figure_1_rows)

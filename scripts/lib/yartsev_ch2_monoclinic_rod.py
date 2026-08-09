@@ -1226,7 +1226,57 @@ def cantilever_energy_fractions(
     grid = np.linspace(0.0, 1.0, samples)
     scaled = cantilever_state_trajectory(omega, point, clamp_variant, grid)
     physical = scaled * _state_scales(point)[np.newaxis, :]
-    psi = physical[:, 1]
+    components = physical_state_energy_components(physical, point, grid)
+    total = sum(components)
+    if total <= 0.0:
+        return 0.0, 0.0, 0.0
+    return tuple(component / total for component in components)
+
+
+def physical_state_trajectory_from_initial(
+    omega: complex,
+    point: RodPoint,
+    initial_physical_state: NDArray[np.complex128] | Sequence[complex],
+    x_over_length: NDArray[np.float64] | Sequence[float],
+) -> NDArray[np.complex128]:
+    """Propagate an arbitrary physical corrected state along one rod.
+
+    This diagnostic bridge uses the existing :func:`state_matrix` unchanged.
+    It is used when the initial reactions come from a coupled-rod null vector
+    rather than from the single-cantilever characteristic matrix.
+    """
+
+    grid = np.asarray(x_over_length, dtype=float)
+    if np.any(grid < 0.0) or np.any(grid > 1.0):
+        raise ValueError("x_over_length must lie in [0, 1]")
+    initial = np.asarray(initial_physical_state, dtype=np.complex128)
+    if initial.shape != (6,):
+        raise ValueError("initial_physical_state must have shape (6,)")
+    system = state_matrix(omega, point)
+    return np.vstack(
+        [expm(system * (point.geometry.length * x)) @ initial for x in grid]
+    )
+
+
+def physical_state_energy_components(
+    physical_state: NDArray[np.complex128],
+    point: RodPoint,
+    x_over_length: NDArray[np.float64] | Sequence[float],
+) -> tuple[float, float, float]:
+    """Return bending, shear, and torsion energies of a physical trajectory.
+
+    The strain measures and energy densities are exactly those used by
+    :func:`cantilever_energy_fractions`.  The integration coordinate is the
+    physical rod coordinate, so components from equal or unequal arms may be
+    added before normalization.
+    """
+
+    physical = np.asarray(physical_state, dtype=np.complex128)
+    grid = np.asarray(x_over_length, dtype=float)
+    if physical.shape != (grid.size, 6):
+        raise ValueError("physical_state must have shape (len(x_over_length), 6)")
+    if np.any(grid < 0.0) or np.any(grid > 1.0) or np.any(np.diff(grid) < 0.0):
+        raise ValueError("x_over_length must be sorted and lie in [0, 1]")
     shear = physical[:, 3]
     moment = physical[:, 4]
     torque = physical[:, 5]
@@ -1240,13 +1290,12 @@ def cantilever_energy_fractions(
         g.shear_factor * abs(p.Gxz) * g.area * np.abs(shear_angle) ** 2
     )
     torsion_density = abs(point.torsion.C_T) * np.abs(twist) ** 2
-    bending = float(np.trapezoid(bending_density, grid))
-    shear_energy = float(np.trapezoid(shear_density, grid))
-    torsion = float(np.trapezoid(torsion_density, grid))
-    total = bending + shear_energy + torsion
-    if total <= 0.0:
-        return 0.0, 0.0, 0.0
-    return bending / total, shear_energy / total, torsion / total
+    physical_grid = grid * g.length
+    return (
+        float(np.trapezoid(bending_density, physical_grid)),
+        float(np.trapezoid(shear_density, physical_grid)),
+        float(np.trapezoid(torsion_density, physical_grid)),
+    )
 
 
 def modal_assurance(
@@ -1421,6 +1470,8 @@ __all__ = [
     "partial_bending_mode_shape",
     "partial_bending_scaled_system",
     "partial_torsion_mode_shape",
+    "physical_state_energy_components",
+    "physical_state_trajectory_from_initial",
     "physical_state_transfer_matrix",
     "rigid_body_nullity",
     "rotate_material",

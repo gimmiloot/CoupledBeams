@@ -78,6 +78,12 @@ Project-wide branch identity and diagnostic-tracking rules are summarized in
   caching, separate performance counters, and atomic family checkpoints. It
   contains no physical equations or boundary matrices, does not define modal
   descendants, and retains the existing global solver as oracle/fallback.
+- `yartsev_ch2_monoclinic_rod.py` also exposes a narrow diagnostic propagation
+  bridge from an arbitrary physical initial state and the same
+  bending/shear/generalized-torsion energy components already used by the
+  cantilever diagnostic. The supervisor workflow uses them only at `beta=0`
+  to characterize sorted positions of the two-arm Chapter-2 spectrum; no
+  determinant, material rotation, clamp, or joint equation is redefined.
 
 FEM comparison logic is intentionally split: reusable FEM model code stays in
 `../../src/my_project/fem/python_fem.py`, while diagnostic comparison and

@@ -213,17 +213,21 @@ analytic coefficient, eigensolver tolerance, or threshold was changed.
 
 ### Yartsev Chapter-2 supervisor figures and fast beta sweep
 
-- Task: reproduce the eight rectangular anisotropic Chapter-2 supervisor
+- Task: reproduce the twelve rectangular anisotropic Chapter-2 supervisor
   figures, validate the diagnostic fast sorted-spectrum solver against all
   saved Figure-2--4 oracle roots, and build only from saved CSV in reuse mode.
 - Status: `Fast beta-sweep optimization: PASS`; `Extended supervisor figures
-  5–8: PASS`.
+  5–8: PASS`; `Small-theta supervisor figures: PASS`.
 - Oracle command:
   `python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --validate-fast-solver --jobs 1`.
 - Benchmark command: replace `--validate-fast-solver` by
   `--benchmark-fast-solver`.
 - New figures:
   `python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --figure new --solver-mode fast --resume --jobs 1`.
+- Small material-axis angles continuing Figure 7:
+  `python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --figure theta-small --solver-mode fast --resume --jobs 1`.
+- Plot-only small-theta series:
+  `python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --figure theta-small --reuse-data --jobs 1`.
 - Plot-only all figures:
   `python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --figure all --reuse-data`.
 - Results:
@@ -610,7 +614,8 @@ plotter.
 | `scripts/plot_mu_sweep_beta0_four_radii_compare.py` | presentation/figure | Four-radius `mu` sweep at `beta = 0`. | `python scripts/run/run_mu_sweep_beta0_four_radii.py` | keep root; wrapper in `scripts/run/` |
 | `scripts/plot_mu_sweep_beta_fixed_four_radii_compare.py` | presentation/figure | Four-radius `mu` sweep for fixed positive beta values. | `python scripts/run/run_mu_sweep_fixed_beta_four_radii.py` | keep root; wrapper in `scripts/run/` |
 | `scripts/plot_mu_sweep_radius_fixed_four_betas_analytic.py` | presentation/figure | Analytic-only `mu` sweeps for selected betas at fixed radius. | `python scripts/run/run_mu_sweep_four_betas_analytic.py --betas 15 30 45 60` | keep root; wrapper in `scripts/run/` |
-| `scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py` | presentation/figure diagnostic | Eight reproducible Chapter-2 rectangular-rod supervisor figures, fast-oracle validation, checkpoints, and plot-only reuse. | `python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --figure all --reuse-data` | keep as the separate small supervisor entry point; do not merge into unequal-thickness or circular-article CLIs |
+| `scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py` | presentation/figure diagnostic | Twelve reproducible Chapter-2 rectangular-rod supervisor figures, fast-oracle validation, checkpoints, beta-zero energy-character diagnostics, and plot-only reuse. | `python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --figure all --reuse-data` | keep as the separate small supervisor entry point; do not merge into unequal-thickness or circular-article CLIs |
+| `scripts/analysis/anisotropic_rods/screen_yartsev_ch2_spectral_applicability.py` | analysis/diagnostic | Isolated AP-0 theta=2 finite-grid screening of Chapter-2 T2/T0 against rectangular EB0 on nine volume-preserving similar-section geometries, with exact permitted reuse, checkpoints, quality gates, and plot-only replay. | `python scripts/analysis/anisotropic_rods/screen_yartsev_ch2_spectral_applicability.py --reuse-data` | keep as a small Chapter-2-only screening CLI; do not merge into supervisor or circular-article workflows |
 | `scripts/run/run_analytic_coupled_rods_mode_shape_ru.py` | main user-facing command | Build one analytic coupled-rods mode shape directly from the determinant nullspace. | `python scripts/run/run_analytic_coupled_rods_mode_shape_ru.py` | keep |
 | `scripts/run/run_analytic_coupled_rods_vibration_shapes_beta15_mu06_eps0025_001_ru.py` | main user-facing command | Build the two-case beta=15, mu=0.6 descendant-5 vibration-shape overlay for epsilon 0.0025/root 6 and epsilon 0.01/root 5. | `python scripts/run/run_analytic_coupled_rods_vibration_shapes_beta15_mu06_eps0025_001_ru.py` | keep |
 | `scripts/plot_tracked_bending_descendant_shapes_ru.py` | main user-facing command | Parameterized Russian mode-shape plot for tracked bending descendants. | `python scripts/run/run_tracked_bending_descendant_shapes_ru.py --branch-id bending_desc_01` | keep root; wrapper in `scripts/run/` |
