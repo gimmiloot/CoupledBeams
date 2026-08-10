@@ -20,6 +20,8 @@ Fast Chapter-2 beta-sweep oracle validation: completed — PASS
 Extended supervisor Figures 5–8: completed — PASS
 Small-theta supervisor Figures 9–12: completed — PASS
 AP-0 theta=2 small-grid spectral-applicability screening: completed — PASS
+AP-1 theta=5 same-grid spectral-applicability screening: completed — PASS
+AP-2 theta=3/4 intermediate-angle same-grid screening: completed — PASS
 Production anisotropic API: not started
 Independent rectangular EB + torsion 1D FEM: completed for the finite gate
 ```
@@ -135,7 +137,7 @@ and the declared UT-1a numerical audit retain their historical limitations.
 - [Unequal-thickness 1D validation (UT-0 through UT-3)](yartsev_ch2_unequal_thickness_validation.md)
 - [Limited 3D FEM anchor design and 3D-A0 readiness](yartsev_ch2_limited_3d_fem_anchor_design.md)
 - [Supervisor Chapter-2 rectangular-rod figures](yartsev_ch2_supervisor_figures.md)
-- [AP-0 theta=2 spectral-applicability screening](yartsev_ch2_spectral_applicability_screening.md)
+- [AP-0/AP-1/AP-2 sampled-theta spectral-applicability screening](yartsev_ch2_spectral_applicability_screening.md)
 - [Free-free diagnostic CLI](../../scripts/analysis/anisotropic_rods/reproduce_yartsev_fig_2_2.py)
 - [Cantilever diagnostic CLI](../../scripts/analysis/anisotropic_rods/reproduce_yartsev_ch2_cantilever.py)
 - [Small coupled-joint pilot CLI](../../scripts/analysis/anisotropic_rods/pilot_yartsev_ch2_coupled_rods.py)
@@ -143,7 +145,7 @@ and the declared UT-1a numerical audit retain their historical limitations.
 - [Unequal-thickness UT-0/UT-1/UT-1a/UT-2/UT-3 CLI](../../scripts/analysis/anisotropic_rods/validate_yartsev_ch2_unequal_thickness.py)
 - [Limited 3D FEM 3D-A0 readiness CLI](../../scripts/analysis/anisotropic_rods/audit_yartsev_ch2_limited_3d_fem_readiness.py)
 - [Supervisor-figure CLI](../../scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py)
-- [AP-0 screening CLI](../../scripts/analysis/anisotropic_rods/screen_yartsev_ch2_spectral_applicability.py)
+- [AP-0/AP-1/AP-2 screening CLI](../../scripts/analysis/anisotropic_rods/screen_yartsev_ch2_spectral_applicability.py)
 
 Generated local evidence, which may be absent from a fresh clone, is kept in:
 
@@ -189,7 +191,15 @@ baseline exactly and retaining independently sorted spectral positions. The
 separate AP-0 diagnostic then screens nine volume-preserving similar-section
 geometries at `theta=2 deg` and `beta=0,5,...,90 deg`: all nine remain within
 the finite-grid 10% Lambda criterion, while no exact theta boundary,
-refinement, tracking, shapes, energy analysis, or FEM is attempted.
+refinement, tracking, shapes, energy analysis, or FEM is attempted. AP-1
+reuses exactly the same geometry/beta grid at `theta=5 deg`: all nine cases
+then exceed the 10% criterion, with a descriptive same-pair gap analysis over
+1026 observations. AP-2 then evaluates only the prescribed intermediate
+sampled orientations `theta=3,4 deg`: all 171 configurations and all nine
+families remain within 10% at both sampled angles, while theta=5 retains
+66/171 pointwise within and 105/171 exceeding. All sampled point and family
+sequences are nondecreasing, but no continuous monotonicity, exact crossing,
+or critical angle is inferred.
 
 ## Preservation rule
 

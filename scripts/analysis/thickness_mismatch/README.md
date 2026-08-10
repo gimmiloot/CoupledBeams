@@ -131,6 +131,35 @@ PNG candidates compare the fixed `(epsilon_0, mu, eta)` geometry at
 the generated notes are internal figure-selection guidance rather than an
 article section.
 
+## Finite-grid local-minimum energy check
+
+`audits/audit_article_energy_local_minima_grid.py` is the two-phase
+confirmatory check for the same isotropic circular coupled-rod EB/Timoshenko
+scope. Phase A reads only the final compact first-ten frequency certificates,
+selects every strict local minimum at ordered positions `k=2,...,9`, writes
+`frequency_selected_triplets.csv`, and fixes its SHA-256 before any energy
+reconstruction. Phase B verifies that hash, deduplicates overlapping triplets
+by `(case_id, sorted_k)`, and reconstructs only the required saved-root
+Timoshenko forms on the 801- and 1601-point integration grids.
+
+```powershell
+D:\python\Pycharm\pythonProject\.venv\Scripts\python.exe -B `
+  scripts/analysis/thickness_mismatch/audits/audit_article_energy_local_minima_grid.py `
+  --run-all --resume --workers 4 `
+  --source-dir results/article_epsilon_upper_envelope/coarse_grid_v1/compact_finalization_epsilon_005_resolved `
+  --compact-dir results/article_epsilon_upper_envelope/coarse_grid_v1/compact_point_certificates_v1 `
+  --output-dir results/article_epsilon_upper_envelope/energy_local_minima_grid_v1
+```
+
+The output keeps the primary `beta>0`, `s_max<=0.1`, non-cluster,
+non-discovery cohort separate from the whole `mu=0.5, eta=0.5` family
+holdout, the `beta=0` control, the extended `s_max>0.1` range, prior
+illustrative cases, clusters, and incomplete or failed reconstructions. It
+uses the same positions in the ordered spectra, does not track physical
+branches, and introduces no energy-percentage classification. No new roots,
+strict verification, MAC, FEM, or anisotropic calculation is part of this
+workflow. The v1/v2/v3 energy pilots are immutable inputs.
+
 ## Smoke Mode Convention
 
 Heavy diagnostic entry points should support `--smoke` or document an existing

@@ -1,7 +1,41 @@
 # CHANGELOG
 
+## 2026-08-10
+
+- Added AP-2 intermediate-angle Chapter-2 rectangular-rod screening at the
+  sampled material-axis orientations `theta=3` and `4 deg` on the unchanged
+  AP-0/AP-1 geometry and beta grid. Each angle exactly reuses all AP-0 T0/EB0
+  families and its identity-checked supervisor Figure-11/12 baseline, solves
+  eight new target families, and preserves all accepted AP-0/AP-1/supervisor
+  artifacts. All 171 configurations and all nine families remain within 10%
+  at sampled theta 3 and 4; the solver-free 2/3/4/5 comparison reproduces the
+  theta-5 result of 66/171 within and 105/171 exceeding, and records sampled
+  status, re-entry, increment, classification-decomposition, and same-pair gap
+  diagnostics. No exact crossing, interpolation, additional theta/beta sweep,
+  modal tracking, energy, FEM, 3D FEM, or circular-rod workflow was run.
+
 ## 2026-08-09
 
+- Added the two-phase finite-grid local-minimum energy check for the isolated
+  isotropic-circular coupled-rod EB/Timoshenko article workflow. Frequency-only
+  selection fixes and hashes 1080 strict same-index local-minimum triplets from
+  657 main-grid geometries with complete confirmed first-ten spectra before
+  reconstructing 3039 deduplicated saved-root Timoshenko forms on 801/1601
+  grids. Prior energy examples, `beta=0`, `s_max>0.1`, cluster-affected, and
+  quality-failed cases are reported separately; the primary result is mixed
+  (212/431 strict local maxima of the axial potential-energy contribution),
+  including a strict-family holdout and all contradicting cases. No root or
+  strict solve, branch tracking, MAC, FEM, anisotropic calculation, formula,
+  basis, tolerance, saved root, article TeX, or prior v1/v2/v3 pilot was changed.
+- Extended the isolated rectangular Chapter-2 screening CLI with AP-1 at
+  `theta=5 deg` on the exact AP-0 geometry/beta grid. AP-1 reuses all 18 AP-0
+  T0/EB0 families and the Figure-7 baseline T5 family exactly, solves only
+  eight new T5 families, records 1026 same-pair gap observations and
+  theta2-vs-theta5 comparisons, and produces three compact diagnostics. All
+  nine geometries transition from within 10% at theta=2 to exceeding 10% at
+  theta=5 on the finite grid. AP-0 and supervisor outputs remain byte-identical;
+  no intermediate theta, refinement, tracking, shapes, energy, FEM, circular
+  article workflow, or next gate was run.
 - Added the isolated AP-0 `theta=2 deg` spectral-applicability screening for
   Chapter-2 rectangular HMS/DX-209 rods. The finite grid contains nine
   volume-preserving similar-section geometries and 19 coupling angles, with
