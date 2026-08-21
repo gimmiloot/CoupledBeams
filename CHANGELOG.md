@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-08-21
+
+- Integrated the literature set used in the submitted anisotropic rectangular
+  composite-rods article: added and verified local source PDFs, synchronized
+  `docs/literature/source_index.md` with
+  `docs/literature/bibliography.bib`, and added targeted source notes. No
+  scientific models, calculations, submitted article text, or results were
+  changed.
+
+- Registered the newly supplied local PDFs for Han et al. (1999) and
+  Labuschagne et al. (2009), and added repository bibliography/source-index
+  records for the existing Liu (2002), Perkins and Mote (1986), and Pierre
+  (1988) PDFs. Added a Git attribute that keeps all PDF sources binary during
+  tracking. No theory, solver, script, test, or result was changed.
+
 ## 2026-08-10
 
 - Added AP-2 intermediate-angle Chapter-2 rectangular-rod screening at the

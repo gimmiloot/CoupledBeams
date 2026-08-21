@@ -125,6 +125,28 @@ relabeling residual is `6.12e-17`, below `1e-13`. UT-3 is `PASS`; the 1D
 phase is `COMPLETE`, while its overall status is `PARTIAL_PASS` because UT-1
 and the declared UT-1a numerical audit retain their historical limitations.
 
+## Литературная основа отправленной статьи
+
+Контрольный список состоит из 14 научных источников; русский оригинал и
+официальный английский перевод каждой работы Рябова--Ярцева учитываются как
+один источник и один citation key.
+
+| Роль | Citation keys |
+| --- | --- |
+| Ранние работы по ортотропным и композитным балкам | `miller_1975_orthotropic_beam_resonances`; `teh_huang_1980_fibre_orientation_composite_beams`; `chandrashekhara_1990_composite_beam_free_vibration` |
+| Сравнение и уточнение теорий балки | `han_1999_four_beam_theories`; `labuschagne_2009_linear_beam_theories`; `banerjee_williams_1996_composite_timoshenko_dynamic_stiffness` |
+| Связанные колебания анизотропных композитных стержней | `song_librescu_1993_anisotropic_thinwalled_beams`; `piovan_2008_tapered_shear_flexible_composite_beams` |
+| Линия Рябова--Ярцева | `ryabov_yartsev_2016_box_beams_part1`; `ryabov_yartsev_2016_box_beams_part2`; `ryabov_yartsev_2021_monoclinic_strip`; `ryabov_yartsev_2023_composite_wing_coupling`; `yartsev_2024_coupled_composite_structures` |
+| Геометрия двух сопряжённых стержней | `bauer_2025_coupled_rods` |
+
+Основным источником модели $T_\theta$ остаётся монография Ярцева 2024 года;
+ближайший журнальный источник по прямоугольной моноклинной полосе — работа
+Рябова и Ярцева 2021 года. Статья Бауэра и др. 2025 года рассматривает
+изотропные круглые стержни и используется только для общей геометрии жёсткого
+углового сопряжения и частотного уравнения, а не как источник материальной
+модели композита. Полная карта ролей и локальных PDF приведена в
+[literature source index](../literature/source_index.md).
+
 ## Navigation
 
 - [Yartsev source note and local scan map](source_note_yartsev_2024.md)
