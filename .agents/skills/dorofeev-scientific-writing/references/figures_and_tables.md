@@ -27,11 +27,23 @@ Depending on the actual evidence, discuss:
 - stability across parameter cases;
 - an exception to the main dependence.
 
-Name localization, shear influence, rotary inertia, bending--torsion coupling, or another mechanism only when it is supported by mode shapes, energy, MAC, partial problems, a limiting case, an additional calculation, or a direct consequence of equations.
+## Match the claim to the evidence
+
+Do not treat diagnostic quantities as interchangeable. The minimum relevant data depend on the claim:
+
+- branch continuation -> mode shapes along a declared path and a project-approved matching rule; use modal subspaces when individual matching is ambiguous;
+- mode composition -> component fields, energy fractions, partial-mode projections, coupling coefficients, or another explicitly defined composition measure;
+- localization -> spatial distributions of displacement or energy between or along structural elements;
+- mutual transformation -> tracked forms or modal subspaces together with evidence that their character changes;
+- curve convergence or separation -> sorted frequencies are sufficient only for this spectral observation.
+
+Partial problems may support interpretation of composition and interaction. Equations, limiting cases, and additional calculations may support a causal interpretation. None of these automatically replaces branch tracking for identity or spatial evidence for localization.
 
 ## Use a number only when it does work
 
 Retain a value when it defines a threshold, applicability boundary, global extremum, verification accuracy, method comparison, count of passing cases, or another principal quantitative result used by the conclusion. Usually one decisive number is stronger than a catalogue.
+
+Do not calculate a new difference, rate, or other derived quantity during writing unless the user requests it or supplies it as a verified result. When the trend and comparison answer the question, omit endpoint values that do not establish a necessary threshold, extremum, or validation result.
 
 ## Paragraph sequence
 

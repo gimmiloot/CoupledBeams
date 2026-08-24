@@ -42,7 +42,12 @@ Do not:
 - call a discrepancy an error without a defined reference;
 - declare one model true;
 - claim tracking from sorted frequencies;
-- infer form transformation without mode-shape evidence;
+- infer branch identity from energy fractions;
+- infer localization from total component-energy fractions;
+- treat modal composition as modal ancestry;
+- assume path-independent mode labels in a multiparameter problem;
+- force individual tracking through a close or repeated eigenspace when individual matching is ambiguous and no subspace treatment is given;
+- infer mutual mode transformation without tracked forms or modal subspaces and evidence that their character changes;
 - import a term or mechanism from a different model without an applicability argument.
 
 If evidence is missing, retain a neutral observation or state that the proposed interpretation is not confirmed.

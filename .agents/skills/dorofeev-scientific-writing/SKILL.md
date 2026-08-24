@@ -45,6 +45,7 @@ Do not rewrite unless asked. Report the location, problem type, reason, and smal
 - For section planning, read [structure templates](references/structure_templates.md).
 - Before choosing recurring transitions, read [approved phrase families](references/approved_phrase_families.md). Reuse a precise term instead of creating synonyms.
 - For prose about figures or tables, read [figures and tables](references/figures_and_tables.md).
+- For Revise, or for a complex Draft that must build a complete paragraph, read [revision examples](references/revision_examples.md). Use their reasoning pattern, never the examples as universal ready-made paragraphs.
 - For Audit or final cleanup, read [forbidden patterns](references/forbidden_patterns.md).
 - Read [corpus map](references/corpus_map.md), [evidence matrix](references/corpus_evidence.md), and [corpus examples](references/corpus_examples.md) only when maintaining, explaining, or revalidating this skill. The original articles are not runtime dependencies.
 - Read [acceptance cases](references/style_acceptance_cases.md) only when testing a change to the skill.
@@ -61,7 +62,10 @@ Use `scripts/style_lint.py` as an optional warning-only check for a file or stdi
 - Describe a figure or table through the main dependence, difference between cases, supported mechanical meaning, and actual domain of the conclusion. Use numbers as evidence for a material conclusion, not as a substitute for analysis.
 - Distinguish an observation in data, a conclusion supported by analysis, and a hypothesis. Limit finite-grid conclusions to the sampled domain.
 - Do not call a model exact, complete, true, or an error reference without an explicit basis.
-- Do not infer modal tracking, mode transformation, or localization from sorted frequencies alone. Require the evidence stated in the current project, such as continuation, mode shapes, MAC, energy, partial problems, limiting cases, or direct equations.
+- Do not infer branch identity, mode exchange, mutual mode transformation, or localization from sorted frequencies or from energy fractions alone.
+- Establish branch identity only along an explicitly declared continuation path and compare mode shapes by a criterion approved in the current project, such as MAC. Near close or repeated eigenvalues, compare the corresponding modal subspaces when individual matching is ambiguous instead of forcing an assignment.
+- Energy fractions, coupling coefficients, component fields, and partial-mode projections or problems may characterize modal composition, but do not by themselves establish a modal descendant.
+- Claim localization only from spatial information: mode shapes or displacement or energy distributions between and along structural elements. Total bending, shear, or torsion fractions are not spatial evidence.
 
 ## Output contract
 
@@ -82,10 +86,14 @@ Before returning scientific prose, correct any failure in this list:
 9. Does the prose merely enumerate values visible in a figure or table?
 10. Is every retained number needed to support a material conclusion?
 11. Is a sorted spectral line being presented as a tracked mode without tracking evidence?
-12. Are formulas, references, labels, symbols, and numerical values unchanged?
-13. Were any unrequested neighbouring passages changed?
-14. Is the first sentence understandable without the hidden drafting plan?
-15. Does the result read as a mechanics argument rather than a report about the writing process?
+12. Is modal identity being inferred from energy fractions alone?
+13. Is a multiparameter branch label used without an explicitly declared continuation path?
+14. Is localization being inferred without spatial information?
+15. Is a close or repeated pair being forced into individual identities when only its modal subspace is stable?
+16. Are formulas, references, labels, symbols, and numerical values unchanged?
+17. Were any unrequested neighbouring passages changed?
+18. Is the first sentence understandable without the hidden drafting plan?
+19. Does the result read as a mechanics argument rather than a report about the writing process?
 
 ## Invocation examples
 

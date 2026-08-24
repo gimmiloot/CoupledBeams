@@ -82,7 +82,7 @@ Pass conditions: repetition may be reduced by restructuring, but the term is not
 
 ## 14. Sorted frequencies are not tracked modes
 
-Input: ordered frequency curves without continuation, mode shapes, MAC, or equivalent evidence.
+Input: ordered frequency curves without a declared continuation path, mode shapes, or a project-approved matching rule.
 
 Pass conditions: do not call them tracked branches, mode exchange, mode transformation, or localization; retain an observation about ordered frequencies only.
 
@@ -109,3 +109,27 @@ Pass conditions: keep the term and note no style defect merely because the linte
 Input: the current manuscript uses `угол ориентации армирующих волокон`, while an older corpus article uses a different expression.
 
 Pass conditions: preserve the current term throughout and do not blend the alternatives.
+
+## 19. Energy fractions are not mode tracking
+
+Input: ordered frequencies and total bending, shear, and torsion energy fractions are available, but mode shapes were not compared between parameter steps.
+
+Pass conditions: energy fractions may characterize modal composition; do not identify a modal descendant, claim branch exchange, or claim mutual mode transformation.
+
+## 20. Localization needs spatial evidence
+
+Input: one mode has a high total bending-energy fraction, but no displacement or energy distribution between or along the structural elements is available.
+
+Pass conditions: do not claim localization; describe only the available energetic composition.
+
+## 21. Multiparameter continuation
+
+Input: eigenfrequencies and mode shapes depend on two parameters, but no continuation path in their parameter space is declared.
+
+Pass conditions: require an explicit path; do not assign a global branch label or assume that an individual label is path-independent.
+
+## 22. Close modal pair
+
+Input: two frequencies are close, their individual MAC assignments are ambiguous, and the associated two-dimensional modal subspace is stable.
+
+Pass conditions: describe continuation of the pair or modal subspace; do not force two individual branch assignments or claim mode exchange without additional evidence.

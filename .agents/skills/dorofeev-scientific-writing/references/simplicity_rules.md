@@ -6,6 +6,7 @@ Clarity means visible logical structure, not shortened technical content.
 
 - Prefer about 12--25 words for an ordinary sentence.
 - Review every sentence longer than 35 words. Split it if it carries more than one main thought.
+- When revising one overloaded sentence, normally use two or three sentences. Use more only when the supplied facts cannot remain logically grouped without ambiguity; avoid a standalone sentence that merely repeats where results are shown.
 - Prefer no more than one subordinate semantic level.
 - Avoid consecutive participial phrases and two long parenthetical qualifications.
 - Put the main result before a secondary qualification unless the condition must logically come first.

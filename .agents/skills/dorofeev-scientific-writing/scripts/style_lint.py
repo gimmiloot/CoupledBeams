@@ -45,15 +45,15 @@ COINED_PHRASES = (
     "мера продольной геометрической асимметрии",
 )
 
-TERM_VARIANTS = {
-    "спектральные показатели": "собственные частоты",
-    "кластеризация ветвей": "сближение частотных кривых",
-    "угол ориентации материала": "угол ориентации армирующих волокон",
-    "поворот материальных осей": "угол ориентации армирующих волокон",
-    "ориентационный параметр": "утверждённый параметр текущей статьи",
-    "направление анизотропии": "утверждённый термин текущей статьи",
-    "параметр асимметрии длин": "отношение длин стержней",
-}
+SUSPECT_TERM_VARIANTS = (
+    "спектральные показатели",
+    "кластеризация ветвей",
+    "угол ориентации материала",
+    "поворот материальных осей",
+    "ориентационный параметр",
+    "направление анизотропии",
+    "параметр асимметрии длин",
+)
 
 INTRO_CLICHES = (
     "таким образом",
@@ -100,6 +100,38 @@ NOUNISH_RE = re.compile(
     r"ого|его|ой|ей|ых|их|а|я|ы|и|ов|ев)$",
     re.IGNORECASE,
 )
+RUSSIAN_LETTER_RE = re.compile(r"[А-Яа-яЁё]")
+
+MASKED_LATEX_ENVIRONMENTS = (
+    "equation",
+    "equation*",
+    "align",
+    "align*",
+    "alignat",
+    "alignat*",
+    "gather",
+    "gather*",
+    "multline",
+    "multline*",
+    "flalign",
+    "flalign*",
+    "displaymath",
+    "math",
+    "split",
+    "verbatim",
+    "verbatim*",
+    "lstlisting",
+    "minted",
+)
+_LATEX_ENVIRONMENT_ALTERNATION = "|".join(
+    re.escape(name) for name in sorted(MASKED_LATEX_ENVIRONMENTS, key=len, reverse=True)
+)
+LATEX_ENVIRONMENT_RE = re.compile(
+    r"\\begin\s*\{\s*(?P<environment>"
+    + _LATEX_ENVIRONMENT_ALTERNATION
+    + r")\s*\}.*?\\end\s*\{\s*(?P=environment)\s*\}",
+    re.DOTALL,
+)
 
 
 @dataclass(frozen=True)
@@ -115,18 +147,52 @@ def normalise(text: str) -> str:
     return " ".join(text.casefold().split())
 
 
+def is_russian_text(text: str) -> bool:
+    """Return whether a span is predominantly Russian prose."""
+
+    words = WORD_RE.findall(text)
+    cyrillic_words = sum(bool(RUSSIAN_LETTER_RE.search(word)) for word in words)
+    return cyrillic_words >= 3 and cyrillic_words * 2 >= len(words)
+
+
 def mask_span(chars: list[str], start: int, end: int) -> None:
     for index in range(start, end):
         if chars[index] not in "\r\n":
             chars[index] = " "
 
 
+def mask_pattern(chars: list[str], pattern: re.Pattern[str]) -> None:
+    for match in pattern.finditer("".join(chars)):
+        mask_span(chars, match.start(), match.end())
+
+
+def mask_latex_comments(chars: list[str]) -> None:
+    """Mask TeX comments, respecting the parity of preceding backslashes."""
+
+    source = "".join(chars)
+    for index, char in enumerate(source):
+        if char != "%":
+            continue
+        backslashes = 0
+        cursor = index - 1
+        while cursor >= 0 and source[cursor] == chr(92):
+            backslashes += 1
+            cursor -= 1
+        if backslashes % 2:
+            continue
+        end = index
+        while end < len(source) and source[end] not in "\r\n":
+            end += 1
+        mask_span(chars, index, end)
+
+
 def mask_latex(text: str) -> str:
-    """Mask comments, maths, and reference commands while preserving offsets."""
+    """Mask comments, selected environments, maths, and commands in place."""
 
     chars = list(text)
+    mask_latex_comments(chars)
+    mask_pattern(chars, LATEX_ENVIRONMENT_RE)
     patterns = (
-        re.compile(r"(?m)(?<!\\)%.*$"),
         re.compile(r"\$\$.*?\$\$", re.DOTALL),
         re.compile(r"(?<!\\)\$(?:\\.|[^$])*?(?<!\\)\$", re.DOTALL),
         re.compile(r"\\\[.*?\\\]", re.DOTALL),
@@ -134,10 +200,8 @@ def mask_latex(text: str) -> str:
         re.compile(r"\\(?:cite|citep|citet|ref|eqref|label|url|href)\*?(?:\[[^]]*\])?\{[^}]*\}"),
     )
     for pattern in patterns:
-        for match in pattern.finditer(text):
-            mask_span(chars, match.start(), match.end())
-    for match in re.finditer(r"\\[A-Za-zА-Яа-яЁё@]+\*?", text):
-        mask_span(chars, match.start(), match.end())
+        mask_pattern(chars, pattern)
+    mask_pattern(chars, re.compile(r"\\[A-Za-zА-Яа-яЁё@]+\*?"))
     return "".join(chars)
 
 
@@ -205,7 +269,7 @@ def phrase_warnings(text: str, phrases: Iterable[str], code: str, message: str) 
     return warnings
 
 
-def nominalisation_warnings(text: str) -> list[WarningItem]:
+def nominalisation_warnings(text: str, base_offset: int = 0) -> list[WarningItem]:
     warnings: list[WarningItem] = []
     tokens = list(WORD_RE.finditer(text))
     used_until = -1
@@ -226,18 +290,18 @@ def nominalisation_warnings(text: str) -> list[WarningItem]:
             for item in selected
         )
         if len(selected) >= 5 and nounish >= 4:
-            start, end = selected[0].start(), selected[-1].end()
-            subject = normalise(text[start:end])
+            local_start, local_end = selected[0].start(), selected[-1].end()
+            subject = normalise(text[local_start:local_end])
             warnings.append(
                 WarningItem(
                     "NOM001",
-                    start,
-                    end,
+                    base_offset + local_start,
+                    base_offset + local_end,
                     "возможная цепочка отглагольных или отвлечённых существительных",
                     subject,
                 )
             )
-            used_until = end
+            used_until = local_end
     return warnings
 
 
@@ -247,8 +311,10 @@ def repeated_cliche_warnings(text: str, paragraphs: list[tuple[int, int, str]]) 
         for match in re.finditer(re.escape(phrase), text, re.IGNORECASE):
             paragraph_index = next(
                 (i for i, (start, end, _) in enumerate(paragraphs) if start <= match.start() < end),
-                -1,
+                None,
             )
+            if paragraph_index is None:
+                continue
             occurrences[phrase].append((match.start(), match.end(), paragraph_index))
 
     warnings: list[WarningItem] = []
@@ -298,20 +364,31 @@ def service_marker_warnings(text: str) -> list[WarningItem]:
 def collect_warnings(raw_text: str) -> list[WarningItem]:
     text = mask_latex(raw_text)
     paragraphs = list(iter_paragraphs(text))
+    russian_paragraphs = [
+        (start, end, paragraph)
+        for start, end, paragraph in paragraphs
+        if is_russian_text(paragraph)
+    ]
     warnings: list[WarningItem] = []
 
-    for start, end, sentence in iter_sentences(text):
-        word_count = len(WORD_RE.findall(sentence))
-        if word_count > MAX_SENTENCE_WORDS:
-            warnings.append(
-                WarningItem(
-                    "LEN001",
-                    start,
-                    end,
-                    f"предложение содержит {word_count} слов; проверьте возможность разделения",
-                    normalise(raw_text[start:end]),
+    for paragraph_start, _, paragraph in paragraphs:
+        for local_start, local_end, sentence in iter_sentences(paragraph):
+            if not is_russian_text(sentence):
+                continue
+            start = paragraph_start + local_start
+            end = paragraph_start + local_end
+            word_count = len(WORD_RE.findall(sentence))
+            if word_count > MAX_SENTENCE_WORDS:
+                warnings.append(
+                    WarningItem(
+                        "LEN001",
+                        start,
+                        end,
+                        f"предложение содержит {word_count} слов; проверьте возможность разделения",
+                        normalise(raw_text[start:end]),
+                    )
                 )
-            )
+            warnings.extend(nominalisation_warnings(sentence, start))
 
     warnings.extend(
         phrase_warnings(text, INFLATED_PHRASES, "LEX001", "нежелательное оценочное или усложняющее выражение")
@@ -319,21 +396,23 @@ def collect_warnings(raw_text: str) -> list[WarningItem]:
     warnings.extend(
         phrase_warnings(text, COINED_PHRASES, "LEX002", "возможный придуманный или неоправданно усложнённый термин")
     )
-    warnings.extend(nominalisation_warnings(text))
-    warnings.extend(repeated_cliche_warnings(text, paragraphs))
+    warnings.extend(repeated_cliche_warnings(text, russian_paragraphs))
 
-    for match in RANGE_RE.finditer(text):
-        warnings.append(
-            WarningItem(
-                "RNG001",
-                match.start(),
-                match.end(),
-                "двойной пересказ диапазонов; сформулируйте основную зависимость",
-                normalise(raw_text[match.start() : match.end()]),
+    for paragraph_start, _, paragraph in russian_paragraphs:
+        for match in RANGE_RE.finditer(paragraph):
+            start = paragraph_start + match.start()
+            end = paragraph_start + match.end()
+            warnings.append(
+                WarningItem(
+                    "RNG001",
+                    start,
+                    end,
+                    "двойной пересказ диапазонов; сформулируйте основную зависимость",
+                    normalise(raw_text[start:end]),
+                )
             )
-        )
 
-    for start, end, paragraph in paragraphs:
+    for start, end, paragraph in russian_paragraphs:
         numbers = list(NUMBER_RE.finditer(paragraph))
         if FIGURE_WORD_RE.search(paragraph) and len(numbers) >= MAX_FIGURE_PARAGRAPH_NUMBERS:
             warnings.append(
@@ -351,7 +430,7 @@ def collect_warnings(raw_text: str) -> list[WarningItem]:
     coined_ranges = [
         (warning.start, warning.end) for warning in warnings if warning.code == "LEX002"
     ]
-    for variant, approved in TERM_VARIANTS.items():
+    for variant in SUSPECT_TERM_VARIANTS:
         for match in re.finditer(re.escape(variant), text, re.IGNORECASE):
             if any(left <= match.start() and match.end() <= right for left, right in coined_ranges):
                 continue
@@ -360,7 +439,7 @@ def collect_warnings(raw_text: str) -> list[WarningItem]:
                     "TERM001",
                     match.start(),
                     match.end(),
-                    f"возможный новый вариант термина; проверьте утверждённую формулировку: {approved}",
+                    "возможный новый вариант термина; проверьте формулировку по текущей утверждённой рукописи и документации проекта",
                     normalise(match.group()),
                 )
             )

@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 2026-08-22
+
+- Added a narrow Chapter-2 fixed-point diagnostic that classifies the first
+  six sorted `T0` frequencies for the two selected article geometries at
+  `beta=theta=0` by exact whole-construction Timoshenko-bending and
+  generalized-torsion block separation. It writes reproducible evidence only
+  under the ignored results workspace and supports solver-free `--reuse-data`;
+  no energy criterion, MAC, parameter continuation, article edit, or model
+  change is part of this workflow.
+
 ## 2026-08-21
 
 - Integrated the literature set used in the submitted anisotropic rectangular

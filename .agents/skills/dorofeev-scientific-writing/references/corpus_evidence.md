@@ -46,7 +46,9 @@ These twelve observations are the structural core of the skill.
 |---|---:|---:|---:|---:|---|
 | Detailed small-parameter asymptotic derivation | R | -- | -- | -- | functional-local; use only for comparable derivations |
 | English body with a Russian abstract | -- | C/R | -- | -- | corpus limitation, never a Russian syntax norm |
-| Reference-frequency strips and explicit mode-swapping discussion | -- | C | R | -- | functional-local; requires the same evidence in a new paper |
+| Reference-frequency strips and explicit mode-swapping discussion | -- | C | R | -- | functional-local; reuse only with project-approved tracking evidence |
 | Applicability threshold followed by controlled model comparisons | -- | -- | -- | R | functional-local; do not invent a criterion elsewhere |
 
 No functional-local observation overrides the twelve stable structural rules.
+
+Corpus discussions of mode swapping or localization record textual functions, not generally sufficient diagnostic criteria. In current work, branch identity requires a declared continuation path and project-approved shape or subspace matching; component-energy fractions characterize composition, while localization requires spatial information.

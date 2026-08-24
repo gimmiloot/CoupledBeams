@@ -243,6 +243,20 @@ inventories, atomic family checkpoints, and sorted roots rather than modal
 descendants. Full design, normalization, captions, benchmark values, and
 interpretation limits are in the [supervisor-figure note](../docs/anisotropic_rods/yartsev_ch2_supervisor_figures.md).
 
+### Yartsev Chapter-2 fixed-point bending/torsion classification
+
+- Task: at `beta=theta=0`, classify the first six sorted `T0` frequencies
+  for article cases `(mu,tau)=(0,0)` and `(0.5,-0.2)` by exact separation
+  into whole-construction Timoshenko-bending and generalized-torsion blocks.
+- Command:
+  `python scripts/analysis/anisotropic_rods/classify_yartsev_ch2_beta0_theta0_modes.py`.
+- Saved-data replay: add `--reuse-data`; it does not invoke the root solver.
+- Results:
+  `results/anisotropic_rods/yartsev_ch2_beta0_theta0_mode_classification/`
+  (ignored local CSV, JSON, and Markdown evidence).
+- Scope: this is a two-case fixed-point diagnostic. It performs no energy-
+  based classification, MAC, parameter continuation, or model modification.
+
 ### Thickness-mismatch diagnostic model
 
 Thickness-mismatch scripts implement a diagnostic-only eta model with
@@ -616,6 +630,7 @@ plotter.
 | `scripts/plot_mu_sweep_radius_fixed_four_betas_analytic.py` | presentation/figure | Analytic-only `mu` sweeps for selected betas at fixed radius. | `python scripts/run/run_mu_sweep_four_betas_analytic.py --betas 15 30 45 60` | keep root; wrapper in `scripts/run/` |
 | `scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py` | presentation/figure diagnostic | Twelve reproducible Chapter-2 rectangular-rod supervisor figures, fast-oracle validation, checkpoints, beta-zero energy-character diagnostics, and plot-only reuse. | `python scripts/analysis/anisotropic_rods/plot_yartsev_ch2_supervisor_figures.py --figure all --reuse-data` | keep as the separate small supervisor entry point; do not merge into unequal-thickness or circular-article CLIs |
 | `scripts/analysis/anisotropic_rods/screen_yartsev_ch2_spectral_applicability.py` | analysis/diagnostic | Isolated AP-0/AP-1/AP-2 sampled-theta finite-grid screening of Chapter-2 T2/T3/T4/T5/T0 against rectangular EB0 on nine volume-preserving similar-section geometries, with exact accepted-data reuse, same-pair gap diagnostics, checkpoints, quality gates, plot-only replay, and solver-free sampled-theta comparison. | `python scripts/analysis/anisotropic_rods/screen_yartsev_ch2_spectral_applicability.py --combine-sampled-theta` | keep as a small Chapter-2-only screening CLI; do not merge into supervisor or circular-article workflows |
+| `scripts/analysis/anisotropic_rods/classify_yartsev_ch2_beta0_theta0_modes.py` | analysis/diagnostic | Exact fixed-point bending/torsion block classification of the first six `T0` frequencies for the two article geometries at `beta=theta=0`, with saved-data replay and local evidence outputs. | `python scripts/analysis/anisotropic_rods/classify_yartsev_ch2_beta0_theta0_modes.py --reuse-data` | keep as a narrow Chapter-2-only diagnostic; do not merge into parameter-sweep or article workflows |
 | `scripts/run/run_analytic_coupled_rods_mode_shape_ru.py` | main user-facing command | Build one analytic coupled-rods mode shape directly from the determinant nullspace. | `python scripts/run/run_analytic_coupled_rods_mode_shape_ru.py` | keep |
 | `scripts/run/run_analytic_coupled_rods_vibration_shapes_beta15_mu06_eps0025_001_ru.py` | main user-facing command | Build the two-case beta=15, mu=0.6 descendant-5 vibration-shape overlay for epsilon 0.0025/root 6 and epsilon 0.01/root 5. | `python scripts/run/run_analytic_coupled_rods_vibration_shapes_beta15_mu06_eps0025_001_ru.py` | keep |
 | `scripts/plot_tracked_bending_descendant_shapes_ru.py` | main user-facing command | Parameterized Russian mode-shape plot for tracked bending descendants. | `python scripts/run/run_tracked_bending_descendant_shapes_ru.py --branch-id bending_desc_01` | keep root; wrapper in `scripts/run/` |

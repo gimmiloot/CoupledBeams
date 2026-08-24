@@ -37,9 +37,16 @@ Distinguish:
 - sorted spectral index, current sorted position, and continuation-defined `branch_id`;
 - observed curve proximity, veering, crossing, localization, and tracked mode exchange.
 
-## Branch and mode language
+## Modal identity, modal composition, and localization
 
-In CoupledBeams, branch identity follows continuation from the base point as specified by project rules. A sorted frequency line is not a tracked branch. Do not claim mode transformation, exchange, or localization from ordered frequencies alone.
+- A sorted spectral position is not a tracked branch. Ordered frequencies alone establish only spectral order, convergence, or separation.
+- Modal composition describes the components expressed in one form. Component fields, energy fractions, coupling coefficients, and partial-mode projections may characterize that composition, but do not determine modal ancestry.
+- Localization describes where displacement or energy is concentrated. The dominance of total bending, shear, or torsion energy is not localization; require a spatial distribution between or along structural elements.
+- In a multiparameter study, a branch label is defined only along an explicitly declared continuation path. Do not assume that individual modal identity is independent of the path in parameter space.
+- Near close or repeated eigenvalues, individual shape matching may be ambiguous. The stable object may be the corresponding modal subspace rather than a particular eigenvector.
+- Mutual mode transformation requires tracked forms or modal subspaces and evidence that their character changes. A change in modal composition without tracking does not establish an exchange of descendants.
+
+For CoupledBeams, follow the continuation definition and matching requirements in the current project rules. This skill does not replace them with a universal continuation algorithm or a universal matching threshold.
 
 ## Source terms
 

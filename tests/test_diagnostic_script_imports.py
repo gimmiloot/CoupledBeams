@@ -15,6 +15,7 @@ if str(SRC) not in sys.path:
 class DiagnosticScriptImportTest(unittest.TestCase):
     def test_diagnostic_entrypoints_import(self) -> None:
         modules = [
+            "scripts.analysis.anisotropic_rods.classify_yartsev_ch2_beta0_theta0_modes",
             "scripts.analysis.anisotropic_rods.pilot_yartsev_ch2_coupled_rods",
             "scripts.analysis.anisotropic_rods.plot_yartsev_ch2_supervisor_figures",
             "scripts.analysis.anisotropic_rods.screen_yartsev_ch2_spectral_applicability",

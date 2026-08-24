@@ -16,6 +16,8 @@ These examples are short, normalised illustrations of textual functions. They ar
 
 Only the Russian abstract supports these phrase examples. The English body supports composition, not Russian syntax.
 
+The source-specific localization statement is phrase evidence, not a reusable inference rule. In current work, curve proximity or total component-energy fractions do not establish localization; spatial evidence is required.
+
 ## A3. Length-ratio article
 
 - Parameter definition, problem statement: «Для описания различия длин введём параметр ...»
