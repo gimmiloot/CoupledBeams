@@ -14,6 +14,13 @@ Project-wide branch identity and diagnostic-tracking rules are summarized in
   `n2=(sin(beta),-cos(beta))`, and exposes the equivalent EB mapping for EB's
   opposite transverse-field sign convention. It must not own coupling
   equations, determinant transforms, root selection, or mode reconstruction.
+- `reddy_inplane_geometry.py` is the separate three-dimensional physical-frame
+  helper for the RLB coordinate gate. Both local arm coordinates point from
+  outer clamp to the future connection point; the helper defines the fixed
+  global view basis, right-handed Reddy triads, and physical vector mappings
+  used in virtual-work checks. It must remain separate from display-only
+  geometry, production FEM transforms, connection equations, determinants,
+  and root calculations.
 - `diagnostic_common.py` provides small non-scientific utilities for diagnostic
   scripts: filename-safe number tokens, compact number text, inclusive grids,
   output-directory creation, finite-value coercion, CSV row writing, and simple

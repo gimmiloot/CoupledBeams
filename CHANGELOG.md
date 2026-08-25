@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 2026-08-25
+
+- Added the RLB-1G physical coordinate contract, an isolated three-dimensional
+  Reddy in-plane geometry helper, and focused regression tests for basis
+  handedness, the `beta=0,30,90 deg` limits, legacy Timoshenko/EB display
+  relations, random reconstruction, and local/global virtual-work pairings.
+  The coordinate gate passes. The old display helper/tests, production FEM
+  transform, RLB-0 source/storage convention, governing equations, and
+  tolerances were unchanged; connection matrices and root calculations were
+  not started, and the release remains Version 0.4.0.
+
 ## 2026-08-22
 
 - Added a narrow Chapter-2 fixed-point diagnostic that classifies the first

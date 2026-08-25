@@ -4,7 +4,7 @@
 слоистого стержня. Реализованы изгибная FSDT-подсистема, независимая
 продольная подсистема и их блочно-диагональное объединение.
 
-Текущий результат:
+Сохранённый исторический результат RLB-0:
 
 ```text
 RLB-0-SOURCE: PASS_WITH_DOCUMENTED_SOURCE_RECONSTRUCTION
@@ -13,6 +13,16 @@ RLB-0B-AXIAL: PASS
 RLB-0C-COMBINED-UNION: PASS
 OVERALL: PARTIAL_PASS
 ```
+
+Отдельный предварительный gate следующего этапа:
+
+```text
+RLB-1G-COORDINATES: PASS
+```
+
+RLB-1G фиксирует физический трёхмерный базис двух будущих плеч до
+построения условий соединения. Матрица соединения и расчёт корней на этом
+этапе не выполнялись.
 
 `PARTIAL_PASS` для RLB-0A связан с 22 расхождениями с Table 4.3.3 за
 пределами точности трёх напечатанных десятичных знаков. Аналитические
@@ -39,10 +49,15 @@ OVERALL: PARTIAL_PASS
   реконструкции источника;
 - `reddy_symmetric_single_beam_validation.md` — численные результаты и
   ограничения;
+- `reddy_inplane_coordinate_contract.md` — физический координатный контракт
+  RLB-1G и сопоставление со старыми display/FEM соглашениями;
 - `scripts/lib/reddy_symmetric_laminated_beam.py` — узкий вычислительный API;
+- `scripts/lib/reddy_inplane_geometry.py` — изолированный physical-coordinate
+  helper без условий соединения и расчёта корней;
 - `scripts/analysis/laminated_beams/validate_reddy_symmetric_single_beam.py`
   — воспроизводимый CLI;
 - `tests/test_reddy_symmetric_laminated_beam.py` — целевые регрессии;
+- `tests/test_reddy_inplane_geometry.py` — coordinate-gate regressions;
 - `tests/data/reddy_ch4_table_4_3_3.json` — машинная транскрипция источника.
 
 Generated CSV, JSON, report и две диагностические фигуры находятся в
@@ -71,4 +86,6 @@ python scripts/analysis/laminated_beams/validate_reddy_symmetric_single_beam.py 
 стандартной динамики стержня, а не результатом, напечатанным в §4.3.4.
 Combined state не содержит искусственной продольно-изгибной связи. На этом
 этапе не реализованы coupled rods, angular joint, \(B\ne0\), torsion,
-damping, FEM и complex roots.
+damping, FEM и complex roots. RLB-1G добавляет только предварительный
+координатный контракт; coupled rods, angular joint и root calculations не
+начаты.
