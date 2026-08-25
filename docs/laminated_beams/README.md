@@ -30,6 +30,25 @@ RLB-1-BETA0-ROOT-INVENTORY: PASS
 OVERALL: PASS
 ```
 
+Последующий независимый двухплечевой Ritz-gate остановлен в прямом пределе:
+
+```text
+RLB-1C0-BETA0-RITZ-BRIDGE: FAIL
+RLB-1C-NONZERO-BETA-SPECTRUM: FAIL
+RLB-1C-RITZ-NATURAL-EQUILIBRIUM: PARTIAL_PASS
+RLB-1D-MODE-SHAPES: FAIL
+RLB-1S-SYMMETRIES: FAIL
+OVERALL: FAIL
+```
+
+При разрешённом guard `N=16` верхние позиции полиномиального Ritz inventory
+не прошли пороги сходимости и transfer/Ritz для полного first-13 набора.
+Поэтому воспроизводимый validation workflow не запускал спектральные расчёты
+при `beta!=0`. Предварительный read-only feasibility audit успел выполнить
+несохранённые Ritz-only пробы при `beta=30/90`; transfer search и generated
+nonzero outputs отсутствуют. Этот статус не изменяет прошедший transfer
+baseline RLB-1.
+
 RLB-1G фиксирует физический трёхмерный базис двух плеч. RLB-1J выводит
 матрицу идеального жёсткого узла из глобальных физических условий и
 независимо сверяет её с замкнутой формой. RLB-1A и RLB-1B проверяют только
@@ -70,19 +89,28 @@ RLB-1G фиксирует физический трёхмерный базис �
   условия, полная матрица узла и virtual-work gate;
 - `reddy_symmetric_coupled_beta0_validation.md` — homogeneous,
   stepped, reflection и root-inventory результаты RLB-1;
+- `reddy_symmetric_coupled_nonzero_beta_validation.md` — независимая
+  двухплечевая Ritz-постановка, результат обязательного beta=0 bridge и
+  зафиксированная остановка до ненулевого угла;
 - `scripts/lib/reddy_symmetric_laminated_beam.py` — узкий вычислительный API;
 - `scripts/lib/reddy_inplane_geometry.py` — изолированный physical-coordinate
   helper;
 - `scripts/lib/reddy_symmetric_coupled_beams.py` — узкий coupled helper,
   переиспользующий single-beam и coordinate APIs;
+- `scripts/lib/reddy_symmetric_coupled_beams_ritz.py` — независимая
+  constrained Rayleigh--Ritz-модель, не импортирующая transfer joint helper;
 - `scripts/analysis/laminated_beams/validate_reddy_symmetric_single_beam.py`
   — воспроизводимый CLI;
 - `scripts/analysis/laminated_beams/pilot_reddy_symmetric_coupled_beams_beta0.py`
   — seed-free диагностический pilot только для `beta=0`;
+- `scripts/analysis/laminated_beams/validate_reddy_symmetric_coupled_beams_nonzero_beta.py`
+  — RLB-1C CLI с обязательной остановкой после failed beta=0 bridge;
 - `tests/test_reddy_symmetric_laminated_beam.py` — целевые регрессии;
 - `tests/test_reddy_inplane_geometry.py` — coordinate-gate regressions;
 - `tests/test_reddy_symmetric_coupled_beams_beta0.py` — joint,
   virtual-work, transfer, root-inventory и direct-reference regressions;
+- `tests/test_reddy_symmetric_coupled_beams_ritz.py` — basis, quadrature,
+  constrained matrices, beta=0 bridge и natural-equilibrium regressions;
 - `tests/data/reddy_ch4_table_4_3_3.json` — машинная транскрипция источника.
 
 Generated CSV, JSON, report и две диагностические фигуры находятся в
@@ -103,6 +131,9 @@ python scripts/analysis/laminated_beams/validate_reddy_symmetric_single_beam.py 
 python scripts/analysis/laminated_beams/pilot_reddy_symmetric_coupled_beams_beta0.py --manifest-only
 python scripts/analysis/laminated_beams/pilot_reddy_symmetric_coupled_beams_beta0.py
 python -m pytest -q -p no:cacheprovider tests/test_reddy_symmetric_coupled_beams_beta0.py
+python scripts/analysis/laminated_beams/validate_reddy_symmetric_coupled_beams_nonzero_beta.py --manifest-only
+python scripts/analysis/laminated_beams/validate_reddy_symmetric_coupled_beams_nonzero_beta.py
+python -m pytest -q -p no:cacheprovider tests/test_reddy_symmetric_coupled_beams_ritz.py
 ```
 
 `--source-check-only` не импортирует научный solver. `--plot-only` читает
@@ -116,7 +147,9 @@ python -m pytest -q -p no:cacheprovider tests/test_reddy_symmetric_coupled_beams
 стандартной динамики стержня, а не результатом, напечатанным в §4.3.4.
 Combined state не содержит искусственной продольно-изгибной связи. На этом
 этапе не реализованы \(B\ne0\), torsion, damping, FEM и complex roots.
-RLB-1 реализует только идеальный точечный узел и диагностический coupled
-spectrum при `beta=0`. Спектры при `beta!=0`, двухплечий Ritz
-solver, parameter sweep, branch tracking и формы углового узла не
-реализованы.
+RLB-1 реализует идеальный точечный узел и прошедший transfer spectrum при
+`beta=0`. В RLB-1C реализован независимый двухплечий Ritz solver, однако его
+полный first-13 beta=0 bridge не прошёл при максимальном разрешённом порядке.
+Официальные spectra/shapes при `beta!=0`, parameter sweep и branch tracking
+поэтому не вычислялись; отдельная предварительная Ritz-only проба отмечена в
+validation note как процедурное отклонение.

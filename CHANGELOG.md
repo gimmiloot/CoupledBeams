@@ -2,6 +2,24 @@
 
 ## 2026-08-25
 
+- Added the independent RLB-1C two-arm constrained Rayleigh--Ritz model with
+  shifted-Legendre polynomial spaces, exact 64-point quadrature for the
+  declared orders, three physical endpoint-kinematic constraints, SVD
+  nullspace reduction, matrix/eigen/energy diagnostics, natural joint
+  equilibrium recovery, and focused tests. The mandatory homogeneous and
+  stepped `beta=0` first-13 bridge fails at the allowed `N=16` guard: positions
+  12 and 13 exceed the fixed transfer/Ritz tolerance and the upper Ritz modes
+  remain unconverged. The reproducible workflow therefore stops before every
+  nonzero-angle transfer/Ritz spectrum, mode, MAC, and symmetry calculation.
+  The validation note records an earlier unsaved read-only Ritz-only
+  feasibility probe at 30 and 90 degrees as a procedural deviation; it used no
+  transfer search, cross-method comparison, or generated nonzero output.
+  Frozen RLB-0/RLB-0A/RLB-1
+  modules and outputs, governing equations, reduced properties, coordinate
+  contract, joint matrix, (K=5/6), and thresholds were unchanged. No sweep,
+  FEM, torsion, damping, nonsymmetric laminate, compliant/massive joint,
+  article work, commit, or push was performed.
+
 - Added the narrowly scoped RLB-1 rigid-joint and straight-limit diagnostic
   for two symmetric laminated Reddy beams. The invariant physical-map and
   independent closed-form joint builders, 1000-case virtual-work gate,

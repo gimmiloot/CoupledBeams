@@ -28,6 +28,14 @@ Project-wide branch identity and diagnostic-tracking rules are summarized in
   fixed--fixed and stepped references for the diagnostic `beta=0` pilot.
   It contains no material reduction, root finder, angle sweep, Ritz model,
   FEM, torsion, damping, or legacy coupled-rod imports.
+- `reddy_symmetric_coupled_beams_ritz.py` is the independent RLB-1C
+  two-arm constrained Rayleigh--Ritz helper. It assembles only the frozen
+  physical energies and three endpoint kinematic constraints from reduced
+  beam properties and `reddy_inplane_geometry.py`. It contains no transfer
+  matrix, matrix exponential, determinant, root finder, force-equilibrium
+  joint row, FEM, torsion, damping, or legacy coupled-rod import. The current
+  `N=16` beta=0 guard does not pass the full first-13 bridge, so this module
+  has not been used for a nonzero-angle spectral claim.
 - `diagnostic_common.py` provides small non-scientific utilities for diagnostic
   scripts: filename-safe number tokens, compact number text, inclusive grids,
   output-directory creation, finite-value coercion, CSV row writing, and simple

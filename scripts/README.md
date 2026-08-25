@@ -69,6 +69,35 @@ single-beam RLB transfer implementation. Coupled inventories are found without
 reference seeds and are hashed before the direct fixed--fixed and stepped
 references are constructed.
 
+### Symmetric laminated Reddy-beam independent two-arm Ritz gate
+
+- Task: assemble the independent constrained Rayleigh--Ritz model and require
+  it to reproduce the frozen RLB-1 `beta=0` first-13 inventory before any
+  nonzero-angle spectrum.
+- Status: `RLB-1C0-BETA0-RITZ-BRIDGE: FAIL`; the `N=16` guard does not meet
+  the fixed convergence and transfer/Ritz thresholds for the upper roots.
+  The reproducible workflow therefore did not run nonzero-angle transfer/Ritz
+  spectra, modes, MAC, or symmetry calculations. An earlier unsaved read-only
+  Ritz-only feasibility probe at 30 and 90 degrees is recorded as a procedural
+  deviation in the validation note; it performed no transfer search or saved
+  comparison.
+- Command:
+  `python scripts/analysis/laminated_beams/validate_reddy_symmetric_coupled_beams_nonzero_beta.py`.
+- Manifest-only command: add `--manifest-only` to freeze the model,
+  thresholds, basis sequence, quadrature, and exact A--F case inventory before
+  eigensolution.
+- Results:
+  `results/laminated_beams/reddy_symmetric_coupled_nonzero_beta_validation/`.
+- Use when: auditing the independent energy matrices, three-row kinematic
+  constraint, SVD nullspace, beta=0 polynomial convergence, and natural joint
+  equilibrium.
+- Do not use when: requesting a validated nonzero-angle spectrum, parameter
+  sweep, branch tracking, FEM, torsion, damping, or a compliant/massive joint.
+
+The failed preliminary gate preserves the passed RLB-1 transfer baseline. The
+workflow does not raise `N` above 16, extrapolate the Ritz sequence, relax a
+tolerance, or use transfer frequencies to choose the Ritz space.
+
 ### Beta sweep at `mu = 0`
 
 - Task: compare analytic and FEM branches over `beta` at `mu = 0` for four radii.
