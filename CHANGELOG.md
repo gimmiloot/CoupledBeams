@@ -2,6 +2,17 @@
 
 ## 2026-08-25
 
+- Added the narrowly scoped RLB-1 rigid-joint and straight-limit diagnostic
+  for two symmetric laminated Reddy beams. The invariant physical-map and
+  independent closed-form joint builders, 1000-case virtual-work gate,
+  seed-free 12-root inventory with root-13 guard, homogeneous equal/unequal
+  split checks, independent stepped reference, reflection check, and
+  representative joint/energy residuals all pass. Spectra remain restricted
+  to `beta=0`; the coordinate contract, RLB-0/RLB-0A files and
+  outputs, source values, material reduction, \(K=5/6\), equations, and
+  tolerances were unchanged. No two-arm Ritz solver, FEM, torsion, damping,
+  parameter sweep, figure, commit, or push was added.
+
 - Added the RLB-1G physical coordinate contract, an isolated three-dimensional
   Reddy in-plane geometry helper, and focused regression tests for basis
   handedness, the `beta=0,30,90 deg` limits, legacy Timoshenko/EB display

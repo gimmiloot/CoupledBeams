@@ -45,6 +45,30 @@ assembled as `K_global = T @ K_local @ T.T` and
 
 ## Main commands
 
+### Symmetric laminated Reddy-beam rigid-joint beta=0 pilot
+
+- Task: validate the ideal physical rigid-joint matrix and the straight
+  two-arm Reddy-beam spectrum against independent homogeneous and stepped
+  fixed--fixed references.
+- Status: diagnostic `beta=0` coupled-joint baseline; all RLB-1J,
+  RLB-1A, RLB-1B, and root-inventory gates `PASS`.
+- Command:
+  `python scripts/analysis/laminated_beams/pilot_reddy_symmetric_coupled_beams_beta0.py`.
+- Manifest-only command: add `--manifest-only` to write the frozen
+  threshold/model contract without running joint random checks or spectra.
+- Results:
+  `results/laminated_beams/reddy_symmetric_coupled_beta0_pilot/`.
+- Use when: checking the invariant/closed-form joint matrix, virtual work,
+  homogeneous equal/unequal artificial splits, a symmetric material step,
+  reflection, or the first 12 roots plus root 13 as completeness guard.
+- Do not use when: requesting a nonzero-angle spectrum, two-arm Ritz solver,
+  FEM, torsion, damping, parameter sweep, branch tracking, or figures.
+
+The workflow imports the canonical RLB coordinate helper and the verified
+single-beam RLB transfer implementation. Coupled inventories are found without
+reference seeds and are hashed before the direct fixed--fixed and stepped
+references are constructed.
+
 ### Beta sweep at `mu = 0`
 
 - Task: compare analytic and FEM branches over `beta` at `mu = 0` for four radii.

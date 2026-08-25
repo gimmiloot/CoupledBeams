@@ -21,6 +21,13 @@ Project-wide branch identity and diagnostic-tracking rules are summarized in
   used in virtual-work checks. It must remain separate from display-only
   geometry, production FEM transforms, connection equations, determinants,
   and root calculations.
+- `reddy_symmetric_coupled_beams.py` is the narrow RLB-1 rigid-joint
+  helper. It derives the canonical joint matrix from the physical maps,
+  provides an independent closed-form comparator, reuses the verified
+  single-beam state and transfer matrices, and exposes independent direct
+  fixed--fixed and stepped references for the diagnostic `beta=0` pilot.
+  It contains no material reduction, root finder, angle sweep, Ritz model,
+  FEM, torsion, damping, or legacy coupled-rod imports.
 - `diagnostic_common.py` provides small non-scientific utilities for diagnostic
   scripts: filename-safe number tokens, compact number text, inclusive grids,
   output-directory creation, finite-value coercion, CSV row writing, and simple
