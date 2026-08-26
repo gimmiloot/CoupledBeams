@@ -1,0 +1,107 @@
+{
+  "contract_version": "rlb_1c_iso_v1",
+  "material": {
+    "E": 1.0,
+    "rho": 1.0,
+    "nu": 0.3,
+    "K": 0.8333333333333334
+  },
+  "lengths": {
+    "L_total": 2.0,
+    "L_ref": 1.0
+  },
+  "geometries": {
+    "G20": {
+      "width": 0.2,
+      "thickness": 0.05,
+      "width_to_thickness": 4.0,
+      "L_ref_to_thickness": 20.0
+    },
+    "G10": {
+      "width": 0.4,
+      "thickness": 0.1,
+      "width_to_thickness": 4.0,
+      "L_ref_to_thickness": 10.0
+    }
+  },
+  "spectral_stack_deg": [0.0, 90.0, 90.0, 0.0],
+  "algebraic_control_stacks_deg": [
+    [0.0, 0.0, 0.0, 0.0],
+    [17.0, -38.0, -38.0, 17.0]
+  ],
+  "cases": [
+    {"case_id": "ISO-01", "geometry": "G20", "L1": 1.0, "L2": 1.0, "beta_deg": 0.0},
+    {"case_id": "ISO-02", "geometry": "G20", "L1": 0.7, "L2": 1.3, "beta_deg": 0.0},
+    {"case_id": "ISO-03", "geometry": "G20", "L1": 1.0, "L2": 1.0, "beta_deg": 30.0},
+    {"case_id": "ISO-04", "geometry": "G20", "L1": 1.0, "L2": 1.0, "beta_deg": 90.0},
+    {"case_id": "ISO-05", "geometry": "G20", "L1": 1.0, "L2": 1.0, "beta_deg": -30.0},
+    {"case_id": "ISO-06", "geometry": "G20", "L1": 0.7, "L2": 1.3, "beta_deg": 30.0},
+    {"case_id": "ISO-07", "geometry": "G20", "L1": 1.3, "L2": 0.7, "beta_deg": 30.0},
+    {"case_id": "ISO-08", "geometry": "G10", "L1": 1.0, "L2": 1.0, "beta_deg": 30.0}
+  ],
+  "mode_positions": {
+    "ISO-03": [1, 2, 3, 6],
+    "ISO-04": [1, 2, 3]
+  },
+  "local_solution_space_policy": {
+    "L_local": 0.25,
+    "cutoff_factors": [0.23, 0.5, 0.73, 0.99, 1.0, 1.01, 1.5, 2.2],
+    "geometries": ["G20", "G10"],
+    "rationale": "conditioning-controlled local gate"
+  },
+  "thresholds": {
+    "qbar_matrix_analytic": 1e-12,
+    "section_reduction": 1e-11,
+    "legacy_circular_regular": 1e-11,
+    "legacy_circular_cutoff": 1e-8,
+    "local_solution_space_regular": 1e-10,
+    "local_solution_space_cutoff": 1e-8,
+    "isolated_frequency_comparison": 1e-8,
+    "cluster_center": 1e-8,
+    "symmetry_spectrum": 1e-9,
+    "root_singular_ratio": 1e-9,
+    "boundary_null_residual": 1e-9,
+    "outer_clamp_residual": 1e-10,
+    "joint_compatibility": 1e-10,
+    "joint_equilibrium": 1e-9,
+    "energy_identity": 1e-8,
+    "isolated_one_minus_MAC": 1e-6,
+    "grid_convergence": 1e-8
+  },
+  "root_policy": {
+    "requested_roots": 12,
+    "guard_roots": 1,
+    "Omega_min": 1e-8,
+    "Omega_max": 1600.0,
+    "primary_scan_points": 8001,
+    "verification_scan_points": 16001,
+    "primary_phase": 0.0,
+    "verification_phase": 0.5,
+    "sigma_prefilter": 1e-5,
+    "nullity_relative_threshold": 1e-12,
+    "root_xtol_Omega": 1e-11,
+    "dedup_atol_Omega": 5e-10,
+    "dedup_rtol": 5e-12,
+    "cluster_atol_Omega": 1e-10,
+    "cluster_rtol": 1e-10,
+    "post_guard_tail_Omega": 2.0,
+    "local_close_pair_guard_subintervals": 32
+  },
+  "explicit_exclusions": [
+    "one_ply_numerical_case",
+    "Rayleigh_Ritz",
+    "Euler_Bernoulli_comparison",
+    "FEM",
+    "torsion",
+    "damping",
+    "complex_frequencies",
+    "nonsymmetric_laminate",
+    "B_nonzero",
+    "joint_mass_or_compliance",
+    "parameter_sweep",
+    "branch_tracking",
+    "article_work",
+    "commit",
+    "push"
+  ]
+}

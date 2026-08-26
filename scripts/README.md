@@ -98,6 +98,27 @@ The failed preliminary gate preserves the passed RLB-1 transfer baseline. The
 workflow does not raise `N` above 16, extrapolate the Ritz sequence, relax a
 tolerance, or use transfer frequencies to choose the Ritz space.
 
+### Four-ply isotropic Reddy limit closing audit
+
+- Task: verify the frozen ISO-01--ISO-08 RLB and independent rectangular
+  Timoshenko determinant inventories, selected physical modes, and closing
+  provenance.
+- Status: all six scientific gates `PASS`; `SCIENTIFIC_OVERALL` is
+  `PASS_WITH_AUXILIARY_NUMERICAL_QUALIFICATIONS` for the declared finite cases.
+- Closing command:
+  `python scripts/analysis/laminated_beams/reddy_four_ply_isotropic_postprocess.py --close-existing-results`.
+- Tests:
+  `python -m pytest -q -p no:cacheprovider tests/test_reddy_four_ply_isotropic_limit.py`.
+- Results:
+  `results/laminated_beams/reddy_four_ply_isotropic_limit_validation/`.
+- Do not use this command to regenerate inventories. It reads the two frozen
+  104-root inventories, classifies the superseded direct-`beta=0` diagnostic,
+  and performs only the declared ISO-06/ISO-07 bracket-local refinement.
+
+The closing command runs no global root search, Ritz or Euler--Bernoulli solve,
+FEM, sweep, or new case. The exact claim remains limited to the eight frozen
+cases and the four-equal-ply isotropic contract.
+
 ### Beta sweep at `mu = 0`
 
 - Task: compare analytic and FEM branches over `beta` at `mu = 0` for four radii.

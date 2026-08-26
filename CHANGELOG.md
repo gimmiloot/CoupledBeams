@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 2026-08-26
+
+- Closed the finite RLB-1C-ISO four-equal-ply isotropic-limit audit against an
+  independent rectangular Timoshenko closed-form determinant. Both frozen
+  eight-case inventories remain byte-identical and all 104 first-12 plus
+  root-13 comparisons pass `1e-8`; selected physical modes pass MAC, joint,
+  energy, and grid checks. Classified the conditioned direct-`beta=0` 3x3
+  path as a superseded auxiliary diagnostic and resolved the sole legacy
+  ISO-06/ISO-07 symmetry excess by independent refinement inside each saved
+  bracket. No global scan, Ritz, Euler--Bernoulli, FEM, sweep, new solver,
+  version change, commit, or push was performed.
+
 ## 2026-08-25
 
 - Added the independent RLB-1C two-arm constrained Rayleigh--Ritz model with

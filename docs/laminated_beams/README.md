@@ -49,6 +49,26 @@ OVERALL: FAIL
 nonzero outputs отсутствуют. Этот статус не изменяет прошедший transfer
 baseline RLB-1.
 
+Отдельный четырёхслойный изотропный предел закрыт по двум независимым
+coupled determinant inventories:
+
+```text
+RLB-ISO-4PLY-CONSTITUTIVE: PASS
+RLB-ISO-SECTION-REDUCTION: PASS
+RLB-ISO-LEGACY-RECTANGULAR-ADAPTER: PASS
+RLB-ISO-LOCAL-ARM-EQUIVALENCE: PASS
+RLB-ISO-COUPLED-SPECTRUM: PASS
+RLB-ISO-MODE-SHAPES: PASS
+SCIENTIFIC_OVERALL: PASS_WITH_AUXILIARY_NUMERICAL_QUALIFICATIONS
+```
+
+Все 104 сопоставления первых 12 корней и root 13 guard проходят порог
+`1e-8`. Direct `beta=0` 3x3 diagnostic исключён из scientific status из-за
+обусловленности его mixed-regime basis. Единственное вспомогательное
+превышение legacy arm exchange проходит после локального уточнения двух roots
+только внутри их собственных frozen brackets. Исторический Ritz FAIL остаётся
+отдельным результатом и в этот overall не входит.
+
 RLB-1G фиксирует физический трёхмерный базис двух плеч. RLB-1J выводит
 матрицу идеального жёсткого узла из глобальных физических условий и
 независимо сверяет её с замкнутой формой. RLB-1A и RLB-1B проверяют только
@@ -92,6 +112,9 @@ RLB-1G фиксирует физический трёхмерный базис �
 - `reddy_symmetric_coupled_nonzero_beta_validation.md` — независимая
   двухплечевая Ritz-постановка, результат обязательного beta=0 bridge и
   зафиксированная остановка до ненулевого угла;
+- `reddy_four_ply_isotropic_limit_validation.md` — аналитический
+  четырёхслойный изотропный предел, независимый rectangular Timoshenko
+  comparator, frozen spectra, формы и auxiliary qualifications;
 - `scripts/lib/reddy_symmetric_laminated_beam.py` — узкий вычислительный API;
 - `scripts/lib/reddy_inplane_geometry.py` — изолированный physical-coordinate
   helper;
@@ -99,6 +122,8 @@ RLB-1G фиксирует физический трёхмерный базис �
   переиспользующий single-beam и coordinate APIs;
 - `scripts/lib/reddy_symmetric_coupled_beams_ritz.py` — независимая
   constrained Rayleigh--Ritz-модель, не импортирующая transfer joint helper;
+- `scripts/lib/isotropic_rectangular_timoshenko_coupled_beams.py` — независимый
+  closed-form comparator для прямоугольного сечения с circular-backcompat;
 - `scripts/analysis/laminated_beams/validate_reddy_symmetric_single_beam.py`
   — воспроизводимый CLI;
 - `scripts/analysis/laminated_beams/pilot_reddy_symmetric_coupled_beams_beta0.py`
@@ -111,13 +136,17 @@ RLB-1G фиксирует физический трёхмерный базис �
   virtual-work, transfer, root-inventory и direct-reference regressions;
 - `tests/test_reddy_symmetric_coupled_beams_ritz.py` — basis, quadrature,
   constrained matrices, beta=0 bridge и natural-equilibrium regressions;
+- `tests/test_reddy_four_ply_isotropic_limit.py` — constitutive, section,
+  legacy-adapter, local-space, frozen-evidence и closing regressions;
 - `tests/data/reddy_ch4_table_4_3_3.json` — машинная транскрипция источника.
 
 Generated CSV, JSON, report и две диагностические фигуры находятся в
 `results/laminated_beams/reddy_symmetric_single_beam/`. Каталог игнорируется
 Git. Отдельные RLB-1 generated data находятся в
 `results/laminated_beams/reddy_symmetric_coupled_beta0_pilot/`; figures
-в этом каталоге не создаются.
+в этом каталоге не создаются. Frozen RLB-1C-ISO evidence и closing report
+находятся в игнорируемом каталоге
+`results/laminated_beams/reddy_four_ply_isotropic_limit_validation/`.
 
 ## Запуск
 
@@ -134,7 +163,13 @@ python -m pytest -q -p no:cacheprovider tests/test_reddy_symmetric_coupled_beams
 python scripts/analysis/laminated_beams/validate_reddy_symmetric_coupled_beams_nonzero_beta.py --manifest-only
 python scripts/analysis/laminated_beams/validate_reddy_symmetric_coupled_beams_nonzero_beta.py
 python -m pytest -q -p no:cacheprovider tests/test_reddy_symmetric_coupled_beams_ritz.py
+python -m pytest -q -p no:cacheprovider tests/test_reddy_four_ply_isotropic_limit.py
+python scripts/analysis/laminated_beams/reddy_four_ply_isotropic_postprocess.py --close-existing-results
 ```
+
+Последняя команда только проверяет уже замороженные inventories, добавляет
+closing provenance и выполняет два разрешённых bracket-local refinements. Она
+не запускает global root search, direct fixed--fixed solver или Ritz solve.
 
 `--source-check-only` не импортирует научный solver. `--plot-only` читает
 только сохранённые CSV/JSON и не выполняет matrix exponential или поиск

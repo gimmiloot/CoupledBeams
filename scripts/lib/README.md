@@ -36,6 +36,12 @@ Project-wide branch identity and diagnostic-tracking rules are summarized in
   joint row, FEM, torsion, damping, or legacy coupled-rod import. The current
   `N=16` beta=0 guard does not pass the full first-13 bridge, so this module
   has not been used for a nonzero-angle spectral claim.
+- `isotropic_rectangular_timoshenko_coupled_beams.py` is the independent
+  closed-form rectangular Timoshenko comparator used by the finite
+  four-equal-ply isotropic-limit audit. It supports mixed, exact-cutoff, and
+  two-trigonometric spatial regimes and retains a circular-section backcompat
+  path. It imports no RLB transfer, joint, laminate-reduction, Ritz, FEM, or
+  Euler--Bernoulli module and does not contain a global root finder.
 - `diagnostic_common.py` provides small non-scientific utilities for diagnostic
   scripts: filename-safe number tokens, compact number text, inclusive grids,
   output-directory creation, finite-value coercion, CSV row writing, and simple
