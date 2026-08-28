@@ -127,6 +127,28 @@ The closing command runs no global root search, Ritz or Euler--Bernoulli solve,
 FEM, sweep, or new case. The exact claim remains limited to the eight frozen
 cases and the four-equal-ply isotropic contract.
 
+### Reddy stiffness-layout contrast frequency map
+
+- Task: calculate the finite RLB-2E map for three H/L layouts at fixed
+  `mu=tau=0`, `beta=30 deg`, using four equal 0° plies per arm.
+- Status: `RLB-2E: PASS`; 123/123 declared configuration points are complete.
+- Command:
+  `python scripts/analysis/laminated_beams/sweep_reddy_stiffness_layout_contrast.py`.
+- Resume or missing-only command: add `--missing-only`; completed transactions
+  are not recalculated.
+- Presentation command: add `--plot-only`; this reads the completed CSV without
+  matrix assembly, determinant evaluations, SVD, or root search.
+- Tests:
+  `python -m pytest -q -p no:cacheprovider tests/test_reddy_stiffness_layout_contrast.py`.
+- Results:
+  `results/laminated_beams/reddy_stiffness_layout_contrast_sweep/`.
+- Canonical policy and scientific scope: [`frequency-map-v1`](../docs/numerics/frequency_map_computation_policy.md)
+  and the [RLB-2E note](../docs/laminated_beams/reddy_stiffness_layout_contrast_sweep.md).
+- Use when: reproducing the declared 41-point `chi` grid, the independently
+  sorted positions 1--8, or root 9 as a completeness guard.
+- Do not use when: requesting tracked branches, mode shapes, MAC, energy
+  analysis, Ritz, FEM, a new layer orientation, or another geometry.
+
 ### Beta sweep at `mu = 0`
 
 - Task: compare analytic and FEM branches over `beta` at `mu = 0` for four radii.

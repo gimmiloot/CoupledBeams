@@ -86,6 +86,23 @@ RLB-1G фиксирует физический трёхмерный базис �
 прошли. Параметры, граничные условия и допуски не подбирались по отдельным
 случаям.
 
+## RLB-2E: карта контраста жёсткости
+
+Конечная карта RLB-2E исследует только контраст жёсткости и положение
+материалов по толщине четырёхслойных стержней при фиксированных
+`mu=tau=0` и `beta=30 deg`:
+
+```text
+RLB-2E: PASS
+```
+
+Для трёх конфигураций рассчитаны 41/41 значений `chi`, первые восемь
+независимо упорядоченных частот и root 9 guard. Конститутивная проверка,
+контроль соседних значений и перестановка плеч прошли. Формы, MAC,
+идентичность ветвей, veering и распределение энергии не определялись.
+Полный контракт и ограничения приведены в
+[`reddy_stiffness_layout_contrast_sweep.md`](reddy_stiffness_layout_contrast_sweep.md).
+
 ## Соглашения
 
 У Reddy координата по толщине положительна вниз, а слои нумеруются сверху
@@ -119,6 +136,8 @@ RLB-1G фиксирует физический трёхмерный базис �
 - `reddy_four_ply_isotropic_limit_validation.md` — аналитический
   четырёхслойный изотропный предел, независимый rectangular Timoshenko
   comparator, frozen spectra, формы и auxiliary qualifications;
+- `reddy_stiffness_layout_contrast_sweep.md` — конечная карта RLB-2E по
+  контрасту жёсткости для трёх расположений четырёх 0°-слоёв;
 - `scripts/lib/reddy_symmetric_laminated_beam.py` — узкий вычислительный API;
 - `scripts/lib/reddy_inplane_geometry.py` — изолированный physical-coordinate
   helper;
@@ -134,6 +153,8 @@ RLB-1G фиксирует физический трёхмерный базис �
   — seed-free диагностический pilot только для `beta=0`;
 - `scripts/analysis/laminated_beams/validate_reddy_symmetric_coupled_beams_nonzero_beta.py`
   — RLB-1C CLI с обязательной остановкой после failed beta=0 bridge;
+- `scripts/analysis/laminated_beams/sweep_reddy_stiffness_layout_contrast.py`
+  — устойчивый RLB-2E entry point с `missing-only`, `resume` и `plot-only`;
 - `tests/test_reddy_symmetric_laminated_beam.py` — целевые регрессии;
 - `tests/test_reddy_inplane_geometry.py` — coordinate-gate regressions;
 - `tests/test_reddy_symmetric_coupled_beams_beta0.py` — joint,
@@ -142,6 +163,8 @@ RLB-1G фиксирует физический трёхмерный базис �
   constrained matrices, beta=0 bridge и natural-equilibrium regressions;
 - `tests/test_reddy_four_ply_isotropic_limit.py` — constitutive, section,
   legacy-adapter, local-space, frozen-evidence и closing regressions;
+- `tests/test_reddy_stiffness_layout_contrast.py` — material, constitutive,
+  policy, root-inventory, neighbour-audit и output regressions RLB-2E;
 - `tests/data/reddy_ch4_table_4_3_3.json` — машинная транскрипция источника.
 
 Generated CSV, JSON, report и две диагностические фигуры находятся в
@@ -151,6 +174,8 @@ Git. Отдельные RLB-1 generated data находятся в
 в этом каталоге не создаются. Frozen RLB-1C-ISO evidence и closing report
 находятся в игнорируемом каталоге
 `results/laminated_beams/reddy_four_ply_isotropic_limit_validation/`.
+CSV, manifest, report и трёхпанельный рисунок RLB-2E находятся в
+`results/laminated_beams/reddy_stiffness_layout_contrast_sweep/`.
 
 ## Запуск
 
@@ -169,6 +194,9 @@ python scripts/analysis/laminated_beams/validate_reddy_symmetric_coupled_beams_n
 python -m pytest -q -p no:cacheprovider tests/test_reddy_symmetric_coupled_beams_ritz.py
 python -m pytest -q -p no:cacheprovider tests/test_reddy_four_ply_isotropic_limit.py
 python scripts/analysis/laminated_beams/reddy_four_ply_isotropic_postprocess.py --close-existing-results
+python scripts/analysis/laminated_beams/sweep_reddy_stiffness_layout_contrast.py --missing-only
+python scripts/analysis/laminated_beams/sweep_reddy_stiffness_layout_contrast.py --plot-only
+python -m pytest -q -p no:cacheprovider tests/test_reddy_stiffness_layout_contrast.py
 ```
 
 Последняя команда только проверяет уже замороженные inventories, добавляет

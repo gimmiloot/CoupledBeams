@@ -2,6 +2,14 @@
 
 ## 2026-08-28
 
+- Added the finite RLB-2E stiffness-layout contrast map at fixed
+  `mu=tau=0`, `beta=30 deg` for three four-ply 0° H/L configurations. The
+  `frequency-map-v1` `fast_plot` workflow preserves the production Reddy-beam
+  physics, exports independently sorted positions 1--8 plus root 9 as a
+  completeness guard, and records constitutive, neighbour-repair, arm-swap,
+  checkpoint, benchmark, and three-panel plot evidence. All 123 declared
+  configuration points pass; no new physical solver, branch tracking, mode
+  shapes, MAC, energy analysis, Ritz, or FEM calculation was added.
 - Promoted the existing thickness-mismatch frequency-map guidance to the
   project-wide `frequency-map-v1` policy under `docs/numerics/`, with the old
   path retained as a compatibility redirect. Root `AGENTS.md`, project rules,
