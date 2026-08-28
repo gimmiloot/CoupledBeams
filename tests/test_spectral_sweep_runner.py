@@ -195,6 +195,124 @@ class SpectralSweepRunnerTest(unittest.TestCase):
         for left, right in zip(intervals, intervals[1:], strict=False):
             self.assertLessEqual(left.upper, right.lower)
 
+    def test_overlapping_predictor_windows_form_one_multi_root_locator(self) -> None:
+        previous = [10.0, 30.0, 53.614, 54.575, 80.0, 100.0, 120.0, 140.0, 160.0]
+        predicted = previous.copy()
+        intervals = build_search_intervals(
+            previous,
+            predicted,
+            older_roots=None,
+            settings=_settings(),
+        )
+
+        locator = next(item for item in intervals if item.positions == (3, 4))
+        self.assertEqual(locator.expected_count, 2)
+        self.assertTrue(locator.is_cluster)
+        self.assertLessEqual(locator.lower, 53.599)
+        self.assertGreaterEqual(locator.upper, 54.578)
+        self.assertEqual(sum(item.expected_count for item in intervals), 9)
+        for left, right in zip(intervals, intervals[1:], strict=False):
+            self.assertLessEqual(left.upper, right.lower)
+
+    def test_cascading_predictor_overlap_forms_one_three_root_locator(self) -> None:
+        previous = [10.0, 30.0, 53.0, 54.0, 55.0, 80.0, 100.0, 120.0, 140.0]
+        intervals = build_search_intervals(
+            previous,
+            previous,
+            older_roots=None,
+            settings=_settings(),
+        )
+
+        locator = next(item for item in intervals if item.positions == (3, 4, 5))
+        self.assertEqual(locator.expected_count, 3)
+        self.assertEqual(sum(item.expected_count for item in intervals), 9)
+        for left, right in zip(intervals, intervals[1:], strict=False):
+            self.assertLessEqual(left.upper, right.lower)
+
+    def test_overlapping_predictor_windows_reach_fast_local_without_merging_roots(self) -> None:
+        def values(parameter: float) -> list[float]:
+            shift = 0.1 * parameter
+            return [
+                10.0 + shift,
+                30.0 + shift,
+                53.614 + shift,
+                54.575 + shift,
+                80.0 + shift,
+                100.0 + shift,
+                120.0 + shift,
+                140.0 + shift,
+                160.0 + shift,
+            ]
+
+        observed: list[tuple[int, ...]] = []
+
+        def local_search(
+            parameter: float,
+            interval: SearchInterval,
+            verification: bool,
+        ) -> list[RootRecord]:
+            del verification
+            observed.append(interval.positions)
+            actual = _roots(values(parameter))
+            return [actual[position - 1] for position in interval.positions]
+
+        result = run_spectral_sweep(
+            [0.0, 1.0, 2.0],
+            callbacks=SweepCallbacks(
+                lambda parameter: _spectrum(parameter, values=values(parameter)),
+                local_search,
+            ),
+            settings=_settings(),
+        )
+
+        self.assertEqual(result.spectra[1.0].origin, "FAST_LOCAL")
+        self.assertIn((3, 4), observed)
+        self.assertEqual(len(result.spectra[1.0].roots), 9)
+        self.assertLess(
+            result.spectra[1.0].roots[2].value,
+            result.spectra[1.0].roots[3].value,
+        )
+
+    def test_crossed_secant_predictions_use_one_multi_root_locator(self) -> None:
+        def values(parameter: float) -> list[float]:
+            if parameter == 0.0:
+                pair = (52.0, 53.0)
+            elif parameter == 1.0:
+                pair = (52.4, 52.6)
+            elif parameter == 2.0:
+                pair = (52.3, 52.7)
+            else:
+                pair = (52.2, 52.8)
+            return [10.0, 30.0, *pair, 80.0, 100.0, 120.0, 140.0, 160.0]
+
+        observed: list[tuple[float, tuple[int, ...]]] = []
+
+        def local_search(
+            parameter: float,
+            interval: SearchInterval,
+            verification: bool,
+        ) -> list[RootRecord]:
+            del verification
+            observed.append((parameter, interval.positions))
+            actual = _roots(values(parameter))
+            return [actual[position - 1] for position in interval.positions]
+
+        result = run_spectral_sweep(
+            [0.0, 1.0, 2.0, 3.0],
+            callbacks=SweepCallbacks(
+                lambda parameter: _spectrum(parameter, values=values(parameter)),
+                local_search,
+            ),
+            settings=_settings(),
+        )
+
+        self.assertEqual(result.spectra[2.0].origin, "FAST_LOCAL")
+        self.assertIn((2.0, (3, 4)), observed)
+        self.assertLess(
+            result.spectra[2.0].roots[2].value,
+            result.spectra[2.0].roots[3].value,
+        )
+
     def test_inventory_is_sorted_and_root9_is_retained_bit_exactly(self) -> None:
         guard = float(np.nextafter(900.0, math.inf))
         unsorted = [guard, 500.0, 100.0, 800.0, 300.0, 200.0, 700.0, 400.0, 600.0]
@@ -322,6 +440,34 @@ class SpectralSweepRunnerTest(unittest.TestCase):
         self.assertEqual(result.spectra[1.0].origin, "GLOBAL_FALLBACK")
         audit = next(item for item in result.point_audits if item.parameter == 1.0)
         self.assertIn("verification mismatch", " ".join(audit.fallback_reasons))
+
+    def test_verification_root_outside_expanded_interval_triggers_fallback(self) -> None:
+        def local_search(
+            parameter: float,
+            interval: SearchInterval,
+            verification: bool,
+        ) -> list[RootRecord]:
+            actual = _roots(_values(parameter))
+            records = [actual[position - 1] for position in interval.positions]
+            if verification and interval.positions == (4,):
+                records[0] = replace(records[0], value=interval.upper + 1.0)
+            return records
+
+        result = run_spectral_sweep(
+            [0.0, 1.0, 2.0],
+            callbacks=SweepCallbacks(
+                lambda parameter: _spectrum(parameter),
+                local_search,
+            ),
+            settings=_settings(),
+        )
+
+        self.assertEqual(result.spectra[1.0].origin, "GLOBAL_FALLBACK")
+        audit = next(item for item in result.point_audits if item.parameter == 1.0)
+        self.assertIn(
+            "verification root escaped",
+            " ".join(audit.fallback_reasons),
+        )
 
     def test_detector_disagreement_and_even_root_each_trigger_fallback(self) -> None:
         for condition in ("detector", "even"):
@@ -530,7 +676,7 @@ class SpectralSweepRunnerTest(unittest.TestCase):
             self.assertIn(("resume", 2.0), global_calls)
             self.assertNotIn(("resume", 2.0), local_calls)
 
-    def test_overlapping_expanded_intervals_trigger_full_fallback(self) -> None:
+    def test_verification_expansion_is_capped_by_locator_partitions(self) -> None:
         settings = _settings(verification_expansion_factor=10.0)
         primary = build_search_intervals(
             _values(0.0),
@@ -539,9 +685,15 @@ class SpectralSweepRunnerTest(unittest.TestCase):
             settings=settings,
         )
         expanded = [expanded_interval(interval, settings) for interval in primary]
-        self.assertTrue(
+        self.assertFalse(
             any(left.upper > right.lower for left, right in zip(expanded, expanded[1:]))
         )
+        for original, verification in zip(primary, expanded, strict=True):
+            self.assertTrue(verification.verification)
+            if original.partition_lower is not None:
+                self.assertGreaterEqual(verification.lower, original.partition_lower)
+            if original.partition_upper is not None:
+                self.assertLessEqual(verification.upper, original.partition_upper)
 
         result = run_spectral_sweep(
             [0.0, 1.0, 2.0],
@@ -551,9 +703,7 @@ class SpectralSweepRunnerTest(unittest.TestCase):
             ),
             settings=settings,
         )
-        self.assertEqual(result.spectra[1.0].origin, "GLOBAL_FALLBACK")
-        audit = next(item for item in result.point_audits if item.parameter == 1.0)
-        self.assertIn("overlap", " ".join(audit.fallback_reasons).lower())
+        self.assertEqual(result.spectra[1.0].origin, "FAST_LOCAL")
 
     def test_missing_only_recomputes_semantically_incomplete_transaction(self) -> None:
         with tempfile.TemporaryDirectory(dir=ROOT) as temporary:

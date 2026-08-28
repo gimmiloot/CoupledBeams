@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 2026-08-28
+
+- Corrected the model-neutral `spectral-sweep-runner-v2` locator so adjacent
+  overlapping predictor windows are searched as one multi-root numerical
+  interval while retaining distinct roots and all frozen quality, topology,
+  duplicate, gap, and fallback gates. Verification windows are bounded by
+  inter-group midpoint partitions. Targeted tests pass, and a fresh weak-RLB
+  `beta=54 deg` probe now produces genuine `FAST_LOCAL` evidence with all
+  roots 1--8 plus root 9 within `1e-8` of the immutable full inventory.
+  Production beam physics and root thresholds were unchanged.
+
 ## 2026-08-26
 
 - Closed the finite RLB-1C-ISO four-equal-ply isotropic-limit audit against an

@@ -80,7 +80,11 @@ class SpectrumRecord:
 
 @dataclass(frozen=True)
 class SearchInterval:
-    """Non-overlapping interval for one root or one close-root group."""
+    """Non-overlapping interval for one root or one multi-root locator group.
+
+    A multi-root locator group is numerical search ownership only.  It does
+    not assert physical multiplicity, a modal branch, or a merged root.
+    """
 
     lower: float
     upper: float
@@ -431,12 +435,9 @@ def build_search_intervals(
         raise SweepConfigurationError("interval spectra must contain exactly root 1..9")
     if np.any(~np.isfinite(predicted)) or np.any(predicted <= 0.0):
         raise SweepConfigurationError("prediction is nonfinite or nonpositive")
-    if np.any(np.diff(predicted) <= 0.0):
-        raise SweepConfigurationError("predicted sorted positions crossed")
-
     groups = _cluster_groups(previous, predicted, settings.cluster_relative_gap)
-    raw: list[tuple[float, float, tuple[int, ...]]] = []
-    for group in groups:
+
+    def raw_interval(group: tuple[int, ...]) -> tuple[float, float, tuple[int, ...]]:
         motion = max(
             max(abs(predicted[i] - previous[i]) for i in group),
             max(abs(previous[i] - older[i]) for i in group),
@@ -447,32 +448,49 @@ def build_search_intervals(
             settings.relative_window_half_width * scale,
             settings.motion_window_factor * motion,
         )
-        raw.append((
+        return (
             max(np.finfo(float).tiny, min(predicted[i] for i in group) - half),
             max(predicted[i] for i in group) + half,
             group,
-        ))
+        )
 
-    # Overlapping primary safety windows are ambiguous by construction.  Do
-    # not trim them silently: the caller must abandon continuation and use a
-    # full scan at this parameter point.
-    for left, right in zip(raw, raw[1:]):
-        if left[1] > right[0]:
-            raise SweepValidationError("predicted local safety intervals overlap")
+    # A predictor safety margin may overlap its neighbour even when the two
+    # roots remain distinct and well resolved.  Search every connected set of
+    # overlapping margins as one multi-root locator interval.  This changes
+    # only the numerical search window: the callback must still return the
+    # exact expected number of separate RootRecord objects, and all topology,
+    # duplicate, quality, and gap gates remain active below.
+    merged_raw: list[tuple[float, float, tuple[int, ...]]] = []
+    for initial_group in groups:
+        candidate = raw_interval(initial_group)
+        while merged_raw and candidate[0] <= merged_raw[-1][1]:
+            previous_group = merged_raw.pop()[2]
+            candidate = raw_interval(previous_group + candidate[2])
+        merged_raw.append(candidate)
+    raw = merged_raw
 
     intervals: list[SearchInterval] = []
     for index, (raw_lower, raw_upper, group) in enumerate(raw):
-        partition_lower = settings.spectral_minimum if index == 0 else 0.5 * (
-            predicted[raw[index - 1][2][-1]] + predicted[group[0]]
+        partition_lower = None if index == 0 else 0.5 * (
+            max(predicted[i] for i in raw[index - 1][2])
+            + min(predicted[i] for i in group)
         )
-        partition_upper = raw_upper if index + 1 == len(raw) else 0.5 * (
-            predicted[group[-1]] + predicted[raw[index + 1][2][0]]
+        partition_upper = None if index + 1 == len(raw) else 0.5 * (
+            max(predicted[i] for i in group)
+            + min(predicted[i] for i in raw[index + 1][2])
         )
         # Primary windows retain the predictor safety margin.  The midpoint
         # partition is stored separately as the hard non-overlap envelope for
         # the independently expanded verification search.
-        lower = max(partition_lower, raw_lower)
-        upper = min(partition_upper, raw_upper)
+        lower = max(
+            settings.spectral_minimum,
+            raw_lower,
+            partition_lower if partition_lower is not None else settings.spectral_minimum,
+        )
+        upper = min(
+            raw_upper,
+            partition_upper if partition_upper is not None else raw_upper,
+        )
         if not lower < upper:
             raise SweepConfigurationError("local intervals overlap or are empty")
         intervals.append(SearchInterval(
@@ -481,8 +499,12 @@ def build_search_intervals(
             positions=tuple(i + 1 for i in group),
             predicted=tuple(float(predicted[i]) for i in group),
             is_cluster=len(group) > 1,
-            partition_lower=float(partition_lower),
-            partition_upper=float(partition_upper),
+            partition_lower=(
+                None if partition_lower is None else float(partition_lower)
+            ),
+            partition_upper=(
+                None if partition_upper is None else float(partition_upper)
+            ),
         ))
     for left, right in zip(intervals, intervals[1:]):
         if left.upper > right.lower:
@@ -498,10 +520,18 @@ def expanded_interval(interval: SearchInterval, settings: SweepSettings) -> Sear
         min(minimum_prediction - interval.lower, interval.upper - maximum_prediction),
     )
     padding = (settings.verification_expansion_factor - 1.0) * clearance
+    lower = max(settings.spectral_minimum, interval.lower - padding)
+    upper = interval.upper + padding
+    if interval.partition_lower is not None:
+        lower = max(lower, interval.partition_lower)
+    if interval.partition_upper is not None:
+        upper = min(upper, interval.partition_upper)
+    if not lower < upper:
+        raise SweepConfigurationError("expanded local interval is empty")
     return replace(
         interval,
-        lower=max(settings.spectral_minimum, interval.lower - padding),
-        upper=interval.upper + padding,
+        lower=lower,
+        upper=upper,
         verification=True,
     )
 
@@ -1076,6 +1106,11 @@ def run_spectral_sweep(
                     right = list(callbacks.local_search(parameter, expanded, True))
                     if len(right) != interval.expected_count:
                         raise SweepValidationError("local verification returned wrong root count")
+                    for root in right:
+                        if not expanded.lower <= root.value <= expanded.upper:
+                            raise SweepValidationError(
+                                "local verification root escaped its safety interval"
+                            )
                     for label, roots_here in (("primary", left), ("verification", right)):
                         for local_position, root in enumerate(roots_here, start=1):
                             if not root.accepted or not root.detector_agreement:
@@ -1111,7 +1146,7 @@ def run_spectral_sweep(
                     verification.extend(right)
                 roots = _validate_roots(parameter, primary, settings, callbacks.quality_gate)
                 maximum_predictor = maximum_relative_error(
-                    [root.value for root in roots], predicted
+                    [root.value for root in roots], np.sort(predicted)
                 )
                 if maximum_predictor > settings.locator_relative_limit:
                     raise SweepValidationError("root moved beyond frozen locator threshold")
