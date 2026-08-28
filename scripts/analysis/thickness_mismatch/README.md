@@ -738,13 +738,14 @@ the separate `_smoke` tree.
 
 The documented future contract separates `fast_plot`, `certified_audit`, and
 `plot_only`; see the
-[frequency-map computation policy](../../../docs/thickness_mismatch/frequency_plot_computation_policy.md).
-`fast_plot` is the recommended default for ordinary maps: one sequential
+[project-wide frequency-map computation policy](../../../docs/numerics/frequency_map_computation_policy.md).
+`fast_plot` is the project default for ordinary maps. The local
+thickness-mismatch instance described here uses one sequential
 branch-informed beta path per case/model, sorted roots 1--10 for the figure,
-and root 11 as the K10 completeness guard. Root 12 is off by default in this
-mode. `certified_audit` is reserved for counterexamples, reference data,
-solver validation, and difficult clusters. `plot_only` reads saved CSV data
-and performs zero root or SVD calculations.
+and root 11 as its K10 completeness guard; root 12 is off by default for that
+local workflow. `certified_audit` is reserved for recorded scientific or
+numerical triggers. `plot_only` reads saved CSV data and performs zero root or
+SVD calculations.
 
 The current S3_12/S3_14 counterexample entry point used certified
 branch-continuation data. Its two PDFs are valid certified outputs; their

@@ -26,6 +26,10 @@ Production anisotropic API: not started
 Independent rectangular EB + torsion 1D FEM: completed for the finite gate
 ```
 
+All frequency-versus-parameter maps in this direction inherit the project-wide
+[`frequency-map-v1` policy](../numerics/frequency_map_computation_policy.md)
+unless a local note records an explicit override.
+
 ## Established single-rod baseline
 
 The selected source line is one rectangular monoclinic Timoshenko rod with

@@ -129,6 +129,28 @@ Every proposed new script should answer:
 2. what helper does it reuse?
 3. is it article-facing, diagnostic-only, compatibility wrapper, or one-off?
 
+## Ordinary Frequency-Map Computation
+
+All frequency-versus-parameter maps inherit the project-wide
+[`frequency-map-v1` policy](numerics/frequency_map_computation_policy.md).
+The canonical repository path is
+`docs/numerics/frequency_map_computation_policy.md`.
+
+- `fast_plot` is the default for an ordinary map.
+- `certified_audit` is explicit and event-driven; it is not a prerequisite for
+  producing every map.
+- `plot_only` reads completed data and performs no root calculation.
+- A new physical model inherits the common policy instead of defining a new
+  universal sweep workflow.
+- A local model note declares only the parameters of its local policy instance;
+  it must not redefine the universal workflow.
+- A deviation requires a recorded `policy_override_reason` tied to an explicit
+  scientific purpose or unresolved numerical event.
+
+The local instance must state whether the output uses independently
+`sorted_positions` or `tracked_branches`. Existing branch-identity rules apply
+only when branch identity is claimed.
+
 ## Consistency Checks for New Model Extensions
 
 New analytic model extensions must preserve the verified baseline unless the
@@ -224,6 +246,9 @@ asks for FEM model changes.
 
 ## Where Detailed Rules Live
 
+- `docs/numerics/frequency_map_computation_policy.md` -- project-wide
+  `frequency-map-v1` contract for ordinary maps, strict audits, guard roots,
+  and rendering from saved spectra.
 - `docs/thickness_mismatch/README.md` -- eta-model formulas, thin-rod
   applicability rule, diagnostic outputs, and thickness-mismatch scripts.
 - `docs/veering/terminology.md` -- project terminology for veering,

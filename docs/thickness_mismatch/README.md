@@ -7,6 +7,10 @@ workflow and does not replace the baseline equal-radius determinant.
 For project-wide rules on branch identity, thin-rod applicability, diagnostic
 workflow, and consistency checks, see the [project rules](../project_rules.md).
 
+All frequency-versus-parameter maps in this direction inherit the project-wide
+[`frequency-map-v1` policy](../numerics/frequency_map_computation_policy.md)
+unless a local note records an explicit override.
+
 Current diagnostic plans and status notes:
 
 - [FEM validation status and roadmap](fem_validation_status.md);

@@ -14,6 +14,11 @@ CoupledBeams is a research repository for frequency models and computations for 
 - `docs/project_rules.md` -- global project rules for branch identity,
   diagnostics, thin-rod applicability, model-extension checks, and FEM
   comparison conventions.
+- [`docs/numerics/`](docs/numerics/README.md) -- project-wide numerical
+  workflow policies that are independent of any one physical model.
+- [Frequency-map computation policy](docs/numerics/frequency_map_computation_policy.md)
+  -- the canonical `frequency-map-v1` contract for ordinary maps, strict
+  audits, and rendering from saved data.
 - `docs/writing/` -- diagnostic-to-article workflow notes.
 
 - `docs/theory/` — verified local theory, equations, assumptions, and theory notes.

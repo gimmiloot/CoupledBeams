@@ -2,6 +2,13 @@
 
 ## 2026-08-28
 
+- Promoted the existing thickness-mismatch frequency-map guidance to the
+  project-wide `frequency-map-v1` policy under `docs/numerics/`, with the old
+  path retained as a compatibility redirect. Root `AGENTS.md`, project rules,
+  indexes, script guidance, and active model directions now require local
+  policy inheritance. Ordinary maps default to `fast_plot`, while
+  `certified_audit` remains event-driven. No numerical model, solver,
+  spectrum, CSV, generated report, or figure changed.
 - Corrected the model-neutral `spectral-sweep-runner-v2` locator so adjacent
   overlapping predictor windows are searched as one multi-root numerical
   interval while retaining distinct roots and all frozen quality, topology,

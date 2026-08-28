@@ -11,6 +11,14 @@ applicability, model-extension checks, and FEM comparison conventions live in
 New runnable scripts must also follow the Script Proliferation Control rule in
 that file: prefer parameters or presets over new one-case scripts.
 
+Before adding or changing a frequency-map entry point, read the canonical
+[`frequency-map-v1` policy](../docs/numerics/frequency_map_computation_policy.md).
+Every such entry point must reference that policy and declare its local
+instance. Under Script Proliferation Control, first check whether an existing
+script can be parameterized. A new universal runner is not a prerequisite for
+an ordinary map, and a `plot_only` path must not import or invoke the
+root-calculation path.
+
 For active, completed, historical, superseded, and compatibility workflow
 status, see [Script and Workflow Status](STATUS.md).
 

@@ -487,7 +487,7 @@ epsilon refinement was performed.
 
 Future frequency-map workflows must separate spectrum generation from figure
 rendering according to the
-[frequency-map computation policy](frequency_plot_computation_policy.md).
+[frequency-map computation policy](../numerics/frequency_map_computation_policy.md).
 Ordinary figures should use one sequential `fast_plot` continuation path per
 case/model, plot sorted roots 1--10, and require root 11 as the K10 guard; root
 12 and `full12_resolved` are not default fast-mode requirements. Scientific

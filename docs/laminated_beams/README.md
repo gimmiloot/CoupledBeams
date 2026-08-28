@@ -4,6 +4,10 @@
 слоистого стержня. Реализованы изгибная FSDT-подсистема, независимая
 продольная подсистема и их блочно-диагональное объединение.
 
+All frequency-versus-parameter maps in this direction inherit the project-wide
+[`frequency-map-v1` policy](../numerics/frequency_map_computation_policy.md)
+unless a local note records an explicit override.
+
 Сохранённый исторический результат RLB-0:
 
 ```text

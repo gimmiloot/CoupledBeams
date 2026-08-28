@@ -60,6 +60,18 @@ they are explicitly accepted in a diagnostic run.
 Adaptive refinement and failure CSVs are diagnostic machinery only; they do not
 change the definition of branch identity.
 
+## Frequency-map computation
+
+Before creating, extending, or recomputing any frequency-versus-parameter map,
+read `docs/numerics/frequency_map_computation_policy.md`. Ordinary maps use
+`fast_plot` by default and must declare a model-specific `frequency-map-v1`
+policy instance. Do not replace this default with `certified_audit`, a new
+universal runner, full inventories, MAC, branch tracking, or broad global scans
+without an explicit request or a documented trigger. Use `plot_only` when
+redrawing completed data. The branch-identity rule above applies when
+`spectrum_semantics: tracked_branches`; a `sorted_positions` map does not claim
+branch identity.
+
 ## Hard rules for mathematical edits
 
 Treat verified formulas, determinants, matrix entries, sign conventions, and unknown ordering as frozen unless the user explicitly asks for a mathematical revision.
