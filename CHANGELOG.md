@@ -1,5 +1,63 @@
 # CHANGELOG
 
+## 2026-09-01
+
+- Added RLB-2J finite six-ply pairwise stiffness-transfer maps for the
+  CENTER--MIDDLE, MIDDLE--OUTER, and CENTER--OUTER distances. The three
+  `frequency-map-v1` `fast_plot` calculations preserve reduced `A`, `S`,
+  `m`, and `J`, while `D` changes with exact levers 1:2:3; all 243 logical
+  groups and root-9 guards pass, and 25 neighbour flags were reproduced
+  locally. Spectra collapse at exactly matched `D/D0`, consistently with the
+  neutral RLB-2I direction. No new physical solver, mode shape, MAC, energy
+  analysis, Ritz, or FEM calculation was introduced.
+- Added RLB-2I, an exact one-parameter family of globally equivalent
+  symmetric six-ply laminates. The full laminate and beam reductions preserve
+  `A`, `D`, `S`, `m`, and `J`, while exact ply integration demonstrates
+  changes in stress and energy distribution and a bending-stress hotspot
+  transition at `zeta=-1/9`. Six bounded spectral spot checks retain roots
+  1--8 plus root 9 only, and three diagnostic figures were generated. No new
+  physical solver, wide frequency sweep, strength or damage model, branch
+  tracking, Ritz, or FEM calculation was introduced.
+
+## 2026-08-31
+
+- Added the finite RLB-2H axial-stiffness visibility maps for
+  `beta=0,30 deg`. The four-ply 0° redistribution changes only reduced axial
+  stiffness `A` on the 31-point `alpha_A=0.70:0.02:1.30` grid. Both maps
+  contain independently sorted positions 1--8 and root 9 as a completeness
+  guard; all 62 groups, 558 `BASE` rows, 14 local-repair checks, beta=0
+  subsystem/direct checks, and frozen-physics and predecessor-preservation
+  gates pass. The beta=0 reference reuses the completed `alpha_A=1` coupled
+  characteristic group and exact axial frequencies. Direct fixed-fixed
+  boundary matrices were checked for singularity at the supplied union
+  frequencies, which were not independently localized. No new physical
+  solver, branch tracking, mode shapes, MAC, energy analysis, Ritz, FEM,
+  smoothing, or certified audit was introduced.
+
+## 2026-08-29
+
+- Added the finite RLB-2G mass-layout duality maps at fixed `mu=tau=0` and
+  `beta=30 deg`. The density analogues of RLB-2E and RLB-2F preserve the
+  elastic properties, reduced stiffnesses, and mass per length; only rotary
+  inertia `J` changes with the through-thickness density layout. The
+  `frequency-map-v1` `fast_plot` workflow completed 123 three-configuration
+  groups and 81 signed one-arm groups, with root 9 retained only as a
+  completeness guard. All inventories and arm-swap checks pass, with no
+  neighbour flag or unresolved point. No new physical solver, branch
+  tracking, mode shapes, MAC, energy analysis, Ritz, FEM, or smoothing was
+  introduced.
+- Added the finite RLB-2F one-arm layered-contrast map at fixed
+  `mu=tau=0`, `beta=30 deg`. The signed parameter `xi` continuously changes
+  the stiffness distribution in one four-ply 0° arm while the second arm
+  remains the homogeneous reference: `xi<0` places the stiffer material in
+  the inner plies, while `xi>0` places it in the outer plies. The
+  `frequency-map-v1` `fast_plot`
+  workflow completed all 81 points, 729 `BASE` rows and 81 root-9 guards;
+  all 13 neighbour flags were reproduced by local repairs, the arm-swap check
+  passed, and no point remains unresolved. The result concerns independently
+  sorted positions 1--8 only. No new physical solver, branch tracking, mode
+  shapes, MAC, energy analysis, Ritz, FEM or smoothing was introduced.
+
 ## 2026-08-28
 
 - Added the finite RLB-2E stiffness-layout contrast map at fixed

@@ -149,6 +149,141 @@ cases and the four-equal-ply isotropic contract.
 - Do not use when: requesting tracked branches, mode shapes, MAC, energy
   analysis, Ritz, FEM, a new layer orientation, or another geometry.
 
+### Reddy one-arm layered contrast frequency map
+
+- Task: calculate the finite RLB-2F map at fixed `mu=tau=0`,
+  `beta=30 deg`, with one four-ply layered arm, one homogeneous reference arm,
+  and signed material contrast `xi` from -0.80 to 0.80.
+- Status: `RLB-2F: PASS`; all 81 declared points, 729 `BASE` rows, root-9
+  guards, 13 neighbour-triggered local repairs, and the arm-swap diagnostic
+  are complete, with no unresolved point.
+- Command:
+  `python scripts/analysis/laminated_beams/sweep_reddy_one_arm_layered_contrast.py`.
+- Resume or missing-only command: add `--missing-only`; completed transactions
+  must not be recalculated.
+- Presentation command: add `--plot-only`; this must read completed CSV data
+  without matrix assembly, determinant evaluations, SVD, or root search.
+- Tests:
+  `python -m pytest -q -p no:cacheprovider tests/test_reddy_one_arm_layered_contrast.py`.
+- Results:
+  `results/laminated_beams/reddy_one_arm_layered_contrast_sweep/`.
+- Canonical policy and scientific scope: [`frequency-map-v1`](../docs/numerics/frequency_map_computation_policy.md)
+  and the [RLB-2F note](../docs/laminated_beams/reddy_one_arm_layered_contrast_sweep.md).
+- Use when: reproducing the declared 81-point signed `xi` grid, independently
+  sorted positions 1--8, or root 9 as a completeness guard.
+- Do not use when: requesting tracked branches, mode shapes, MAC, energy
+  analysis, Ritz, FEM, another layer orientation, or another geometry.
+
+### Reddy mass-layout duality frequency maps
+
+- Task: calculate the finite RLB-2G density analogues of RLB-2E and RLB-2F
+  at fixed `mu=tau=0`, `beta=30 deg`, with unchanged elastic properties and
+  mass per length. Only the rotary inertia `J` changes between layouts.
+- Status: `RLB-2G: PASS`; experiment A contains 123/123 groups and 1107
+  `BASE` rows, while experiment B contains 81/81 groups and 729 `BASE` rows.
+  All 204 root-9 guards and the arm-swap diagnostic pass; no neighbour flag
+  or unresolved point remains.
+- Command:
+  `python scripts/analysis/laminated_beams/sweep_reddy_mass_layout_duality.py`.
+- Resume or missing-only command: add `--missing-only`; completed physical
+  points and the shared zero-contrast anchor are not recalculated.
+- Presentation command: add `--plot-only`; this reads completed CSV data
+  without matrix assembly, determinant evaluations, SVD, or root search.
+- Contract-manifest command: add `--manifest-only` to print the frozen policy
+  and physical contract without a spectral solve or output mutation.
+- Tests:
+  `python -m pytest -q -p no:cacheprovider tests/test_reddy_mass_layout_duality.py`.
+- Results:
+  `results/laminated_beams/reddy_mass_layout_duality/`.
+- Canonical policy and scientific scope: [`frequency-map-v1`](../docs/numerics/frequency_map_computation_policy.md)
+  and the [RLB-2G note](../docs/laminated_beams/reddy_mass_layout_duality.md).
+- Use when: reproducing the declared `eta` and signed `xi_rho` density grids,
+  independently sorted positions 1--8, root 9 as a completeness guard, or
+  the analytic `J/J0` diagnostic.
+- Do not use when: requesting a general mass-distribution law, tracked
+  branches, crossing or veering claims, mode shapes, MAC, energy analysis,
+  roots 10+, Ritz, FEM, another material, or another geometry.
+
+### Reddy axial-stiffness visibility frequency maps
+
+- Task: calculate the finite RLB-2H maps at `beta=0,30 deg` for two
+  identical four-ply 0° arms while changing only reduced axial stiffness `A`
+  on the `alpha_A=0.70:0.02:1.30` grid.
+- Status: `RLB-2H: PASS`; all 62 groups, 558 `BASE` rows and 62 root-9
+  guards are complete. All 14 neighbour-triggered local checks reproduced
+  the saved roots, and no point remains unresolved.
+- Beta=0 reference: reuse the completed `alpha_A=1` coupled characteristic
+  group. Its eight reused non-axial frequencies form one bending reference
+  and are combined with exact axial frequencies. The three direct fixed-fixed
+  checks evaluate boundary singularity at supplied union frequencies; they do
+  not localize those frequencies independently.
+- Command:
+  `python scripts/analysis/laminated_beams/sweep_reddy_axial_stiffness_visibility.py`.
+- Resume or missing-only command: add `--missing-only`; completed groups are
+  not recalculated.
+- Presentation command: add `--plot-only`; this redraws the completed main
+  and beta=0 reference figures without root search.
+- Contract-manifest command: add `--manifest-only` to print the frozen
+  contract without a spectral solve or output mutation.
+- Tests:
+  `python -m pytest -q -p no:cacheprovider tests/test_reddy_axial_stiffness_visibility.py`.
+- Results:
+  `results/laminated_beams/reddy_axial_stiffness_visibility/`.
+- Canonical policy and scientific scope: [`frequency-map-v1`](../docs/numerics/frequency_map_computation_policy.md)
+  and the [RLB-2H note](../docs/laminated_beams/reddy_axial_stiffness_visibility.md).
+- Use when: reproducing the declared A-only grid, independently sorted
+  positions 1--8, root 9 as a completeness guard, or the declared beta=0
+  subsystem/direct diagnostics.
+- Do not use when: requesting tracked branches, crossing or veering claims,
+  mode shapes, MAC, energy analysis, roots 10+, Ritz, FEM, another stacking
+  sequence, or another geometry.
+
+### Reddy six-ply global-equivalence analysis
+
+- Task: construct the exact RLB-2I six-ply family with invariant `A`, `D`,
+  `S`, `m`, and `J`, then recover ply stresses and energy fractions.
+- Status: `RLB-2I: PASS`; all 51 constitutive points and 102 load states pass,
+  and six spectral spot checks contain roots 1--9 only.
+- Command:
+  `python scripts/analysis/laminated_beams/analyze_reddy_six_ply_equivalent_laminates.py`.
+- Presentation command: add `--plot-only`; it reads the completed ply CSV and
+  performs no laminate, matrix, determinant, SVD, or root calculation.
+- Contract command: add `--manifest-only`; it prints the frozen contract
+  without output mutation.
+- Tests:
+  `python -m pytest -q -p no:cacheprovider tests/test_reddy_six_ply_equivalent_laminates.py`.
+- Results:
+  `results/laminated_beams/reddy_six_ply_equivalent_laminates/`.
+- Scientific scope: [RLB-2I note](../docs/laminated_beams/reddy_six_ply_equivalent_laminates.md).
+- Use when: reproducing exact laminate equivalence, layerwise resultants,
+  energy shares, stress-hotspot transitions, or the six bounded spectral
+  regressions.
+- Do not use when: requesting a 51-point frequency map, strength or damage
+  analysis, roots 10+, branch tracking, mode shapes, MAC, Ritz, or FEM.
+
+### Reddy six-ply pairwise stiffness-transfer maps
+
+- Task: calculate the finite RLB-2J maps for CENTER--MIDDLE,
+  MIDDLE--OUTER, and CENTER--OUTER pair transfers while (A,S,m,J) stay
+  fixed and (D) changes with exact levers 1:2:3.
+- Status: `RLB-2J: PASS`; 243/243 logical groups and all root-9 guards pass,
+  25 neighbour flags were reproduced locally, and matched-(D) spectra
+  collapse within the declared tolerance.
+- Command:
+  `python scripts/analysis/laminated_beams/sweep_reddy_six_ply_pairwise_stiffness_transfer.py --missing-only`.
+- Presentation command: add `--plot-only`; it reads the completed CSV and
+  performs no laminate, matrix, determinant, SVD, or root calculation.
+- Contract command: add `--manifest-only`; it performs no spectral solve.
+- Tests:
+  `python -m pytest -q -p no:cacheprovider tests/test_reddy_six_ply_pairwise_stiffness_transfer.py`.
+- Results:
+  `results/laminated_beams/reddy_six_ply_pairwise_stiffness_transfer/`.
+- Scientific scope: [RLB-2J note](../docs/laminated_beams/reddy_six_ply_pairwise_stiffness_transfer.md).
+- Use when: reproducing the declared pairwise-transfer maps, constitutive
+  levers, neighbour audit, or exact matched-(D) comparison.
+- Do not use when: requesting branch identity, modes, MAC, energy or stress
+  reconstruction, roots 10+, another geometry, Ritz, or FEM.
+
 ### Beta sweep at `mu = 0`
 
 - Task: compare analytic and FEM branches over `beta` at `mu = 0` for four radii.
