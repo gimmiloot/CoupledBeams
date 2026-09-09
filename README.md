@@ -7,6 +7,7 @@ CoupledBeams is a research repository for frequency models and computations for 
 - [Research index](docs/research_index.md) -- research directions, canonical documentation,
   and current scientific status.
 - [Generated results index](docs/results_index.md) -- workflow map for ignored/generated results.
+- [RLB-2I/RLB-2J memory pilot](docs/memory/README.md) -- scoped findings, sources, limitations, and pending decisions.
 - [Archive policy](docs/archive_policy.md) -- preservation and soft/hard archive rules.
 - [Refactoring status](docs/refactoring/README.md) -- verified inventory and staged refactoring status.
 - [Script status](scripts/STATUS.md) -- preferred, active, completed, historical, and

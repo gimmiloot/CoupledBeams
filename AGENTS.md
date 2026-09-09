@@ -16,6 +16,17 @@ Main components:
 Before adding a new runnable script, follow the Script Proliferation Control
 rule in `docs/project_rules.md`.
 
+## Scoped research memory
+
+For continuation or status questions about RLB-2I/RLB-2J, start with
+[memory entry](docs/memory/README.md) and [current context](docs/memory/current.md),
+then read only relevant records and their sources. Memory does not replace
+model-specific contracts, theory, code, or data, or authorize new actions.
+An absent record means incomplete memory coverage, not absent research.
+After a substantive result or decision, update only affected records within
+authorized documentation scope; cosmetic edits need no new scientific record.
+The pilot's scientific conclusions do not automatically apply to other directions.
+
 ## Source of truth
 
 When there is a conflict, use this priority:

@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2026-09-09
+
+- Added a four-file Russian documentation memory pilot for RLB-2I/RLB-2J,
+  with scoped findings, source/Ritz qualifications, pending decisions, and
+  navigation from AGENTS.md and README.md. Scientific sources and calculations
+  were not changed or rerun.
+
 ## 2026-09-01
 
 - Added RLB-2J finite six-ply pairwise stiffness-transfer maps for the
