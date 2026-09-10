@@ -121,6 +121,58 @@ def suspicious(candidate):
             candidate.diagnostics.scaled_sigma_ratio <= roots.SearchPolicy().sigma_prefilter)
 
 
+def reconcile_local_detections(pool, provider):
+    """Finite isolation check for a simple root, beyond the 64-ULP fast path.
+
+    The inherited candidate-distance tolerance only selects suspects. Merging
+    also requires intersecting detector brackets, a strictly monotone sampled
+    determinant with one sign change, and a separated second singular value.
+    An unresolved doublet remains unresolved; no frequencies are averaged.
+    """
+    events, ambiguous = consolidate(pool)
+    records = []
+    while ambiguous:
+        first = ambiguous[0]
+        radius = 5e-10+5e-12*abs(first.omega_bar)
+        group = [c for c in pool if c.accepted and abs(c.omega_bar-first.omega_bar) <= radius]
+        lo = max(c.interval_left_bar for c in group)
+        hi = min(c.interval_right_bar for c in group)
+        if lo > hi:
+            break
+        center = min(group, key=lambda c: c.diagnostics.scaled_sigma_ratio).omega_bar
+        # A phased-grid bracket may end at the root to within one ULP.
+        # Verify the common neighbourhood inside the union, after requiring
+        # the original brackets to intersect; do not truncate at that grid edge.
+        lo = max(min(c.interval_left_bar for c in group), center-radius)
+        hi = min(max(c.interval_right_bar for c in group), center+radius)
+        if lo >= min(c.omega_bar for c in group) or hi <= max(c.omega_bar for c in group):
+            break
+        if any(c.diagnostics.detected_nullity != 1 or c.diagnostics.root_gate_nullity != 1 for c in group):
+            break
+        evaluator = roots._DiagnosticEvaluator(provider, FREQUENCY_SCALE, policy(lo, hi))
+        grid = np.linspace(lo, hi, 9)
+        diagnostics = [evaluator.diagnostics(float(x)) for x in grid]
+        determinant = np.array([np.linalg.det(d.scaled_matrix) for d in diagnostics])
+        second_ratio = np.array([d.scaled_singular_values[-2]/d.scaled_singular_values[0] for d in diagnostics])
+        changes = np.diff(determinant)
+        monotone = np.all(changes > 0) or np.all(changes < 0)
+        if not (np.all(np.isfinite(determinant)) and determinant[0]*determinant[-1] < 0 and
+                monotone and np.min(second_ratio) > LIMITS["sigma_ratio"]):
+            break
+        determinant_candidates = [c for c in group if any('determinant' in source for source in c.detection_sources)]
+        if not determinant_candidates:
+            break
+        chosen = min(determinant_candidates, key=lambda c: c.diagnostics.scaled_sigma_ratio)
+        chosen = replace(chosen, detection_sources=tuple(sorted({source for c in group for source in c.detection_sources})))
+        ids = {id(c) for c in group}
+        pool = [c for c in pool if id(c) not in ids]+[chosen]
+        records.append(dict(kind="SIMPLE_ROOT_DETECTOR_RECONCILIATION", interval=[lo, hi],
+                            detected_Omega=[c.omega_bar for c in group], retained_Omega=chosen.omega_bar,
+                            sampled_determinants=determinant.tolist(), second_sigma_ratio_min=float(min(second_ratio))))
+        events, ambiguous = consolidate(pool)
+    return pool, records
+
+
 def checked_endpoints(Omega, case):
     joint = eb.Joint(case["mode"], case["k_theta"])
     assembly = eb.boundary_assembly(Omega/FREQUENCY_SCALE, ARM, ARM, case["beta_rad"], joint, ARM)
@@ -132,7 +184,8 @@ def checked_endpoints(Omega, case):
         if (np.max(residual[:2]) > LIMITS["compatibility"] or
                 np.max(residual) > LIMITS["physical_residual"] or
                 max(vector["boundary_residual"], vector["scaled_residual"]) > LIMITS["null_residual"]):
-            raise RuntimeError("PHYSICAL_ENDPOINT_RESIDUAL_FAIL")
+            raise RuntimeError(f"PHYSICAL_ENDPOINT_RESIDUAL_FAIL: {case['case_id']}, Omega={Omega:.17g}, "
+                               f"normalized={residual.tolist()}")
         if case["kappa_theta"] == 0 and max(abs(x) for x in vector["moments_in_reference_units"]) > LIMITS["physical_residual"]:
             raise RuntimeError("HINGE_MOMENT_FAIL")
     return result
@@ -142,7 +195,7 @@ def solve_group(case, predictors=()):
     started = time.perf_counter()
     joint = eb.Joint(case["mode"], case["k_theta"])
     provider = lambda omega: eb.boundary_assembly(omega, ARM, ARM, case["beta_rad"], joint, ARM).dimensionless
-    left, pool, windows, repairs = 1e-8, [], [], []
+    left, pool, windows, repairs, reconciliations = 1e-8, [], [], [], []
     while left < LIMITS["max_Omega"]:
         if time.perf_counter()-started > LIMITS["group_seconds"]:
             raise RuntimeError("GROUP_COST_LIMIT: completed groups remain saved")
@@ -172,6 +225,10 @@ def solve_group(case, predictors=()):
                 pool = [c for c in pool if not lo < c.omega_bar < hi] + local
                 repairs.append([lo, hi])
             events, ambiguous = consolidate(pool)
+            if ambiguous:
+                pool, proof = reconcile_local_detections(pool, provider)
+                reconciliations.extend(proof)
+                events, ambiguous = consolidate(pool)
             provisional = [event for event in events for _ in range(event.diagnostics.detected_nullity)]
             cutoff = provisional[6].omega_bar if len(provisional) >= 7 else right
             if any(c.omega_bar <= cutoff for c in ambiguous) or any(
@@ -199,7 +256,8 @@ def solve_group(case, predictors=()):
                                  omega=event.omega_bar/FREQUENCY_SCALE, Lambda=math.sqrt(event.omega_bar)))
                 endpoints.append(diagnostic)
             return dict(status="COMPLETED", rows=rows, endpoints=endpoints, windows=windows,
-                        local_recoveries=repairs, candidates=[candidate_record(c) for c in pool if c.omega_bar <= guard],
+                        local_recoveries=repairs, detector_reconciliations=reconciliations,
+                        candidates=[candidate_record(c) for c in pool if c.omega_bar <= guard],
                         guard_gap_Omega=right-guard, unresolved_below_guard=0,
                         seconds=time.perf_counter()-started)
         left = right-LIMITS["overlap_Omega"]
@@ -210,13 +268,38 @@ def solve_group(case, predictors=()):
 
 def local_control(provider, group, case):
     """Only seven saved-root neighbourhoods, counted separately from BASE."""
-    differences, physical_maxima = [], []
+    differences, physical_maxima, refinements = [], [], []
     for row in group["rows"]:
         center = row["Omega"]
         found = scan(provider, "CONTROL", center-1e-4, center+1e-4, repair=True)
+        found, _proof = reconcile_local_detections(found, provider)
         events, ambiguous = consolidate(found)
+        # A rejected sigma locator can stop short of a root that the determinant
+        # already resolves. Reuse the existing refiner only after a local simple-
+        # root isolation check; do not accept the rejected frequency itself.
+        if len(events) == 1 and not ambiguous:
+            for index, candidate in enumerate(found):
+                lo, hi = candidate.interval_left_bar, candidate.interval_right_bar
+                if candidate.accepted or candidate.rejection_reason != "NULLITY_UNRESOLVED_AT_1E-12" or not lo < events[0].omega_bar < hi:
+                    continue
+                evaluator = roots._DiagnosticEvaluator(provider, FREQUENCY_SCALE, policy(lo, hi))
+                sample = [evaluator.diagnostics(float(x)) for x in np.linspace(lo, hi, 9)]
+                det = np.array([np.linalg.det(d.scaled_matrix) for d in sample])
+                second = min(d.scaled_singular_values[-2]/d.scaled_singular_values[0] for d in sample)
+                if not (det[0]*det[-1] < 0 and (np.all(np.diff(det)>0) or np.all(np.diff(det)<0)) and second > LIMITS["sigma_ratio"]):
+                    continue
+                refined = roots._root_candidate(evaluator=evaluator, policy=policy(lo, hi),
+                    case_id="CONTROL", builder_id="existing_refiner", scan_id="LOCAL_RECOVERY",
+                    source="sigma_locator_refined_from_resolved_determinant", left=lo, right=hi,
+                    omega_bar=events[0].omega_bar, interior=True)
+                if refined.accepted:
+                    found[index] = refined
+                    refinements.append(dict(original=candidate_record(candidate), refined=candidate_record(refined),
+                                            sampled_determinants=det.tolist(), second_sigma_ratio_min=float(second)))
+            found, _additional = reconcile_local_detections(found, provider)
+            events, ambiguous = consolidate(found)
         if len(events) != 1 or ambiguous or any(suspicious(c) for c in found):
-            raise RuntimeError("LOCAL_CONTROL_UNRESOLVED")
+            raise RuntimeError(f"LOCAL_CONTROL_UNRESOLVED at Omega={center:.17g}")
         if events[0].diagnostics.detected_nullity != row["multiplicity"]:
             raise RuntimeError("LOCAL_CONTROL_MULTIPLICITY_FAIL")
         differences.append(abs(events[0].omega_bar-center)/center)
@@ -225,6 +308,7 @@ def local_control(provider, group, case):
                                    for value in vector["normalized_physical_residuals"]))
     return dict(relative_differences=differences,
                 normalized_physical_maxima=physical_maxima, local_root_checks=len(differences),
+                local_refinements=refinements,
                 status="WITHIN_TOLERANCE" if max(differences) <= LIMITS["spectrum_relative"] else "MISMATCH")
 
 
@@ -314,7 +398,11 @@ def json_text(value):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--benchmark-only", action="store_true", help="only beta=30 deg, kappa=1; saves this BASE group")
+    parser.add_argument("--case-id", choices=[c["case_id"] for c in cases()],
+                        help="one of the fixed 12 cases, for missing-only continuation or local diagnosis")
     args = parser.parse_args()
+    if args.benchmark_only and args.case_id:
+        parser.error("choose --benchmark-only or --case-id")
     started = time.perf_counter()
     versions = dict(python=sys.version, executable=sys.executable, numpy=np.__version__,
                     scipy=scipy.__version__, platform=platform.platform())
@@ -332,7 +420,10 @@ def main():
         raise SystemExit("Orphan output without authoritative diagnostics; no existing data overwritten")
     state = json.loads(path.read_text(encoding="utf-8")) if path.exists() else dict(contract=contract, groups={}, attempts=[])
     if state["contract"] != contract:
-        raise SystemExit("Existing output contract/version differs; no data overwritten")
+        if state["groups"]:
+            raise SystemExit("Existing output contract/version differs; no completed data overwritten")
+        state.setdefault("prior_attempt_contracts", []).append(state["contract"])
+        state["contract"] = contract
     groups = state["groups"]
     reused, new, controls_completed = list(groups), [], []
     head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
@@ -368,6 +459,8 @@ def main():
     ordered = sorted(cases(), key=lambda c: c["case_id"] != "beta30_k1")
     if args.benchmark_only:
         ordered = ordered[:1]
+    elif args.case_id:
+        ordered = [case for case in ordered if case["case_id"] == args.case_id]
     save()  # repairs CSV/manifest after an interruption, without recalculation
     for case in ordered:
         if case["case_id"] in groups and groups[case["case_id"]].get("controls_done"):
@@ -379,6 +472,7 @@ def main():
                 neighbours = [g for key, g in groups.items() if key.startswith(f"beta{case['beta_deg']}_")]
                 predictors = [r["Omega"] for r in neighbours[-1]["rows"]] if neighbours else []
                 groups[case["case_id"]] = solve_group(case, predictors)
+                groups[case["case_id"]]["source_code_sha256"] = hashes
                 new.append(case["case_id"])
                 save()  # BASE is durable even if a subsequent control fails
             group = groups[case["case_id"]]

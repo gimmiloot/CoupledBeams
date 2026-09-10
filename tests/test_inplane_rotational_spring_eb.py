@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
-from scipy.linalg import block_diag, expm
+from scipy.linalg import block_diag
 from scipy.optimize import brentq
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -64,7 +64,17 @@ def test_exact_rigid_and_state_equations():
     expected = [y[3]/ARM.A, -y[2], y[5]/ARM.D, -ARM.m*omega**2*y[0],
                 -ARM.m*omega**2*y[1], y[4]]
     assert_allclose(eb.state_matrix(omega, ARM)@y, expected)
-    assert_allclose(eb.transfer_matrix(0, ARM), expm(eb.state_matrix(0, ARM)*ARM.L), rtol=1e-12)
+    # Exact integration of the static EB equations, in dimensionless units.
+    # A second dimensional expm can introduce noise into analytically zero entries.
+    length, axial, bending = ARM.L, ARM.A, ARM.D
+    static = np.eye(6)
+    static[0, 3] = length/axial
+    static[1, [2, 4, 5]] = [-length, -length**3/(6*bending), -length**2/(2*bending)]
+    static[2, [4, 5]] = [length**2/(2*bending), length/bending]
+    static[5, 4] = length
+    scale = eb.state_scale(ARM)
+    assert_allclose(eb.transfer_matrix(0, ARM)*scale[None, :]/scale[:, None],
+                    static*scale[None, :]/scale[:, None], rtol=1e-12, atol=1e-12)
     assert_allclose(eb.clamp_to_joint_map(0, ARM), eb.transfer_matrix(0, ARM)[:, 3:])
 
 
@@ -116,6 +126,26 @@ def test_close_distinct_candidates_are_not_merged():
     candidates = [candidate(10., 9.9, 10.000000000001), candidate(10.+1e-10, 10.00000000001, 10.1)]
     events, unresolved = consolidate(candidates)
     assert len(events) == len(unresolved) == 2
+
+
+@pytest.mark.parametrize("doublet", [False, True])
+def test_local_reconciliation_requires_one_separated_null_direction(doublet):
+    from scripts.analysis.laminated_beams import pilot_inplane_rotational_spring_eb as pilot
+    def provider(omega):
+        value = omega*pilot.FREQUENCY_SCALE
+        return np.diag([1e-8*(value-10.), 1e-8*(value-10.-1e-10) if doublet else 1., 1., 1., 1., 1.])
+    candidates = []
+    for value in (10., 10.+1e-10):
+        diagnostic = pilot.roots.boundary_matrix_diagnostics(value, provider, pilot.FREQUENCY_SCALE)
+        candidates.append(pilot.roots.RootCandidate(
+            "test", "diagonal", "local", value, ("determinant_bracket",),
+            9.99, 10.01, True, diagnostic, True, ""))
+    resolved, evidence = pilot.reconcile_local_detections(candidates, provider)
+    if doublet:
+        assert len(resolved) == 2 and not evidence
+    else:
+        assert len(resolved) == 1 and len(evidence) == 1
+        assert resolved[0].omega_bar == 10.
 
 
 @pytest.mark.parametrize("name", ["A", "D", "m", "L"])

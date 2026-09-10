@@ -2,12 +2,22 @@
 
 ## 2026-09-10
 
+- Found the existing Python 3.12.4 environment at
+  `D:/python/Pycharm/pythonProject/.venv/Scripts/python.exe`; the earlier PATH
+  and launcher checks had missed it. Ran 50 targeted tests and accepted 10/12
+  EB spring BASE groups (70 roots). Both kappa=10000 groups failed the frozen
+  physical spring-residual gate; the beta=30 rigid legacy guard control remains
+  unresolved. Improved local detector reconciliation and the static test reference,
+  preserving physical formulas and completed BASE roots. Updated report and memory;
+  no dependency installation or RLB/damping implementation.
+
 - Prepared an isolated physical-state EB rotational-spring adapter, targeted
   tests, and a fixed 12-group diagnostic pilot reusing the existing matrix
   detector/refiner. Added the scoped report and updated memory with the user's
-  EB-pilot authorization. No working Python was available in the checked
-  environment: imports, tests and spectra are NOT_RUN_ENVIRONMENT (0/12 groups,
-  no generated results). Existing rigid physics and defaults remain unchanged.
+  EB-pilot authorization. At this preparation stage the environment search was
+  incomplete: imports, tests and spectra were NOT_RUN_ENVIRONMENT (0/12 groups,
+  no generated results). The existing environment was subsequently found as
+  recorded above. Existing rigid physics and defaults remain unchanged.
 
 - Derived the in-plane rotational-spring joint for EB and symmetric Reddy/FSDT
   beams in a new theory note, retaining the physical coordinate contract.

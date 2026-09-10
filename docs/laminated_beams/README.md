@@ -10,8 +10,9 @@ unless a local note records an explicit override.
 
 Теоретическое продолжение: [поворотно-упругий узел EB/RLB](inplane_rotational_spring_joint.md)
 — вариационные выводы, матрица и пределы.
-[Первый EB-пилот](inplane_rotational_spring_eb_pilot.md): код и целевые тесты
-подготовлены, исполнение и спектральные проверки `NOT_RUN_ENVIRONMENT`.
+[Первый EB-пилот](inplane_rotational_spring_eb_pilot.md): 50 тестов пройдены,
+10/12 BASE-групп приняты; два случая большой жёсткости и один дополнительный
+rigid-контроль не разрешены. Рабочее окружение Python найдено.
 RLB с новым узлом пока не реализована.
 
 Сохранённый исторический результат RLB-0:
