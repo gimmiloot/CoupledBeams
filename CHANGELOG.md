@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 2026-09-10
+
+- Derived the in-plane rotational-spring joint for EB and symmetric Reddy/FSDT
+  beams in a new theory note, retaining the physical coordinate contract.
+  Direct algebra checks cover spring energy, boundary work, the six-row joint
+  matrix and rank, hinge/rigid/straight limits, and the RLB-to-EB limit.
+  The proposed boundary-work identity with a minus spring-energy variation
+  is inconsistent with the preserved efforts; the derived identity uses plus.
+  Updated the existing scoped memory with the user's selected theory stage
+  and linked result. No joint implementation or spectral verification was run.
+
 ## 2026-09-09
 
 - Added a four-file Russian documentation memory pilot for RLB-2I/RLB-2J,

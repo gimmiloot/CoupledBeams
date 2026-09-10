@@ -8,6 +8,10 @@ All frequency-versus-parameter maps in this direction inherit the project-wide
 [`frequency-map-v1` policy](../numerics/frequency_map_computation_policy.md)
 unless a local note records an explicit override.
 
+Теоретическое продолжение: [поворотно-упругий узел EB/RLB](inplane_rotational_spring_joint.md)
+— вариационные выводы, матрица и пределы; новый узел ещё не реализован
+и не проверен спектрально.
+
 Сохранённый исторический результат RLB-0:
 
 ```text
