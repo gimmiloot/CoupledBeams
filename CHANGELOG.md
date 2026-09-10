@@ -2,12 +2,20 @@
 
 ## 2026-09-10
 
+- Prepared an isolated physical-state EB rotational-spring adapter, targeted
+  tests, and a fixed 12-group diagnostic pilot reusing the existing matrix
+  detector/refiner. Added the scoped report and updated memory with the user's
+  EB-pilot authorization. No working Python was available in the checked
+  environment: imports, tests and spectra are NOT_RUN_ENVIRONMENT (0/12 groups,
+  no generated results). Existing rigid physics and defaults remain unchanged.
+
 - Derived the in-plane rotational-spring joint for EB and symmetric Reddy/FSDT
   beams in a new theory note, retaining the physical coordinate contract.
   Direct algebra checks cover spring energy, boundary work, the six-row joint
   matrix and rank, hinge/rigid/straight limits, and the RLB-to-EB limit.
-  The proposed boundary-work identity with a minus spring-energy variation
-  is inconsistent with the preserved efforts; the derived identity uses plus.
+  The derived boundary-work identity includes the spring-energy variation
+  with a plus sign. Attribution of an erroneous minus sign to the task is
+  unsupported and has been withdrawn; this editorial clarification changes no formula.
   Updated the existing scoped memory with the user's selected theory stage
   and linked result. No joint implementation or spectral verification was run.
 

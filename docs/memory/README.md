@@ -8,6 +8,11 @@
 [RLB-D03](decisions.md#rlb-d03), проверенный вывод и его ограничения —
 [RLB-K05](knowledge.md#rlb-k05),
 [самостоятельная заметка](../laminated_beams/inplane_rotational_spring_joint.md).
+Первая EB-реализация и ограниченный пилот: разрешённый объём —
+[RLB-D04](decisions.md#rlb-d04), фактическое состояние и ограничения —
+[RLB-K06](knowledge.md#rlb-k06),
+[отчёт](../laminated_beams/inplane_rotational_spring_eb_pilot.md).
+Код подготовлен; тесты и расчёты пока `NOT_RUN_ENVIRONMENT`.
 
 Порядок чтения: этот вход → [текущий контекст](current.md) → нужная запись
 в [знаниях](knowledge.md) или [решениях](decisions.md) → конкретное основание

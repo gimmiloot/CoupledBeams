@@ -19,7 +19,7 @@ rule in `docs/project_rules.md`.
 ## Scoped research memory
 
 For continuation or status questions about RLB-2I/RLB-2J or the EB/RLB
-rotational-spring theory stage, start with
+rotational-spring theory stage and its limited EB pilot, start with
 [memory entry](docs/memory/README.md) and [current context](docs/memory/current.md),
 then read only relevant records and their sources. Memory does not replace
 model-specific contracts, theory, code, or data, or authorize new actions.

@@ -9,8 +9,10 @@ All frequency-versus-parameter maps in this direction inherit the project-wide
 unless a local note records an explicit override.
 
 Теоретическое продолжение: [поворотно-упругий узел EB/RLB](inplane_rotational_spring_joint.md)
-— вариационные выводы, матрица и пределы; новый узел ещё не реализован
-и не проверен спектрально.
+— вариационные выводы, матрица и пределы.
+[Первый EB-пилот](inplane_rotational_spring_eb_pilot.md): код и целевые тесты
+подготовлены, исполнение и спектральные проверки `NOT_RUN_ENVIRONMENT`.
+RLB с новым узлом пока не реализована.
 
 Сохранённый исторический результат RLB-0:
 
