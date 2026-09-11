@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-09-11
+
+- Added a bounded EB angular-map entry point using the existing physical
+  assembly and determinant/sigma-min workflow, with continuation windows,
+  missing-only checkpoints and separate plot-only rendering. Processed 1005
+  BASE points for five joint states: 994 confirmed (three guard qualifications),
+  11 gaps; reused ten old points. Two of three added midpoint cases confirmed.
+  Saved one spectral table and six figures in PNG/PDF with explicit gaps.
+  A triggered local check recovered a missed close sixth root at kappa=.1,
+  beta=90 degrees; the previous attempt is retained. Recorded 807465 boundary
+  builds and 12 local recoveries. All 19 targeted tests passed; plot-only made
+  zero matrix/root calls and all six PNGs were visually checked. Added report
+  and updated scoped memory. Physics, old EB data/failures and RLB results
+  remain unchanged; no damping, branch tracking or full spectral certification.
+
 ## 2026-09-10
 
 - Added a narrow symmetric RLB rotational-spring coefficient adapter and a

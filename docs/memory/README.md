@@ -18,6 +18,10 @@ EB исполняется: 50 тестов, 10/12 принятых BASE-груп
 Подключение пружины к RLB и конечная проверка RLB → EB при `kappa_theta=1`:
 [RLB-D05](decisions.md#rlb-d05), [RLB-K07](knowledge.md#rlb-k07),
 [отчёт с матрицами, спектрами и guard qualification](../laminated_beams/inplane_rotational_spring_rlb_eb_limit.md).
+Шесть EB-карт по углу для пяти состояний узла: [RLB-D06](decisions.md#rlb-d06),
+[RLB-K08](knowledge.md#rlb-k08),
+[рисунки, общие данные и plot-only](../laminated_beams/inplane_rotational_spring_eb_beta_maps.md#рисунки-данные-и-воспроизведение).
+Подтверждены 994/1005 BASE-точек; пропуски показаны разрывами.
 
 Порядок чтения: этот вход → [текущий контекст](current.md) → нужная запись
 в [знаниях](knowledge.md) или [решениях](decisions.md) → конкретное основание
