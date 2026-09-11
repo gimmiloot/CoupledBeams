@@ -2,6 +2,20 @@
 
 ## 2026-09-11
 
+- Extended the existing EB mode workflow to the exact hinge kappa=0:
+  reused all 201 BASE groups and 1408 spectral positions, recovered independent
+  reflection modes at four endpoint doublets (including guard), and tracked
+  six branches without added angles or hinge root searches. Matched seeds
+  across kappa=0,1,100 using mass MAC; retained one failed direct match and
+  resolved it through a single beta=0, kappa=10 calculation (seven roots).
+  Its separated guard detector warning remains qualified. Saved a frozen
+  mapping, 3966 comparison rows, six comparison figures and one hinge overview.
+  All 29 original sorted/tracked files remain byte-identical. Added 13 tests
+  (34 targeted tests passed), report and memory decision/result. Recorded
+  2291 full/block/constraint builds; resume and plot-only made zero numerical
+  calls. Old kappa=1,100 tracking and six crossing events were not rerun;
+  production physics, RLB and damping remain unchanged.
+
 - Added a narrow physical EB mode-reconstruction and mass-MAC workflow for
   kappa=1,100. Reused 2779 saved frequencies; recovered all five selected
   missing BASE groups and calculated 58 local angle points. Tracked the six

@@ -26,6 +26,11 @@ EB исполняется: 50 тестов, 10/12 принятых BASE-груп
 [RLB-K09](knowledge.md#rlb-k09),
 [ветви, пересечения и сохранённые формы](../laminated_beams/inplane_rotational_spring_eb_tracked.md).
 Пять выбранных пропусков закрыты в новом наборе; исходные sorted-карты сохранены.
+Точный шарнир kappa=0 и сравнение соответствующих форм kappa=0,1,100:
+[RLB-D08](decisions.md#rlb-d08), [RLB-K10](knowledge.md#rlb-k10),
+[семь новых рисунков, таблица seed и plot-only](../laminated_beams/inplane_rotational_spring_eb_hinge_comparison.md#данные-рисунки-и-воспроизведение).
+Общий reference — beta=0,kappa=1; совпадения при 90° обработаны как два
+независимых класса. Старые kappa=1,100 и шесть их событий сохранены.
 
 Порядок чтения: этот вход → [текущий контекст](current.md) → нужная запись
 в [знаниях](knowledge.md) или [решениях](decisions.md) → конкретное основание

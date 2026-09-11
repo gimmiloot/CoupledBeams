@@ -127,6 +127,26 @@ def principal_correlations(left, right):
     return np.linalg.svd(np.asarray(left).conj() @ np.asarray(right).T, compute_uv=False)
 
 
+def saved_root_classes(rows):
+    """Preserve exact saved doublets, with one reflection projection per row.
+
+    This selects candidate classes, not a multiplicity test. The caller must
+    verify full nullity, both physical modes and their mass independence.
+    Nearby *distinct* frequencies are never grouped here.
+    """
+    result = [None]*len(rows)
+    for frequency in dict.fromkeys(r['Omega'] for r in rows):
+        indices = [i for i,r in enumerate(rows) if r['Omega'] == frequency]
+        if len(indices) == 1:
+            if rows[indices[0]]['multiplicity'] != 1:
+                raise ValueError('incomplete saved multiplet')
+            continue
+        if len(indices) != 2 or any(rows[i]['multiplicity'] != 2 for i in indices):
+            raise ValueError('unsupported saved multiplet')
+        result[indices[0]],result[indices[1]] = 1,-1
+    return result
+
+
 def class_conditions(beta_rad, k_theta, parity):
     if parity not in (-1, 1):
         raise ValueError("reflection class is +1 or -1")
@@ -172,6 +192,7 @@ def recover(assembly, omega, beta_rad, joint, arm, nodes=129, parity=None):
         raise ValueError("FULL_MATRIX_ROOT_GATE")
     xi, weights = quadrature(nodes)
     possibilities = []
+    arm_evaluations = 0
     for record in endpoint['vectors']:
         reactions = np.asarray(record['physical_clamp_reactions']).reshape(2,3)
         if parity is not None:
@@ -181,6 +202,7 @@ def recover(assembly, omega, beta_rad, joint, arm, nodes=129, parity=None):
                 continue
             reactions = projected
         states = np.array([arm_states(omega,arm,r,xi) for r in reactions])
+        arm_evaluations += 2
         states,reactions,vector,mass = normalize(states,reactions,arm,weights)
         mirrored = mass_vector(reflect(states),arm,weights)
         symmetry = float(np.vdot(vector,mirrored).real)
@@ -201,4 +223,6 @@ def recover(assembly, omega, beta_rad, joint, arm, nodes=129, parity=None):
             null_residual=float(boundary_residual),sigma_ratio=endpoint['sigma_ratio'],
             detected_nullity=endpoint['nullity'],failures=failures))
     if not possibilities:raise ValueError('NO_CLASS_IN_NULLSPACE')
-    return min(possibilities,key=lambda d:max(d['physical_residuals']))
+    result = min(possibilities,key=lambda d:max(d['physical_residuals']))
+    result['analytic_arm_evaluations'] = arm_evaluations
+    return result

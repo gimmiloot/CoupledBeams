@@ -1,4 +1,4 @@
-"""Two EB spring cases: physical modes, bounded local roots, tracked branches.
+"""Selected EB spring cases: physical modes, bounded roots, tracked branches.
 
 compute is missing-only; plot-only reads tables/NPZ without roots or tracking.
 The original sorted map and all production physics remain unchanged.
@@ -31,6 +31,9 @@ from scripts.analysis.laminated_beams import plot_inplane_rotational_spring_eb_b
 
 PLOT_KAPPAS = [1,100]
 OUTPUT = ROOT/'results/laminated_beams/inplane_rotational_spring_eb_tracked'
+LEGACY_TRACKED = OUTPUT
+HINGE_OUTPUT = ROOT/'results/laminated_beams/inplane_rotational_spring_eb_tracked_k0'
+COMPARISON_OUTPUT = ROOT/'results/laminated_beams/inplane_rotational_spring_eb_tracked_comparison'
 ARM,FS = old.ARM,old.FS
 CRITERIA = dict(mac=.95,margin=.20,symmetry_defect=1e-6,close_relative=.02,
     frequency_relative=1e-6,local_frequency_relative=1e-8,angle_degrees=1e-3,
@@ -39,6 +42,17 @@ CRITERIA = dict(mac=.95,margin=.20,symmetry_defect=1e-6,close_relative=.02,
 BRANCH_COLORS = dict(zip([f'mode_{j:02d}' for j in range(1,7)],
     ['#0072B2','#D55E00','#009E73','#CC79A7','#E69F00','#333333']))
 CALLS = Counter()
+COMPARISON_STYLES = {0:dict(color='#0072B2',linestyle='-'),
+                     1:dict(color='#D55E00',linestyle='--'),
+                     100:dict(color='#009E73',linestyle='-.')}
+COMPARISON_MARKERS = {0:('o',(15,55)),1:('s',(32,61)),100:('^',(47,57))}
+
+
+def assert_protected_sources(directory=None):
+    path=(directory or HINGE_OUTPUT)/'run_manifest.json'
+    if path.exists():
+        for name,digest in json.loads(path.read_text(encoding='utf-8')).get('protected_source_files_sha256',{}).items():
+            if sha(ROOT/name)!=digest:raise ValueError(f'Protected source changed: {name}')
 
 
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -60,6 +74,15 @@ def write_csv(path,rows):
 
 def load():
     OUTPUT.mkdir(exist_ok=True)
+    if PLOT_KAPPAS==[0]:
+        manifest_path=OUTPUT/'run_manifest.json'
+        manifest=json.loads(manifest_path.read_text(encoding='utf-8')) if manifest_path.exists() else {}
+        if 'protected_source_files_sha256' not in manifest:
+            manifest['protected_source_files_sha256']={p.relative_to(ROOT).as_posix():sha(p)
+                for directory in (old.OUTPUT,LEGACY_TRACKED) for p in sorted(directory.rglob('*')) if p.is_file()}
+            manifest['addition_initial_HEAD']=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+            atomic(manifest_path,json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
+        assert_protected_sources(OUTPUT)
     path=OUTPUT/'tracking_diagnostics.json'
     state=json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}
     state.setdefault('points',{});state.setdefault('events',[]);state.setdefault('tracking_attempts',[])
@@ -71,6 +94,8 @@ def load():
     state.setdefault('source_version',dict(HEAD=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
         executable=sys.executable,python=platform.python_version(),numpy=np.__version__,scipy=scipy.__version__,
         code_status='working-tree version',criteria=CRITERIA,physics_hashes=old.contract()['physics_sha256']))
+    selected=state.setdefault('selected_kappas',PLOT_KAPPAS)
+    if selected!=PLOT_KAPPAS:raise ValueError('Output belongs to a different kappa selection')
     shapes={}
     if (OUTPUT/'shapes.npz').exists():
         with np.load(OUTPUT/'shapes.npz',allow_pickle=False) as data:shapes={k:data[k] for k in data.files}
@@ -88,7 +113,9 @@ def save(state,shapes=None):
 
 class PointMatrices:
     def __init__(self,kappa,beta,counts_before=0):
-        self.point=old.case(f'k{kappa:g}',beta)
+        if not math.isfinite(kappa) or kappa<0 or not math.isfinite(beta):raise ValueError('finite nonnegative kappa and finite beta required')
+        self.point=dict(point_id=point_id(kappa,beta),state=f'k{kappa:g}',beta_deg=beta,beta_rad=math.radians(beta),
+                        mode='SPRING',kappa_theta=kappa,k_theta=kappa*ARM.D/ARM.L,grid_role='BASE')
         self.transfers=old.Transfers();self.full=old.Provider(self.point,self.transfers)
         self.blocks={};self.count=counts_before;self.full_count=0;self.block_count=0
 
@@ -113,13 +140,15 @@ class PointMatrices:
 def reconstruct(context,Omega,parity=None,nodes=129):
     started=time.perf_counter();omega=Omega/FS
     result=modes.recover(context.assembly(omega),omega,context.point['beta_rad'],context.full.joint,ARM,nodes,parity)
-    CALLS['shape_reconstructions']+=1;CALLS['analytic_arm_evaluations']+=2
+    CALLS['shape_reconstructions']+=1;CALLS['analytic_arm_evaluations']+=result['analytic_arm_evaluations']
     CALLS['shape_seconds']+=time.perf_counter()-started
     return result
 
 
 def attach_shape(state,shapes,context,root,parity=None):
     result=reconstruct(context,root['Omega'],parity)
+    if parity is not None and result['symmetry_class']!=parity:raise ValueError('WRONG_REFLECTION_CLASS')
+    if root['multiplicity']==2 and result['detected_nullity']!=2:raise ValueError('SAVED_MULTIPLICITY_NOT_CONFIRMED')
     key=point_id(root['kappa'],root['beta_deg']).replace('.','p')+f"_r{root['current_sorted_position']:02d}"
     for name in ('states','reactions','vector'):shapes[key+'__'+name]=result.pop(name)
     root.update(shape_key=key,root_status='CONFIRMED' if not result['failures'] else 'SHAPE_UNCONFIRMED',
@@ -133,31 +162,40 @@ def import_saved(state,shapes):
     with (old.OUTPUT/'spectrum_roots.csv').open(encoding='utf-8',newline='') as stream:csv_rows=list(csv.DictReader(stream))
     c=source['contract'];expected=old.contract()
     assert c['geometry']==expected['geometry'] and c['arm']==expected['arm']
+    assert c['normalization']==expected['normalization']
     assert c['physics_sha256']==expected['physics_sha256']
-    audit=[];started=time.perf_counter()
+    audit=[];started=time.perf_counter();accepted_points=frequency_rows=0
     for kappa in PLOT_KAPPAS:
         for tick in old.grid_tenths():
             beta=tick/10;pid=point_id(kappa,beta);saved=source['points'][pid]
-            if pid in state['points'] and all(r.get('shape_key','')+'__vector' in shapes for r in state['points'][pid]['roots']):continue
             if saved['status'] not in old.GOOD:
                 audit.append(dict(point_id=pid,status=saved['status'],blank_ROOT_rows=sum(r['point_id']==pid and not r['Omega'] for r in csv_rows)))
                 continue
+            accepted_points+=1;frequency_rows+=len(saved['rows'])
+            if pid in state['points'] and state['points'][pid]['roots'] and all(r.get('shape_key','')+'__vector' in shapes for r in state['points'][pid]['roots']):continue
             values=[r['Omega'] for r in saved['rows']]
             assert len(values)>=7 and values==sorted(values) and min(values)>0
+            assert [r['sorted_position'] for r in saved['rows']]==list(range(1,len(values)+1))
+            assert saved['case']['kappa_theta']==kappa and saved['case']['k_theta']==kappa*ARM.D/ARM.L
+            assert saved['case']['beta_deg']==beta and saved['case']['beta_rad']==math.radians(beta)
             context=PointMatrices(kappa,beta);roots=[]
-            for r in saved['rows']:
+            for r,parity in zip(saved['rows'],modes.saved_root_classes(saved['rows'])):
                 assert math.isclose(r['Lambda']**2,r['Omega'],rel_tol=1e-14)
+                assert math.isclose(r['omega']*FS,r['Omega'],rel_tol=1e-14)
                 csvrow=next(x for x in csv_rows if x['point_id']==pid and int(x['sorted_position'])==r['sorted_position'])
                 assert all(float(csvrow[k])==r[k] for k in ('omega','Omega','Lambda'))
                 root=dict(kappa=kappa,beta_deg=beta,current_sorted_position=r['sorted_position'],omega=r['omega'],
                     Omega=r['Omega'],Lambda=r['Lambda'],source='REUSED_SORTED_ROOT',source_group_status=saved['status'],
-                    multiplicity=r['multiplicity'],grid_role='BASE')
-                try:roots.append(attach_shape(state,shapes,context,root))
+                    multiplicity=r['multiplicity'],grid_role='BASE',role=r['role'])
+                try:roots.append(attach_shape(state,shapes,context,root,parity))
                 except ValueError as error:
                     root.update(root_status='SHAPE_UNCONFIRMED',reason=str(error));roots.append(root)
             state['points'][pid]=dict(kappa=kappa,beta_deg=beta,roots=roots,status='REUSED',B=context.count,
                 full_B=context.full_count,symmetry_B=0,transfer_expm=context.transfers.expm_calls)
-    state.setdefault('source_data_audit',dict(missing=audit,source_accepted_points=397,source_frequency_rows=2779,
+            if PLOT_KAPPAS==[0]:
+                save(state,shapes)
+                if tick%100==0:print('import',pid,'modes',len(roots),flush=True)
+    state.setdefault('source_data_audit',dict(missing=audit,source_accepted_points=accepted_points,source_frequency_rows=frequency_rows,
         parameter_checks='geometry,rigidities,normalization,physical hashes,CSV/JSON exact agreement,order,Lambda^2=Omega',
         no_source_changes=True))
     state.setdefault('timing',{})['reuse_and_shapes_seconds']=time.perf_counter()-started
@@ -180,7 +218,7 @@ def local_windows(state,kappa,beta,parity):
     return old.merge_windows(windows)
 
 
-def search_point(state,shapes,kappa,beta,trigger):
+def search_point(state,shapes,kappa,beta,trigger,windows_override=None,persist=True):
     pid=point_id(kappa,beta)
     if pid in state['points'] and state['points'][pid]['roots']:return state['points'][pid]
     base=any(abs(beta-t/10)<1e-10 for t in old.grid_tenths())
@@ -189,7 +227,7 @@ def search_point(state,shapes,kappa,beta,trigger):
         if pid not in state['added_points']:state['added_points'].append(pid)
     started=time.perf_counter();context=PointMatrices(kappa,beta);events=[];records=[];errors=[];suspects=[]
     try:
-        class_windows={parity:local_windows(state,kappa,beta,parity) for parity in (1,-1)}
+        class_windows=windows_override if windows_override is not None else {parity:local_windows(state,kappa,beta,parity) for parity in (1,-1)}
         upper=max(w[-1][1] for w in class_windows.values())+.1
         for parity in (1,-1):
             windows=class_windows[parity]
@@ -232,7 +270,7 @@ def search_point(state,shapes,kappa,beta,trigger):
         guard_warnings=[old.pilot.candidate_record(c) for c in suspects])
     state['points'][pid]=group
     state['root_searches'].append(dict(point_id=pid,records=records,errors=errors,seconds=group['seconds']))
-    save(state)
+    if persist:save(state)
     print('root point',pid,group['status'],'roots',len(roots),'B',context.count,flush=True)
     return group
 
@@ -269,7 +307,8 @@ def track(state,shapes,allow_new=True):
                 rows.append(dict(kappa=kappa,beta_deg=beta,branch_id=f'mode_{i+1:02d}',seed_sorted_position=i+1,
                     current_sorted_position=r['current_sorted_position'],omega=r['omega'],Omega=r['Omega'],Lambda=r['Lambda'],
                     root_status=r['root_status'],tracking_status=status[i],MAC=float(mac[i]),competing_assignment_margin=float(margin[i]),
-                    cluster_id=r.get('cluster_id',''),symmetry_class=r['symmetry_class'],source=r['source'],shape_key=r['shape_key']))
+                    cluster_id=r.get('cluster_id',''),symmetry_class=r['symmetry_class'],source=r['source'],shape_key=r['shape_key'],
+                    grid_role=r.get('grid_role','BASE')))
         emit(previous,0.,np.ones(6),np.ones(6),['SEED_CONFIRMED']*6)
         previous_beta=0.
         queue=[(beta,None) for beta in sorted(p['beta_deg'] for p in state['points'].values() if p['kappa']==kappa and p['beta_deg']>0)]
@@ -525,10 +564,10 @@ def render():
             fig.text(.5,.015,'Ветви первых шести мод при β=0, продолженные по формам',ha='center',fontsize=10)
             for ext in ('png','pdf'):fig.savefig(OUTPUT/f'eb_spring_tracked_k{kappa}.{ext}',dpi=300)
             plt.close(fig)
-        shape_figures=render_event_shapes(plt)
+        shape_figures=0 if PLOT_KAPPAS==[0] else render_event_shapes(plt)
     assert dict(CALLS)==before
     info=dict(seconds=time.perf_counter()-started,matrix_calls=0,root_calls=0,shape_calls=0,tracking_calls=0,
-        matplotlib=matplotlib.__version__,tracked_csv_sha256=sha(OUTPUT/'tracked_branches.csv'),main_figures=2,event_shape_figures=shape_figures)
+        matplotlib=matplotlib.__version__,tracked_csv_sha256=sha(OUTPUT/'tracked_branches.csv'),main_figures=len(PLOT_KAPPAS),event_shape_figures=shape_figures)
     path=OUTPUT/'run_manifest.json';manifest=json.loads(path.read_text()) if path.exists() else {}
     if 'render' in manifest:manifest.setdefault('render_history',[]).append(manifest['render'])
     manifest['render']=info;atomic(path,json.dumps(manifest,ensure_ascii=False,indent=2)+'\n');print('plot-only',info)
@@ -560,12 +599,13 @@ def write_manifest(state):
             B_including_preflight=sum(p['B'] for p in points)+preflight.get('B',0),
             B_full=sum(p['full_B'] for p in points)+preflight.get('B',0),B_symmetry=sum(p['symmetry_B'] for p in points),
             max_B_per_point=max((p['B'] for p in points),default=0),
+            constraint_matrix=sum(p.get('constraint_matrix',0) for p in points),
             transfer_expm=sum(p['transfer_expm'] for p in points)+preflight.get('transfer_expm',0),
             verification_expm=preflight.get('verification_expm',0),
             shape_reconstructions=calls['shape_reconstructions']+preflight.get('shape_reconstructions',0),
             analytic_arm_evaluations=calls['analytic_arm_evaluations']+calls['quadrature_arm_evaluations']+preflight.get('analytic_arm_evaluations',0),
-            tracking_recovery_attempts=len(state['tracking_attempts']),local_accuracy_attempts=sum(e['additional_accuracy_attempts'] for e in state['events']),
-            accuracy_repeat_frequencies=sum(len(e['local_repeats']) for e in state['events']),
+            tracking_recovery_attempts=len(state['tracking_attempts']),local_accuracy_attempts=sum(e.get('additional_accuracy_attempts',0) for e in state['events']),
+            accuracy_repeat_frequencies=sum(len(e.get('local_repeats',[])) for e in state['events']),
             crossing_status=dict(Counter(e['classification'] for e in state['events']))),
         time=dict(compute_invocations_seconds=sum(i['seconds'] for i in state.get('invocations',[])),
             preflight_seconds=preflight.get('seconds',0),
@@ -578,28 +618,319 @@ def write_manifest(state):
             'No resolved avoided crossing found among the tracked six under the declared close trigger; not an absence theorem.',
             'Old sorted tables and their qualifications remain unchanged; derivative chat illustrations are not evidence.',
             'No RLB, viscosity, FEM/Ritz, foreign physical model builders or kappa continuation were executed.'])
+    if PLOT_KAPPAS==[0]:
+        manifest['limitations']=[
+            'Exact hinge; old kappa=1,100 roots, modes and six events are read-only.',
+            'Finite angular tracking and endpoint degeneracies, not a theorem excluding all other crossings.',
+            '129-node mass quadrature reused from the preceding validated workflow; no new global grid study.',
+            'No RLB, viscosity, FEM/Ritz or spectrum interpolation. Original sorted qualifications are retained.']
+        manifest['endpoint_checks']=state.get('endpoint_checks',[])
     atomic(path,json.dumps(manifest,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
 
 
+def hinge_endpoint_checks(state,shapes):
+    """Check both full-kernel projections at the exact endpoint, without roots."""
+    if state.get('endpoint_checks'):return
+    started=time.perf_counter();point=state['points'][point_id(0,90)]
+    context=PointMatrices(0,90,point['B']);checks=[]
+    equivalence=modes.symmetry_equivalence(np.pi/2,0.,ARM)
+    # symmetry_equivalence builds one physical joint constraint matrix.
+    context.tick('constraint_matrix')
+    point['constraint_matrix']=point.get('constraint_matrix',0)+1
+    R=np.diag([1.,-1.,-1.]);L=np.diag([1.,1.,-1.])
+    for frequency in dict.fromkeys(r['Omega'] for r in point['roots']):
+        group=[r for r in point['roots'] if r['Omega']==frequency]
+        if len(group)!=2:continue
+        vectors=np.array([shapes[r['shape_key']+'__vector'] for r in group])
+        gram=vectors.conj()@vectors.T
+        plus=context.block(frequency/FS,1);minus=context.block(frequency/FS,-1)
+        block_error=float(np.linalg.norm(minus-L@plus@R)/np.linalg.norm(minus))
+        gram_error=float(np.linalg.norm(gram-np.eye(2),ord=np.inf))
+        selected=[r for r in state['tracked_rows'] if r['beta_deg']==90 and r['shape_key'] in [x['shape_key'] for x in group]]
+        nullities=[state['shape_checks'][r['shape_key']]['detected_nullity'] for r in group]
+        ok=(all(r['root_status']=='CONFIRMED' for r in group) and nullities==[2,2]
+            and {r['symmetry_class'] for r in group}=={-1,1} and gram_error<=1e-10
+            and block_error<=1e-12 and equivalence['row_error']<=1e-12 and equivalence['row_rank']==6
+            and all(r['tracking_status']=='TRACKED' and r['MAC']>=CRITERIA['mac'] for r in selected))
+        cluster=f'k0_endpoint_{group[0]["current_sorted_position"]:02d}_{group[1]["current_sorted_position"]:02d}'
+        for r in group+selected:r['cluster_id']=cluster
+        record=dict(cluster_id=cluster,Omega=frequency,Lambda=group[0]['Lambda'],positions=[r['current_sorted_position'] for r in group],
+            shape_keys=[r['shape_key'] for r in group],symmetry_classes=[r['symmetry_class'] for r in group],nullities=nullities,
+            mass_gram=gram.tolist(),mass_gram_error=gram_error,block_equivalence_error=block_error,
+            constraint_equivalence=equivalence,one_sided_MAC=[r['MAC'] for r in selected],
+            classification='ENDPOINT_DEGENERACY_SUPPORTED' if ok else 'UNRESOLVED_CLOSE_CLUSTER',
+            role='ROOT' if selected else 'GUARD')
+        checks.append(record)
+        if selected:
+            branches=sorted(selected,key=lambda r:r['branch_id'])
+            left=[r for r in state['tracked_rows'] if r['beta_deg']==89 and r['branch_id'] in [x['branch_id'] for x in branches]]
+            left.sort(key=lambda r:r['branch_id'])
+            state['events'].append(dict(event_id=cluster,kappa=0,branch_a=branches[0]['branch_id'],branch_b=branches[1]['branch_id'],
+                classification=record['classification'],beta_left=89.,beta_right=90.,endpoint_beta=90.,
+                Omega_a_left=left[0]['Omega'],Omega_b_left=left[1]['Omega'],Omega_a_right=frequency,Omega_b_right=frequency,
+                difference_left=left[0]['Omega']-left[1]['Omega'],difference_right=0.,minimum_sampled_gap=0.,
+                symmetry_a=branches[0]['symmetry_class'],symmetry_b=branches[1]['symmetry_class'],
+                evidence='Exact endpoint block equivalence, full nullity 2, independent mass-orthogonal reflection classes and one-sided shape continuation; no beta>90 claim'))
+        if not ok:
+            for r in selected:r['tracking_status']='TRACKING_AMBIGUOUS'
+    point['B']=context.count;point['symmetry_B']+=context.block_count
+    point['transfer_expm']+=context.transfers.expm_calls
+    state['endpoint_checks']=checks;state.setdefault('timing',{})['endpoint_seconds']=time.perf_counter()-started
+    write_csv(OUTPUT/'crossing_events.csv',[{k:v for k,v in e.items() if k not in ('traces','local_repeats','initial_bracket')} for e in state['events']])
+    write_csv(OUTPUT/'tracked_branches.csv',state['tracked_rows']);save(state)
+
+
+def read_csv(path):
+    with path.open(encoding='utf-8',newline='') as stream:return list(csv.DictReader(stream))
+
+
+def comparison_inputs():
+    """Read-only old results: validation does not relabel or reconstruct them."""
+    assert_protected_sources()
+    directories={0:HINGE_OUTPUT,1:LEGACY_TRACKED,100:LEGACY_TRACKED}
+    manifests={k:json.loads((path/'run_manifest.json').read_text(encoding='utf-8')) for k,path in directories.items()}
+    for k,manifest in manifests.items():
+        for field in ('geometry','arm','normalization'):
+            if manifest[field]!=old.contract()[field]:raise ValueError('Incompatible comparison '+field)
+        if manifest['source_version']['physics_hashes']!=old.contract()['physics_sha256']:raise ValueError('Physical source mismatch')
+        if manifest['shape_grid']!=manifests[1]['shape_grid']:raise ValueError('Incompatible mass metric')
+    rows={k:[r for r in read_csv(path/'tracked_branches.csv') if float(r['kappa'])==k] for k,path in directories.items()}
+    return directories,manifests,rows
+
+
+def seed_assignment(reference,candidates):
+    columns,mac,margins=modes.assign([r['vector'] for r in reference],[r['vector'] for r in candidates],
+        [r['symmetry_class'] for r in reference],[r['symmetry_class'] for r in candidates])
+    records=[]
+    for i,j in enumerate(columns):
+        eligible=[q for q,r in enumerate(candidates) if r['symmetry_class']==reference[i]['symmetry_class']]
+        good=(mac[i,j]>=CRITERIA['mac'] and margins[i]>=CRITERIA['margin'] and j in eligible)
+        records.append(dict(comparison_mode_id=f'comparison_mode_{i+1:02d}',source_branch_id=candidates[j]['branch_id'],
+            seed_beta=0,symmetry_class=reference[i]['symmetry_class'],matching_method='DIRECT_MASS_MAC_GLOBAL_ASSIGNMENT',
+            MAC=float(mac[i,j]),margin=float(margins[i]),status='CONFIRMED' if good else 'SEED_MAPPING_AMBIGUOUS',
+            competitors=json.dumps([dict(branch_id=candidates[q]['branch_id'],MAC=float(mac[i,q])) for q in eligible]),
+            reference_branch_id=reference[i]['branch_id']))
+    return records
+
+
+def prepare_seed_mapping():
+    directories,manifests,rows=comparison_inputs();COMPARISON_OUTPUT.mkdir(exist_ok=True)
+    path=COMPARISON_OUTPUT/'seed_mode_mapping.csv'
+    sources={str((p/name).relative_to(ROOT)):sha(p/name) for p in set(directories.values())
+             for name in ('tracked_branches.csv','verified_roots.csv','shapes.npz','run_manifest.json')}
+    manifest_path=COMPARISON_OUTPUT/'comparison_manifest.json'
+    if path.exists():
+        saved=json.loads(manifest_path.read_text(encoding='utf-8'))
+        # Rendering changes the hinge manifest only; scientific inputs must match.
+        if any(saved['input_sha256'].get(n)!=h for n,h in sources.items() if not n.endswith('run_manifest.json')):
+            raise ValueError('Seed mapping sources changed')
+        print('seed mapping reused');return
+    started=time.perf_counter();seeds={}
+    for k,path0 in directories.items():
+        selected=sorted([r for r in rows[k] if float(r['beta_deg'])==0],key=lambda r:int(r['seed_sorted_position']))
+        if len(selected)!=6 or any(r['root_status']!='CONFIRMED' or r['tracking_status']!='SEED_CONFIRMED' for r in selected):
+            raise ValueError('Incomplete initial six modes')
+        with np.load(path0/'shapes.npz',allow_pickle=False) as saved:
+            seeds[k]=[dict(branch_id=r['branch_id'],symmetry_class=int(r['symmetry_class']),vector=saved[r['shape_key']+'__vector']) for r in selected]
+    mapping=[]
+    for k in (0,1,100):
+        for record in seed_assignment(seeds[1],seeds[k]):
+            record['kappa']=k;record['source']=str(directories[k].relative_to(ROOT))
+            if k==1:record['matching_method']='REFERENCE_IDENTITY_CHECKED_MASS_MAC'
+            mapping.append(record)
+    write_csv(COMPARISON_OUTPUT/'seed_mode_mapping.csv',mapping)
+    manifest=dict(reference=dict(kappa=1,beta_deg=0),path='reference seed -> kappa at beta=0 -> frozen source angular continuation',
+        criteria=dict(MAC=CRITERIA['mac'],margin=CRITERIA['margin'],symmetry_required=True,frequency_in_cost=False),
+        input_sha256=sources,source_versions={str(k):m['source_version'] for k,m in manifests.items()},
+        addition_HEAD=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),code_status='working-tree version',
+        addition_environment=dict(executable=sys.executable,python=platform.python_version(),numpy=np.__version__,scipy=scipy.__version__),
+        mapping_code_sha256=sha(Path(__file__)),
+        matching_seconds=time.perf_counter()-started,mapping_counts=dict(Counter(r['status'] for r in mapping)),
+        new_kappa_seed_values=[],new_roots=0,shape_reconstructions=0,old_angular_tracking_calls=0,
+        limitations=['Frozen seed correspondence; no path independence in the two-dimensional parameter plane claimed.',
+                     'Old six crossing events are reused, not localized again.'])
+    atomic(manifest_path,json.dumps(manifest,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
+    print('seed mapping',manifest['mapping_counts'],'min MAC',min(r['MAC'] for r in mapping),'min margin',min(r['margin'] for r in mapping))
+
+
+def mapped_rows(mapping,source_rows):
+    """Frozen mapping only: retain every source frequency and sorted position."""
+    result=[]
+    if len({(float(r['kappa']),r['source_branch_id']) for r in mapping})!=len(mapping):raise ValueError('Non-bijective seed mapping')
+    for match0 in mapping:
+        k=float(match0['kappa'])
+        for r in source_rows[k]:
+            if r['branch_id']!=match0['source_branch_id']:continue
+            result.append(dict(comparison_mode_id=match0['comparison_mode_id'],source_branch_id=r['branch_id'],kappa=r['kappa'],beta_deg=r['beta_deg'],
+                **{key:r[key] for key in ('omega','Omega','Lambda','current_sorted_position','symmetry_class','root_status','tracking_status')},
+                mapping_status=match0['status'],grid_role=r.get('grid_role') or ('BASE' if any(abs(float(r['beta_deg'])-t/10)<1e-10 for t in old.grid_tenths()) else 'ADDED'),
+                source=match0['source'].replace('\\','/')+'/tracked_branches.csv',source_shape_key=r['shape_key']))
+    return sorted(result,key=lambda r:(r['comparison_mode_id'],float(r['kappa']),float(r['beta_deg'])))
+
+
+def prepare_comparison_table():
+    _,_,rows=comparison_inputs();mapping=read_csv(COMPARISON_OUTPUT/'seed_mode_mapping.csv')
+    result=mapped_rows(mapping,rows)
+    write_csv(COMPARISON_OUTPUT/'comparison_branches.csv',result)
+    path=COMPARISON_OUTPUT/'comparison_manifest.json';manifest=json.loads(path.read_text(encoding='utf-8'))
+    manifest['comparison_rows']=len(result)
+    manifest['table_sha256']={name:sha(COMPARISON_OUTPUT/name) for name in ('seed_mode_mapping.csv','comparison_branches.csv')}
+    manifest['source_grid_counts']={str(k):len({r['beta_deg'] for r in rs}) for k,rs in rows.items()}
+    atomic(path,json.dumps(manifest,ensure_ascii=False,indent=2)+'\n');print('comparison rows',len(result))
+
+
+def continue_seed_mapping():
+    """One triggered beta=0 bridge at kappa=10, using the existing root path.
+
+    No old root is searched, no old angular continuation is run. New modes
+    and the initial direct failure are retained for reproducibility.
+    """
+    directories,_,source_rows=comparison_inputs()
+    path=COMPARISON_OUTPUT/'comparison_manifest.json';manifest=json.loads(path.read_text(encoding='utf-8'))
+    if manifest.get('seed_continuation'):
+        manifest['seed_continuation']['ROOT_GUARD']=seed_guard_qualification(manifest['seed_continuation']['root_state']['points']['k10_b0'])
+        atomic(path,json.dumps(manifest,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
+        print('seed continuation reused');return
+    mapping=read_csv(COMPARISON_OUTPUT/'seed_mode_mapping.csv')
+    unresolved=[r for r in mapping if r['status']!='CONFIRMED']
+    if not unresolved:print('no ambiguous seed');return
+    if any(float(r['kappa'])!=100 for r in unresolved):raise ValueError('This local bridge addresses only kappa=1 to 100')
+    started=time.perf_counter();before=Counter(CALLS);seeds={}
+    for k in (1,100):
+        rows=sorted([r for r in source_rows[k] if float(r['beta_deg'])==0],key=lambda r:int(r['seed_sorted_position']))
+        with np.load(directories[k]/'shapes.npz',allow_pickle=False) as saved:
+            seeds[k]=[dict(branch_id=r['branch_id'],symmetry_class=int(r['symmetry_class']),vector=saved[r['shape_key']+'__vector']) for r in rows]
+    roots0=[r for r in read_csv(LEGACY_TRACKED/'verified_roots.csv') if float(r['beta_deg'])==0 and float(r['kappa']) in (1,100)]
+    windows={}
+    for eta in (1,-1):
+        ends=[sorted(float(r['Omega']) for r in roots0 if float(r['kappa'])==k and int(r['symmetry_class'])==eta) for k in (1,100)]
+        if len(ends[0])!=len(ends[1]):raise ValueError('Seed candidate pool requires a local review')
+        windows[eta]=old.merge_windows([(max(1e-8,min(a,b)-.25),max(a,b)+.25) for a,b in zip(*ends)])
+    seed_state=dict(points={},added_points=[],root_searches=[]);shapes={}
+    point=search_point(seed_state,shapes,10,0.,'AMBIGUOUS_DIRECT_SEED_K100_MODE05',windows_override=windows,persist=False)
+    continuation=dict(kappa_path=[1,10,100],beta_deg=0.,trigger=unresolved,root_state=seed_state,
+                      available_saved_intermediate='kappa=.1 lies outside [1,100]; not useful for this bridge')
+    if point['status']=='CONFIRMED':
+        middle=[dict(branch_id=f"seed10_{r['current_sorted_position']:02d}",symmetry_class=r['symmetry_class'],
+                     vector=shapes[r['shape_key']+'__vector']) for r in point['roots']]
+        first=seed_assignment(seeds[1],middle)
+        selected=[next(r for r in middle if r['branch_id']==record['source_branch_id']) for record in first]
+        second=seed_assignment(selected,seeds[100]);continuation.update(first_step=first,second_step=second)
+        for record,a,b in zip([r for r in mapping if float(r['kappa'])==100],first,second):
+            record.update(direct_MAC=record['MAC'],direct_margin=record['margin'],direct_status=record['status'],
+                direct_source_branch_id=record['source_branch_id'],direct_competitors=record['competitors'],
+                source_branch_id=b['source_branch_id'],matching_method='MASS_MAC_CONTINUATION_1_10_100_AT_BETA0',
+                MAC=min(a['MAC'],b['MAC']),margin=min(a['margin'],b['margin']),competitors=json.dumps([a,b]),
+                status='CONFIRMED' if a['status']==b['status']=='CONFIRMED' else 'SEED_MAPPING_AMBIGUOUS')
+    continuation.update(seconds=time.perf_counter()-started,calls=dict(Counter(CALLS)-before),
+                        ROOT_GUARD=seed_guard_qualification(point),
+                        constraints='one beta=0 point, at most 6000 full/block matrices, no old root replacement')
+    with (COMPARISON_OUTPUT/'seed_shapes.npz.tmp').open('wb') as stream:np.savez_compressed(stream,**shapes)
+    (COMPARISON_OUTPUT/'seed_shapes.npz.tmp').replace(COMPARISON_OUTPUT/'seed_shapes.npz')
+    manifest['seed_continuation']=continuation;manifest['new_kappa_seed_values']=[10]
+    manifest['new_roots']=len(point['roots']);manifest['shape_reconstructions']=continuation['calls'].get('shape_reconstructions',0)
+    manifest['mapping_counts']=dict(Counter(r['status'] for r in mapping))
+    manifest['continuation_code_sha256']=sha(Path(__file__))
+    write_csv(COMPARISON_OUTPUT/'seed_mode_mapping.csv',mapping)
+    atomic(path,json.dumps(manifest,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
+    print('seed continuation',manifest['mapping_counts'],'B',point['B'],'seconds',continuation['seconds'])
+
+
+def seed_guard_qualification(point):
+    """Expose the existing detector warning; do not change root gates/statuses."""
+    roots=point['roots'];warnings=point.get('guard_warnings',[])
+    target_ok=len(roots)>=6 and all(r['root_status']=='CONFIRMED' for r in roots[:6])
+    gap=min((r['interval'][0]-roots[5]['Omega'] for r in warnings),default=None) if len(roots)>=6 else None
+    separated=not warnings or (gap is not None and gap>old.LIMITS['guard_margin_Omega'])
+    return dict(original_helper_status=point['status'],ROOT='CONFIRMED' if target_ok and separated else 'QUALIFIED',
+                GUARD='QUALIFIED_DETECTOR_WARNING' if warnings else 'CONFIRMED',
+                warning_gap_above_sixth=gap,guard_margin_to_right=point.get('common_class_upper',0)-roots[-1]['Omega'] if roots else None,
+                source_warning_retained=warnings,
+                interpretation='Only six seed modes are used; no additional guard search or claimed warning resolution.')
+
+
+def comparison_curve(rows,kappa,mode):
+    selected=sorted([r for r in rows if float(r['kappa'])==kappa and r['comparison_mode_id']==mode],key=lambda r:float(r['beta_deg']))
+    return ([float(r['beta_deg']) for r in selected],
+        [float(r['Lambda']) if r['mapping_status']=='CONFIRMED' and r['root_status']=='CONFIRMED' and r['tracking_status'] in ('TRACKED','SEED_CONFIRMED') and r['Lambda'] not in ('',None) else np.nan for r in selected])
+
+
+def render_comparison():
+    before=dict(CALLS);started=time.perf_counter()
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    rows=read_csv(COMPARISON_OUTPUT/'comparison_branches.csv')
+    mapping=read_csv(COMPARISON_OUTPUT/'seed_mode_mapping.csv')
+    if len(mapping)!=18:raise ValueError('Expected eighteen seed mappings')
+    with plt.rc_context({'font.family':'DejaVu Sans','font.size':12,'text.usetex':False,'pdf.fonttype':42}):
+        for j in range(1,7):
+            fig,ax=plt.subplots(figsize=(9,5.8));fig.subplots_adjust(bottom=.24,left=.10,right=.98,top=.91)
+            for k,style in COMPARISON_STYLES.items():
+                x,y=comparison_curve(rows,k,f'comparison_mode_{j:02d}')
+                marker,every=COMPARISON_MARKERS[k]
+                ax.plot(x,y,label=f'κθ={k}',lw=1.9,marker=marker,markevery=every,markersize=4,
+                        markerfacecolor='white',markeredgecolor=style['color'],**style)
+            ax.set(xlim=(0,90),xlabel='β, °',ylabel='Λ',title=f'Мода {j}');ax.margins(y=.06);ax.grid(alpha=.2)
+            ax.legend(loc='upper center',bbox_to_anchor=(.5,-.15),ncol=3,frameon=False)
+            fig.text(.5,.015,'Общий seed: β=0, κθ=1; соответствие начальных форм и продолжение по β',ha='center',fontsize=10)
+            for ext in ('png','pdf'):fig.savefig(COMPARISON_OUTPUT/f'eb_tracked_mode{j:02d}_kappa_comparison.{ext}',dpi=300)
+            plt.close(fig)
+    assert dict(CALLS)==before
+    info=dict(seconds=time.perf_counter()-started,matrix_calls=0,root_calls=0,shape_calls=0,tracking_calls=0,
+        seed_matching_calls=0,matplotlib=matplotlib.__version__,figures=6)
+    path=COMPARISON_OUTPUT/'comparison_manifest.json';manifest=json.loads(path.read_text(encoding='utf-8'))
+    if 'render' in manifest:manifest.setdefault('render_history',[]).append(manifest['render'])
+    manifest['render']=info;atomic(path,json.dumps(manifest,ensure_ascii=False,indent=2)+'\n');print('comparison plot-only',info)
+
+
 def main():
+    global PLOT_KAPPAS,OUTPUT,LEGACY_TRACKED,HINGE_OUTPUT,COMPARISON_OUTPUT
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--mode',choices=('compute','resume','plot-only'),required=True)
+    parser.add_argument('--mode',choices=('compute','resume','plot-only','seed-map','seed-continue','comparison-table','comparison-plot-only'),required=True)
+    parser.add_argument('--kappas',nargs='+',type=int,choices=(0,1,100),default=[1,100])
+    parser.add_argument('--output',type=Path)
+    parser.add_argument('--legacy-tracked',type=Path,default=LEGACY_TRACKED)
+    parser.add_argument('--hinge-output',type=Path,default=HINGE_OUTPUT)
+    parser.add_argument('--comparison-output',type=Path,default=COMPARISON_OUTPUT)
     parser.add_argument('--stage',choices=('roots','track','events','checks','all'),default='all')
     args=parser.parse_args()
+    PLOT_KAPPAS=args.kappas
+    LEGACY_TRACKED=args.legacy_tracked.resolve();HINGE_OUTPUT=args.hinge_output.resolve();COMPARISON_OUTPUT=args.comparison_output.resolve()
+    OUTPUT=(args.output or (HINGE_OUTPUT if PLOT_KAPPAS==[0] else OUTPUT)).resolve()
+    if 0 in PLOT_KAPPAS and PLOT_KAPPAS!=[0]:parser.error('The hinge addition uses --kappas 0 alone; old angular results are read-only.')
+    if PLOT_KAPPAS==[0]:
+        CRITERIA['max_added_points']=50
+        if OUTPUT in (LEGACY_TRACKED,old.OUTPUT.resolve()):parser.error('Hinge output must not overwrite a source directory')
+    if COMPARISON_OUTPUT in (LEGACY_TRACKED,HINGE_OUTPUT,old.OUTPUT.resolve()):parser.error('Comparison output must be separate')
+    assert_protected_sources()
+    if args.mode=='seed-map':prepare_seed_mapping();return
+    if args.mode=='seed-continue':continue_seed_mapping();return
+    if args.mode=='comparison-table':prepare_comparison_table();return
+    if args.mode=='comparison-plot-only':render_comparison();return
     if args.mode=='plot-only':render();return
     state,shapes=load();started=time.perf_counter()
     import_saved(state,shapes)
-    for kappa,beta in [(1,24.5),(100,18.),(100,46.),(100,47.),(100,88.)]:
-        search_point(state,shapes,kappa,beta,'MISSING_BASE_FROM_SORTED_MAP')
+    for kappa in PLOT_KAPPAS:
+        for tick in old.grid_tenths():
+            if point_id(kappa,tick/10) not in state['points']:
+                search_point(state,shapes,kappa,tick/10,'MISSING_BASE_FROM_SORTED_MAP')
     save(state,shapes)
-    if args.stage not in ('roots','checks'):track(state,shapes)
+    if args.stage not in ('roots','checks') and not state.get('tracked_rows'):track(state,shapes)
     if args.stage in ('events','all'):
-        crossing_events(state,shapes);quadrature_checks(state,shapes)
-        track(state,shapes,allow_new=False)
+        count_before_events=len(state['points'])
+        crossing_events(state,shapes)
+        if PLOT_KAPPAS==[0]:
+            if len(state['points'])>count_before_events:track(state,shapes,allow_new=False)
+            hinge_endpoint_checks(state,shapes)
+        else:
+            quadrature_checks(state,shapes)
+            track(state,shapes,allow_new=False)
     if args.stage in ('checks','all'):guard_tail_checks(state)
     state.setdefault('invocations',[]).append(dict(seconds=time.perf_counter()-started,calls=dict(CALLS),stage=args.stage,runner_sha256=sha(Path(__file__))))
     save(state)
     write_manifest(state)
+    assert_protected_sources()
     print('compute',state['invocations'][-1],flush=True)
 
 

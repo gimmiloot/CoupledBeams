@@ -164,3 +164,132 @@ def test_plot_only_zero_compute_calls(tmp_path,monkeypatch):
     assert before==(tmp_path/'tracked_branches.csv').read_bytes()
     result=json.loads((tmp_path/'run_manifest.json').read_text())['render']
     assert result['matrix_calls']==result['root_calls']==result['shape_calls']==result['tracking_calls']==0
+
+
+def test_saved_doublet_import_preserves_every_position_and_class():
+    rows=[dict(Omega=w,multiplicity=n) for w,n in [(1.,1),(2.,2),(2.,2),(2.0001,1)]]
+    assert m.saved_root_classes(rows)==[None,1,-1,None]
+    assert [r['Omega'] for r in rows]==[1.,2.,2.,2.0001]
+    with pytest.raises(ValueError,match='incomplete'):m.saved_root_classes([dict(Omega=2.,multiplicity=2)])
+
+
+@pytest.mark.parametrize('Omega',[15.370552823847948,49.31932972572842,94.73879177000134,114.03153713097169])
+def test_hinge_endpoint_two_independent_classes_full_matrix_and_zero_moments(Omega):
+    # Saved full-precision benchmark roots; no root search in this test.
+    context=workflow.PointMatrices(0,90);omega=Omega/workflow.FS;a=context.assembly(omega)
+    recovered=[m.recover(a,omega,np.pi/2,m.eb.Joint('SPRING',0.),ARM,parity=eta) for eta in (1,-1)]
+    for eta,r in zip((1,-1),recovered):
+        assert r['detected_nullity']==2 and not r['failures'] and r['symmetry_class']==eta
+        ends=r['states'][:,-1,:]
+        units=np.array([ARM.L,ARM.L,1.,ARM.D/ARM.L**2,ARM.D/ARM.L**2,ARM.D/ARM.L])
+        amplitude=np.max(abs(ends/units))
+        assert max(abs(ends[:,5]))/(amplitude*ARM.D/ARM.L)<1e-9
+    vectors=np.array([r['vector'] for r in recovered])
+    np.testing.assert_allclose(vectors.conj()@vectors.T,np.eye(2),atol=1e-12)
+    # At beta=90 the blocks are sign-conjugate, not literally identical.
+    plus,minus=(context.block(omega,eta) for eta in (1,-1))
+    np.testing.assert_allclose(minus,np.diag([1,1,-1])@plus@np.diag([1,-1,-1]),rtol=1e-12,atol=1e-10)
+    assert m.symmetry_equivalence(np.pi/2,0.,ARM)['row_rank']==6
+
+
+def test_unique_shape_keys_at_one_frequency(monkeypatch):
+    def fake(context,frequency,parity):
+        return dict(states=np.ones((2,129,6))*parity,reactions=np.ones((2,3))*parity,
+                    vector=np.array([1.,parity]),symmetry_class=parity,detected_nullity=2,failures=[])
+    monkeypatch.setattr(workflow,'reconstruct',fake)
+    state={};shapes={};roots=[]
+    for j,eta in enumerate((1,-1),1):
+        root=dict(kappa=0,beta_deg=90,Omega=3.,current_sorted_position=j,multiplicity=2)
+        roots.append(workflow.attach_shape(state,shapes,None,root,eta))
+    assert len(shapes)==6 and len({r['shape_key'] for r in roots})==2
+    assert not np.array_equal(shapes[roots[0]['shape_key']+'__vector'],shapes[roots[1]['shape_key']+'__vector'])
+
+
+def test_seed_bijection_is_from_mass_mac_not_names_or_frequencies():
+    reference=[dict(branch_id=f'mode_{i+1:02d}',symmetry_class=1 if i%2==0 else -1,vector=np.eye(6)[i]) for i in range(6)]
+    permutation=[2,3,4,5,0,1]
+    candidates=[dict(reference[i],branch_id=f'mode_{j+1:02d}') for j,i in enumerate(permutation)]
+    mapping=workflow.seed_assignment(reference,candidates)
+    assert [r['source_branch_id'] for r in mapping]==['mode_05','mode_06','mode_01','mode_02','mode_03','mode_04']
+    assert all(r['status']=='CONFIRMED' and r['MAC']==1 for r in mapping)
+
+
+def test_frozen_mapping_exact_source_frequencies_own_grids_and_gaps():
+    mapping=[dict(comparison_mode_id='comparison_mode_01',kappa=k,source_branch_id='mode_03',status='CONFIRMED',source=f'case{k}') for k in (0,1)]
+    def row(k,b,status='TRACKED'):
+        return dict(kappa=k,beta_deg=b,branch_id='mode_03',omega='0.12345678901234567',Omega='12.345678901234567',Lambda='3.513641828',
+                    current_sorted_position='5',symmetry_class='1',root_status='CONFIRMED',tracking_status=status,shape_key=f'{k}_{b}')
+    source={0:[row(0,0),row(0,.05),row(0,.1,'TRACKING_AMBIGUOUS'),row(0,.2)],1:[row(1,0),row(1,.1),row(1,.2)]}
+    before=json.dumps(source,sort_keys=True);rows=workflow.mapped_rows(mapping,source)
+    assert json.dumps(source,sort_keys=True)==before
+    assert all(r['current_sorted_position']=='5' and r['Omega']=='12.345678901234567' for r in rows)
+    x,y=workflow.comparison_curve(rows,0,'comparison_mode_01');assert x==[0,.05,.1,.2] and np.isnan(y[2])
+    x,y=workflow.comparison_curve(rows,1,'comparison_mode_01');assert x==[0,.1,.2] and not np.isnan(y).any()
+    assert [s['linestyle'] for s in workflow.COMPARISON_STYLES.values()]==['-','--','-.']
+    assert len({s['color'] for s in workflow.COMPARISON_STYLES.values()})==3
+
+
+def test_comparison_plot_only_zero_compute_and_mapping_calls(tmp_path,monkeypatch):
+    import matplotlib.figure
+    monkeypatch.setattr(workflow,'COMPARISON_OUTPUT',tmp_path)
+    def forbidden(*a,**kw):raise AssertionError('numerical operation in plot-only')
+    for name in ('PointMatrices','reconstruct','search_point','track','load','comparison_inputs','seed_assignment','prepare_seed_mapping'):
+        monkeypatch.setattr(workflow,name,forbidden)
+    monkeypatch.setattr(matplotlib.figure.Figure,'savefig',lambda *a,**kw:None)
+    rows=[dict(comparison_mode_id=f'comparison_mode_{j:02d}',kappa=k,beta_deg=b,Lambda=j+b/100,
+        mapping_status='CONFIRMED',root_status='CONFIRMED',tracking_status='TRACKED') for j in range(1,7) for k in (0,1,100) for b in (0,90)]
+    workflow.write_csv(tmp_path/'comparison_branches.csv',rows)
+    workflow.write_csv(tmp_path/'seed_mode_mapping.csv',[dict(id=j) for j in range(18)])
+    (tmp_path/'comparison_manifest.json').write_text('{}')
+    before={p:p.read_bytes() for p in tmp_path.glob('*.csv')};workflow.render_comparison()
+    assert all(p.read_bytes()==v for p,v in before.items())
+    r=json.loads((tmp_path/'comparison_manifest.json').read_text())['render']
+    assert r['matrix_calls']==r['root_calls']==r['shape_calls']==r['tracking_calls']==r['seed_matching_calls']==0
+
+
+def test_protected_old_files_are_only_read_and_changes_detected(tmp_path,monkeypatch):
+    oldfile=tmp_path/'old.csv';oldfile.write_text('original frequencies and branches')
+    snapshot={str(oldfile):workflow.sha(oldfile)}
+    (tmp_path/'run_manifest.json').write_text(json.dumps({'protected_source_files_sha256':snapshot}))
+    monkeypatch.setattr(workflow,'HINGE_OUTPUT',tmp_path)
+    workflow.assert_protected_sources();assert oldfile.read_text()=='original frequencies and branches'
+    oldfile.write_text('changed')
+    with pytest.raises(ValueError,match='Protected source changed'):workflow.assert_protected_sources()
+
+
+def test_seed_guard_qualification_retains_original_warning():
+    roots=[dict(Omega=float(j),root_status='CONFIRMED') for j in range(1,8)]
+    warning=dict(interval=[6.8,7.1],reason='BOUNDARY_MINIMUM')
+    p=dict(roots=roots,status='CONFIRMED',guard_warnings=[warning],common_class_upper=7.4)
+    result=workflow.seed_guard_qualification(p)
+    assert result['ROOT']=='CONFIRMED' and result['GUARD']=='QUALIFIED_DETECTOR_WARNING'
+    assert result['original_helper_status']=='CONFIRMED' and result['source_warning_retained']==[warning]
+    assert p['guard_warnings']==[warning]
+
+
+def test_local_seed_parameter_and_combined_matrix_budget(monkeypatch):
+    context=workflow.PointMatrices(10,0)
+    assert context.point['k_theta']==10*ARM.D/ARM.L and context.point['beta_rad']==0
+    monkeypatch.setitem(workflow.CRITERIA,'max_B_per_point',2)
+    context.assembly(.1);context.block(.1,1)
+    with pytest.raises(workflow.old.CostLimit):context.block(.1,-1)
+    for k in (-1,np.nan,np.inf):
+        with pytest.raises(ValueError):workflow.PointMatrices(k,0)
+
+
+def test_import_is_missing_only_including_doublet_keys(tmp_path,monkeypatch):
+    # The existing completed entries are never reconstructed, even when two
+    # rows at a frequency have different cached symmetry forms.
+    source=dict(contract=workflow.old.contract(),points={})
+    point='k0_b90';source['points'][point]=dict(status='COMPLETED',rows=[dict(Omega=2.),dict(Omega=2.)])
+    (tmp_path/'diagnostics.json').write_text(json.dumps(source));(tmp_path/'spectrum_roots.csv').write_text('point_id,Omega\n')
+    monkeypatch.setattr(workflow.old,'OUTPUT',tmp_path);monkeypatch.setattr(workflow.old,'grid_tenths',lambda:[900])
+    # contract grid changes with the mock, but only physical fields are checked.
+    monkeypatch.setattr(workflow,'PLOT_KAPPAS',[0]);monkeypatch.setattr(workflow,'save',lambda *a:None)
+    def forbidden(*a,**kw):raise AssertionError('completed group recalculated')
+    monkeypatch.setattr(workflow,'PointMatrices',forbidden)
+    roots=[dict(shape_key='class_plus'),dict(shape_key='class_minus')]
+    state=dict(points={point:dict(roots=roots)});shapes={'class_plus__vector':np.array([1,0]),'class_minus__vector':np.array([0,1])}
+    workflow.import_saved(state,shapes)
+    assert state['points'][point]['roots']==roots
+    assert state['source_data_audit']['source_frequency_rows']==2
