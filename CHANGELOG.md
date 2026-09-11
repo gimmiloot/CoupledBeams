@@ -2,6 +2,18 @@
 
 ## 2026-09-11
 
+- Added a narrow physical EB mode-reconstruction and mass-MAC workflow for
+  kappa=1,100. Reused 2779 saved frequencies; recovered all five selected
+  missing BASE groups and calculated 58 local angle points. Tracked the six
+  beta=0 descendants with explicit branch IDs, preserving the original sorted
+  data. Derived and checked the exact reflection classes; six sign-reversing
+  crossings have numerical brackets narrower than .001 degree. Saved two
+  branch plots and two compact event-shape sheets; no avoided crossing or
+  global spectral certification is claimed. All 21 targeted tests passed.
+  Recorded 56150 full/block matrix builds and zero compute calls in plot-only.
+  Added report and memory decision/result; production physics, old results,
+  RLB and damping remain unchanged.
+
 - Added a bounded EB angular-map entry point using the existing physical
   assembly and determinant/sigma-min workflow, with continuation windows,
   missing-only checkpoints and separate plot-only rendering. Processed 1005

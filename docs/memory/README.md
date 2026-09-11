@@ -22,6 +22,10 @@ EB исполняется: 50 тестов, 10/12 принятых BASE-груп
 [RLB-K08](knowledge.md#rlb-k08),
 [рисунки, общие данные и plot-only](../laminated_beams/inplane_rotational_spring_eb_beta_maps.md#рисунки-данные-и-воспроизведение).
 Подтверждены 994/1005 BASE-точек; пропуски показаны разрывами.
+Продолжение **по формам** при kappa=1,100: [RLB-D07](decisions.md#rlb-d07),
+[RLB-K09](knowledge.md#rlb-k09),
+[ветви, пересечения и сохранённые формы](../laminated_beams/inplane_rotational_spring_eb_tracked.md).
+Пять выбранных пропусков закрыты в новом наборе; исходные sorted-карты сохранены.
 
 Порядок чтения: этот вход → [текущий контекст](current.md) → нужная запись
 в [знаниях](knowledge.md) или [решениях](decisions.md) → конкретное основание
