@@ -15,6 +15,9 @@
 EB исполняется: 50 тестов, 10/12 принятых BASE-групп; два случая большой
 жёсткости и один дополнительный rigid-контроль остаются неразрешёнными.
 Проверенный путь Python на этом устройстве записан в [текущем контексте](current.md).
+Подключение пружины к RLB и конечная проверка RLB → EB при `kappa_theta=1`:
+[RLB-D05](decisions.md#rlb-d05), [RLB-K07](knowledge.md#rlb-k07),
+[отчёт с матрицами, спектрами и guard qualification](../laminated_beams/inplane_rotational_spring_rlb_eb_limit.md).
 
 Порядок чтения: этот вход → [текущий контекст](current.md) → нужная запись
 в [знаниях](knowledge.md) или [решениях](decisions.md) → конкретное основание

@@ -2,6 +2,16 @@
 
 ## 2026-09-10
 
+- Added a narrow symmetric RLB rotational-spring coefficient adapter and a
+  bounded RLB-to-EB check at fixed kappa=1. Native four-ply reduction and H/T/B
+  comparisons passed; 14 saved EB roots were evaluated without a new search.
+  Six positive-epsilon groups yielded 36 accepted target frequencies; five
+  guards passed and one retains a strict-nullity qualification. Ran 76 targeted
+  tests. Recorded 15422 new-group boundary builds, two local recoveries, and
+  the initial excess tail to Omega=114; fixed stopping without rerunning spectra.
+  Added report and updated scoped memory with the user's new priority. Old EB
+  failures and source/Ritz qualifications remain; no damping or old-result edits.
+
 - Found the existing Python 3.12.4 environment at
   `D:/python/Pycharm/pythonProject/.venv/Scripts/python.exe`; the earlier PATH
   and launcher checks had missed it. Ran 50 targeted tests and accepted 10/12
