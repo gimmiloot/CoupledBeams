@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-09-12
+
+- Added a bounded H/L/L/H spring-mechanism check using the existing EB/RLB
+  physics, two actual arm lengths and RLB rotational modal mass. Native
+  reduction and matrix limits passed; 72 sparse controls and two local
+  questions produced 212 coupled points plus two auxiliary single-arm solves.
+  Retained three guard qualifications, two incomplete intermediate guards
+  and 74 ambiguous named control assignments. Confirmed the symmetric
+  kappa-independent family, a shifted weak-sensitivity region and resolved
+  veering of the selected pair at mu=.01 in both theories. Saved four PNG/PDF
+  figures, physical modes, mappings, diagnostics and provenance; 18 targeted
+  tests passed. Plot-only is separate from computation. All 56 protected old
+  files remain byte-identical; production physics and historical results were
+  not changed. Updated the report, thematic navigation and scoped memory.
+
 ## 2026-09-11
 
 - Extended the existing EB mode workflow to the exact hinge kappa=0:
