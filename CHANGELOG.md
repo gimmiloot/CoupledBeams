@@ -2,6 +2,12 @@
 
 ## 2026-09-12
 
+- Documented the scientific conclusion and bounded completion of the spring
+  robustness check, retaining all qualifications and conditions for returning
+  to specific cases. Updated scoped memory with RLB-D10 and the next subject:
+  rotational-joint viscosity theory. No new derivation, computation, tests,
+  implementation or result changes were made in this documentation task.
+
 - Added a bounded H/L/L/H spring-mechanism check using the existing EB/RLB
   physics, two actual arm lengths and RLB rotational modal mass. Native
   reduction and matrix limits passed; 72 sparse controls and two local
