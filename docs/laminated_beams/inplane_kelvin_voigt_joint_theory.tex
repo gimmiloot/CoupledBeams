@@ -1,0 +1,1158 @@
+% !TeX program = xelatex
+% !TeX encoding = UTF-8
+% Standalone source. Compile twice with XeLaTeX; no external figures or .bib.
+% Project equations checked against CoupledBeams, commit
+% 653173cd2a8b5f408832e1164c30a6651cbf80be (Version 0.5.1.8).
+% This is a new theoretical note, not an implemented or tested damped solver.
+\documentclass[11pt,a4paper]{article}
+\usepackage[a4paper,left=23mm,right=23mm,top=22mm,bottom=23mm,headheight=15pt]{geometry}
+\usepackage{fontspec}
+\IfFontExistsTF{Liberation Serif}{\setmainfont{Liberation Serif}}{\setmainfont{Times New Roman}}
+\IfFontExistsTF{Liberation Sans}{\setsansfont{Liberation Sans}}{\setsansfont{Arial}}
+\IfFontExistsTF{DejaVu Sans Mono}{\setmonofont[Scale=0.82]{DejaVu Sans Mono}}{\setmonofont[Scale=0.85]{Courier New}}
+\usepackage{polyglossia}
+\setdefaultlanguage{russian}
+\setotherlanguage{english}
+\usepackage{amsmath,amssymb}
+\usepackage{unicode-math}
+\setmathfont{latinmodern-math.otf}
+\usepackage{booktabs,tabularx,array}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{needspace}
+\usepackage{tocloft}
+\setlength{\cftbeforesecskip}{2pt}
+\usepackage{hyperref}
+\hypersetup{unicode=true,colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue!45!black,
+ pdftitle={Поворотное соединение Кельвина—Фойгта: плоские колебания сопряжённых стержней},
+ pdfsubject={Теоретическая постановка EB/RLB и определение комплексного спектра}}
+\urlstyle{same}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Поворотное соединение Кельвина—Фойгта}
+\fancyhead[R]{\small EB / RLB}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{0.22em}
+\setlength{\emergencystretch}{2em}
+\setlist{topsep=0.3em,itemsep=0.15em,parsep=0pt}
+\setcounter{tocdepth}{1}
+\numberwithin{equation}{section}
+\setcounter{MaxMatrixCols}{12}
+\allowdisplaybreaks[1]
+\newcommand{\dd}{\,\mathrm d}
+\newcommand{\ii}{\mathrm i}
+\newcommand{\A}{\mathcal A}
+\newcommand{\D}{\mathcal D}
+\newcommand{\Sbeam}{\mathcal S}
+\newcommand{\kth}{k_\theta}
+\newcommand{\cth}{c_\theta}
+\newcommand{\qJ}{q_J}
+\newcommand{\TJ}{\mathcal T_J}
+\newcommand{\KJ}{\mathcal K_J}
+\newcommand{\BB}{\mathsf B}
+\newcommand{\JJ}{\mathsf J}
+\newcommand{\HH}{\mathsf H}
+\newcommand{\TT}{\mathsf T}
+\newcommand{\PP}{\mathsf P}
+\newcommand{\CC}{\mathsf C_{\mathrm{cl}}}
+\newcommand{\refsub}{\mathrm{ref}}
+\newcommand{\tref}{t_{\refsub}}
+\newcommand{\lref}{l_{\refsub}}
+\newcommand{\Dref}{D_{\refsub}}
+\newcommand{\mref}{m_{\refsub}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\abs}[1]{\left|#1\right|}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\tr}{tr}
+\newcommand{\repo}[2]{\href{https://github.com/gimmiloot/CoupledBeams/blob/653173cd2a8b5f408832e1164c30a6651cbf80be/#1}{#2}}
+\newcommand{\noteblock}[1]{\par\medskip\noindent\begin{minipage}{\linewidth}\hrule\smallskip#1\smallskip\hrule\end{minipage}\par\medskip}
+
+\title{\vspace{-1.1em}\textbf{Поворотное соединение Кельвина—Фойгта\\при плоских колебаниях двух сопряжённых стержней}\\[0.5em]
+\large Теоретическая постановка EB/RLB\\и определение комплексных собственных значений}
+\author{\normalsize Рабочая теоретическая заметка проекта CoupledBeams}
+\date{\normalsize 12 сентября 2026 г. \quad Версия заметки 1.0}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\begin{abstract}
+К ранее введённой поворотной пружине добавляется линейный вязкий демпфер,
+действующий на относительную угловую скорость сечений в месте сопряжения.
+Элементы соединены параллельно и образуют узел Кельвина—Фойгта. Стержни
+остаются упругими; рассматриваются классическая модель Эйлера—Бернулли
+с продольным движением (EB) и принятая в проекте симметричная слоистая
+модель Reddy/FSDT (RLB). Из виртуальной работы и энергетического баланса
+выводятся моментные условия. При временном множителе $e^{pt}$ задача
+сводится к комплексному характеристическому уравнению
+$\det\BB(p)=0$. Раздельно определяются частота затухающих колебаний
+и показатель затухания. Обсуждаются продолжение собственных значений
+от упругой задачи, локальное уточнение комплексного корня, контроль
+невязок и обработка близких мод. Получены энергетические тождества
+для собственных решений и формула первого приближения при слабом
+демпфировании.
+\end{abstract}
+
+\noteblock{\textbf{Статус и происхождение.}
+Координаты, усилия, энергии плеч и упругая сборка сохранены по документам
+проекта на коммите \texttt{653173cd} (Version 0.5.1.8)~\cite{projectjoint,projectsource}.
+Закон вязкого узла и его спектральное расширение выводятся в этой заметке;
+они не приписываются уже выполненным упругим расчётам. Численный поиск
+комплексного спектра и верификация вязкого решателя здесь не выполнялись.
+Заметка является отдельным исходником, а не изменением файлов репозитория.}
+
+\begingroup
+\small
+\setlength{\parskip}{0pt}
+\tableofcontents
+\endgroup
+\newpage
+
+\section{Исходная модель и обозначения}
+\label{sec:model}
+
+Рассматриваются два прямых стержня с постоянными вдоль каждого плеча
+характеристиками. Их оси лежат в одной плоскости, внешние концы защемлены,
+а внутренние соединены точечным безмассовым узлом. В каждом плече координата
+$x_i\in[0,L_i]$ направлена \emph{от внешней заделки к узлу}; штрих означает
+производную по собственной координате $x_i$, точка --- по времени.
+Длины и характеристики плеч могут различаться.
+
+Сохраняется физическое состояние проекта
+\begin{equation}
+ \symbfit y_i=(u_i,w_i,\psi_i,N_i,Q_i,M_i)^{\mathsf T}.
+ \label{eq:state}
+\end{equation}
+Здесь $u_i,w_i$ --- локальные продольное и поперечное перемещения,
+$\psi_i$ --- принятый поворот сечения, $N_i,Q_i,M_i$ --- продольная сила,
+поперечная сила и изгибающий момент. Для локальных базисов
+\begin{equation}
+ \symbfit t_2=-c_\beta\symbfit t_1+s_\beta\symbfit n_1,
+ \qquad
+ \symbfit n_2=-s_\beta\symbfit t_1-c_\beta\symbfit n_1,
+ \qquad c_\beta=\cos\beta,\quad s_\beta=\sin\beta.
+ \label{eq:basis}
+\end{equation}
+Вектор поворота сечения и момент направлены соответственно как
+$-\psi_i\symbfit k$ и $-M_i\symbfit k$, где одна и та же
+$\symbfit k$ задаёт нормаль к плоскости. Эти знаки, как и порядок
+\eqref{eq:state}, берутся из действующей постановки~\cite{projectjoint}.
+
+Поступательная совместность в узле имеет вид
+\begin{equation}
+ u_1+c_\beta u_2+s_\beta w_2=0,
+ \qquad
+ w_1-s_\beta u_2+c_\beta w_2=0.
+ \label{eq:translation}
+\end{equation}
+Во всех узловых равенствах значения относятся к $x_i=L_i$.
+Угол $\beta$ характеризует исходную ненапряжённую конфигурацию и не является
+дополнительной динамической координатой. В частности, моменты
+$\kth\beta$ и $\cth\dot\beta$ не вводятся.
+
+В RLB каждый стержень описывается пятью редуцированными характеристиками
+\[
+ \A_i>0,\quad \D_i>0,\quad \Sbeam_i>0,\quad m_i>0,\quad J_i>0.
+\]
+Они определяются прежней послойной интеграцией и редукцией при $B_i=0$,
+$I_{1,i}=0$~\cite{projectsource}. Вязкоупругость самих слоёв в настоящей
+заметке \emph{не вводится}: эти характеристики вещественны и не зависят
+от частоты. $\A_i,\D_i,\Sbeam_i$ --- одномерные жёсткости, а не полные
+матрицы ламината. $\Sbeam_i$ уже включает выбранную поправку на поперечный
+сдвиг; её коэффициент не связан с параметрами демпфера.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}lXl@{}}
+\toprule
+Величина & Смысл & Единица \(\text{СИ}\)\\
+\midrule
+$\A_i,\Sbeam_i$ & Продольная и сдвиговая жёсткости & Н\\
+$\D_i$ & Изгибная жёсткость & Н$\cdot$м$^2$\\
+$m_i$ & Масса единицы длины & кг/м\\
+$J_i$ & Вращательная инерция единицы длины & кг$\cdot$м\\
+$\kth$ & Жёсткость поворотной пружины & Н$\cdot$м/рад\\
+$\cth$ & Коэффициент поворотного вязкого сопротивления & Н$\cdot$м$\cdot$с/рад\\
+$p$ & Комплексный временной показатель & с$^{-1}$\\
+\bottomrule
+\end{tabularx}
+\end{center}
+При анализе размерностей радиан считается безразмерным. Коэффициент
+$\cth$ относится ко всему сосредоточенному узлу и не является вязкостью
+материала, измеряемой в Па$\cdot$с.
+
+\section{Как вводится демпфирование Кельвина—Фойгта}
+\label{sec:kv}
+
+Положим
+\begin{equation}
+ \qJ(t)=\Delta\psi(t)=\psi_1(L_1,t)-\psi_2(L_2,t).
+ \label{eq:qj}
+\end{equation}
+Параллельное соединение означает, что пружина и демпфер испытывают
+одинаковый относительный поворот, а передаваемые ими моменты складываются.
+Именно эта схема называется элементом Кельвина—Фойгта~\cite{comsolkv}.
+Идеальный поворотный демпфер создаёт момент, пропорциональный
+\emph{относительной} угловой скорости его концов~\cite{mathworksdamper}.
+Поэтому принимается закон
+\begin{equation}
+ \boxed{\TJ=\kth\qJ+\cth\dot\qJ,\qquad \kth\ge0,\quad \cth\ge0.}
+ \label{eq:kv}
+\end{equation}
+В принятой системе знаков моментные условия на плечах будут
+$M_1=-\TJ$ и $M_2=\TJ$; их вывод дан в разделе~\ref{sec:balance}.
+Сопротивление абсолютному повороту каждого плеча относительно основания
+описывалось бы другой физической схемой.
+
+Упругая энергия узла и функция диссипации Рэлея равны
+\begin{equation}
+ U_J=\frac12\kth\qJ^2,
+ \qquad
+ \mathcal R_J=\frac12\cth\dot\qJ^{\,2}.
+ \label{eq:UR}
+\end{equation}
+Функция $\mathcal R_J$ не является запасённой энергией. Мощность
+необратимых потерь равна $2\mathcal R_J=\cth\dot\qJ^2$.
+Использование этой функции не означает пропорциональную модель
+демпфирования Рэлея $\mathbf C=a\mathbf M+b\mathbf K$.
+
+При заданных независимых поворотах сечений обобщённые вязкие силы
+выражаются матрицей
+\begin{equation}
+ \begin{bmatrix}Q^{\mathrm d}_{\psi_1}\\Q^{\mathrm d}_{\psi_2}\end{bmatrix}
+ =-\cth
+ \begin{bmatrix}1&-1\\-1&1\end{bmatrix}
+ \begin{bmatrix}\dot\psi_1\\\dot\psi_2\end{bmatrix}.
+ \label{eq:dampingmatrix}
+\end{equation}
+Матрица при $\cth>0$ положительно полуопределена и имеет ранг один.
+Общий поворот с одинаковыми скоростями не приводит демпфер в действие.
+
+Для постоянного относительного поворота вязкий момент равен нулю,
+а статическая жёсткость остаётся $\kth$. При $\cth=0$ возвращается
+прежняя упругая пружина. При $\kth=0$, $\cth>0$ узел передаёт вязкий
+момент во время движения; это уже не свободный внутренний шарнир.
+Идеальный шарнир получается только при $\kth=\cth=0$.
+
+\section{Уравнения во времени, условия узла и энергия}
+\label{sec:balance}
+
+\subsection{Энергии и внутренние уравнения RLB}
+
+Для плеч сохраняются энергии упругой RLB-постановки~\cite{projectjoint}:
+\begin{align}
+ U_i&=\frac12\int_0^{L_i}
+ \left[\A_i(u_i')^2+\D_i(\psi_i')^2+
+ \Sbeam_i(w_i'+\psi_i)^2\right]\dd x_i,\label{eq:U}\\
+ T_i&=\frac12\int_0^{L_i}
+ \left[m_i(\dot u_i^2+\dot w_i^2)+J_i\dot\psi_i^2\right]\dd x_i.
+ \label{eq:T}
+\end{align}
+Внешние заделки задаются условиями $u_i(0)=w_i(0)=\psi_i(0)=0$.
+Энергетически сопряжённые усилия
+\begin{equation}
+ N_i=\A_i u_i',\qquad
+ Q_i=\Sbeam_i(w_i'+\psi_i),\qquad
+ M_i=\D_i\psi_i'.
+ \label{eq:constitutive}
+\end{equation}
+Обозначим $T=\sum_iT_i$, $U=\sum_iU_i$.
+Принцип Лагранжа—д'Аламбера с вязкой виртуальной работой записывается как
+\begin{equation}
+ \delta\int_{t_0}^{t_1}(T-U-U_J)\dd t
+ -\int_{t_0}^{t_1}\cth\dot\qJ\,\delta\qJ\dd t=0.
+ \label{eq:dalembert}
+\end{equation}
+Вариации в начальный и конечный моменты времени равны нулю.
+После интегрирования по времени и по $x_i$ объёмные члены дают
+\begin{equation}
+ \boxed{
+ N_i'=m_i\ddot u_i,\qquad
+ Q_i'=m_i\ddot w_i,\qquad
+ M_i'=Q_i+J_i\ddot\psi_i.}
+ \label{eq:timebalance}
+\end{equation}
+Вязкий член находится только в узле: распределённого демпфирования
+плеч в \eqref{eq:timebalance} нет.
+
+\subsection{Шесть условий сопряжения}
+
+Граничная форма при узловых вариациях имеет вид
+\begin{equation}
+ \sum_{i=1}^2
+ \bigl(N_i\delta u_i+Q_i\delta w_i+M_i\delta\psi_i\bigr)_{x_i=L_i}
+ +(\kth\qJ+\cth\dot\qJ)(\delta\psi_1-\delta\psi_2)=0.
+ \label{eq:boundaryvirtual}
+\end{equation}
+Оба узловых конца являются верхними пределами интегралов. Дополнительный
+знак для второго плеча не вводится. Поступательные вариации связаны
+условиями \eqref{eq:translation}, а поворотные вариации независимы.
+Отсюда следуют равновесие сил и два моментных равенства
+\[
+ M_1+\kth\qJ+\cth\dot\qJ=0,
+ \qquad
+ M_2-\kth\qJ-\cth\dot\qJ=0.
+\]
+В прежнем порядке строк проекта полная система условий записывается как
+\begin{equation}
+ \boxed{\begin{aligned}
+ u_1+c_\beta u_2+s_\beta w_2&=0,\\
+ w_1-s_\beta u_2+c_\beta w_2&=0,\\
+ M_1+\kth(\psi_1-\psi_2)+\cth(\dot\psi_1-\dot\psi_2)&=0,\\
+ N_1-c_\beta N_2-s_\beta Q_2&=0,\\
+ Q_1+s_\beta N_2-c_\beta Q_2&=0,\\
+ M_1+M_2&=0.
+ \end{aligned}}
+ \label{eq:jointtime}
+\end{equation}
+Изменяется только закон в третьей строке. При $\cth=0$ система
+совпадает с выведенными ранее условиями упругого узла~\cite{projectjoint}.
+
+\subsection{Энергетический баланс и проверка знака}
+
+Из \eqref{eq:constitutive} и \eqref{eq:timebalance} непосредственно следует
+\[
+ \frac{\dd}{\dd t}(T+U)
+ =\sum_i[N_i\dot u_i+Q_i\dot w_i+M_i\dot\psi_i]_0^{L_i}.
+\]
+В заделках мощность равна нулю. Поступательные члены в узле взаимно
+сокращаются благодаря совместности и равновесию сил. Моментные члены дают
+\[
+ M_1\dot\psi_1+M_2\dot\psi_2
+ =-\TJ\dot\qJ
+ =-\kth\qJ\dot\qJ-\cth\dot\qJ^2.
+\]
+Поэтому полная механическая энергия удовлетворяет тождеству
+\begin{equation}
+ \boxed{\dot E=-\cth\dot\qJ^2\le0,
+ \qquad E=T+U+\tfrac12\kth\qJ^2.}
+ \label{eq:energy}
+\end{equation}
+Положительное $\cth$ не может быть источником энергии. Однако
+$\dot E\le0$ \emph{не доказывает затухания каждого движения до нуля}:
+у решения с $\dot\qJ=0$ данный механизм потерь отсутствует.
+
+\subsection{Независимая запись для классической EB}
+
+Для EB
+\begin{equation}
+ U_i^{\mathrm{EB}}=\tfrac12\int_0^{L_i}
+ [\A_i(u_i')^2+\D_i(w_i'')^2]\dd x_i,\qquad
+ T_i^{\mathrm{EB}}=\tfrac12\int_0^{L_i}m_i(\dot u_i^2+\dot w_i^2)\dd x_i.
+ \label{eq:ebenergies}
+\end{equation}
+Полагаются $\psi_i=-w_i'$, $M_i=-\D_iw_i''$,
+$Q_i=-(\D_iw_i'')'$. Двукратное интегрирование изгибного члена
+даёт ту же граничную форму $N_i\delta u_i+Q_i\delta w_i+M_i\delta\psi_i$.
+Поэтому \eqref{eq:jointtime} и \eqref{eq:energy} остаются справедливыми.
+Внутри каждого плеча
+\begin{equation}
+ (\A_i u_i')'=m_i\ddot u_i,
+ \qquad
+ (\D_i w_i'')''+m_i\ddot w_i=0.
+ \label{eq:ebpde}
+\end{equation}
+В RLB подстановка $\psi=-w'$ без обнуления сдвиговой податливости
+недопустима. Тем более нельзя заменить относительный поворот демпфера
+разностью наклонов осевых линий при конечной $\Sbeam_i$.
+
+\section{Комплексный спектральный параметр и частоты}
+\label{sec:spectral}
+
+\subsection{Временное соглашение}
+
+Ищем одно собственное решение в виде
+\begin{equation}
+ \symbfit y_i(x_i,t)=\operatorname{Re}
+ \{\widehat{\symbfit y}_i(x_i)e^{pt}\},
+ \qquad p=-\alpha+\ii\omega_d.
+ \label{eq:ansatz}
+\end{equation}
+Для колебательного решения выбирается представитель с $\omega_d>0$.
+$\alpha=-\operatorname{Re}p$ --- показатель затухания амплитуды,
+$\omega_d=\operatorname{Im}p$ --- угловая частота затухающих колебаний,
+$f_d=\omega_d/(2\pi)$ --- частота в герцах. При $\alpha>0$
+огибающая убывает как $e^{-\alpha t}$.
+
+При вещественном отрицательном $p$ решение не колеблется и описывает
+апериодическое затухание. Такое значение не нужно искусственно превращать
+в положительную частоту или удалять из спектра. Для колебательной пары
+удобны параметры
+\begin{equation}
+ \zeta=\frac{\alpha}{\sqrt{\alpha^2+\omega_d^2}},
+ \qquad
+ \delta_{\log}=\frac{2\pi\alpha}{\omega_d}.
+ \label{eq:dampingratios}
+\end{equation}
+$\delta_{\log}$ относится к огибающей одного модального решения.
+В общем непропорционально демпфированном случае величина $|p|$
+не обязана совпадать с частотой соответствующей упругой моды.
+Общая структура комплексного спектра механической системы второго
+порядка обсуждается в~\cite{tisseur2001}.
+
+Если вместо \eqref{eq:ansatz} используется $e^{\ii\widetilde\omega t}$,
+то $\widetilde\omega=-\ii p=\omega_d+\ii\alpha$.
+Следовательно, при этом соглашении \emph{положительная} мнимая часть
+$\widetilde\omega$ соответствует затуханию. В настоящей заметке
+основной неизвестной остаётся $p$; соглашения не смешиваются.
+
+\subsection{Спектральный закон узла}
+
+Из \eqref{eq:kv} и \eqref{eq:ansatz}
+\begin{equation}
+ \widehat{\TJ}=\KJ(p)\,\widehat{\qJ},
+ \qquad \boxed{\KJ(p)=\kth+\cth p.}
+ \label{eq:dynamicstiffness}
+\end{equation}
+Это динамическая жёсткость по относительному повороту, а не отношение
+момента к угловой скорости. При $p=-\alpha+\ii\omega_d$
+\[
+ \KJ(p)=\kth-\cth\alpha+\ii\cth\omega_d.
+\]
+Поэтому при поиске собственных значений нельзя сохранять только
+$\kth+\ii\cth\omega_d$ и отбрасывать $-\cth\alpha$.
+
+При \emph{вынужденном} гармоническом движении с заданной вещественной
+частотой $\omega$ допустима подстановка $p=\ii\omega$ и
+$\KJ=\kth+\ii\omega\cth$. Но поиск максимумов частотного отклика
+при вещественной $\omega$ --- другая задача. Он не заменяет определения
+свободных собственных показателей \eqref{eq:ansatz}.
+
+\subsection{Связь с нормировкой проекта}
+
+Сохраняем фиксированные опорные величины
+\begin{equation}
+ \mref=\rho_0 A_{g,\refsub},\quad
+ \Dref=E_0 I_{g,\refsub},\quad
+ \tref=\lref^2\sqrt{\frac{\mref}{\Dref}},\quad
+ z=p\tref.
+ \label{eq:scales}
+\end{equation}
+$\tref$ имеет размерность времени. При нулевом демпфировании
+$z=\ii\Omega$, где $\Omega=\omega\tref$ --- прежняя нормировка.
+Введём независимые безразмерные параметры узла
+\begin{equation}
+ \boxed{\kappa_\theta=\frac{\kth\lref}{\Dref},\qquad
+ d_\theta=\frac{\cth\lref}{\Dref\tref},\qquad
+ \frac{\KJ(p)\lref}{\Dref}=\kappa_\theta+d_\theta z.}
+ \label{eq:dimensionlessjoint}
+\end{equation}
+Такая нормировка пригодна и при $\kth=0$; параметр $\cth/\kth$
+не нужен. Опорные величины не следует менять при вариации длины одного
+плеча или текущих свойств ламината.
+
+Для визуализации колебательной пары можно сохранять
+\begin{equation}
+ a=-\operatorname{Re}z=\alpha\tref,\quad
+ \Omega_d=\operatorname{Im}z=\omega_d\tref,\quad
+ \Lambda_d=\sqrt{\Omega_d}.
+ \label{eq:lambdad}
+\end{equation}
+$\Lambda_d$ --- только вещественная характеристика частоты колебательной
+части. Она не заменяет комплексного $z$ и ничего не говорит об $a$ без
+отдельной записи. Для апериодических корней следует хранить сам $p$ и
+показатель затухания, а не рисовать их как обычные частотные ветви.
+Служебный параметр прежней проверки \texttt{epsilon\_limit} и отношение
+толщины к длине не являются параметрами демпфирования.
+
+\section{Точное характеристическое уравнение через перенос}
+\label{sec:transfer}
+
+\subsection{Матрица состояния с комплексным аргументом}
+
+После подстановки \eqref{eq:ansatz} в \eqref{eq:timebalance} получаем
+\begin{equation}
+ \widehat{\symbfit y}_i'=\HH_i(p)\widehat{\symbfit y}_i,
+ \qquad
+ \HH_i^{\mathrm{RLB}}(p)=
+ \begin{bmatrix}
+ 0&0&0&1/\A_i&0&0\\
+ 0&0&-1&0&1/\Sbeam_i&0\\
+ 0&0&0&0&0&1/\D_i\\
+ m_i p^2&0&0&0&0&0\\
+ 0&m_i p^2&0&0&0&0\\
+ 0&0&J_i p^2&0&1&0
+ \end{bmatrix}.
+ \label{eq:Hp}
+\end{equation}
+Знаки инерционных членов здесь \emph{положительные перед $p^2$}.
+При $p=\ii\omega$ они превращаются в прежние $-m_i\omega^2$,
+$-J_i\omega^2$. Матрица классической EB равна
+\begin{equation}
+ \HH_i^{\mathrm{EB}}(p)
+ =\HH_i^{\mathrm{RLB}}(p)\big|_{\,1/\Sbeam_i=0,\ J_i=0}.
+ \label{eq:Heb}
+\end{equation}
+В пространственном состоянии по-прежнему шесть компонент на плечо.
+Для элемента Кельвина—Фойгта не требуется отдельная внутренняя переменная
+релаксации. Комплексные $p$ и амплитуды не являются добавлением физических
+пространственных степеней свободы.
+
+Поскольку коэффициенты постоянны по $x_i$, решение задаётся точно в рамках
+одномерной модели:
+\begin{equation}
+ \TT_i(p,x_i)=\exp\bigl(\HH_i(p)x_i\bigr),\qquad
+ \widehat{\symbfit y}_i(x_i)=\TT_i(p,x_i)\CC\symbfit r_i,
+ \qquad
+ \CC=\begin{bmatrix}0_{3\times3}\\I_3\end{bmatrix}.
+ \label{eq:transfer}
+\end{equation}
+$\symbfit r_i=(N_i(0),Q_i(0),M_i(0))^{\mathsf T}$ --- комплексные
+амплитуды реакций заделки. Для разных плеч обязательно используются
+их собственные $L_i,\A_i,\D_i,\Sbeam_i,m_i,J_i$.
+
+\subsection{Матрица узла и граничная матрица}
+
+Опуская шляпки только внутри матричной записи, из \eqref{eq:jointtime}
+получаем
+\begin{equation}
+ \JJ_{\mathrm{KV}}(p,\beta)=
+ \begin{bmatrix}
+ 1&0&0&0&0&0&c_\beta&s_\beta&0&0&0&0\\
+ 0&1&0&0&0&0&-s_\beta&c_\beta&0&0&0&0\\
+ 0&0&\KJ&0&0&1&0&0&-\KJ&0&0&0\\
+ 0&0&0&1&0&0&0&0&0&-c_\beta&-s_\beta&0\\
+ 0&0&0&0&1&0&0&0&0&s_\beta&-c_\beta&0\\
+ 0&0&0&0&0&1&0&0&0&0&0&1
+ \end{bmatrix},
+ \label{eq:Jmatrix}
+\end{equation}
+где $\KJ=\kth+\cth p$. Матрица имеет размер $6\times12$ и ранг шесть
+при любом комплексном $\KJ$: минор по столбцам
+$(u_1,w_1,M_1,N_1,Q_1,M_2)$ равен единице. В частности, нуль
+$\kth+\cth p$ не является особенностью исходной матрицы узла.
+
+Введём
+\begin{equation}
+ \PP_i(p)=\TT_i(p,L_i)\CC,
+ \qquad
+ \boxed{\BB(p)=\JJ_{\mathrm{KV}}(p,\beta)
+ \operatorname{blockdiag}\bigl(\PP_1(p),\PP_2(p)\bigr).}
+ \label{eq:Bmatrix}
+\end{equation}
+Тогда для шести реакций
+$\symbfit r=(\symbfit r_1^{\mathsf T},\symbfit r_2^{\mathsf T})^{\mathsf T}$
+имеем
+\begin{equation}
+ \boxed{\BB(p)\symbfit r=0,\quad \symbfit r\ne0,
+ \qquad f(p)=\det\BB(p)=0.}
+ \label{eq:characteristic}
+\end{equation}
+Матрицы \eqref{eq:Hp} и \eqref{eq:Jmatrix} аналитичны по $p$;
+матричная экспонента сохраняет аналитичность. Поэтому \eqref{eq:characteristic}
+является нелинейной аналитической задачей на собственные значения
+небольшой матрицы. Несмотря на размер $6\times6$, её спектр не ограничен
+шестью корнями. Сам определитель в общем случае не является многочленом
+второй или шестой степени по $p$. Этот тип нелинейных спектральных
+задач рассматривается в~\cite{guettel2017}.
+
+\subsection{Полезная структура одного поворотного канала}
+
+Зависимость узловой матрицы от $\KJ$ находится только в третьей строке.
+Линейность определителя по строке поэтому даёт точное представление
+\begin{equation}
+ f(p)=f_0(p)+(\kth+\cth p)f_1(p),\qquad f_r(-p)=f_r(p),\quad r=0,1.
+ \label{eq:affine}
+\end{equation}
+Здесь $f_0$ --- определитель шарнирной сборки, а $f_1$ получается заменой
+её третьей строки строкой относительного поворота, умноженной на карты
+переноса; остальные строки сохраняются. Чётность $f_0,f_1$ следует из
+зависимости плеч только от $p^2$.
+
+Равенство \eqref{eq:affine} удобно для контроля реализации, но делить
+его на $f_0$, $f_1$ или $\kth+\cth p$ без проверки нельзя. Так можно
+потерять общие нули, в том числе движения с нулевым относительным
+поворотом. Основным остаётся условие \eqref{eq:characteristic}.
+
+При вещественных параметрах
+\begin{equation}
+ \BB(\overline p)=\overline{\BB(p)},\qquad
+ f(\overline p)=\overline{f(p)}.
+ \label{eq:conjugate}
+\end{equation}
+Корни образуют комплексно-сопряжённые пары или лежат на вещественной оси.
+При $\cth>0$ симметрия $p\leftrightarrow-p$ в общем случае уже отсутствует.
+
+\section{Вариационная спектральная задача и аналитические контроли}
+\label{sec:weak}
+
+Пусть $\varphi=(u_i,w_i,\psi_i)_{i=1,2}$ удовлетворяет заделкам и
+поступательной совместности, а $v$ --- допустимое пробное поле.
+Комплексные формы ниже линейны по первому аргументу и сопряжённо линейны
+по второму:
+\begin{align}
+ \mathfrak m(\varphi,v)
+ &=\sum_i\int_0^{L_i}
+ [m_i(u_i\overline{v_{u,i}}+w_i\overline{v_{w,i}})
+   +J_i\psi_i\overline{v_{\psi,i}}]\dd x_i,\label{eq:massform}\\
+ \mathfrak a_0(\varphi,v)
+ &=\sum_i\int_0^{L_i}
+ [\A_i u_i'\overline{v_{u,i}'}+\D_i\psi_i'\overline{v_{\psi,i}'}
+ +\Sbeam_i(w_i'+\psi_i)\overline{(v_{w,i}'+v_{\psi,i})}]\dd x_i,
+ \label{eq:stiffform}\\
+ \mathfrak a_k(\varphi,v)
+ &=\mathfrak a_0(\varphi,v)+\kth q(\varphi)\overline{q(v)},
+ \qquad q(\varphi)=\psi_1(L_1)-\psi_2(L_2).\label{eq:akform}
+\end{align}
+Для EB используются $\psi_i=-w_i'$, $J_i=0$,
+изгибный член $\D_iw_i''\overline{v_{w,i}''}$ и отсутствует сдвиговой член.
+В частности, в EB нет независимой массовой координаты $\psi$.
+
+Из уравнений раздела~\ref{sec:balance} получаем
+\begin{equation}
+ \boxed{\mathfrak a_k(\varphi,v)
+ +p\cth q(\varphi)\overline{q(v)}
+ +p^2\mathfrak m(\varphi,v)=0\quad\text{для всех }v.}
+ \label{eq:weakpencil}
+\end{equation}
+Это квадратичный \emph{операторный} пучок. После точного исключения
+пространственной зависимости он приводит к неполиномиальной матрице
+\eqref{eq:Bmatrix}; противоречия здесь нет.
+
+\subsection{Отсутствие растущих собственных движений}
+
+Положим $v=\varphi$ и введём вещественные величины
+\[
+ \mathcal M_\varphi=\mathfrak m(\varphi,\varphi)>0,\qquad
+ \mathcal K_\varphi=\mathfrak a_k(\varphi,\varphi)>0,\qquad
+ \mathcal C_\varphi=\cth\abs{q(\varphi)}^2\ge0.
+\]
+Положительность упругой формы обеспечивается положительными жёсткостями
+и внешними заделками: нулевая деформация каждого плеча вместе с заделкой
+даёт нулевое поле. Для ненулевой физической собственной формы масса
+положительна. Из \eqref{eq:weakpencil}
+\begin{equation}
+ p^2\mathcal M_\varphi+p\mathcal C_\varphi+\mathcal K_\varphi=0.
+ \label{eq:modalidentity}
+\end{equation}
+При $p=\sigma+\ii\nu$, $\nu\ne0$, мнимая часть равна
+$\nu(2\sigma\mathcal M_\varphi+\mathcal C_\varphi)=0$. Следовательно,
+\begin{equation}
+ \boxed{\alpha=-\sigma=
+ \frac{\cth\abs{q(\varphi)}^2}{2\mathcal M_\varphi},\qquad
+ \omega_d^2=\frac{\mathcal K_\varphi}{\mathcal M_\varphi}-\alpha^2.}
+ \label{eq:exactalpha}
+\end{equation}
+Эти равенства точны для \emph{уже найденной комплексной собственной формы},
+а не только для слабого демпфирования. Но подставить в них произвольную
+упругую форму и получить точный вязкий спектр нельзя: $\varphi$ сама
+зависит от $p$ и $\cth$.
+
+Для вещественного $p\ge0$ левая часть \eqref{eq:modalidentity} строго
+положительна. Поэтому такой корень невозможен. В итоге все собственные
+показатели рассматриваемой пассивной модели удовлетворяют
+$\operatorname{Re}p\le0$, а $p=0$ не является собственным значением.
+Это спектральное утверждение и энергетическое тождество; здесь не
+доказываются полнота модального разложения и равномерное экспоненциальное
+затухание всех решений распределённой системы.
+
+\subsection{Движения, не чувствующие демпфера}
+
+Если упругая собственная форма $\varphi_0$ при частоте $\omega_0>0$
+удовлетворяет $q(\varphi_0)=0$, то при $p=\pm\ii\omega_0$ оба узловых
+слагаемых с $\kth$ и $\cth$ в \eqref{eq:weakpencil} исчезают для любого $v$.
+Значит, та же форма остаётся собственным незатухающим движением при
+любых конечных неотрицательных $\kth,\cth$, если остальные параметры
+не меняются. Обратно, из \eqref{eq:exactalpha} при $\cth>0$ следует:
+у колебательного собственного движения с $\alpha=0$ относительный
+поворот обязательно равен нулю.
+
+Для одинаковых плеч отражение проекта имеет вид
+\[
+ \mathscr P(\symbfit y_1,\symbfit y_2)
+ =(F\symbfit y_2,F\symbfit y_1),\qquad
+ F=\diag(1,-1,-1,1,-1,-1).
+\]
+Оно сохраняет RLB- и EB-уравнения и квадратичные узловые формы.
+В классе $\symbfit y_2=\eta F\symbfit y_1$, $\eta=-1$,
+имеем $\psi_2=\psi_1$, поэтому весь класс не демпфируется этим элементом.
+В классе $\eta=+1$ моментное условие половинной задачи равно
+$M+2(\kth+\cth p)\psi=0$. При неодинаковых плечах такое разделение
+в общем случае неприменимо: нужны полная матрица и непривязанные
+к прежним классам формы. Упругие основания этого разграничения
+зафиксированы в~\cite{projectrobustness}.
+
+Малый, но ненулевой $q$ не даёт точной защиты от потерь. Кроме того,
+один положительный коэффициент $\cth$ не обеспечивает одинакового
+затухания всех мод и не доказывает монотонного роста их показателей
+затухания при неограниченном увеличении $\cth$.
+
+\section{Слабое демпфирование и взаимодействие близких мод}
+\label{sec:small}
+
+\subsection{Первая поправка к простому собственному значению}
+
+Пусть $\omega_{0j}$ --- простая изолированная частота упругой задачи
+с уже заданной $\kth$, а $\varphi_{0j}$ --- её форма.
+Для вывода введём \emph{только здесь} малый безразмерный множитель
+$\epsilon_d$: $\cth=\epsilon_d c_*$, $c_*>0$ фиксировано.
+Он не связан ни с геометрической тонкостью, ни с прежним
+\texttt{epsilon\_limit}.
+
+Ищем $p=p_0+\epsilon_dp_1+O(\epsilon_d^2)$,
+$\varphi=\varphi_0+\epsilon_d\varphi_1+O(\epsilon_d^2)$,
+где $p_0=\pm\ii\omega_{0j}$. Дифференцирование
+\eqref{eq:weakpencil} при $\epsilon_d=0$ и подстановка
+$v=\varphi_{0j}$ сокращают члены с $\varphi_1$ благодаря
+самосопряжённости упругой задачи. Получаем
+\[
+ 2p_0p_1\mathcal M_{0j}+p_0c_*\abs{q(\varphi_{0j})}^2=0,
+ \qquad \mathcal M_{0j}=\mathfrak m(\varphi_{0j},\varphi_{0j}).
+\]
+Отсюда
+\begin{equation}
+ \boxed{
+ p_j^\pm(\epsilon_d)=\pm\ii\omega_{0j}
+ -\epsilon_d\frac{c_*\abs{q(\varphi_{0j})}^2}{2\mathcal M_{0j}}
+ +O(\epsilon_d^2).}
+ \label{eq:smallp}
+\end{equation}
+В первом порядке изменяется вещественная часть $p$, а изменение
+частоты $\omega_d$ начинается не ранее второго порядка для такого
+простого изолированного корня. Формула годится как начальное приближение
+и независимый аналитический контроль локального продолжения, но не как
+замена решения \eqref{eq:characteristic} при произвольном $\cth$.
+
+Связь с уже использовавшейся упругой чувствительностью
+\begin{equation}
+ s_j=\frac{(\Dref/\lref)\abs{q(\varphi_{0j})}^2}
+ {\omega_{0j}^2\mathcal M_{0j}}
+ =\frac{\partial\log\omega_{0j}^2}{\partial\kappa_\theta}
+ \label{eq:sensitivity}
+\end{equation}
+даёт при малом $d_\theta$ и $\Omega_{0j}=\omega_{0j}\tref$
+\begin{equation}
+ \alpha_j\tref\simeq\tfrac12d_\theta\Omega_{0j}^{\,2}s_j,
+ \qquad
+ \zeta_j\simeq\tfrac12d_\theta\Omega_{0j}s_j.
+ \label{eq:smallnondim}
+\end{equation}
+Чувствительность $s_j$ сама по себе не равна коэффициенту затухания.
+Утверждение \eqref{eq:smallnondim} относится к слабому возмущению
+изолированной моды; численные свойства вязкой системы из прежних
+упругих графиков непосредственно не следуют.
+
+\subsection{Почему нельзя демпфировать каждую упругую моду независимо}
+
+Пусть вещественные упругие формы при фиксированной $\kth$ нормированы
+по массе: $\mathfrak m(\varphi_{0r},\varphi_{0s})=\delta_{rs}$.
+При конечном приближении
+$\varphi\approx\sum_{j=1}^{n} a_j\varphi_{0j}$ положим
+$b_j=q(\varphi_{0j})$. Проекция \eqref{eq:weakpencil} даёт
+\begin{equation}
+ \left[p^2 I_n+p\cth\symbfit b\symbfit b^{\mathsf T}
+ +\diag(\omega_{01}^2,\ldots,\omega_{0n}^2)\right]\symbfit a=0.
+ \label{eq:modalqep}
+\end{equation}
+Матрица демпфирования имеет ранг не более одного, но обычно содержит
+ненулевые \emph{внедиагональные} элементы. Поэтому назначить каждой форме
+свой скалярный коэффициент потерь и отбросить взаимодействие ---
+дополнительное приближение, особенно опасное около veering.
+Различие пропорционального и непропорционального демпфирования
+обсуждается в~\cite{tisseur2001}.
+
+Для близкой пары следует хотя бы сохранять весь блок
+\begin{equation}
+ \begin{bmatrix}
+ p^2+\omega_{0a}^2+p\cth b_a^2 & p\cth b_ab_b\\
+ p\cth b_ab_b & p^2+\omega_{0b}^2+p\cth b_b^2
+ \end{bmatrix}.
+ \label{eq:twomode}
+\end{equation}
+Его корни служат объяснением и возможными предикторами; конечное число
+упругих форм не превращает этот блок в точное решение распределённой
+задачи. Итоговые собственные значения проверяются по полной
+\eqref{eq:characteristic}. В точке кратности нужно рассматривать
+собственное подпространство, а не применять \eqref{eq:smallp} к случайному
+SVD-базису. Нулевой относительный поворот определённой комбинации
+кратных упругих форм при этом остаётся точным основанием отсутствия потерь.
+
+\section{Как практически искать комплексные собственные значения}
+\label{sec:numerics}
+
+\subsection{Что сохраняется и что меняется в прежнем методе}
+
+Сохраняются физическое состояние, экспоненты переноса, сборка по узлу
+и восстановление формы из реакций. Меняется область поиска: уравнение
+\eqref{eq:characteristic} решается по двум вещественным компонентам $p$
+либо непосредственно в комплексной арифметике.
+
+Поиск смен знака определителя на вещественной оси, применявшийся к
+упругим частотам, теперь неприменим. У комплексного числа нет такого
+порядка знаков. Минимум $\sigma_{\min}(\BB(\ii\omega))$ при вещественной
+$\omega$ тоже не гарантирует собственного значения: затухающий полюс
+обычно находится вне мнимой оси. Минимизация $|f|$ без проверки нулевой
+невязки может остановиться в ненулевом минимуме.
+
+В физическую матрицу входят $p^2$ и $\kth+\cth p$, а не $|p|^2$,
+$\operatorname{Im}p$ или $\overline p$. Нельзя просто разрешить комплексную
+жёсткость в старом вещественном интерфейсе, оставив вещественную проверку
+аргумента, приведение амплитуд к \texttt{float} или старые инерционные члены.
+Это вопросы будущей реализации, а не изменения уже выполненного кода.
+
+\subsection{Масштабирование и локальная коррекция}
+
+До решения вводятся согласованные масштабы перемещений, реакций и строк.
+Например,
+\[
+ U_*=\lref,\qquad M_*=\Dref/\lref,\qquad F_*=\Dref/\lref^2.
+\]
+Для реакций и строк соответственно положим
+\begin{align*}
+S_a&=\diag(F_*,F_*,M_*,F_*,F_*,M_*),\\
+S_r&=\diag(U_*^{-1},U_*^{-1},M_*^{-1},F_*^{-1},F_*^{-1},M_*^{-1}).
+\end{align*}
+Безразмерный вектор $\symbfit a=S_a^{-1}\symbfit r$
+удовлетворяет задаче с безразмерной матрицей
+\begin{equation}
+ \widehat{\BB}(z;d_\theta)=S_r\BB(z/\tref;\cth)S_a
+ \label{eq:scaledB}
+\end{equation}
+Обратимые масштабы не меняют собственных значений.
+При вычислении аналитической производной масштабы фиксируются.
+Нормы, модули, SVD и адаптивное выравнивание могут применяться в
+диагностике, но не должны незаметно входить в функцию, для которой
+используется комплексная аналитическая производная.
+
+Для простого корня удобна локальная система на собственное значение
+и вектор реакций:
+\begin{equation}
+ \widehat{\BB}(z)\symbfit a=0,\qquad
+ \symbfit h^*\symbfit a=1,
+ \label{eq:augmented}
+\end{equation}
+где $\symbfit h$ фиксирован во время коррекции и выбран так, чтобы
+нормирующее произведение не обращалось в ноль. Шаг Ньютона имеет вид
+\begin{equation}
+ \begin{bmatrix}
+ \widehat{\BB}(z)&\widehat{\BB}_z(z)\symbfit a\\
+ \symbfit h^*&0
+ \end{bmatrix}
+ \begin{bmatrix}\Delta\symbfit a\\\Delta z\end{bmatrix}
+ =-
+ \begin{bmatrix}\widehat{\BB}(z)\symbfit a\\
+ \symbfit h^*\symbfit a-1\end{bmatrix}.
+ \label{eq:newton}
+\end{equation}
+Это система размера $7\times7$ в комплексных неизвестных, эквивалентная
+системе из 14 вещественных уравнений. Она не требует минимизировать
+модуль определителя. Общие методы Ньютона для нелинейных собственных
+задач рассматриваются в~\cite{guettel2017}; \eqref{eq:newton} получено
+линеаризацией конкретной системы \eqref{eq:augmented}.
+
+В качестве альтернативы допускается решение
+$\operatorname{Re}f(p)=\operatorname{Im}f(p)=0$ с согласованным
+вещественным Якобианом. В обоих случаях требуется близкое начальное
+приближение и последующая проверка полной матрицы. Нуль определителя
+сам по себе не восстанавливает идентичность моды.
+
+\subsection{Производная передаточной матрицы}
+
+При необходимости производная вычисляется без предположения о
+коммутативности:
+\begin{align}
+ \partial_p\TT_i(p,L_i)
+ &=\int_0^{L_i}e^{\HH_i(p)(L_i-s)}\,
+       \partial_p\HH_i(p)\,e^{\HH_i(p)s}\dd s,\label{eq:derivativeT}\\
+ \partial_p\BB
+ &=\partial_p\JJ_{\mathrm{KV}}\,\operatorname{blockdiag}(\PP_1,\PP_2)
+ +\JJ_{\mathrm{KV}}\operatorname{blockdiag}(\partial_p\PP_1,\partial_p\PP_2).
+ \label{eq:derivativeB}
+\end{align}
+В $\partial_p\HH_i$ ненулевые элементы равны $2m_ip$ на местах $(4,1)$,
+$(5,2)$ и $2J_ip$ на месте $(6,3)$. В $\partial_p\JJ_{\mathrm{KV}}$
+ненулевы только $\cth$ и $-\cth$ в поворотных столбцах третьей строки.
+Формулу \eqref{eq:derivativeT} можно вычислять как верхний правый блок
+экспоненты
+\[
+ \exp\begin{bmatrix}
+ L_i\HH_i&L_i\partial_p\HH_i\\0&L_i\HH_i
+ \end{bmatrix}.
+\]
+Упрощение $\partial_p e^{L\HH}=Le^{L\HH}\HH_p$ без доказанного
+$[\HH,\HH_p]=0$ неверно. В безразмерной коррекции
+$\partial_z\BB=\partial_p\BB/\tref$ при фиксированном $\cth$.
+
+\subsection{Ограниченное продолжение от упругого спектра}
+
+Для первого вычислительного этапа естественна следующая последовательность.
+\begin{enumerate}
+\item Зафиксировать геометрию, характеристики плеч и $\kappa_\theta$.
+      Взять проверенные упругие корни и формы той же постановки;
+      начальные показатели $z_j(0)=\ii\Omega_{0j}$.
+\item При малом положительном $d_\theta$ использовать
+      \eqref{eq:smallp} или \eqref{eq:smallnondim} только как предиктор.
+      Для близкого или кратного набора начинать с подпространства;
+      при точной симметрии допустимо заранее разделить независимые классы.
+\item Уточнять каждую новую пару $(z,\symbfit a)$ по
+      \eqref{eq:newton} или эквивалентной комплексной характеристической
+      задаче. Сохранять фактический корень и восстановленную форму.
+\item Продолжать по $d_\theta$ с соседними решениями как предикторами.
+      Шаг уменьшать адресно при плохой коррекции, близких полюсах
+      или неоднозначной форме, а не глобально во всём диапазоне.
+\item Сопоставлять \emph{комплексные} формы через массовую корреляцию
+      с комплексным сопряжением. Для RLB учитывать $J_i|\psi_i|^2$.
+      Различать происхождение от упругой моды и сортировку по $\omega_d$.
+\item Комплексно-сопряжённую пару учитывать как одну колебательную
+      моду реального движения. Если пара подходит к вещественной оси,
+      сохранять обе дальнейшие вещественные ветви при их появлении;
+      это два показателя апериодического отклика, а не пропущенные частоты.
+\end{enumerate}
+
+Комплексные собственные формы в общем случае не ортогональны по обычной
+массовой метрике. Не нужно принудительно ортогонализовать разные
+разрешённые собственные решения и выдавать полученные комбинации за моды.
+При совпадении собственных значений возможны как независимые формы,
+так и дефектный корень с присоединёнными векторами~\cite{tisseur2001}.
+Поэтому малый MAC или вырождение корректора не следует автоматически
+«исправлять» перестановкой ближайших частот.
+
+Такое продолжение отслеживает выбранных потомков упругого спектра.
+Оно не является доказательством, что найдены все комплексные корни
+в некоторой области. Прежнее понятие «седьмого guard» на вещественной
+частотной оси нельзя механически перенести на комплексную плоскость.
+
+\subsection{Контроль полноты только при конкретной необходимости}
+
+Если нужно выяснить число корней внутри отдельной подозрительной области,
+теоретически применим принцип аргумента:
+\begin{equation}
+ N_\Gamma=\frac{1}{2\pi\ii}\oint_\Gamma
+ \tr\bigl(\BB(p)^{-1}\BB_p(p)\bigr)\dd p.
+ \label{eq:argument}
+\end{equation}
+Для аналитической исходной матрицы без полюсов и контура без собственных
+значений это число нулей с алгебраической кратностью. Численная реализация
+требует контроля квадратуры и невырожденности матрицы на контуре;
+контурные методы описаны в~\cite{guettel2017}. Равенство приведено как
+адресный способ проверки кластера, а не как требование выполнять дорогой
+контурный аудит для каждой обычной точки продолжения.
+
+\subsection{Что проверять у каждого принятого корня}
+
+В безразмерных согласованных переменных вычисляются
+\begin{equation}
+ r_B=\frac{\norm{\widehat{\BB}\symbfit a}}
+ {\norm{\widehat{\BB}}\norm{\symbfit a}},
+ \qquad
+ r_\sigma=\frac{\sigma_{\min}(\widehat{\BB})}
+ {\sigma_{\max}(\widehat{\BB})}.
+ \label{eq:residualB}
+\end{equation}
+Затем в физических переменных проверяются заделки, все шесть условий
+\eqref{eq:jointtime} с $\partial_t\mapsto p$ и восстановление обоих плеч.
+Момент должен получаться из решения плеча, а не присваиваться по формуле
+пружины перед проверкой этой же формулы.
+
+Дополнительный энергетический остаток имеет вид
+\begin{equation}
+ r_E=\frac{|p^2\mathcal M_\varphi+p\mathcal C_\varphi+\mathcal K_\varphi|}
+ {|p|^2\mathcal M_\varphi+|p|\mathcal C_\varphi+\mathcal K_\varphi}.
+ \label{eq:residualE}
+\end{equation}
+Он полезен вместе с \eqref{eq:exactalpha}, но не заменяет граничных невязок.
+Проверяются сопряжённость \eqref{eq:conjugate}, отсутствие объяснимо
+неподдержанного роста $\operatorname{Re}p>0$ и возврат к упругим решениям.
+
+Малость $r_B$ не является безусловной оценкой ошибки $p$, особенно у
+кратного или плохо обусловленного корня. Для простого корня чувствительность
+коррекции зависит от величины
+$\symbfit w^*\widehat{\BB}_z\symbfit a$, где $\symbfit w$
+--- левый нуль-вектор. Если она мала, нельзя обещать много верных знаков
+на основании одного остатка. Допуски для $\omega_d$, малого $\alpha$ и
+физических условий задаются раздельно \emph{до} расчёта. Неразрешимый
+показатель затухания нельзя выдавать за измеренное число, а теоретически
+нулевое затухание нельзя заменять искусственным отрицательным
+$\operatorname{Re}p$ ради «устойчивой» картинки.
+
+\section{Предельные случаи и минимальные проверки реализации}
+\label{sec:limits}
+
+\paragraph{Нулевая вязкость.}
+При $\cth=0$ должны совпасть прежние упругая матрица при вещественной
+$\omega$ и новая матрица при $p=\ii\omega$, включая физические знаки.
+Показатели равны $p_j=\pm\ii\omega_{0j}$. Достаточна проверка в уже
+сохранённых совместимых корнях; полный повтор упругих карт не требуется.
+
+\paragraph{Переход RLB в EB.}
+При $1/\Sbeam_i\to0$, $J_i\to0$ и фиксированных
+$\A_i,\D_i,m_i,L_i,\beta,\kth,\cth$ матрица \eqref{eq:Hp} переходит в
+\eqref{eq:Heb}. При каждом фиксированном конечном комплексном $p$
+непрерывность экспоненты даёт тот же переход для $\TT_i,\PP_i,\BB$.
+Одного выключения сдвиговой податливости при сохранённом $J_i$
+недостаточно для классической EB. Из матричного предела не следует
+равномерная сходимость всего бесконечного спектра.
+
+\paragraph{Нулевая жёсткость и статический случай.}
+При $\kth=\cth=0$ возвращается моментно-свободный шарнир с передачей сил.
+При $p=0$ вязкость не влияет на статические условия. Для данной конструкции
+с внешними заделками отсутствие нулевой собственной формы следует из
+положительности энергии, а не из исключения нуля поисковым алгоритмом.
+
+\paragraph{Жёсткий узел и большая вязкость.}
+При $\kth\to\infty$, фиксированных $p$ и $\cth$, деление моментной строки
+на $\kth$ даёт $\Delta\psi\to0$ для ограниченных состояний; точный
+жёсткий узел по-прежнему следует задавать отдельно. Большая $\cth$
+не является универсальной заменой жёсткого узла во всём спектре:
+предел при фиксированном $p\ne0$ не описывает автоматически ветви,
+у которых $p$ само стремится к нулю или уходит из рассматриваемой области.
+
+\paragraph{Неактивный демпфер.}
+У доказанно сохраняющейся формы с $q=0$ должны остаться
+$p=\pm\ii\omega_0$ и нулевая мощность потерь. Это корректный контроль,
+а не отказ от требования затухания. В одинаковой конструкции соответствующий
+класс сохраняется в обеих теориях; в неодинаковой нельзя создавать его
+проекцией решения на старую симметрию.
+
+\paragraph{Скалярный контроль временного соглашения.}
+Для отдельной тестовой системы с одной поворотной инерцией $I_*>0$
+\[
+ I_*\ddot q+\cth\dot q+\kth q=0,
+ \qquad
+ p_\pm=\frac{-\cth\pm\sqrt{\cth^2-4I_*\kth}}{2I_*}.
+\]
+Она проверяет знаки, сопряжённость и переход от колебательного к
+апериодическому движению. Это тест алгоритма на известном уравнении,
+не замена безмассового узла исходной конструкции инерционным элементом
+и не независимая верификация стержневой модели.
+
+\section{Итог постановки и границы заметки}
+
+Новая физическая гипотеза состоит в одном локальном законе
+\eqref{eq:kv}. Она не изменяет линейно-упругие свойства плеч и добавляет
+неотрицательную диссипацию только в относительном повороте.
+Для поиска собственных колебаний требуется находить комплексное $p$
+из \eqref{eq:characteristic}, используя \eqref{eq:Hp} и
+$\KJ(p)=\kth+\cth p$. После этого отдельно определяются
+$\omega_d$, $\alpha$ и, при необходимости, $\Lambda_d$.
+
+Для первого численного этапа предлагается ограниченное продолжение
+нескольких уже проверенных упругих мод по $d_\theta$ при фиксированных
+геометрии и $\kappa_\theta$, с полной комплексной коррекцией и физическим
+контролем каждого нового решения. Модальные приближения
+\eqref{eq:smallp}--\eqref{eq:twomode} служат предикторами и средствами
+объяснения, но не подменяют итоговые корни передаточной задачи.
+
+Настоящий вывод не определяет численное значение $\cth$ для реального
+изделия и не доказывает применимость идеального линейного демпфера на
+произвольных частотах, скоростях и температурах. Не учитываются сухое
+трение, люфт, инерция и эксцентриситет узла, вязкоупругость слоёв,
+несимметричный ламинат с $B\ne0$ и внешнее возбуждение. Свойства
+затухания конкретных EB/RLB-конфигураций предстоит проверить отдельным
+вычислительным этапом. Сохранённые ограничения исходной RLB-верификации
+новым теоретическим выводом не снимаются.
+
+\appendix
+\section{Конечномерная квадратичная задача как вспомогательное представление}
+\label{app:qep}
+
+После выбора конечного числа допустимых координат или упругих форм
+вариационная система имеет вид
+\[
+ (p^2\mathbf M+p\mathbf C+\mathbf K)\symbfit a=0.
+\]
+Её можно линеаризовать, введя $\symbfit v=(\symbfit a,p\symbfit a)^{\mathsf T}$:
+\begin{equation}
+ \begin{bmatrix}0&I\\-\mathbf K&-\mathbf C\end{bmatrix}\symbfit v
+ =p\begin{bmatrix}I&0\\0&\mathbf M\end{bmatrix}\symbfit v.
+ \label{eq:linearization}
+\end{equation}
+Это стандартная связь квадратичной и обобщённой линейной собственных
+задач~\cite{tisseur2001}. Для \eqref{eq:modalqep} используются
+$\mathbf M=I$, $\mathbf C=\cth\symbfit b\symbfit b^{\mathsf T}$,
+$\mathbf K=\diag\omega_{0j}^2$.
+
+При конечном модальном усечении получаются приближённые показатели;
+близость к точному спектру требует проверки по размеру подпространства
+или по исходной передаточной матрице. Матрица \eqref{eq:Bmatrix} после
+точного переноса не является матрицей вида
+$p^2\mathbf M+p\mathbf C+\mathbf K$ с постоянными шестимерными коэффициентами.
+Поэтому \eqref{eq:linearization} не даёт автоматического способа
+линеаризовать её без дополнительной аппроксимации. В данной работе
+такое усечение и новый решатель не реализуются.
+
+\section{Основания и воспроизведение документа}
+
+Упругие энергии, знаки усилий, локальные координаты, порядок состояния
+и структура сборки взяты из документов проекта~\cite{projectjoint,projectsource}.
+Описание параллельной схемы и идеального вязкого поворотного элемента
+опирается на~\cite{comsolkv,mathworksdamper}. Переход к \eqref{eq:jointtime},
+комплексная матрица \eqref{eq:Hp}, энергетические тождества
+\eqref{eq:energy}, \eqref{eq:exactalpha} и прикладная схема продолжения
+выведены здесь для данной конструкции. Общие спектральные методы
+сопоставлены с~\cite{tisseur2001,guettel2017}, а не приписаны старым
+расчётным отчётам.
+
+Список источников встроен в файл; внешние рисунки, база \texttt{.bib}
+и данные расчётов для компиляции не требуются. Исходник рассчитан на
+XeLaTeX. Обычно достаточно двух запусков:
+\begin{quote}\small\ttfamily
+xelatex inplane\_kelvin\_voigt\_joint\_theory.tex\\
+xelatex inplane\_kelvin\_voigt\_joint\_theory.tex
+\end{quote}
+Если компилятор просит повторить сборку для ссылок, нужен ещё один запуск.
+При подготовке проверяются компиляция и отображение формул; это не
+численная верификация вязкой механической модели. Предполагаемое место
+исходника при последующем добавлении в проект ---
+\path{docs/laminated_beams/inplane_kelvin_voigt_joint_theory.tex}.
+
+\begingroup
+\raggedright
+\renewcommand{\refname}{Источники}
+\begin{thebibliography}{9}
+\addcontentsline{toc}{section}{Источники}
+\bibitem{projectjoint}
+Проект CoupledBeams.
+\emph{Поворотно-упругий узел двух стержней при плоских колебаниях}.
+Теоретическая заметка и последующие уточнения.
+\repo{docs/laminated_beams/inplane_rotational_spring_joint.md}{\nolinkurl{docs/laminated_beams/inplane_rotational_spring_joint.md}}.
+Версия основания: commit \texttt{653173cd2a8b5f408832e1164c30a6651cbf80be},
+Version 0.5.1.8.
+
+\bibitem{projectsource}
+Проект CoupledBeams.
+\emph{Source contract: Reddy Chapter 4, symmetric laminated beam}.
+\repo{docs/laminated_beams/reddy_ch4_source_contract.md}{\nolinkurl{docs/laminated_beams/reddy_ch4_source_contract.md}}.
+Та же версия репозитория. Используется документированная проектная
+редукция; реконструкция источника не приравнивается к полной
+независимой верификации RLB.
+
+\bibitem{projectrobustness}
+Проект CoupledBeams.
+\emph{Поворотная пружина: слоистая RLB и небольшое различие длин}.
+\repo{docs/laminated_beams/inplane_spring_robustness.md}{\nolinkurl{docs/laminated_beams/inplane_spring_robustness.md}}.
+Та же версия репозитория. Основание для упругих контрольных конфигураций,
+не источник результатов вязкого расчёта.
+
+\bibitem{comsolkv}
+COMSOL Multiphysics.
+\emph{Linear Viscoelasticity}, раздел \emph{The Kelvin--Voigt Model}.
+Structural Mechanics Module User's Guide, версия 6.4.
+\href{https://doc.comsol.com/6.4/doc/com.comsol.help.sme/sme_ug_theory.06.029.html}{Официальная документация COMSOL}.
+Обращение: 12.09.2026.
+
+\bibitem{mathworksdamper}
+MathWorks. \emph{Rotational Damper: Viscous damper in mechanical rotational systems}.
+Simscape Documentation.
+\href{https://www.mathworks.com/help/simscape/ref/rotationaldamper.html}{Официальное описание идеального поворотного демпфера}.
+Обращение: 12.09.2026.
+
+\bibitem{tisseur2001}
+Tisseur F., Meerbergen K.
+The quadratic eigenvalue problem.
+\emph{SIAM Review}. 2001. Vol.~43, No.~2. P.~235--286.
+\href{https://doi.org/10.1137/S0036144500381988}{DOI: 10.1137/S0036144500381988}.
+\href{https://eprints.maths.manchester.ac.uk/466/1/38198.pdf}{Открытая авторская копия}.
+
+\bibitem{guettel2017}
+Güttel S., Tisseur F.
+The nonlinear eigenvalue problem.
+\emph{Acta Numerica}. 2017. Vol.~26. P.~1--94.
+\href{https://doi.org/10.1017/S0962492917000034}{DOI: 10.1017/S0962492917000034}.
+\href{https://eprints.maths.manchester.ac.uk/2538/1/main.pdf}{Открытая авторская копия}.
+\end{thebibliography}
+\endgroup
+\end{document}

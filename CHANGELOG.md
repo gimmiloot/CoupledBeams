@@ -2,6 +2,14 @@
 
 ## 2026-09-12
 
+- Imported the user-provided Kelvin–Voigt theory unchanged and added a bounded
+  complex EB/RLB adapter with fixed scaling, a Frechet derivative and augmented
+  Newton continuation. Validated four reused elastic seeds and 12 positive-damping
+  states for H/L/L/H arms at beta=5°, kappa=1; 22 targeted tests passed.
+  Recorded energy/shape checks, the initial matrix-test qualifications, costs
+  and a zero-work resume. Updated the pilot report, scoped assumptions and
+  memory D11/K12. Old elastic code and scientific data remain unchanged.
+
 - Documented the scientific conclusion and bounded completion of the spring
   robustness check, retaining all qualifications and conditions for returning
   to specific cases. Updated scoped memory with RLB-D10 and the next subject:

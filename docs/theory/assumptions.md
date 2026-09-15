@@ -7,6 +7,20 @@ diagnostic workflow, and model-extension checks, see `../project_rules.md`.
 
 ## Working Notes
 
+## Bounded in-plane Kelvin–Voigt joint pilot
+
+- The arms remain linearly elastic, without distributed damping. One
+  nonnegative rotational dashpot acts in parallel with the existing massless
+  spring on relative section rotation, retaining translation compatibility
+  and external clamps. RLB uses section rotation, not the centreline slope.
+- The local convention is `exp(p*t)`, `p=-alpha+i*omega_d`, with fixed
+  reference time and `z=p*t_ref`; old elastic symbols, state order and
+  coordinate signs remain unchanged.
+- This pilot uses two isolated descendants, identical H/L/L/H arms,
+  beta0=5°, kappa_theta=1 and three small positive damping values. See the
+  [imported theory](../laminated_beams/inplane_kelvin_voigt_joint_theory.tex)
+  and [numerical scope](../laminated_beams/inplane_kelvin_voigt_pilot.md).
+
 ## Chapter-2 anisotropic rigid-joint pilot
 
 - The first two-monoclinic-rod diagnostic uses an ideal point joint with no
