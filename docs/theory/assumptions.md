@@ -7,6 +7,17 @@ diagnostic workflow, and model-extension checks, see `../project_rules.md`.
 
 ## Working Notes
 
+## Literature-only KV benchmarks
+
+- Failla 2014 example 6.1 and Hong–Kim 1999 example 1 use their own straight-beam
+  boundaries, material inputs and reference time. Translational supports exist
+  only in these benchmark assemblies; production angled-joint physics is unchanged.
+- Source variables and signed transformations are defined in the
+  [transcription](../laminated_beams/inplane_kelvin_voigt_literature_benchmarks.md#source-transcription-and-mapping).
+  Failla's deflection `psi`, moment `mu` and eigenvalue `omega` are not project
+  section rotation, length mismatch or real elastic frequency. Hong's E,G,nu
+  remain the independent printed inputs, without enforcing another G relation.
+
 ## Bounded in-plane Kelvin–Voigt joint pilot
 
 - The arms remain linearly elastic, without distributed damping. One

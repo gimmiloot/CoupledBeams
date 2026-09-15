@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 2026-09-15
+
+- Registered the local Failla 2014 and Hong–Kim 1999 PDFs, bibliography and
+  explicit source/time/sign mappings before two bounded literature benchmarks.
+  Added a source-specific assembly reusing the K12 complex corrector and 21
+  tests (43 targeted tests passed including K12). All 15 computed eigenvalues
+  satisfy internal gates, but published rounding is not fully reproduced:
+  Failla Table1 and Hong Table2 retain LITERATURE_MISMATCH; Hong Table3 was
+  not run because Table2 did not pass. Recorded the inactive Failla mode,
+  a local Table2 formula check, costs, zero-work reuse and D12/K13 memory.
+  Existing production code, K11/K12 results and the two user PDFs are unchanged.
+
 ## 2026-09-12
 
 - Imported the user-provided Kelvin–Voigt theory unchanged and added a bounded

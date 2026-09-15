@@ -570,3 +570,58 @@ ACTIVE mode_01 и INACTIVE mode_02 каждой из EB/RLB. Полная ком
 полнота комплексного спектра, сильная вязкость и другие конфигурации не проверены.
 Теория импортирована, матрицы проверены, пилот завершён в этом объёме;
 K11, старые неопределённости и source/Ritz qualifications не пересмотрены.
+
+## RLB-K13
+
+**Внешняя проверка KV, PARTIAL:** разрешение [RLB-D12](decisions.md#rlb-d12),
+[подробный отчёт](../laminated_beams/inplane_kelvin_voigt_literature_benchmarks.md).
+Дата 2026-09-15, исходный HEAD `3dff999c7dea0d48b96de9c7dc850d3cb93d3de5`;
+benchmark-код и отчёт — working-tree version, хеши в новом manifest.
+K11/K12 и их исходные версии сохранены; это внешние опубликованные задачи,
+не повтор старого внутреннего пилота.
+
+**Источники и точные targets:**
+
+- `failla_2014_viscoelastic_discontinuous_beams`:
+  [PDF Failla](../literature/pdf/failla2014.pdf),
+  [source_index](../literature/source_index.md#failla_2014_viscoelastic_discontinuous_beams).
+  §6.1, Fig.2, Table1: пять complex eigenvalues и damping ratios;
+  Fig.3 — только качественные разрывы. EB с тремя RJ+TS,
+  `z=i*omega_F`, явный перевод временного соглашения.
+- `hong_kim_1999_damped_timoshenko_joints`:
+  [PDF Hong](../literature/pdf/hong1999.pdf),
+  [source_index](../literature/source_index.md#hong_kim_1999_damped_timoshenko_joints).
+  Example1, Table1 параметры; Table2 — пять HH и пять FF, без нулевых мод;
+  Table3 — пять targets Proposed method. `p=s`; supporting joints здесь
+  поперечные, не connecting rotational. Метаданные и SHA256 PDF — в отчёте.
+
+**Фактически получено:** все **15** рассчитанных eigenvalues CONVERGED.
+Failla Table1 — **LITERATURE_MISMATCH**: 2/5 комплексных значений и 4/5
+отношений затухания проходят печатный критерий; целиком строка — 1/5.
+Наибольшее расхождение eigenvalue 3.29583e-4 (mode4, 6.59165 половины
+последнего разряда); damping ratio — 8.52682e-5 (mode3, 1.70536 половины).
+Неактивность mode4 подтверждена без принудительного нуля: |Re(z)|=3.09e-22,
+max |скачок theta|=8.37e-14. Её частота согласуется с `(4*pi)^2`, но не
+с печатным `157.9140` в объявленном интервале.
+
+Hong Table2 — **LITERATURE_MISMATCH**, 3/10 строк в печатном интервале;
+max абсолютное отличие 5.72497e-5 rad/s (FF5), max в половинах разряда
+1.98772 (HH4). Одна адресная проверка десяти частот по формулам сноски
+Table2 согласуется с B до 7.28e-12 rad/s. Способ подготовки последних цифр
+таблицы не установлен, допуск не расширен. Hong Table3 — **NOT_RUN_B1_GATE**,
+0/5: сохранена только транскрипция, не вымышленные вычисленные eigenvalues.
+
+**Проверки и границы:** max r_B=6.50e-17, sigma ratio=2.91e-17,
+physical=3.15e-14; матричное отображение Hong/project на трёх комплексных s
+даёт нулевую разность. Пройдены 43 целевых теста; 107 вызовов provider,
+172 построения B/B_z с preflight, 31 шаг Ньютона, .22384 s основного запуска.
+Reuse дал ноль новых вызовов и неизменность шести файлов. Код —
+[helper](../../scripts/lib/inplane_kelvin_voigt_literature_benchmarks.py),
+[runner](../../scripts/analysis/laminated_beams/benchmark_inplane_kelvin_voigt_literature.py);
+[данные и команды](../laminated_beams/inplane_kelvin_voigt_literature_benchmarks.md#файлы-и-воспроизведение).
+Подтверждены внутренние комплексные решения двух исходных постановок,
+неактивный EB-демпфер и недемпфированные Timoshenko-формулы. Полное печатное
+воспроизведение Failla/Hong и демпфированный Hong не подтверждены. Общий
+Newton/expm не даёт независимого доказательства angled laminated RLB + KV;
+продольное движение, редукция ламината и полнота спектра здесь не проверялись.
+Место остановки — PARTIAL; никаких новых sweeps и пересмотра K12.

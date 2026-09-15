@@ -8,6 +8,72 @@ Citation keys синхронизированы с `docs/literature/bibliography.
 coefficient и circular rods:
 `docs/literature/timoshenko_shear_sources.md`.
 
+## `failla_2014_viscoelastic_discontinuous_beams`
+
+- PDF: `docs/literature/pdf/failla2014.pdf`, 12 страниц (журнальные 52–63),
+  SHA256 `0d10c20796b1d35368e11aaad57764ae68b239b3f493a01361ea01782e3521e2`.
+- Тип: журнальная статья Giuseppe Failla, *On the dynamics of viscoelastic
+  discontinuous beams*, Mechanics Research Communications 60 (2014), 52–63.
+  DOI `10.1016/j.mechrescom.2014.06.001`; номер выпуска в PDF не указан.
+- Роль: внешний численный reference для EB, локальных rotational Kelvin–Voigt
+  joints, translational supports и complex modal analysis. Независимый от K12
+  опубликованный результат; общий численный корректор не является второй
+  независимой реализацией всего CoupledBeams.
+- Обозначения: `u,theta,M,S`, `xi=x/L`, `psi=U/L`, `mu=M*L/EI`, `T=S*L²/EI`.
+  Source `psi` — прогиб, а не проектный поворот; source `mu` — момент, не разность длин.
+  Из (1),(6) скачок S равен **минус V**, хотя V назван shear-force discontinuity;
+  из (7)–(9) скачок theta равен `-M/(k_theta+c_theta*p)`.
+- Время: `u=U*exp(i*varpi*t)`, (12); `omega_F²=varpi²*m*L⁴/EI`.
+  При `t_ref=L²*sqrt(m/EI)` проектный `z=i*omega_F=-q_F+i*p_F`.
+  Damping ratio — (34b), `q_F/sqrt(p_F²+q_F²)`.
+- Benchmark: только §6.1, Fig. 2, Table 1, p.59; Fig.3,p.60 — качественный
+  контроль непрерывности прогиба и скачков поворота/силы. Три совмещённых TS/RJ
+  при xi=.25,.5,.75: kappa_u=100,gamma_u=.1,kappa_theta=10,gamma_theta=.1.
+  Пять опубликованных eigenvalues и damping ratios; mode 4 не возбуждает TS/RJ.
+- Проверяет EB-комплексную задачу, закон RJ/TS, перевод временного соглашения,
+  комплексные корни и неактивный локальный демпфер. Не проверяет Timoshenko/RLB,
+  продольное движение, слоистую редукцию или двухплечевой узел под углом beta.
+- Метаданные: `VERIFIED_LOCAL_PDF`, 2026-09-15, первая страница и пагинация;
+  формулы/таблица дополнительно просмотрены в изображениях PDF.
+  [Транскрипция и benchmark](../laminated_beams/inplane_kelvin_voigt_literature_benchmarks.md#failla-source).
+- Фактическое воспроизведение: Table1 — LITERATURE_MISMATCH по части
+  печатных разрядов; неактивная mode4 подтверждена. См.
+  [численное сравнение](../laminated_beams/inplane_kelvin_voigt_literature_benchmarks.md#failla-table-1).
+
+## `hong_kim_1999_damped_timoshenko_joints`
+
+- PDF: `docs/literature/pdf/hong1999.pdf`, 20 страниц (журнальные 787–806),
+  SHA256 `e8622f7d407ffcd353fea8578cd40f840b530c33be272a9d1a81af47ac015088`.
+- Тип: журнальная статья S.-W. Hong, J.-W. Kim, *Modal analysis of multi-span
+  Timoshenko beams connected or supported by resilient joints with damping*,
+  Journal of Sound and Vibration 227(4) (1999), 787–806.
+- Роль: внешний reference для Timoshenko shear deformation, rotary inertia,
+  Laplace-domain state и exact dynamic matrix с damped resilient joints.
+- Обозначения и знаки: (1)–(3), `Psi=[u*,phi*,F*,M*]`,
+  `u'=phi-F/(kAG)`, `phi'=M/(EI_d)`, `F'=-rho*A*s²*u`,
+  `M'=F+rho*I_d*s²*phi`. Относительно `[w,psi,Q,M]` проекта:
+  `Psi=diag(1,-1,-1,-1)*y_transverse`. Простая замена F=Q,phi=psi неверна.
+- Время: Laplace variable `s`, нулевые начальные условия; (2),(17),(22).
+  Полюсы Table 3 `lambda_k=sigma_k+j*omega_k` сравниваются с проектным p
+  напрямую, без умножения на i. Частоты Table 2 и eigenvalues Table 3 размерные.
+- Benchmark: Numerical example 1 (§4.1), Fig.2 и Tables1–3,p.796,797,799.
+  Две **supporting translational** KV-опоры на концах, `k_t=2e6 N/m`,
+  `c_t=20 Ns/m`; повороты свободны, концевые моменты нулевые.
+  Table2: по пять положительных частот hinged–hinged/free–free без опорных
+  элементов; нулевые rigid-body modes исключены. Table3: пять complex roots,
+  target — Proposed method, не FEM. Пример не использует connecting rotational joint.
+- Ограничения: не проверяет продольное движение, ламинатную редукцию,
+  внутренний rotational KV-узел и angled two-arm геометрию. E,G,nu из Table1
+  сохраняются как отдельные benchmark inputs; G не пересчитывается из E,nu.
+- Метаданные: `VERIFIED_LOCAL_PDF_AND_PUBLISHER`, 2026-09-15. PDF содержит
+  Article No. jsvi.1999.2385; полный DOI `10.1006/jsvi.1999.2385` подтверждён
+  [издательской страницей](https://www.sciencedirect.com/science/article/pii/S0022460X99923854).
+  [Транскрипция и signed mapping](../laminated_beams/inplane_kelvin_voigt_literature_benchmarks.md#hong-source).
+- Фактическое воспроизведение: Table2 — LITERATURE_MISMATCH при согласии
+  матрицы с формулами сноски; Table3 — NOT_RUN_B1_GATE. Демпфированная
+  численная проверка этим запуском не выполнена; см.
+  [результат](../laminated_beams/inplane_kelvin_voigt_literature_benchmarks.md#hong-table-2).
+
 ## `tao_2023_wave_coupled_beams`
 - PDF: `docs/literature/pdf/Wave-basedin-planevibrationanalysisofmultiplecoupledbeamstructureswitharbitraryconnectionangleandelastic__boundaryrestraints.pdf`
 - Тип: статья.
