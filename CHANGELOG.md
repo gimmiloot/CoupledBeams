@@ -2,6 +2,12 @@
 
 ## 2026-09-26
 
+- Added D15/K16 bounded continuation of three prescribed ACTIVE EB seeds
+  at d=.001/.005 using the unchanged K12 solver and gates. Accepted both
+  INTERMEDIATE targets; retained physical gate failures for STRONG/WEAK
+  at the first target after two attempts and did not run their second
+  targets. Recorded partial status, slopes, frequency shifts, all attempts,
+  22 targeted tests and zero-work reuse; no extra parameters or RLB roots.
 - Added D14/K15 sparse elastic screening for the same H/L/L/H EB section:
   six sorted modes at 0, 5, 45 and 75 degrees. Reused 14 roots/forms and
   calculated only ten missing target roots plus two guards. Identified

@@ -730,3 +730,49 @@ K11/K12 CSV/JSON/NPZ неизменны. **Новых positive-d complex roots=0
 2–4 состояния и d_theta пока не назначены. RLB, разные длины, полный спектр,
 новые complex roots и cross-beta tracking не проверялись. Source/Ritz
 qualifications и область внешней проверки K14 сохранены.
+
+## RLB-K16
+
+**Три ACTIVE seed и два малых d**, 2026-09-26, [D15](decisions.md#rlb-d15).
+HEAD `ece1f99f7527e15c243f74a05641090d0813f4d6`, main, исходное дерево чистое.
+[Отчёт](../laminated_beams/inplane_kelvin_voigt_targeted_weak_damping.md),
+[CSV](../../results/laminated_beams/inplane_kelvin_voigt_targeted_weak_damping/targeted_weak_damping.csv),
+[diagnostics](../../results/laminated_beams/inplane_kelvin_voigt_targeted_weak_damping/diagnostics.json),
+[manifest](../../results/laminated_beams/inplane_kelvin_voigt_targeted_weak_damping/run_manifest.json).
+[K15](#rlb-k15) даёт три упругие формы; [K12](#rlb-k12) — неизменный
+полный solver и gates; [K14](#rlb-k14) не пересчитывался.
+
+**PARTIAL_NUMERICAL_QUALIFICATIONS:** из шести requested targets вычислены
+четыре, приняты два. A=(0°,sorted_05), B=(45°,sorted_02), C=(75°,sorted_05),
+та же H/L/L/H EB, mu=0,kappa=1. B принят при d=.001 и .005. A1/C1
+сходятся по Newton, но после двух попыток остаются NUMERICAL_UNRESOLVED;
+A2/C2 не запущены. Старые K12/K15, теория и complex helper неизменны.
+
+**Принятый B:** z=−.0197054804971+i*19.2594124846 и
+−.0985204248043+i*19.2606157027. a/d=19.7054804971/19.7040849609 против
+предиктора 19.7055386641; zeta/d=1.02316050391/1.02301128357 против
+1.02316672278. Относительные отклонения a: −2.95e-6/−7.38e-5,
+zeta: −6.08e-6/−1.52e-4. WEAK_DAMPING_CLOSE при .001 выполнен по
+заранее заданному 1%; для .005 порог не назначался.
+Относительные сдвиги частоты +2.60284e-6/+6.50773e-5;
+сдвиг/d²=2.602838/2.603092 — согласуется с первой поправкой, не доказывает
+порядок по двум точкам. Max B/sigma/physical/energy среди принятых:
+8.53e-15/9.36e-18/1.38e-12/1.85e-9; min MAC=.999996640.
+
+**Ограничения A/C:** кандидаты при .001 имеют a/d=178.5650655/6.6333334,
+zeta/d=2.3318134/.06632235, близкие к предикторам K15, но физический
+gate после retry даёт 2.79e-7/3.90e-8 вместо ≤1e-9. У C также
+second sigma ratio=8.61e-9<1e-8, POSSIBLE_MULTIPLICITY. Это не доказанная
+кратность или установленная ошибка модели. Первые отказы, формы и
+история двух попыток сохранены. Высокий MAC (общий минимум .999982608)
+и малые матричные/энергетические невязки не снимают физических отказов.
+Подтверждённого трёхстороннего сравнения STRONG/INTERMEDIATE/WEAK нет.
+
+**Затраты и остановка:** 60 B+37 B_z=97, 25 шагов Ньютона, 46 expm,
+74 expm_frechet, 12 шаговых expm, шесть восстановлений с повторами;
+.536203 s двух вычислительных проходов. 22 целевых теста пройдены;
+missing-only и исчерпанный retry дают нулевые вычисления и неизменные
+файлы. Inactive/RLB roots, auxiliary d, новые beta — 0. Этап остановлен
+в объявленных границах; новое продолжение или разбор причин отказов
+требует отдельного решения. Cross-beta identity, полный спектр, сильная
+вязкость и source/Ritz qualifications этим результатом не пересматриваются.

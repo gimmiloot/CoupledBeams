@@ -342,3 +342,25 @@ HEAD `351df836d956388699df020758b78c2a85dbb44e`, main, исходное дере
 D13/K14 сохраняются как завершённый внешний этап. Исполнение —
 [K15](knowledge.md#rlb-k15),
 [отчёт screening](../laminated_beams/inplane_kelvin_voigt_elastic_screening.md).
+
+## RLB-D15
+
+**Принято:** после D14/K15 проверить ровно три заранее выбранных ACTIVE
+seed H/L/L/H EB, mu=0,kappa=1: A STRONG — beta=0°,sorted_05;
+B INTERMEDIATE — 45°,sorted_02; C WEAK ACTIVE — 75°,sorted_05.
+Для каждой последовательность d=0→.001→.005, максимум шесть новых
+principal roots. Источник выбора — K15 CSV, не округления задания.
+
+**Границы:** существующий полный complex solver и gates K12 неизменны;
+не более двух попыток на target, 20 шагов на попытку, 1000 B/B_z всего.
+Если первый target не подтверждён, остановить только его продолжение.
+Никаких новых beta/d, auxiliary roots, inactive repeats, RLB,
+cross-beta tracking, crossing/veering и автоматически выбранного следующего
+этапа. Сравнение с first-order predictor отделяется от root validity.
+
+**Происхождение:** текущее задание пользователя во вложении
+`006a92c3-c268-4adb-b039-5aab61fdf8d1/pasted-text.txt`, 2026-09-26;
+фактический HEAD `ece1f99f7527e15c243f74a05641090d0813f4d6`, main,
+исходное дерево чистое. [Отчёт](../laminated_beams/inplane_kelvin_voigt_targeted_weak_damping.md),
+[K16](knowledge.md#rlb-k16): частичный результат; B принят при обоих d,
+A/C после двух попыток при .001 не прошли gates, их .005 не запускались.
