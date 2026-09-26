@@ -42,6 +42,10 @@ kappa=1, шесть новых спектральных групп. 36 целе�
 воспроизведена. Статус PARTIAL; неактивная Failla mode4 подтверждена,
 Hong Table3 не рассчитывалась из-за Table2 gate. PDF, отображения знаков,
 таблицы ошибок и команды воспроизведения приведены в отчёте.
+[Второй проход D13](inplane_kelvin_voigt_literature_benchmarks.md#second-pass-source-precision-audit-and-hong-table-3):
+после отдельного equation-level PASS Table2 получены пять Hong Table3 roots,
+все PRINT_MATCH + SOLVER_PASS. Итог PASS_WITH_SOURCE_PRINT_QUALIFICATIONS;
+первоначальные статусы и расхождения печати Failla/Table2 сохранены.
 
 Сохранённый исторический результат RLB-0:
 

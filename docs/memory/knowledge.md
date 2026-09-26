@@ -625,3 +625,60 @@ Reuse дал ноль новых вызовов и неизменность ше
 Newton/expm не даёт независимого доказательства angled laminated RLB + KV;
 продольное движение, редукция ламината и полнота спектра здесь не проверялись.
 Место остановки — PARTIAL; никаких новых sweeps и пересмотра K12.
+
+## RLB-K14
+
+**Второй узкий проход внешней KV-проверки**, 2026-09-26:
+[D13](decisions.md#rlb-d13),
+[новый раздел отчёта](../laminated_beams/inplane_kelvin_voigt_literature_benchmarks.md#second-pass-source-precision-audit-and-hong-table-3).
+Исходный HEAD `33f2d49b070a34b8dd03a9b7bfd8353ff0e058d2`, main, чистое дерево;
+дополнение — working-tree version. [K13](#rlb-k13), его PARTIAL, printed
+FAIL Table2 и NOT_RUN Table3 сохранены вместе со всеми шестью исходными файлами.
+
+**Источники:** `failla_2014_viscoelastic_discontinuous_beams`,
+[PDF Failla](../literature/pdf/failla2014.pdf), §6.1/Table1;
+`hong_kim_1999_damped_timoshenko_joints`,
+[PDF Hong](../literature/pdf/hong1999.pdf), example1/Tables1–3.
+SHA256 обоих PDF неизменны, Table3 Proposed method повторно сверена с p.799.
+Failla `z=i*omega_F`; Hong `p=s`, без множителя i. Параметры/физика прежние.
+
+**Печать и уравнения:** Failla mode4: `(4*pi)^2=157.91367041742973`,
+старый корень отличается на 5.68e-14. Округление даёт 157.9137, не 157.9140.
+Из напечатанных p,q mode3 следует zeta=.07968527838 → .0797, не .0796;
+остальные четыре отображённых ratio согласованы. Это несовместимость
+напечатанных чисел при обычном округлении, а не установленная причина
+ошибки скрытых вычислений/печати. Старые расхождения mode1/2 не отменены.
+Новые корни Failla не считались.
+
+Hong Table2: **printed FAIL (3/10)** сохраняется; отдельный
+**PASS_EQUATION_LEVEL (10/10)** при заранее объявленном abs ≤1e-11 rad/s.
+Max matrix−analytic по модулю **7.275957614183426e-12 rad/s**; обе группы
+корней переиспользованы из K13, нового поиска не было. Это основание нового
+D13 gate, не ретроактивный PASS B1.
+
+**Hong Table3 — пять новых корней**, s^-1; все строки
+**PRINT_MATCH + SOLVER_PASS** по прежнему покомпонентному half-last-digit:
+
+| Mode | Published | Computed |
+| ---: | --- | --- |
+| 1 | −.066651+i*334.44 | −.06665107061380186+i*334.4369570155775 |
+| 2 | −2.7327+i*1107.9 | −2.7327485391295236+i*1107.9114019028123 |
+| 3 | −12.133+i*1927.1 | −12.133087165315244+i*1927.0787681392371 |
+| 4 | −20.106+i*2954.2 | −20.106057215912536+i*2954.189986775937 |
+| 5 | −20.135+i*4711.1 | −20.13476054472784+i*4711.136572308132 |
+
+Max r_B=5.81e-17, sigma ratio=7.45e-17, physical=1.06e-14,
+conjugate=7.77e-17; полный комплексный вектор невязки, последние поправки и
+производная сохранены в новой диагностике. 54 целевых теста пройдены;
+55 вызовов provider, 83 B/B_z с preflight, 14 шагов Ньютона, .16244 s.
+Completed reuse проверен со счётчиками matrix/root/shape/audit **0/0/0/0**.
+Данные `*_second_pass*` и `source_precision_audit.json` находятся в прежнем
+[benchmark-каталоге](../../results/laminated_beams/inplane_kelvin_voigt_literature_benchmarks/);
+команда — существующий runner с `--second-pass`. Старые CSV/JSON/NPZ не заменены.
+
+**Итог: PASS_WITH_SOURCE_PRINT_QUALIFICATIONS.** Поддержаны source equations,
+комплексный корректор и демпфированные корни прямых EB/RJ+TS и Timoshenko/KV
+support задач с оговорками печати Failla/Table2. Это не независимая проверка
+всей angled laminated RLB + rotational KV, продольной подсистемы, редукции
+ламината или полноты спектра. K11/K12 и прежние source/Ritz qualifications
+сохранены. Работа остановлена; production sweeps не разрешены и не начаты.

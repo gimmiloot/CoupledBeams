@@ -39,6 +39,10 @@ coefficient и circular rods:
 - Фактическое воспроизведение: Table1 — LITERATURE_MISMATCH по части
   печатных разрядов; неактивная mode4 подтверждена. См.
   [численное сравнение](../laminated_beams/inplane_kelvin_voigt_literature_benchmarks.md#failla-table-1).
+- Дополнение 2026-09-26: отдельный анализ печати подтверждает несовместимость
+  mode4 с обычным округлением `(4*pi)^2` и отображённого ratio mode3 с
+  напечатанными p,q; конкретная причина не установлена.
+  [Второй проход](../laminated_beams/inplane_kelvin_voigt_literature_benchmarks.md#second-pass-source-precision-audit-and-hong-table-3).
 
 ## `hong_kim_1999_damped_timoshenko_joints`
 
@@ -73,6 +77,10 @@ coefficient и circular rods:
   матрицы с формулами сноски; Table3 — NOT_RUN_B1_GATE. Демпфированная
   численная проверка этим запуском не выполнена; см.
   [результат](../laminated_beams/inplane_kelvin_voigt_literature_benchmarks.md#hong-table-2).
+- Дополнение 2026-09-26 по D13: printed FAIL Table2 сохранён, отдельный
+  equation-level PASS разрешил Table3. Все пять новых complex roots проходят
+  прежний printed gate и solver checks. Исторический NOT_RUN не перезаписан;
+  [данные второго прохода](../laminated_beams/inplane_kelvin_voigt_literature_benchmarks.md#second-pass-source-precision-audit-and-hong-table-3).
 
 ## `tao_2023_wave_coupled_beams`
 - PDF: `docs/literature/pdf/Wave-basedin-planevibrationanalysisofmultiplecoupledbeamstructureswitharbitraryconnectionangleandelastic__boundaryrestraints.pdf`

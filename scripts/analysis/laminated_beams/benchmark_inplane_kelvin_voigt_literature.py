@@ -84,13 +84,121 @@ def save_csv(path,rows):
     writer.writeheader();writer.writerows(rows);atomic(path,stream.getvalue())
 
 
+FIRST_PASS_FILES=('failla2014_table1.csv','hong1999_table2.csv','hong1999_table3.csv',
+                  'benchmark_diagnostics.json','run_manifest.json','failla2014_shapes.npz')
+SECOND_PASS_FILES=('source_precision_audit.json','hong1999_table3_second_pass.csv',
+                   'second_pass_diagnostics.json')
+
+
+def check_hashes(hashes):
+    for name,digest in hashes.items():
+        if sha(ROOT/name)!=digest:raise ValueError('provenance changed: '+name)
+
+
+def second_pass(out):
+    """D13: saved-data audit followed only by the five Hong Table3 roots."""
+    begun=time.perf_counter()
+    versions={str(p.relative_to(ROOT)):sha(p) for p in
+              (Path(__file__),ROOT/'scripts/lib/inplane_kelvin_voigt_literature_benchmarks.py')}
+    prior=out/'second_pass_manifest.json'
+    if prior.exists():
+        completed=json.loads(prior.read_text(encoding='utf-8'))
+        if completed['source_versions']!=versions:
+            raise ValueError('second-pass code changed; preserve completed provenance')
+        check_hashes(completed['protected_sources'])
+        if completed.get('finished'):
+            check_hashes(completed['output_hashes'])
+            print('REUSED_SECOND_PASS: zero matrix/root/shape/audit calls')
+            return
+    # The first-pass directory is always read-only, even with --output subdir.
+    first=json.loads((OUTPUT/'run_manifest.json').read_text(encoding='utf-8'))
+    diagnostic=json.loads((OUTPUT/'benchmark_diagnostics.json').read_text(encoding='utf-8'))
+    protected={str((OUTPUT/name).relative_to(ROOT)):sha(OUTPUT/name) for name in FIRST_PASS_FILES}
+    protected.update(first['protected_sources']);protected.update(PDFS)
+    check_hashes(protected);source_gate()
+    head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+    dirty=subprocess.check_output(['git','status','--short'],cwd=ROOT,text=True).splitlines()
+    helper=ROOT/'scripts/lib/inplane_kelvin_voigt_literature_benchmarks.py'
+    original=helper.read_text(encoding='utf-8').split('# D13 second-pass audit:')[0].rstrip()
+    assembly_unchanged=hashlib.sha256(original.encode()).hexdigest()==lit.FIRST_ASSEMBLY_SHA
+    def read_rows(name):
+        with (OUTPUT/name).open(encoding='utf-8',newline='') as f:return list(csv.DictReader(f))
+    audit=lit.source_precision_audit(read_rows('failla2014_table1.csv'),
+                                    read_rows('hong1999_table2.csv'),diagnostic)
+    if [(r['printed_value_real'],r['printed_value_imag']) for r in read_rows('hong1999_table3.csv')]!=lit.HONG_DAMPED:
+        raise ValueError('Table3 transcription changed')
+    pre=preflight()
+    criteria=dict(kv.CRITERIA,literature_reserve=lit.ROUNDING_RESERVE,asserted_zero_atol=lit.ZERO_ATOL)
+    gate=dict(equation_status=audit['hong_equation_status'],
+        mapping_unchanged=assembly_unchanged and pre['status']=='PASS',
+        parameters_unchanged=lit.Hong().data()==first['preflight']['hong_properties'],
+        criteria_unchanged=criteria==first['criteria'])
+    audit['new_gate']=dict(gate,permitted=lit.d13_gate(**gate))
+    write_json(out/'source_precision_audit.json',audit)
+    calls=kv.Calls();beam=lit.Beam('hong_damped',calls)
+    data=dict(date='2026-09-26',decision='RLB-D13',new_gate=audit['new_gate'],
+        preflight=pre,rows=[],roots={},source_versions=versions,protected_sources=protected)
+    # Per-root checkpoint is written immediately; only a completed run is reused.
+    if audit['new_gate']['permitted']:
+        for mode,(re,im) in enumerate(lit.HONG_DAMPED,1):
+            guess=complex(float(re),float(im))*beam.time
+            z,details,y=lit.solve(beam,guess)
+            # Preserve the complex full-system residual, not only its norm.
+            B,_=beam.matrices(z)
+            a=(y[:,0,:]/beam.scale).reshape(16)
+            residual=B@a/(np.linalg.norm(B)*np.linalg.norm(a))
+            details['normalized_complex_residual']=residual
+            details['initial_predictor_s']=complex(float(re),float(im))
+            details['last_delta_s']=details['last_delta_z']/beam.time
+            row=lit.hong_second_pass_comparison(z/beam.time,details,mode)
+            data['rows'].append(row);data['roots'][str(mode)]=details
+            save_csv(out/'hong1999_table3_second_pass.csv',data['rows'])
+            write_json(out/'second_pass_diagnostics.json',data)
+            print('Hong Table3',mode,row['printed_rounding_status'],row['equation_solver_status'],z/beam.time,flush=True)
+    else:
+        data['not_run_reason']='NOT_RUN_D13_GATE'
+        data['rows']=[dict(mode=n,printed_value_real=r,printed_value_imag=i,
+            printed_rounding_status='NOT_RUN',equation_solver_status='NOT_RUN_D13_GATE')
+            for n,(r,i) in enumerate(lit.HONG_DAMPED,1)]
+        save_csv(out/'hong1999_table3_second_pass.csv',data['rows'])
+    data['costs']=calls.snapshot()
+    write_json(out/'second_pass_diagnostics.json',data)
+    all_solver=len(data['roots'])==5 and all(r['equation_solver_status']=='SOLVER_PASS' for r in data['rows'])
+    limited_print=all(r.get('last_printed_place_only',False) for r in data['rows'])
+    failla_ok=(assembly_unchanged and audit['failla_mode4']['inactive_confirmed'] and pre['status']=='PASS')
+    scoped='PASS_WITH_SOURCE_PRINT_QUALIFICATIONS' if (all_solver and limited_print and failla_ok) else 'PARTIAL'
+    manifest=dict(date='2026-09-26',decision='RLB-D13',initial_HEAD=head,branch=subprocess.check_output(
+        ['git','branch','--show-current'],cwd=ROOT,text=True).strip(),
+        run_initial_dirty=dirty,source_versions=versions,protected_sources=protected,
+        protected_unchanged=True,first_pass_HEAD=first['initial_HEAD'],
+        first_pass_status=first['status'],first_pass_table3_status=first['stages']['hong_damped']['status'],
+        environment=dict(executable=sys.executable,python=platform.python_version(),numpy=np.__version__,scipy=scipy.__version__),
+        command=[sys.executable,'-B',*sys.argv],criteria=criteria,equation_atol=lit.EQUATION_ATOL,
+        new_gate=audit['new_gate'],hong_table2_printed_status=audit['hong_printed_status'],
+        hong_table2_equation_status=audit['hong_equation_status'],
+        reused_failla_rows=5,reused_hong_table2_rows=10,reused_formula_rows=10,
+        new_hong_table3_rows=len(data['roots']),costs=calls.snapshot(),preflight_costs=pre['costs'],
+        seconds=time.perf_counter()-begun,finished=True,status=scoped,
+        output_hashes={str((out/name).relative_to(ROOT)):sha(out/name) for name in SECOND_PASS_FILES},
+        limitations=['no completeness certification','no angled/axial/laminate-reduction validation',
+                     'printed mismatch retained; first-pass files unchanged'])
+    check_hashes(protected)
+    write_json(prior,manifest)
+    print(scoped,manifest['new_hong_table3_rows'],'new roots',manifest['seconds'],'seconds')
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,default=OUTPUT)
     parser.add_argument('--preflight-only',action='store_true')
+    parser.add_argument('--second-pass',action='store_true',help='D13 precision audit and Hong Table3 only; preserve K13 files')
     args=parser.parse_args();out=args.output.resolve()
     # Only the new benchmark directory (or descendants) may receive scientific output.
     if out!=OUTPUT and not out.is_relative_to(OUTPUT):raise ValueError('output outside literature benchmark directory')
+    if args.second_pass:
+        if args.preflight_only:parser.error('--second-pass and --preflight-only are separate modes')
+        second_pass(out)
+        return
     start=time.perf_counter()
     initial=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
     dirty=subprocess.check_output(['git','status','--short'],cwd=ROOT,text=True).splitlines()

@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 2026-09-26
+
+- Added the D13 second pass to the existing KV literature benchmark runner.
+  Reused Failla/Table2 roots, documented displayed-digit inconsistencies and
+  separated Hong Table2 printed FAIL from its equation-level PASS (max
+  7.28e-12 rad/s). Computed only the five Hong Table3 roots: all satisfy the
+  unchanged solver and component-wise printed-rounding gates. Recorded
+  PASS_WITH_SOURCE_PRINT_QUALIFICATIONS, 54 targeted tests, costs and zero-work
+  reuse in the report and K14. First-pass files, K13, PDFs and production
+  physics remain unchanged; no production KV sweep was started.
+
 ## 2026-09-15
 
 - Registered the local Failla 2014 and Hong–Kim 1999 PDFs, bibliography and

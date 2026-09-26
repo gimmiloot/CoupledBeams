@@ -272,3 +272,95 @@ def solve(beam,guess):
             shear_jump_abs=float(abs(y[j+1,0,3]-y[j,-1,3]))) for j in range(3)]
         details['damping_ratio']=-z.real/abs(z)
     return z,details,y
+
+
+# D13 second-pass audit: the complete preceding assembly is preserved.
+EQUATION_ATOL = 1e-11  # rad/s, declared before the D13 comparisons/Table3 solve.
+FIRST_ASSEMBLY_SHA = '3e4d58cac8c4505c74e97e5189cc316283d36db42d340c1a233fb4db44179aed'
+
+
+def printed_zeta(p_string, q_string, ratio_string):
+    """Ordinary decimal rounding of the displayed components only."""
+    from decimal import ROUND_HALF_UP
+    p, q = float(p_string), float(q_string or 0)
+    implied = q/np.hypot(p, q)
+    quantum = Decimal(1).scaleb(Decimal(ratio_string).as_tuple().exponent)
+    rounded = Decimal(str(implied)).quantize(quantum, rounding=ROUND_HALF_UP)
+    return dict(printed_p=p_string, printed_q=q_string,
+                printed_ratio=ratio_string, implied_ratio=float(implied),
+                ordinary_rounded_ratio=str(rounded),
+                displayed_consistent=rounded == Decimal(ratio_string))
+
+
+def source_precision_audit(failla_rows, hong_rows, first_diagnostics):
+    """Read-only arithmetic on K13 rows, no eigenproblem/refiner calls."""
+    if len(failla_rows) != 5 or len(hong_rows) != 10:
+        raise ValueError('D13 requires all five Failla and ten Hong saved rows')
+    zeta_rows=[]
+    for n, row in enumerate(failla_rows, 1):
+        strings=(row['printed_value_real'], row['printed_value_imag'] or None,
+                 row['printed_value_ratio'])
+        if int(row['mode']) != n or strings != FAILLA[n-1]:
+            raise ValueError('Failla transcription/order changed')
+        zeta_rows.append(dict(mode=n, **printed_zeta(*strings)))
+    bare=float((4*np.pi)**2)
+    computed=float(failla_rows[3]['computed_real'])
+    printed=float(failla_rows[3]['printed_value_real'])
+    mode4=dict(bare_double=bare, computed=computed, printed=printed,
+               computed_minus_bare=computed-bare, printed_minus_bare=printed-bare,
+               ordinary_rounded_bare=format(bare,'.4f'),
+               inactive_confirmed=failla_rows[3]['inactive_confirmed']=='True')
+    old=first_diagnostics['local_formula_check']['checks']
+    analytical={(r['case'],int(r['mode'])):r for r in old}
+    required={(c,n) for c in ('hong_hh','hong_ff') for n in range(1,6)}
+    if len(old)!=10 or set(analytical)!=required:
+        raise ValueError('missing/duplicate independent Table2 formula values')
+    comparisons=[]; seen=set()
+    for row in hong_rows:
+        key=row['case'],int(row['mode']); seen.add(key)
+        a=analytical[key]; matrix=float(row['computed_imag'])
+        if matrix!=a['matrix_omega']:
+            raise ValueError('CSV and independent formula check disagree')
+        target=(HONG_HH if key[0]=='hong_hh' else HONG_FF)[key[1]-1]
+        if row['printed_value_imag']!=target:
+            raise ValueError('Table2 target changed')
+        analytic=float(a['formula_omega']); printed=float(target)
+        comparisons.append(dict(case=key[0],mode=key[1],printed_string=target,
+            printed=printed,matrix=matrix,analytic=analytic,
+            matrix_minus_analytic=matrix-analytic,matrix_minus_printed=matrix-printed,
+            analytic_minus_printed=analytic-printed,equation_atol=EQUATION_ATOL,
+            equation_pass=bool(abs(matrix-analytic)<=EQUATION_ATOL),
+            original_printed_status=row['status'],
+            original_rounding_pass=row['rounding_pass']=='True'))
+    if seen!=required:raise ValueError('missing/duplicate Table2 CSV rows')
+    return dict(failla_mode4=mode4,failla_displayed_zeta=zeta_rows,
+        hong_table2=comparisons,
+        hong_printed_status='FAIL' if any(not x['original_rounding_pass'] for x in comparisons) else 'PASS',
+        hong_equation_status='PASS_EQUATION_LEVEL' if all(x['equation_pass'] for x in comparisons) else 'FAIL_EQUATION_LEVEL',
+        equation_max_error=max(abs(x['matrix_minus_analytic']) for x in comparisons),
+        provenance='K13 CSV plus saved independent formulas; no new Table1/Table2 roots')
+
+
+def d13_gate(equation_status, *, mapping_unchanged, parameters_unchanged,
+             criteria_unchanged):
+    # Printed Table2 FAIL is intentionally not a prerequisite in D13.
+    return (equation_status=='PASS_EQUATION_LEVEL' and mapping_unchanged
+            and parameters_unchanged and criteria_unchanged)
+
+
+def hong_second_pass_comparison(s, details, mode):
+    """s=p directly; printed acceptance is never replaced by solver success."""
+    re,im=HONG_DAMPED[mode-1]
+    parts={'real':rounding(re,s.real),'imag':rounding(im,s.imag)}
+    row=dict(mode=mode,source_key=HONG_KEY,source_table='Table 3',
+        computed_real=float(s.real),computed_imag=float(s.imag),
+        printed_rounding_status='PRINT_MATCH' if all(x['rounding_pass'] for x in parts.values()) else 'PRINT_MISMATCH',
+        equation_solver_status='SOLVER_PASS' if details['status']=='CONVERGED' else details['status'],
+        last_printed_place_only=all(x['abs_error']<=2*x['rounding_tolerance']+x['solver_reserve'] for x in parts.values()),
+        solver_residual=details['solver_residual'],sigma_ratio=details['sigma_ratio'],
+        null_vector_residual=details['solver_residual'],physical_residual=details['physical_residual'],
+        conjugate_residual=details['conjugate_residual'],newton_iterations=details['steps'],
+        last_delta_z=details['last_delta_z'],left_Bz_right=details['left_Bz_right'])
+    for component,part in parts.items():
+        for key,value in part.items():row[key+'_'+component]=value
+    return row

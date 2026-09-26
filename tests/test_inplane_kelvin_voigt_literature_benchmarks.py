@@ -114,3 +114,101 @@ def test_literal_missing_zero_and_complex_dtype():
     assert lit.rounding(None,1e-11)['rounding_pass']
     assert not lit.rounding(None,1e-4)['rounding_pass']
     assert np.iscomplexobj(lit.Beam('failla').matrices(2j)[0])
+
+
+def test_d13_inactive_exact_value_and_printed_ratios():
+    assert (4*np.pi)**2==pytest.approx(157.91367041742973,abs=1e-13)
+    assert format((4*np.pi)**2,'.4f')=='157.9137'
+    expected=['0.0120','0.0388','0.0797','0.0','0.0607']
+    rows=[lit.printed_zeta(*target) for target in lit.FAILLA]
+    assert [r['ordinary_rounded_ratio'] for r in rows]==expected
+    assert [r['displayed_consistent'] for r in rows]==[True,True,False,True,True]
+    assert rows[2]['implied_ratio']==pytest.approx(6.541/(81.8244**2+6.541**2)**.5)
+
+
+@pytest.mark.parametrize('case,roots',[
+    ('hong_hh',[355.7784981198391,1418.824486875438,3176.508755760719,
+                5608.549959938625,8688.066141281099]),
+    ('hong_ff',[805.5329396844996,2211.427382729008,4309.664856724562,
+                7068.984777032399,10460.217657249696])])
+def test_table2_analytical_footnote_values_in_matrix(case,roots):
+    # Independent scalar-formula values retained from the K13 check, no new roots.
+    beam=lit.Beam(case)
+    for omega in roots:
+        singular=np.linalg.svd(beam.matrices(1j*omega*beam.time)[0],compute_uv=False)
+        assert singular[-1]/singular[0]<kv.CRITERIA['sigma_ratio']
+
+
+@pytest.mark.parametrize('failure',[None,'equation','mapping','parameters','criteria'])
+def test_d13_gate_is_equation_based_and_preserves_print_fail(failure):
+    args=dict(equation_status='PASS_EQUATION_LEVEL',mapping_unchanged=True,
+              parameters_unchanged=True,criteria_unchanged=True)
+    if failure=='equation':args['equation_status']='FAIL_EQUATION_LEVEL'
+    elif failure:args[failure+'_unchanged']=False
+    assert lit.d13_gate(**args)==(failure is None)
+
+
+def test_second_pass_hong_targets_mapping_and_separate_statuses():
+    expected=[(-.066651,334.44),(-2.7327,1107.9),(-12.133,1927.1),
+              (-20.106,2954.2),(-20.135,4711.1)]
+    assert [(float(r),float(i)) for r,i in lit.HONG_DAMPED]==expected
+    d=dict(status='CONVERGED',solver_residual=1e-16,sigma_ratio=1e-16,
+           physical_residual=1e-14,conjugate_residual=1e-16,steps=2,
+           last_delta_z=1e-14,left_Bz_right=.1)
+    s=complex(*expected[0])
+    row=lit.hong_second_pass_comparison(s,d,1)
+    assert row['computed_real']==s.real and row['computed_imag']==s.imag
+    assert row['printed_rounding_status']=='PRINT_MATCH'
+    assert row['equation_solver_status']=='SOLVER_PASS'
+    row=lit.hong_second_pass_comparison(s+7e-7,d,1)
+    assert row['printed_rounding_status']=='PRINT_MISMATCH'
+    assert row['equation_solver_status']=='SOLVER_PASS'
+    assert row['last_printed_place_only']  # description, NOT PRINT_MATCH
+
+
+def test_d13_audit_strict_formula_tolerance_and_csv_consistency():
+    failla=[dict(mode=n,printed_value_real=p,printed_value_imag=q or '',
+                 printed_value_ratio=r,computed_real=float(p),inactive_confirmed='True')
+            for n,(p,q,r) in enumerate(lit.FAILLA,1)]
+    hong=[];checks=[]
+    for case,targets in [('hong_hh',lit.HONG_HH),('hong_ff',lit.HONG_FF)]:
+        for n,target in enumerate(targets,1):
+            w=float(target)
+            hong.append(dict(case=case,mode=n,computed_imag=w,printed_value_imag=target,
+                             status='LITERATURE_MISMATCH',rounding_pass='False'))
+            checks.append(dict(case=case,mode=n,matrix_omega=w,formula_omega=w))
+    d=dict(local_formula_check=dict(checks=checks))
+    a=lit.source_precision_audit(failla,hong,d)
+    assert a['hong_printed_status']=='FAIL' and a['hong_equation_status']=='PASS_EQUATION_LEVEL'
+    checks[0]['formula_omega']+=1e-8
+    assert lit.source_precision_audit(failla,hong,d)['hong_equation_status']=='FAIL_EQUATION_LEVEL'
+    checks[0]['matrix_omega']+=1
+    with pytest.raises(ValueError,match='CSV'):
+        lit.source_precision_audit(failla,hong,d)
+
+
+def test_second_pass_reuse_no_computation_and_source_mutation(monkeypatch,tmp_path):
+    import json
+    from scripts.analysis.laminated_beams import benchmark_inplane_kelvin_voigt_literature as run
+    monkeypatch.setattr(run,'ROOT',tmp_path)
+    runner=tmp_path/'runner.py';runner.write_text('frozen runner')
+    helper=tmp_path/'scripts/lib/inplane_kelvin_voigt_literature_benchmarks.py'
+    helper.parent.mkdir(parents=True);helper.write_text('frozen helper')
+    monkeypatch.setattr(run,'__file__',str(runner))
+    protected=tmp_path/'first.csv';protected.write_text('first pass unchanged')
+    output=tmp_path/'computed.csv';output.write_text('second pass unchanged')
+    versions={str(p.relative_to(tmp_path)):run.sha(p) for p in (runner,helper)}
+    manifest=tmp_path/'second_pass_manifest.json'
+    manifest.write_text(json.dumps(dict(source_versions=versions,finished=True,
+        protected_sources={'first.csv':run.sha(protected)},output_hashes={'computed.csv':run.sha(output)})))
+    def forbidden(*args,**kwargs):pytest.fail('completed reuse called computation')
+    monkeypatch.setattr(run,'preflight',forbidden)
+    monkeypatch.setattr(lit,'solve',forbidden)
+    monkeypatch.setattr(lit.Beam,'matrices',forbidden)
+    monkeypatch.setattr(lit.Beam,'recover',forbidden)
+    monkeypatch.setattr(lit,'source_precision_audit',forbidden)
+    before={p.name:p.read_bytes() for p in tmp_path.iterdir() if p.is_file()}
+    run.second_pass(tmp_path)
+    assert before=={p.name:p.read_bytes() for p in tmp_path.iterdir() if p.is_file()}
+    protected.write_text('mutated')
+    with pytest.raises(ValueError,match='provenance changed'):run.second_pass(tmp_path)

@@ -297,3 +297,25 @@ D10/D11 и результаты K11/K12 сохранены.
 Исполнение — [RLB-K13](knowledge.md#rlb-k13): PARTIAL, Failla Table1 и Hong
 Table2 имеют расхождения с печатным округлением; Hong Table3 не запущена.
 Согласование с формулами Hong не снимает этот статус и не разрешает новый sweep.
+
+## RLB-D13
+
+**Принято:** отдельно сохранить Hong Table2 printed-value FAIL и проверить
+equation-level consistency десяти сохранённых частот. Только её PASS, при
+неизменных source/project mapping, параметрах и физических критериях,
+разрешает адресный расчёт пяти complex roots Hong Table3. D12/K13 и исходный
+NOT_RUN_B1_GATE остаются историей первого прохода, не пересматриваются.
+
+**Почему:** независимые формулы сноски Table2 согласовались с матричной
+сборкой значительно точнее последних печатных цифр. Требуется отделить
+точность печати от воспроизведения уравнений и проверки реализации.
+Дополнительно разрешён анализ печати Failla по сохранённым корням и формуле
+damping ratio. Печатный half-last-digit gate и solver tolerances не меняются.
+Новые production KV sweeps, forced response и расширение модели запрещены.
+
+**Происхождение:** решение пользователя в текущем задании, 2026-09-26;
+фактический HEAD `33f2d49b070a34b8dd03a9b7bfd8353ff0e058d2`, main, исходное
+дерево чистое. [Отдельный второй проход](../laminated_beams/inplane_kelvin_voigt_literature_benchmarks.md#second-pass-source-precision-audit-and-hong-table-3)
+сохраняет прежние данные. **Результат:** [RLB-K14](knowledge.md#rlb-k14),
+PASS_WITH_SOURCE_PRINT_QUALIFICATIONS: Table3 5/5 PRINT_MATCH + SOLVER_PASS,
+при сохранении всех printed FAIL первого прохода. Этап остановлен.
