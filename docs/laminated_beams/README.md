@@ -46,6 +46,10 @@ Hong Table3 не рассчитывалась из-за Table2 gate. PDF, ото
 после отдельного equation-level PASS Table2 получены пять Hong Table3 roots,
 все PRINT_MATCH + SOLVER_PASS. Итог PASS_WITH_SOURCE_PRINT_QUALIFICATIONS;
 первоначальные статусы и расхождения печати Failla/Table2 сохранены.
+[Упругий screening D14/K15](inplane_kelvin_voigt_elastic_screening.md):
+24 sorted-состояния H/L/L/H EB при 0°,5°,45°,75°; 14 корней/форм
+переиспользованы, 12 форм структурно неактивны. Предиктор при 5° согласован
+с сохранённым K12; новых комплексных корней при d>0 нет.
 
 Сохранённый исторический результат RLB-0:
 

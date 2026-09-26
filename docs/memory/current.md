@@ -2,6 +2,21 @@
 
 ## Актуальное состояние и следующий шаг
 
+2026-09-26: [D14](decisions.md#rlb-d14) выполнено — **24/24 упругих состояния**
+H/L/L/H EB, mu=0,kappa=1,d=0 при beta=0°,5°,45°,75°;
+[K15](knowledge.md#rlb-k15),
+[отчёт и таблица screening](../laminated_beams/inplane_kelvin_voigt_elastic_screening.md).
+14 корней/форм переиспользованы из K11, 10 целевых корней и два guard
+досчитаны. Структурно неактивны 12 форм eta=−1; остальные 12 имеют
+положительные first-order predictors. При 5° расхождение a/d с read-only
+K12 равно 1.86e-6 относительно. Новых complex roots при d>0 — **0**.
+20 целевых тестов пройдены, missing-only не выполняет новых вычислений.
+Работа остановлена. Следующее отдельное решение пользователя выбирает
+2–4 состояния и вязкость для продолжения; RLB, dense maps и cross-beta
+tracking этим этапом не разрешены. D13/K14 не пересматривались.
+
+История завершённого внешнего этапа:
+
 2026-09-26: второй узкий проход по [D13](decisions.md#rlb-d13) завершён:
 **PASS_WITH_SOURCE_PRINT_QUALIFICATIONS**, [K14](knowledge.md#rlb-k14),
 [отдельный раздел отчёта](../laminated_beams/inplane_kelvin_voigt_literature_benchmarks.md#second-pass-source-precision-audit-and-hong-table-3).

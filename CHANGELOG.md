@@ -2,6 +2,13 @@
 
 ## 2026-09-26
 
+- Added D14/K15 sparse elastic screening for the same H/L/L/H EB section:
+  six sorted modes at 0, 5, 45 and 75 degrees. Reused 14 roots/forms and
+  calculated only ten missing target roots plus two guards. Identified
+  twelve structurally inactive modes and recorded amplitude-invariant
+  weak-damping predictors; checked beta=5 against read-only K12 results.
+  Twenty targeted tests and zero-work missing-only passed. No new
+  positive-d complex roots, RLB calculation or cross-beta tracking.
 - Added the D13 second pass to the existing KV literature benchmark runner.
   Reused Failla/Table2 roots, documented displayed-digit inconsistencies and
   separated Hong Table2 printed FAIL from its equation-level PASS (max

@@ -682,3 +682,51 @@ support задач с оговорками печати Failla/Table2. Это н
 всей angled laminated RLB + rotational KV, продольной подсистемы, редукции
 ламината или полноты спектра. K11/K12 и прежние source/Ritz qualifications
 сохранены. Работа остановлена; production sweeps не разрешены и не начаты.
+
+## RLB-K15
+
+**Упругий screening после K14**, 2026-09-26, [D14](decisions.md#rlb-d14).
+Исходный HEAD `351df836d956388699df020758b78c2a85dbb44e`, main, чистое дерево;
+дополнение — working-tree version.
+[Отчёт](../laminated_beams/inplane_kelvin_voigt_elastic_screening.md),
+[24 состояния CSV](../../results/laminated_beams/inplane_kelvin_voigt_elastic_screening/elastic_screening.csv),
+[diagnostics](../../results/laminated_beams/inplane_kelvin_voigt_elastic_screening/diagnostics.json),
+[manifest](../../results/laminated_beams/inplane_kelvin_voigt_elastic_screening/run_manifest.json).
+Основания: [K11](#rlb-k11), [K12](#rlb-k12), [K14](#rlb-k14);
+формулы `eq:sensitivity`, `eq:smallnondim` принятой KV-заметки.
+
+**Область и reuse:** одна H/L/L/H EB, chi=.4, L1=L2=1, b=.20,h=.05,
+kappa=1,d=0. Штатная редукция воспроизвела A=.011,D=2.979166666666667e-6,
+m=.01; reference K12 сохранён. Приняты первые шесть sorted-мод при
+0°,5°,45°,75°, 24/24, с отдельным guard. Переиспользованы 14 корней/форм
+K11 (6+6+2); рассчитаны 10 целевых корней и два guard в двух недостающих
+группах. Старый POINT_UNCONFIRMED для частичной группы 45° не переписан.
+При 0° sorted_06 — продольное решение, не шестая изгибная ветвь.
+
+**Результат:** EXACT_INACTIVE_BY_SYMMETRY получили sorted_02/04/06 при
+0° и 5°, sorted_01/04/06 при 45° и 75°. Основание — eta=−1 и одинаковые
+плечи; полная B/физические условия подтверждены. Для этих 12 состояний
+тот же eigenpair сохраняется при добавлении только c_theta этого узла
+в идеальной линейной модели. Для остальных 12 ACTIVE:
+s_joint=[.001326431,.228549284], a_slope_pred=[1.659303666,178.577035803],
+zeta_slope_pred=[.066332495,2.332033953]. Неожиданных SMALL_PARTICIPATION
+по объявленному описательному порогу s<1e-8 нет. Это предикторы, не
+рассчитанное затухание. Cross-beta идентичность не устанавливалась.
+
+**Контроль K12:** beta=5, sorted_01: a/d predictor=1.659303666029295;
+сохранённое K12 при d_star/10 — 1.659300587328612. Относительная разность
+1.8554e-6 проходит заранее объявленный 1e-3. sorted_02 структурно неактивна;
+сохранённый K12 даёт max |a|=1.40e-30, без нового complex solve.
+
+**Проверки и затраты:** max r_B=3.71e-16,sigma=1.13e-13,physical=2.27e-10;
+все четыре guard приняты. M=1 с разностью ≤2.22e-16. Две проверки 129→257
+при 5° дали изменение массы ≤5.66e-10. 20 целевых тестов пройдены;
+1823 полных B +1831 блок, 3646 expm, 10 новых форм +2 проверки квадратуры,
+11.5548 s, повторов поиска 0. Missing-only: ноль root/matrix/form calls.
+K11/K12 CSV/JSON/NPZ неизменны. **Новых positive-d complex roots=0.**
+
+**Место остановки:** screening завершён. Теперь можно отдельно выбирать
+представительные ACTIVE-состояния и структурный нулевой контроль; сами
+2–4 состояния и d_theta пока не назначены. RLB, разные длины, полный спектр,
+новые complex roots и cross-beta tracking не проверялись. Source/Ritz
+qualifications и область внешней проверки K14 сохранены.

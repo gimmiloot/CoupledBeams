@@ -44,6 +44,7 @@ EB исполняется: 50 тестов, 10/12 принятых BASE-груп
 вязкости. Это локальное продолжение двух мод каждой теории, не полный спектр.
 Внешняя проверка Failla/Hong — [D12](decisions.md#rlb-d12), [K13](knowledge.md#rlb-k13): PARTIAL, расхождения печати сохранены, Hong Table3 не запускалась.
 Второй проход — [D13](decisions.md#rlb-d13), [K14](knowledge.md#rlb-k14): Table3 5/5 PRINT_MATCH + SOLVER_PASS; итог PASS_WITH_SOURCE_PRINT_QUALIFICATIONS, K13 сохранён.
+Упругий screening — [D14](decisions.md#rlb-d14), [K15](knowledge.md#rlb-k15): [24 EB-состояния, неактивный класс и предикторы](../laminated_beams/inplane_kelvin_voigt_elastic_screening.md), новых d>0 roots нет.
 
 Порядок чтения: этот вход → [текущий контекст](current.md) → нужная запись
 в [знаниях](knowledge.md) или [решениях](decisions.md) → конкретное основание

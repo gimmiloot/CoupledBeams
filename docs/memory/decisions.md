@@ -319,3 +319,26 @@ damping ratio. Печатный half-last-digit gate и solver tolerances не �
 сохраняет прежние данные. **Результат:** [RLB-K14](knowledge.md#rlb-k14),
 PASS_WITH_SOURCE_PRINT_QUALIFICATIONS: Table3 5/5 PRINT_MATCH + SOLVER_PASS,
 при сохранении всех printed FAIL первого прохода. Этап остановлен.
+
+## RLB-D14
+
+**Принято:** после [K14](knowledge.md#rlb-k14) выполнить sparse elastic
+screening, без dense complex sweep. Та же H/L/L/H EB-конфигурация K11/K12,
+mu=0, kappa_theta=1, d_theta=0; ровно beta={0,5,45,75}°, первые шесть
+положительных sorted-мод независимо при каждом угле. Совместимые корни
+и формы переиспользуются; поиск разрешён только для недостающих групп.
+
+**Вопрос и границы:** по упругой форме определить участие поворотного
+элемента и first-order damping slopes. EXACT_INACTIVE_BY_SYMMETRY
+допускается только для подтверждённого структурного класса eta=−1
+одинаковых плеч, не по малой численной Delta_psi. K12 используется
+read-only при beta=5 для сравнения предиктора с наименьшим положительным d.
+Не разрешены новые positive-d roots, RLB, cross-beta tracking, поиск
+пересечений и автоматическое добавление углов. После screening остановиться;
+выбор 2–4 состояний и d_theta для продолжения требует отдельного решения.
+
+**Происхождение:** решение пользователя в текущем задании, 2026-09-26;
+HEAD `351df836d956388699df020758b78c2a85dbb44e`, main, исходное дерево чистое.
+D13/K14 сохраняются как завершённый внешний этап. Исполнение —
+[K15](knowledge.md#rlb-k15),
+[отчёт screening](../laminated_beams/inplane_kelvin_voigt_elastic_screening.md).
