@@ -1,6 +1,6 @@
 # Знания RLB-2I/RLB-2J и поворотно-упругого узла EB/RLB
 
-Последние записи: [K20](#rlb-k20), [K19](#rlb-k19), [K18](#rlb-k18).
+Последние записи: [K21](#rlb-k21), [K20](#rlb-k20), [K19](#rlb-k19).
 Тематическая навигация — [README](README.md#темы).
 
 **Происхождение записей RLB-K01–RLB-K04:**
@@ -937,3 +937,34 @@ $\zeta/d=\zeta_1+O(d^2)$, $\Omega_d-\Omega_0=O(d^2)$.
 не нужны; результат доступен для будущего asymmetric/RLB study после
 отдельного решения. Дополняет [K12](#rlb-k12)/[K19](#rlb-k19),
 не меняет их результаты и квалификации. Новых eigenproblems нет.
+
+## RLB-K21
+
+**RLB_KV_PRODUCTION_PASS**, 2026-09-27, [D20](decisions.md#rlb-d20),
+HEAD `4a1c574aef01245001c979fafa162de83321daf4`.
+
+**Результат / область:** общий dispatcher K18 расширен на проектную
+RLB/Timoshenko с прежним законом узла. Точно одинаковые плечи используют
+eta± 3×3, неодинаковые — full 6×6. Прямой expm задаёт перенос;
+Фреше используется только для производной. Модель и gates K12 не менялись.
+Три ACTIVE-корня RLB K12 подтверждены новым reduced-путём без Newton
+updates; три INACTIVE возвращают упругую eigenpair без корректора.
+Full/reduced матрицы и формы согласуются. Точный invS=J=0 предел
+воспроизводит EB-матрицы и один K18 root/form. Подтверждён full-контроль
+K11: beta=5°,mu=.01,d=0, первая простая мода; проекции на eta нет.
+
+**Основания:** [отчёт](../laminated_beams/inplane_kelvin_voigt_rlb_solver_architecture.md),
+[контрольные строки](../../results/laminated_beams/inplane_kelvin_voigt_rlb_solver_architecture/rlb_solver_regression.csv),
+[точный предел](../../results/laminated_beams/inplane_kelvin_voigt_rlb_solver_architecture/rlb_eb_exact_limit.csv),
+[manifest](../../results/laminated_beams/inplane_kelvin_voigt_rlb_solver_architecture/run_manifest.json).
+52 уникальных целевых теста; прежние EB-регрессии проходят. Исходные научные файлы сохранены.
+
+**Ограничения:** конечная техническая регрессия, без нового screening
+и без физического сравнения влияния RLB на демпфирование. Приём saved
+roots без обновлений не даёт независимой оценки их точности. Локальных
+отказов нового набора нет; source/Ritz и прежняя raw full-квалификация C
+остаются в своей области. Дополняет [K12](#rlb-k12)/[K18](#rlb-k18),
+не переписывает [K19](#rlb-k19)/[K20](#rlb-k20).
+
+**Следующий кандидат:** sparse elastic RLB screening и сравнение EB/RLB.
+Это отдельное решение пользователя; новый физический этап не начат.

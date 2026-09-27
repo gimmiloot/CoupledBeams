@@ -1,8 +1,9 @@
-"""D17 production entry for targeted EB KV modes, with explicit routing.
+"""Targeted EB/RLB KV modes with exact identical-arm or full routing.
 
 The historical K12 Provider remains intact. New full solves use direct expm
 for T and Frechet only for its derivative. Exact identical arms use the
-single verified K17 analytic half assembly; no duplicated beam/joint law.
+verified K17 half conditions. EB retains its analytic transfer; RLB uses
+direct expm and derivative-only Frechet in both paths. No duplicated law.
 """
 from dataclasses import dataclass
 import numpy as np
@@ -11,12 +12,13 @@ from scripts.lib import inplane_kelvin_voigt as kv
 from scripts.lib import inplane_kelvin_voigt_symmetry_diagnostics as symmetry
 
 ROUTING_VERSION = 'eb-kv-routing-v1'
+RLB_ROUTING_VERSION = 'rlb-kv-routing-v1'
 ROOT_AGREEMENT = dict(relative=1e-9, absolute_near_zero=1e-10)
 
 
 @dataclass(frozen=True)
 class Config:
-    """Clamped EB arms and the one massless rotational KV joint only.
+    """Two clamped arms of one theory and one massless rotational KV joint.
 
     mu records an explicit geometric construction, when supplied. A nonzero
     mu can never select a reduced path, even if tiny length changes round off.
@@ -30,8 +32,8 @@ class Config:
 
     def __post_init__(self):
         object.__setattr__(self, 'arms', tuple(self.arms))
-        if len(self.arms) != 2 or any(a.model != 'EB' or a.invS or a.J for a in self.arms):
-            raise ValueError('routing v1 supports two clamped classical EB arms only')
+        if len(self.arms) != 2 or self.arms[0].model != self.arms[1].model:
+            raise ValueError('two clamped arms of the same EB or RLB theory required')
         kv.joint_matrix(0j, self.beta_rad, self.kappa_theta*kv.M_REF,
                         self.d_theta*kv.M_REF*kv.T_REF)
         if self.mu is not None and (not np.isfinite(self.mu) or abs(self.mu) >= 1):
@@ -40,6 +42,10 @@ class Config:
     @property
     def identical(self):
         return self.arms[0] == self.arms[1] and (self.mu is None or self.mu == 0)
+
+    @property
+    def model(self):
+        return self.arms[0].model
 
 
 def route(config, solver_path='auto'):
@@ -89,6 +95,14 @@ def agreement(value, reference):
     return dict(absolute=absolute, relative=relative, accepted=bool(accepted))
 
 
+def reduced_provider(full, eta):
+    """Same exact joint blocks; select the arm's existing transfer machinery."""
+    if full.arms[0] != full.arms[1]:
+        raise ValueError('reduced provider requires identical arms')
+    cls = symmetry.AnalyticHalfProvider if full.arms[0].model == 'EB' else symmetry.HalfProvider
+    return cls(full, eta)
+
+
 def solve_mode(config, predictor, *, eta=None, solver_path='auto', seed_states=None,
                elastic_z=None, calls=None):
     """One targeted correction, no retry/search/continuation orchestration.
@@ -110,7 +124,7 @@ def solve_mode(config, predictor, *, eta=None, solver_path='auto', seed_states=N
         if elastic_z is None or complex(elastic_z).real != 0 or complex(elastic_z).imag <= 0:
             raise ValueError('exact inactive reuse requires a positive pure-imaginary elastic eigenvalue')
         z = complex(elastic_z)  # reuse the elastic eigenvalue, never clip a solved complex root
-    matrix = symmetry.AnalyticHalfProvider(full, eta) if path == 'SYMMETRY_REDUCED' else full
+    matrix = reduced_provider(full, eta) if path == 'SYMMETRY_REDUCED' else full
     frozen = symmetry.FrozenBalanced(matrix, z)
     B0, _ = frozen.matrices(z)
     initial = kv.right_null(B0)
@@ -123,7 +137,8 @@ def solve_mode(config, predictor, *, eta=None, solver_path='auto', seed_states=N
     z = correction['z']
     reactions_hat = frozen.reactions(correction['a'])
     if path == 'SYMMETRY_REDUCED':
-        shape = symmetry.recover_closed(matrix, z, reactions_hat)
+        recovery = symmetry.recover_closed if config.model == 'EB' else symmetry.recover_half
+        shape = recovery(matrix, z, reactions_hat)
     else:
         calls.reserve(2)
         shape = kv.recover(full, z, reactions_hat)
@@ -168,7 +183,10 @@ def solve_mode(config, predictor, *, eta=None, solver_path='auto', seed_states=N
     root_failures = [g for g in gates if g in ('NULL_RESIDUAL','SIGMA_RATIO','CONJUGATE_RESIDUAL',
         'NONOSCILLATORY_OR_AXIS_APPROACH','NEWTON_LIMIT')]
     form_failures = [g for g in gates if g not in root_failures and g != 'POSSIBLE_MULTIPLICITY']
-    return dict(z=z, p=z/kv.T_REF, shape=shape, solver_path=path,
+    return dict(z=z, p=z/kv.T_REF, shape=shape, solver_path=path, model=config.model,
+        routing_version=ROUTING_VERSION if config.model == 'EB' else RLB_ROUTING_VERSION,
+        inactive_by_symmetry=inactive,
+        root_origin='EXPLICIT_ELASTIC_REUSE' if inactive else 'TARGETED_CORRECTION',
         eta=eta if config.identical else None, symmetry_reduced=path=='SYMMETRY_REDUCED',
         symmetry_status='EXACT_IDENTICAL' if config.identical else 'NON_IDENTICAL',
         activity_status='EXACT_INACTIVE_BY_SYMMETRY' if inactive else 'ACTIVE_OR_UNCLASSIFIED',

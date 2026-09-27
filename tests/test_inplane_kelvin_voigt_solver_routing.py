@@ -47,8 +47,9 @@ def test_exact_routing_never_uses_tolerance(properties,field):
         solver.route(unequal,'reduced')
     assert solver.route(replace(cfg,mu=1e-30))=='FULL_TWO_ARM'
     assert solver.route(replace(cfg,mu=.01))=='FULL_TWO_ARM'
-    with pytest.raises(ValueError,match='classical EB'):
-        solver.Config((replace(arm,model='RLB'),)*2,0.,1.,.001)
+    # D20 extends the same API to RLB, but a mixed-theory pair is still invalid.
+    with pytest.raises(ValueError,match='same EB or RLB theory'):
+        solver.Config((arm,replace(arm,model='RLB')),0.,1.,.001)
 
 
 @pytest.mark.parametrize('case_id',['A_d001','C_d001'])

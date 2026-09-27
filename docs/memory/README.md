@@ -32,6 +32,7 @@
 | Упругий screening участия демпфера | [K15](knowledge.md#rlb-k15) |
 | Адресное слабое демпфирование, диагностика, production routing и завершение | [K16](knowledge.md#rlb-k16), [K17](knowledge.md#rlb-k17), [K18](knowledge.md#rlb-k18), [K19](knowledge.md#rlb-k19) |
 | Общая чётность по вязкости | [K20](knowledge.md#rlb-k20), [research note](../laminated_beams/inplane_kelvin_voigt_weak_damping_parity.md) |
+| Production RLB+KV и точный EB-предел | [K21](knowledge.md#rlb-k21) |
 
 Записи сохраняют ссылки на решения и подробные источники; таблица тем
 не заменяет их условия и статусы. Общая навигация:

@@ -2,6 +2,13 @@
 
 ## 2026-09-27
 
+- Extended the existing KV production dispatcher to project RLB: exact
+  identical arms use eta blocks, unequal arms use the full matrix. Preserved
+  EB routing and historical K12 physics; direct expm supplies T and Frechet
+  only its derivative. D20/K21 reproduces saved RLB controls, exact invS=J=0
+  EB limit and one unequal-arm elastic state; 52 focused tests pass.
+  Added bounded regression artifacts/report and compact memory updates;
+  no new physical parameter study or RLB screening.
 - Recorded D19/K20 weak-damping parity in a compact theoretical note,
   without equal-arm symmetry; read-only K19 deviation ratios illustrate
   the quadratic correction. Shortened current memory, replaced chronology
