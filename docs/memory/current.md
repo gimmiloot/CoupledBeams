@@ -1,45 +1,53 @@
 # Текущий контекст
 
-## 1. Текущее научное состояние
+## 1. Состояние и остановка
 
-2026-09-27: [D20](decisions.md#rlb-d20) завершено,
-[K21](knowledge.md#rlb-k21) — **RLB_KV_PRODUCTION_PASS** в ограниченном
-регрессионном наборе. Общий production API поддерживает EB и проектную
-RLB: точно одинаковые плечи → reduced eta±; неодинаковые → full 6×6.
-Eta=−1 возвращает упругое решение без complex Newton.
+**PAUSED_FOR_SUPERVISOR_DIRECTION**, 2026-09-27.
+Подготовка рисунков по новому запросу завершена:
+[D23/K24 — Figure 3](../laminated_beams/figure03_crossing_veering.md),
+EB crossing/veering K11 и формы, полностью из сохранённых данных.
+[D24/K25 — Figure 4](../laminated_beams/figure04_eb_rlb_shapes.md):
+упругие EB/RLB05 при 45°/75°, осевые линии и psi из K15/K22, без расчётов.
+Следующее физическое исследование по-прежнему не выбрано.
 
-Воспроизведены сохранённые RLB-контроли K12, проверены full/reduced,
-точный invS=J=0 предел и один упругий несимметричный контроль K11.
-EB-регрессии проходят. Численных блокеров в новом наборе нет;
-старые source/Ritz qualifications и raw full-флаг C не пересмотрены.
-Это техническая валидация, не новый результат о влиянии RLB на демпфирование.
+[D22](decisions.md#rlb-d22) / [K23](knowledge.md#rlb-k23): заключительное
+адресное complex-сравнение завершено. Шесть новых корней при d=.001,
+четыре read-only состояния; все пять EB/RLB-пар подтверждают упругий
+прогноз отношения zeta с расхождением не более .001904%.
 
-## 2. Основания следующей работы
+Завершены EB/RLB KV production, трёхмодовый EB weak-damping опыт,
+RLB elastic screening и representative complex confirmation.
+RLB может сильнее менять затухание, чем частоту; знак поправки зависит
+от моды. Новых численных блокеров в выбранном наборе нет.
+Исторические qualifications сохранены и не снимаются общим статусом.
 
-- [K21 и отчёт](../laminated_beams/inplane_kelvin_voigt_rlb_solver_architecture.md) — общий API, контрольный набор, точный предел и команды.
-- [K12](knowledge.md#rlb-k12) / [K14](knowledge.md#rlb-k14) — KV-теория, внутренний пилот и внешняя проверка с source-print qualifications.
-- [K15](knowledge.md#rlb-k15) / [K19](knowledge.md#rlb-k19) — завершённые EB screening и сравнение трёх ACTIVE-состояний.
-- [K18](knowledge.md#rlb-k18) — происхождение production routing и прежние EB-квалификации.
-- [K20](knowledge.md#rlb-k20) — локальная чётность по вязкости; не требует одинаковых плеч.
+## 2. Основания и материалы для обсуждения
+
+- [Сводка для руководителя](../laminated_beams/inplane_kelvin_voigt_research_status_for_supervisor.md) — постановка, научный итог, ограничения, пять неранжированных направлений и вопросы.
+- [K23: технический отчёт и данные](../laminated_beams/inplane_kelvin_voigt_eb_rlb_complex_confirmation.md) — выбранные пары, отношения G/zeta, невязки, provenance и команды.
+- [K22](knowledge.md#rlb-k22) — 24 упругие RLB-моды и matching с EB K15.
+- [K18](knowledge.md#rlb-k18) / [K21](knowledge.md#rlb-k21) — одинаковые плечи: reduced eta±; неодинаковые: full 6×6.
+- [K19](knowledge.md#rlb-k19) / [K20](knowledge.md#rlb-k20) — EB weak damping и общий локальный вывод о чётности по вязкости.
+- [K12](knowledge.md#rlb-k12) / [K14](knowledge.md#rlb-k14) — внутренние и внешние проверки в их исходных границах.
 
 ## 3. Открытое решение
 
-Возможный следующий этап — sparse elastic RLB screening и сравнение
-EB/RLB по Omega, Delta_psi, s_joint и zeta_slope_pred.
-Он требует отдельного решения пользователя. Углы, состояния и дальнейшая
-вязкость этим техническим этапом не выбираются.
+Следующее научное направление выбирается пользователем после обсуждения
+с руководителем. Варианты в сводке — предложения, не разрешённая
+программа. Ни near-zero поиск, ни асимметрия, ни FRF автоматически
+не начинаются. Дополнительная complex-проверка текущего вывода не нужна.
 
-## 4. Действующие границы и остановка
+## 4. Действующие границы
 
-Production RLB validation завершена; новый screening не начат.
-Не разрешены новые физические d/beta sweeps, asymmetric positive-d roots,
-crossing/veering, strong damping, FRF, FEM или уточнение точности.
-Обычный повтор завершённой регрессии — missing-only без solver/matrix/form
-вызовов; он не восстанавливает отсутствующие старые результаты автоматически.
+Не запускать новые d/beta, d=.005 для новых пар, crossing/veering,
+asymmetric positive-d, strong damping, FRF, FEM, оптимизацию или
+precision refinement без отдельного решения. Источники K12–K22 и
+solver сохранены. Повтор завершённого сценария — missing-only с нулём
+root/matrix/form calls.
 
 ## 5. Среда
 
-Проверено на этом этапе: D:/python/Pycharm/pythonProject/.venv/Scripts/python.exe,
-Python 3.12.4, NumPy 2.1.3, SciPy 1.15.2; matplotlib и pytest доступны.
-52 уникальных целевых теста пройдено; полный pytest не запускался.
-Подробные затраты, исходные HEAD и хеши — в отчёте и manifest K21.
+D:/python/Pycharm/pythonProject/.venv/Scripts/python.exe,
+Python 3.12.4, NumPy 2.1.3, SciPy 1.15.2, pytest 8.3.4.
+27 целевых тестов K23 и по 6 проверок Figure 3/4 пройдены; полный pytest не запускался.
+Исходный HEAD, рабочее дерево, хеши и затраты — в отчёте/manifest K23.

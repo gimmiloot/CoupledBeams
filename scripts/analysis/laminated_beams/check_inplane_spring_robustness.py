@@ -989,9 +989,22 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command',choices=('preflight','compute','base','local','plot-only','summarize'))
     parser.add_argument('--one',nargs=4,metavar=('MODEL','MU','KAPPA','BETA'))
+    figures = parser.add_mutually_exclusive_group()
+    figures.add_argument('--figure03',action='store_true',help='plot-only: coordinated EB crossing/veering with saved shapes')
+    figures.add_argument('--figure04',action='store_true',help='plot-only: saved elastic EB/RLB centrelines and section rotations')
     args = parser.parse_args()
+    if (args.figure03 or args.figure04) and args.command!='plot-only':
+        parser.error('figure presets are only available with plot-only')
     if args.command=='plot-only':
-        render();return
+        if args.figure03:
+            from scripts.lib.inplane_spring_figure03 import render as render_figure03
+            print(json.dumps(render_figure03()))
+        elif args.figure04:
+            from scripts.lib.inplane_spring_figure04 import render as render_figure04
+            print(json.dumps(render_figure04()))
+        else:
+            render()
+        return
     run = Run()
     run.state['commands'].append(dict(command=sys.argv[1:],time=time.strftime('%Y-%m-%dT%H:%M:%S')))
     if run.state['preflight'] is None:

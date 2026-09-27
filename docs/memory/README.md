@@ -33,6 +33,10 @@
 | Адресное слабое демпфирование, диагностика, production routing и завершение | [K16](knowledge.md#rlb-k16), [K17](knowledge.md#rlb-k17), [K18](knowledge.md#rlb-k18), [K19](knowledge.md#rlb-k19) |
 | Общая чётность по вязкости | [K20](knowledge.md#rlb-k20), [research note](../laminated_beams/inplane_kelvin_voigt_weak_damping_parity.md) |
 | Production RLB+KV и точный EB-предел | [K21](knowledge.md#rlb-k21) |
+| Sparse elastic RLB screening и сопоставление с EB | [K22](knowledge.md#rlb-k22) |
+| Заключительное complex-сравнение и остановка перед обсуждением | [D22](decisions.md#rlb-d22), [K23](knowledge.md#rlb-k23), [сводка для руководителя](../laminated_beams/inplane_kelvin_voigt_research_status_for_supervisor.md) |
+| Рисунки для будущей заметки: crossing/veering и формы | [D23](decisions.md#rlb-d23), [K24](knowledge.md#rlb-k24), [Figure 3](../laminated_beams/figure03_crossing_veering.md) |
+| Рисунки: упругие EB/RLB-формы и поворот у узла | [D24](decisions.md#rlb-d24), [K25](knowledge.md#rlb-k25), [Figure 4](../laminated_beams/figure04_eb_rlb_shapes.md) |
 
 Записи сохраняют ссылки на решения и подробные источники; таблица тем
 не заменяет их условия и статусы. Общая навигация:

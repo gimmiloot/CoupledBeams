@@ -2,6 +2,28 @@
 
 ## 2026-09-27
 
+- Added Figure 4 overlay of saved elastic EB/RLB shapes and section rotations
+  at exactly 45/75 degrees, matched mode 05. Preserved physical modal masses;
+  used one common display factor and read-only K23 damping context. Added
+  PNG/PDF, source CSV, short note and D24/K25; six focused checks plus the
+  existing Figure 3 preset check pass. No new roots, recovery or solver changes.
+- Added Figure 3 crossing/veering composites with two-branch spectra and
+  six shape panels each, reusing matched EB K11 cases at mu=0/.01.
+  Existing plot-only entry point gained a figure preset; production physics
+  and all source data are unchanged. Six focused checks pass; no new roots,
+  shapes or tracking. Added a short note and compact D23/K24 memory trace.
+- Completed D22/K23 representative complex EB/RLB confirmation: six new
+  reduced roots at d=.001, four read-only K12/K19 states. All five G-ratios
+  agree with actual zeta-ratios within .001904%; R3 contrast and positive
+  R4 correction confirmed. Added technical report, supervisor synthesis,
+  bounded data runner and 27 focused passing tests. Preserved D21/K22 and
+  solver/source bytes; stopped at PAUSED_FOR_SUPERVISOR_DIRECTION.
+- Added D21/K22 sparse elastic RLB screening at 0/5/45/75 degrees and
+  same-angle form/eta matching to read-only EB K15. Reused 14 states and
+  calculated 10 missing targets plus two guards with existing reduced
+  production matrices. All 24 pairs confirmed; damping participation can
+  change more than frequency. Added report/data and 28 focused passing
+  tests; no new positive-d roots, solver changes or cross-beta tracking.
 - Extended the existing KV production dispatcher to project RLB: exact
   identical arms use eta blocks, unequal arms use the full matrix. Preserved
   EB routing and historical K12 physics; direct expm supplies T and Frechet
