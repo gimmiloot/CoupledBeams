@@ -2,6 +2,11 @@
 
 ## 2026-09-27
 
+- Recorded D19/K20 weak-damping parity in a compact theoretical note,
+  without equal-arm symmetry; read-only K19 deviation ratios illustrate
+  the quadratic correction. Shortened current memory, replaced chronology
+  with thematic navigation and added compact entry guidance while preserving
+  all historical D/K entries. No new calculations or solver changes.
 - Completed D18/K19 with only A/C at d=.005 through the unchanged K18
   reduced solver. Both pass on the first attempt; full controls use the
   same roots without Newton and retain C's raw rank flag. Combined four
