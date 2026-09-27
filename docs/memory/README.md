@@ -46,6 +46,9 @@ EB исполняется: 50 тестов, 10/12 принятых BASE-груп
 Второй проход — [D13](decisions.md#rlb-d13), [K14](knowledge.md#rlb-k14): Table3 5/5 PRINT_MATCH + SOLVER_PASS; итог PASS_WITH_SOURCE_PRINT_QUALIFICATIONS, K13 сохранён.
 Упругий screening — [D14](decisions.md#rlb-d14), [K15](knowledge.md#rlb-k15): [24 EB-состояния, неактивный класс и предикторы](../laminated_beams/inplane_kelvin_voigt_elastic_screening.md), новых d>0 roots нет.
 Три ACTIVE seed при d=.001,.005 — [D15](decisions.md#rlb-d15), [K16](knowledge.md#rlb-k16): [частичный результат](../laminated_beams/inplane_kelvin_voigt_targeted_weak_damping.md), 2/6 targets приняты, A/C остановлены по gates без расширения.
+Диагностика тех же A/C .001 — [D16](decisions.md#rlb-d16), [K17](knowledge.md#rlb-k17): [симметрийная редукция и перенос](../laminated_beams/inplane_kelvin_voigt_ac_diagnostics.md); half-формы подтверждены, K16 сохранён, beta/.005 не запускались.
+Production routing EB — [D17](decisions.md#rlb-d17), [K18](knowledge.md#rlb-k18): [reduced/full регрессия](../laminated_beams/inplane_kelvin_voigt_solver_architecture.md), reduced PASS, full с локальным raw rank flag C; новое физическое продолжение не начато.
+Завершение weak-damping comparison — [D18](decisions.md#rlb-d18), [K19](knowledge.md#rlb-k19): [A/C .005 и шесть состояний](../laminated_beams/inplane_kelvin_voigt_targeted_weak_damping_completion.md), ranking A>B>C подтверждён; solver неизменён, дальнейший этап не выбран.
 
 Порядок чтения: этот вход → [текущий контекст](current.md) → нужная запись
 в [знаниях](knowledge.md) или [решениях](decisions.md) → конкретное основание

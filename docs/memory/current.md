@@ -2,6 +2,19 @@
 
 ## Актуальное состояние и следующий шаг
 
+2026-09-27: [D18](decisions.md#rlb-d18) выполнено;
+[K19](knowledge.md#rlb-k19), [сравнение шести состояний](../laminated_beams/inplane_kelvin_voigt_targeted_weak_damping_completion.md).
+Досчитаны только A/C .005, четыре точки переиспользованы. Порядок
+затухания A>B>C подтверждён; наибольшее относительное отклонение
+от elastic predictor при .005 — у C (.3811%), у A .2370%, у B .01519%.
+Reduced gates проходят, full C сохраняет raw rank qualification.
+Архитектура [K18](knowledge.md#rlb-k18) и история [K16](knowledge.md#rlb-k16)/[K17](knowledge.md#rlb-k17)
+не изменены. **Остановка:** малый weak-damping experiment завершён;
+следующий физический этап ещё не выбран. Новые d/beta, RLB и расширение
+исследования автоматически не разрешены.
+
+История ограниченного продолжения:
+
 2026-09-26: [D15](decisions.md#rlb-d15) остановлено с
 **PARTIAL_NUMERICAL_QUALIFICATIONS**; [K16](knowledge.md#rlb-k16),
 [отчёт шести запрошенных точек](../laminated_beams/inplane_kelvin_voigt_targeted_weak_damping.md).

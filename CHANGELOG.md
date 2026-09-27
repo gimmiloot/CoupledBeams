@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## 2026-09-27
+
+- Completed D18/K19 with only A/C at d=.005 through the unchanged K18
+  reduced solver. Both pass on the first attempt; full controls use the
+  same roots without Newton and retain C's raw rank flag. Combined four
+  read-only prior points with the two new roots: A>B>C damping ranking is
+  confirmed, while C has the largest relative first-order departure at .005.
+  Recorded 19 targeted tests, bounded costs and zero-work missing-only;
+  no auxiliary d, new beta, RLB or solver architecture changes.
+- Added D17/K18 EB KV production routing: exact identical arms use the
+  shared K17 symmetry reduction, unequal arms use the full matrix; eta=-1
+  reuses its elastic eigenvalue without complex Newton. New full transfer
+  uses direct expm and derivative-only Frechet; reaction unscaling is
+  unchanged and tested. Seven fixed controls pass root/form checks;
+  C retains its raw full rank qualification. Recorded 69 targeted tests,
+  zero-work reuse and preserved historical data. No new physical points.
+- Added D16/K17 diagnostic-only complex symmetry reduction for the saved
+  A/C EB candidates at d=.001. Verified both exact reflection blocks;
+  conditional closed-form transfer isolated reaction/recovery sensitivity
+  to the Frechet transfer. Consistent half forms pass unchanged physical
+  gates at the saved roots. Qualified C's full second-singular flag using
+  separate blocks; no local beta trigger, new d, B or RLB solve. Preserved
+  K16 and production code, recorded 28 targeted tests and zero-work reuse.
+
 ## 2026-09-26
 
 - Added D15/K16 bounded continuation of three prescribed ACTIVE EB seeds

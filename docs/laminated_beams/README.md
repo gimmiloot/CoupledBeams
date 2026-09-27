@@ -54,6 +54,18 @@ Hong Table3 не рассчитывалась из-за Table2 gate. PDF, ото
 две точки INTERMEDIATE приняты, кандидаты STRONG/WEAK ACTIVE при .001
 после двух попыток не прошли gates; их .005 не запускались. Частичный
 результат и ограничения сохранены, K12 solver не менялся.
+[Диагностика A/C D16/K17](inplane_kelvin_voigt_ac_diagnostics.md): точная
+complex symmetry reduction и условный аналитический перенос объяснили
+physical failures; формы при прежних частотах проходят gates. K16 сохранён,
+полный singular flag C квалифицирован отдельно; beta diagnostic и .005 нет.
+[Архитектура solver D17/K18](inplane_kelvin_voigt_solver_architecture.md):
+одинаковые EB-плечи используют reduced eta±, остальные — full; прямой expm
+согласовал full-перенос и восстановление. Контрольные формы проходят gates,
+raw rank flag C сохранён; A/C .005 и новое физическое исследование не начаты.
+[Завершение weak-damping experiment D18/K19](inplane_kelvin_voigt_targeted_weak_damping_completion.md):
+два новых reduced-корня A/C .005 приняты, четыре точки переиспользованы.
+Порядок A>B>C подтверждён; наибольшая относительная поправка к predictor
+при .005 у C. Архитектура K18 и исторические данные не менялись.
 
 Сохранённый исторический результат RLB-0:
 

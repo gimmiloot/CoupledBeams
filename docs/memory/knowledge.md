@@ -776,3 +776,127 @@ missing-only и исчерпанный retry дают нулевые вычис�
 в объявленных границах; новое продолжение или разбор причин отказов
 требует отдельного решения. Cross-beta identity, полный спектр, сильная
 вязкость и source/Ritz qualifications этим результатом не пересматриваются.
+
+## RLB-K17
+
+**Диагностика отказов A/C из K16**, 2026-09-27, [D16](decisions.md#rlb-d16).
+HEAD `d1cd61fc7db816e81b6c77f7760d16a3966b7547`, main, чистое исходное дерево.
+[Отчёт](../laminated_beams/inplane_kelvin_voigt_ac_diagnostics.md),
+[CSV](../../results/laminated_beams/inplane_kelvin_voigt_ac_diagnostics/ac_symmetry_diagnostics.csv),
+[диагностики](../../results/laminated_beams/inplane_kelvin_voigt_ac_diagnostics/diagnostics.json),
+[manifest](../../results/laminated_beams/inplane_kelvin_voigt_ac_diagnostics/run_manifest.json).
+Основания — [K09](#rlb-k09), [K12](#rlb-k12), [K15](#rlb-k15), [K16](#rlb-k16).
+
+**Результат:** точная комплексная редукция даёт eta=+1 условие
+M+2*(k+c*p)*psi=0; eta=−1 не содержит k,c. Проверки W*B*V=diag(B+,B−)
+и производной имеют max relative 1.51e-16/7.65e-17. Для A/C при .001
+примесь противоположного класса реакций лишь 3.65e-15/2.29e-13;
+проекция не устраняет physical failures. Half на том же переносе Фреше
+также воспроизводит отказ, поэтому выполнен условный аналитический контроль.
+
+T из Фреше отличается от замкнутого переноса относительно на
+1.02e-11/5.36e-11, прямой expm — на 3.29e-15/5.66e-15.
+Согласованные аналитические реакции и формы дают physical
+6.39e-10/3.30e-11 при прежнем gate 1e-9, energy 1.03e-8/4.92e-8,
+MAC к K16 практически 1. Даже исходное full recovery с новыми реакциями
+даёт 6.63e-10/3.31e-11. Статус обеих точек:
+**FULL_TRANSFER_RECOVERY_CONDITIONING**. Это численная чувствительность
+реакций/восстановления к разности переносов, не установленная ошибка знаков.
+
+Частоты сохранены: z_A=−.17856506546575265+i*76.57755928391374,
+z_C=−.006633333405021945+i*100.01655751370787. Full-vs-half разность
+сохранённых чисел равна нулю: четыре half-вызова корректора приняли
+начальные кандидаты без обновлений, что не является оценкой их точности.
+По две диагностические попытки на точку; новых physical targets нет.
+
+**C-S1:** в B+ одна малая singular value, второй balanced ratio=.30189;
+B− min balanced ratio=6.97e-5. Второй full singular vector почти целиком
+в eta=−1; исходный full ratio=8.61e-9 сохраняется как отказ старого gate.
+Read-only K15 даёт соседний неактивный Omega=107.19516355548245,
+разность 7.17861. Кратность не подтверждается; beta diagnostic не нужен
+и не выполнялся. Это локальная квалификация, не теорема о всём спектре.
+
+**Граница принятия:** физические формы подтверждены в новом согласованном
+представлении. K17 не снимает и не переписывает qualification исходных
+форм K16; его PARTIAL/rejected/NOT_RUN остаются историей. Production
+helper не изменён, математическая ошибка не доказана. Для надёжного
+полного пути к A/C .005 следует отдельно согласовать вычисление переноса
+и реакций; безопасность такого продолжения неизменным runner не заявлена.
+Само .005 требует нового решения и здесь не запускалось.
+
+**Проверки:** 28 targeted tests; 512 научных build-equivalents, 0.4160 s,
+10 восстановлений, 0 Newton updates. С тремя запусками тестов и
+консервативным учётом scalar-pencil проверок — 866<1000. Missing-only
+даёт ноль вычислений; SHA-256 K15/K16, теории и production helper совпадают.
+Нет новых d/B/RLB roots, углов, crossing localization или полноты спектра.
+Прежние source/Ritz qualifications сохранены. Этап остановлен.
+
+## RLB-K18
+
+**Архитектура KV solver**, 2026-09-27, [D17](decisions.md#rlb-d17),
+main, HEAD `d1cd61fc7db816e81b6c77f7760d16a3966b7547`; исходное дерево
+содержало дополнение [K17](#rlb-k17). [Отчёт](../laminated_beams/inplane_kelvin_voigt_solver_architecture.md),
+[контрольные строки](../../results/laminated_beams/inplane_kelvin_voigt_solver_architecture/solver_regression.csv),
+[manifest](../../results/laminated_beams/inplane_kelvin_voigt_solver_architecture/run_manifest.json).
+
+**Результат:** новый [production dispatcher](../../scripts/lib/inplane_kelvin_voigt_solver.py)
+выбирает reduced для точного равенства EB-плеч и full для остальных.
+Общий аналитический half-helper K17 поднят в reusable API; второй набор
+формул не создан. В новом full T берётся из direct expm, Фреше даёт только
+производную. Обратное масштабирование реакций проверено и не изменено;
+исторический K12 helper оставлен неизменным для воспроизведения.
+
+Семь известных случаев K12 ACTIVE/INACTIVE, B/.001/.005, A/C .001 и
+упругий K11 mu=.01 дали 12 проверок путей. Все частоты совпадают с
+источниками в заданном regression criterion; Newton updates=0.
+Reduced: **SYMMETRY_REDUCED_PRODUCTION_PASS**, 6/6.
+Full: **FULL_TWO_ARM_PRODUCTION_PASS_WITH_HIGH_MODE_QUALIFICATION**,
+5/6 безусловно приняты. Physical A/C улучшился с 2.79e-7/3.90e-8
+до 4.27e-10/2.51e-11, ниже неизменного 1e-9. У C сохранён raw rank
+`POSSIBLE_MULTIPLICITY`, accepted=false; это не отказ новой физической
+формы и не доказанная кратность. K11 full без проекции принят; eta=−1
+возвращён как exact inactive без Newton. 69 целевых тестов пройдены;
+missing-only — ноль вычислений. SHA-256 36 прежних научных файлов сохранены.
+
+**Граница:** [K16](#rlb-k16) остаётся исторически PARTIAL, [K17](#rlb-k17)
+сохраняет объяснение. Проверен ограниченный технический набор, не весь
+спектр и не вязкие неодинаковые плечи. A/C .005 — NOT_RUN, новых d/beta,
+RLB и физических исследований нет. Дальнейший выбор точек/вязкости
+требует отдельного решения; цепочка уточнений не продолжается.
+
+## RLB-K19
+
+**Сравнение трёх ACTIVE-мод завершено**, 2026-09-27,
+[D18](decisions.md#rlb-d18), main, HEAD `d1cd61fc7db816e81b6c77f7760d16a3966b7547`.
+[Отчёт](../laminated_beams/inplane_kelvin_voigt_targeted_weak_damping_completion.md),
+[шесть состояний](../../results/laminated_beams/inplane_kelvin_voigt_targeted_weak_damping_completion/combined_six_state_summary.csv),
+[два новых корня](../../results/laminated_beams/inplane_kelvin_voigt_targeted_weak_damping_completion/new_roots.csv),
+[manifest](../../results/laminated_beams/inplane_kelvin_voigt_targeted_weak_damping_completion/run_manifest.json).
+Основания — [K15](#rlb-k15), [K16](#rlb-k16), [K17](#rlb-k17), [K18](#rlb-k18).
+
+**Результат:** A/.005 и C/.005 приняты reduced production с первой попытки
+(4/3 Newton updates). Четыре прежние точки переиспользованы, исходные
+K16 отказы и последующее подтверждение K17/K18 различены в provenance.
+При d=.001/.005 порядок a и zeta — A>B>C, как предсказывает screening.
+При .005 a/d: 178.276446,19.704085,6.609198; zeta/d:
+2.326507,1.023011,.066080. Относительные отклонения от предикторов
+по zeta/d: −.2370%,−.01519%,−.3811%; по a/d: −.1683%,−.007377%,−.3790%.
+При меньшем d отклонения меньше. Наибольшая относительная поправка у C,
+а не у STRONG A. Первое приближение сохраняет количественную близость,
+но новый порог применимости по этим данным не вводится.
+
+Частотные сдвиги при .005: +.06209%,+.006508%,+.002053%; δ/d² близки
+при двух d, что согласуется с квадратичной ведущей поправкой без её
+доказательства. Сдвиг C/.001 ниже общего ориентира 1e-6 по частоте;
+малую разницу его коэффициентов не трактуем как разрешённую физику.
+Новые reduced/lifted physical gates, энергия и MAC проходят; минимум
+MAC=.99956597. Full A принят; C сохраняет только raw
+`POSSIBLE_MULTIPLICITY`, не отменяющий reduced acceptance.
+
+**Проверки и граница:** 19 тестов, reduced B/B_z=17/13 (30/300),
+два full evaluation-control, .14779 s; missing-only — ноль вычислений.
+27 исходных файлов сохранены, solver architecture не менялась.
+Только H/L/L/H EB, одинаковые плечи, kappa=1, три выбранных ACTIVE seed,
+два d. Нет RLB, asymmetric damping, новых beta, auxiliary d, crossing,
+FRF, high precision или утверждения о полноте спектра. Следующий
+научный вопрос остаётся невыбранным; автоматического продолжения нет.
