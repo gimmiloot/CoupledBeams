@@ -8,6 +8,218 @@ Citation keys синхронизированы с `docs/literature/bibliography.
 coefficient и circular rods:
 `docs/literature/timoshenko_shear_sources.md`.
 
+## `tan_ko_2004_connection_dampers`
+
+- PDF: `docs/literature/pdf/tan_ko_2004_connection_dampers.pdf`, 24 страницы
+  (журнальные 707–730), SHA256
+  `f2b4ca729f82633f785dc1f688126f865319200c4aafc42dce1d83ae1db681de`.
+- Тип: журнальная статья; локальный PDF — издательская версия с некорректно
+  извлекаемым текстовым слоем, поэтому титульные данные прочитаны визуально.
+- Роль: потенциальный источник по демпферам в соединениях длиннопролётных балок.
+  Метка будущего чтения: `service-vibration control`.
+- Что важно для CoupledBeams: рассматриваются соединения балки с колоннами,
+  содержащие вязкоупругие демпферы, экспериментальная постановка и модель
+  с дробными производными для вертикальных колебаний.
+- Обозначения / terminology: beam–column connection, viscoelastic damper,
+  fractional derivative model.
+- Критично смотреть: abstract и §1 `Introduction`, pp. 707–708;
+  §2 `Experiments on a Beam with Various Connections`, начиная с p. 708,
+  особенно §2.1 `Description of the Beam–Column Connections`.
+- Замечание по применимости: речь о вертикальной вибрации балки между колоннами;
+  дробная вязкоупругая модель не тождественна локальному Kelvin–Voigt-узлу проекта.
+- Метаданные: `VERIFIED_LOCAL_PDF_AND_PUBLISHER`, 2026-10-01. X. M. Tan,
+  J. M. Ko; *Vibration Control of Long-Span Beams: Experimental and Analytical
+  Study of Beam Structures Incorporated with Connection Dampers*;
+  Journal of Vibration and Control 10(5) (2004), 707–730;
+  DOI `10.1177/1077546304040132`. Первая и последняя страницы локального PDF;
+  номер выпуска подтверждён [SAGE](https://journals.sagepub.com/doi/10.1177/1077546304040132).
+
+## `hsu_fafitis_1992_viscoelastic_connections`
+
+- PDF: `docs/literature/pdf/hsu_fafitis_1992_viscoelastic_connections.pdf`,
+  16 страниц (журнальные 2459–2474), SHA256
+  `4c030c71d6848342d410332d6927333b009c66e0d571464fc2de6655db7ce418`.
+- Тип: журнальная статья; локальная копия — скан журнальных страниц с OCR
+  и отметкой загрузки ASCE. Фамилия Fafitis сверена с изображением первой страницы.
+- Роль: потенциальный источник по вязкоупругим соединениям рам.
+  Метка будущего чтения: `seismic application`.
+- Что важно для CoupledBeams: представлены эластомерное устройство в соединении,
+  его экспериментальное описание и модель типа Kelvin–Voigt для анализа рам.
+- Обозначения / terminology: connection isolator, elastomeric pad,
+  Kelvin–Voigt-type model, durometer hardness.
+- Критично смотреть: abstract и `Introduction`, p. 2459;
+  `Experimental Data`, `Connection Modeling` и Fig. 1, p. 2460.
+- Замечание по применимости: рассматривается сейсмическое возбуждение рам
+  с эластомерными соединениями; соответствие устройства идеализированному
+  вращательному узлу двух стержней требует отдельного чтения.
+- Метаданные: `VERIFIED_LOCAL_PDF_AND_PUBLISHER`, 2026-10-01. Sheng-Yung Hsu,
+  Apostolos Fafitis; *Seismic Analysis Design of Frames with Viscoelastic
+  Connections*; Journal of Structural Engineering 118(9) (1992), 2459–2474.
+  Заголовок, авторы, выпуск и страницы — локальный PDF;
+  DOI `10.1061/(ASCE)0733-9445(1992)118:9(2459)` подтверждён
+  [ASCE](https://ascelibrary.org/doi/10.1061/%28ASCE%290733-9445%281992%29118%3A9%282459%29)
+  и Crossref, на титульной странице не напечатан.
+
+## `song_hong_2007_nonconservative_joints`
+
+- PDF: `docs/literature/pdf/song_hong_2007_nonconservative_joints.pdf`,
+  15 PDF-страниц: статья на журнальных pp. 15–28 (PDF pages 1–14), затем
+  рекламная страница Hindawi; SHA256
+  `02f6793419426c94400dbf7a32d197e833d84db1a76a03771ff7f8415a395270`.
+- Тип: журнальная статья; локальный PDF — издательская верстка IOS Press
+  с добавленной рекламной страницей, не отдельная версия статьи.
+- Роль: потенциальный источник по диссипативным соединениям балочных сетей.
+  Метка будущего чтения: `mathematical joint model`.
+- Что важно для CoupledBeams: рассматриваются три пары пружин и демпферов
+  в плоском узле и передача колебательной энергии между балками под углом.
+- Обозначения / terminology: non-conservative joint, spring–dashpot model,
+  energy flow analysis (EFA), wave transmission.
+- Критично смотреть: abstract и §1 `Introduction`, pp. 15–16;
+  §2 `Wave transmission analysis of beam networks with compliant and
+  dissipative joints` и Fig. 1, начиная с p. 16.
+- Замечание по применимости: основной предмет — энергия и интенсивность
+  колебаний в среднем и высоком частотных диапазонах; это не готовый
+  источник низкочастотной модальной задачи CoupledBeams.
+- Метаданные: `VERIFIED_LOCAL_PDF_AND_CROSSREF`, 2026-10-01. Jee-Hun Song,
+  Suk-Yoon Hong; *Development of non-conservative joints in beam networks
+  for vibration energy flow analysis*; Shock and Vibration 14(1) (2007), 15–28.
+  Первая страница и конечная пагинация — локальный PDF; DOI
+  `10.1155/2007/273472` и номер выпуска — [Crossref](https://api.crossref.org/works/10.1155/2007/273472).
+  Год 2007 сохранён по журнальному заголовку и copyright. Дата `published`
+  в Crossref, 2005-03-30, совпадает с напечатанной датой `Received` и
+  не использована как год публикации. Это самостоятельная работа,
+  отличная от `hong_kim_1999_damped_timoshenko_joints`.
+
+## `zeng_2026_piecewise_space_truss`
+
+- PDF: `docs/literature/pdf/zeng_2026_piecewise_space_truss.pdf`, 17 страниц,
+  SHA256 `906fc9a717f5a6404cafab639dabdb8446348aaac5a5284d00393f6572dc69c0`.
+- Тип: журнальная статья, Research Article; локальный PDF — издательская
+  open-access версия Wiley.
+- Роль: потенциальный источник по сегментированным космическим фермам
+  с податливыми диссипативными соединениями. Метка будущего чтения: `beam/frame application`.
+- Что важно для CoupledBeams: рассматривается эквивалентный кусочно-однородный
+  стержень с сосредоточенными осевыми пружинами и демпферами в соединениях.
+- Обозначения / terminology: large space truss structures (LSTS),
+  piecewise elastic bar, axial spring–damper joint.
+- Критично смотреть: abstract и §1 `Introduction`, pp. 1–2;
+  §2 `Model Development`, §2.1 `Physical Model and Assumptions`, p. 3.
+- Замечание по применимости: модель ограничена продольным движением
+  эквивалентного стержня; изгиб, кручение и их связь с продольным движением
+  не входят в описанную постановку.
+- Метаданные: `VERIFIED_LOCAL_PDF_AND_CROSSREF`, 2026-10-01. Xianhong Zeng,
+  Yin Zhang, Hongcheng Chen, Han Wu, Zundi Huang; *Axial Vibration
+  Characteristics of Piecewise Large Space Truss Structures*;
+  International Journal of Aerospace Engineering 2026(1), Article ID 2258617;
+  DOI `10.1155/ijae/2258617`. Первая страница, пагинация `1 of 17`–`17 of 17`
+  и отметка Wiley в PDF; номер выпуска также подтверждён
+  [Crossref](https://api.crossref.org/works/10.1155/ijae/2258617).
+
+## `xu_2023_right_angle_viscoelastic_damper`
+
+- PDF: `docs/literature/pdf/xu_2023_right_angle_viscoelastic_damper.pdf`,
+  22 страницы, SHA256
+  `8f7159b26e65e684658b0b31da6c11cb6443b04e51d575b1cc3c6561e0f2561f`.
+- Тип: журнальная статья, Research Article; локальный PDF — издательская
+  open-access версия Hindawi/Wiley.
+- Роль: потенциальный источник по конструкции и испытаниям узлового демпфера.
+  Метка будущего чтения: `experimental joint/device`.
+- Что важно для CoupledBeams: рассматривается угловой вязкоупругий
+  демпфер с полиуретаном для соединения балки с колонной; описаны испытания
+  материала и устройства, а также рамная постановка.
+- Обозначения / terminology: right-angle viscoelastic damper (RVD),
+  polyurethane, dynamic mechanical analysis (DMA).
+- Критично смотреть: abstract и §1 `Introduction`, pp. 1–2;
+  Fig. 1 и §2 `Dynamic Thermodynamic Testing of Polyurethane Rubber`, p. 2.
+- Замечание по применимости: работа посвящена конкретному устройству
+  и свойствам материала, включая нелинейное поведение; сведение к линейному
+  Kelvin–Voigt-узлу проекта отдельно не проверялось.
+- Метаданные: `VERIFIED_LOCAL_PDF`, 2026-10-01. Jun-Hong Xu, Zhe-Yu Zhu,
+  Guang-Dong Zhou, Hao Wang, Ai-Qun Li; *Dynamic Characteristics of a Novel
+  Right-Angle Viscoelastic Damper (RVD) Using Polyurethane Damping Materials*;
+  Structural Control and Health Monitoring, Volume 2023, Article ID 2568963,
+  22 pages; DOI `10.1155/2023/2568963`. Все основные поля и дата
+  `Published 8 February 2023` напечатаны на первой странице.
+
+## `beshara_keane_1997_dissipative_beam_joints`
+
+- PDF: `docs/literature/pdf/beshara_keane_1997_dissipative_beam_joints.pdf`,
+  19 страниц (журнальные 321–339), SHA256
+  `37313cc9c70a04d58fb15cf4d2d9c2661fce363749fbb7bb289a173dcc2e44c5`.
+- Тип: журнальная статья; локальная копия — скан журнальной верстки
+  Academic Press без извлекаемого текста.
+- Роль: потенциальный источник по податливым диссипативным узлам балочных сетей.
+  Метка будущего чтения: `mathematical joint model`.
+- Что важно для CoupledBeams: рассматривается плоская сеть упругих балок
+  с тремя парами пружин и демпферов в узле и углом между соединяемыми балками.
+- Обозначения / terminology: compliant and dissipative joint, receptance,
+  vibrational energy flow, spring–dashpot model.
+- Критично смотреть: аннотацию на p. 321 и §1 `Introduction`, pp. 321–322,
+  для исходных предположений об узле и формулировки задачи передачи энергии.
+- Замечание по применимости: анализ потоков энергии через узлы не тождествен
+  задаче о комплексных собственных частотах двух закреплённых стержней.
+- Метаданные: `VERIFIED_LOCAL_PDF_AND_CROSSREF`, 2026-10-01. M. Beshara,
+  A. J. Keane; *Vibrational energy flows in beam networks with compliant
+  and dissipative joints*; Journal of Sound and Vibration 203(2) (1997), 321–339.
+  Титульные данные и конечная страница проверены визуально;
+  DOI `10.1006/jsvi.1996.0889` подтверждён
+  [Southampton ePrints](https://eprints.soton.ac.uk/id/eprint/21080) и Crossref.
+  Репозиторная карточка помечает файл как `Accepted Manuscript`, однако
+  локальный скан содержит журнальные колонтитулы, пагинацию и copyright;
+  здесь зафиксирован непосредственно наблюдаемый вид копии.
+
+## `attarnejad_pirmoz_2014_damped_semirigid_frames`
+
+- PDF: `docs/literature/pdf/attarnejad_pirmoz_2014_damped_semirigid_frames.pdf`,
+  9 страниц (журнальные 165–173), SHA256
+  `58662093bac8a4f8011ee3b8c1c693b54ff4c883ac95ec17172c347e47feb724`.
+- Тип: журнальная статья; локальный PDF — издательская версия Elsevier.
+- Роль: потенциальный источник по моделированию рам с податливыми соединениями
+  и вращательными демпферами. Метка будущего чтения: `beam/frame application`.
+- Что важно для CoupledBeams: рассматриваются балки Эйлера–Бернулли,
+  нелинейные вращательные пружины и параллельные вращательные демпферы
+  с учётом взаимодействия момента и поперечной силы в соединении.
+- Обозначения / terminology: partially restrained (PR) connection,
+  moment–shear interaction (MVI), rotational damper.
+- Критично смотреть: abstract и §1 `Introduction`, p. 165;
+  §2 `Basic assumptions`, pp. 165–166;
+  §4 `Modeling of the flexible connections` и Fig. 1, p. 166.
+- Замечание по применимости: предварительно нагруженные рамы и нелинейная
+  характеристика соединения отличаются от линейного узла текущей модели;
+  научное сопоставление ещё не выполнено.
+- Метаданные: `VERIFIED_LOCAL_PDF`, 2026-10-01. Reza Attarnejad, Akbar Pirmoz;
+  *Nonlinear analysis of damped semi-rigid frames considering moment–shear
+  interaction of connections*; International Journal of Mechanical Sciences
+  81 (2014), 165–173; DOI `10.1016/j.ijmecsci.2014.02.016`.
+  Первая страница и XMP; номер выпуска не указан ни в PDF, ни в Crossref.
+  Это самостоятельная работа, отличная от Failla 2014.
+
+## `xu_zhang_2001_connection_dampers`
+
+- PDF: `docs/literature/pdf/xu_zhang_2001_connection_dampers.pdf`,
+  12 страниц (журнальные 385–396), SHA256
+  `81f58cd207d4fc0dfb8cc9c149ead13b2d19588778e0177b5ce85aa94df289b4`.
+- Тип: журнальная статья; локальный PDF — издательская версия Elsevier.
+- Роль: потенциальный источник по рамным моделям с демпфированием в соединениях.
+  Метка будущего чтения: `seismic application`.
+- Что важно для CoupledBeams: рассматриваются балочные элементы с
+  вращательными пружинами и демпферами на концах, комплексный модальный
+  анализ и отклик стальной рамы на сейсмическое возбуждение.
+- Обозначения / terminology: connection damper, rotational spring,
+  modal-damping ratio, generalized pseudo-excitation method.
+- Критично смотреть: abstract и §1 `Introduction`, pp. 385–386;
+  §2 `Formulation of element matrices`, Figs. 1–2, начиная с p. 386.
+- Замечание по применимости: рамная система и вынужденный сейсмический
+  отклик отличаются от собственной модальной задачи для двух стержней;
+  сопоставление параметров узла оставлено следующему этапу.
+- Метаданные: `VERIFIED_LOCAL_PDF_AND_PUBLISHER`, 2026-10-01. Y. L. Xu,
+  W. S. Zhang; *Modal analysis and seismic response of steel frames with
+  connection dampers*; Engineering Structures 23(4) (2001), 385–396.
+  Первая страница и конечная пагинация — локальный PDF; DOI
+  `10.1016/S0141-0296(00)00062-6` и номер выпуска подтверждены
+  [ScienceDirect](https://www.sciencedirect.com/science/article/abs/pii/S0141029600000626).
+  Журнальный год — 2001; copyright 2000 не использован как год публикации.
+
 ## `failla_2014_viscoelastic_discontinuous_beams`
 
 - PDF: `docs/literature/pdf/failla2014.pdf`, 12 страниц (журнальные 52–63),

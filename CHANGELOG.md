@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 2026-10-01
+
+- Added eight user-supplied literature PDFs under canonical filenames;
+  verified metadata, checked duplicates, and updated the bibliography and
+  source index with SHA-256 hashes and brief reading pointers. PDF bytes are
+  unchanged; no scientific review, new literature search, calculations, or
+  memory D/K entries.
+
 ## 2026-09-28
 
 - Replaced the current Figure 5 candidate with exact modal decay envelopes
