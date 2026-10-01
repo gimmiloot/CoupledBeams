@@ -139,6 +139,7 @@ def figure_rows(saved):
 
 
 def draw(saved):
+    """Original diagnostic layout; retained to preserve/reuse the top row."""
     import matplotlib.pyplot as plt
     from matplotlib.lines import Line2D
     from matplotlib.ticker import MultipleLocator
@@ -185,33 +186,66 @@ def draw(saved):
     return fig
 
 
-def render(base=BASE, output=OUTPUT):
+def draw_revised(saved, rows, *, value_labels=True):
+    """Keep v1 centrelines verbatim; replace only the lower axes with |Delta psi|."""
+    from matplotlib.ticker import MultipleLocator
+    assert len(rows) == 4
+    by_key = {(int(r['beta_deg']), r['theory']): r for r in rows}
+    assert set(by_key) == {(b, t) for b in BETAS for t in THEORIES}
+    values = {key: abs(float(row['Delta_psi'])) for key, row in by_key.items()}
+    limit = 5*np.ceil(1.12*max(values.values())/5)
+    fig = draw(saved)
+    for col, beta in enumerate(BETAS):
+        ax = fig.axes[2+col]
+        ax.clear()
+        for x, theory in enumerate(THEORIES):
+            value = values[(beta, theory)]
+            ax.bar(x, value, width=.36, color=COLORS[theory], edgecolor=COLORS[theory],
+                   label=theory, zorder=3)
+            if value_labels:
+                ax.annotate(f'{value:.1f}', (x, value), xytext=(0, 5), textcoords='offset points',
+                            ha='center', va='bottom', fontsize=11)
+        ax.set_xticks([0, 1], THEORIES)
+        ax.set_xlim(-.6, 1.6)
+        ax.set_ylim(0, limit)
+        ax.set_ylabel(r'$|\Delta\psi|$', fontsize=13, labelpad=10)
+        ax.yaxis.set_major_locator(MultipleLocator(25))
+        ax.spines[['top', 'right']].set_visible(False)
+        ax.grid(axis='y', color='.92', lw=.6, zorder=0)
+        ax.tick_params(axis='x', length=0, pad=8)
+    return fig
+
+
+def render(base=BASE, output=OUTPUT, *, value_labels=True):
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     started = time.perf_counter()
-    hashes = {str(p): sha(p) for p in source_paths(base)}
+    source_output = base/'figure04_eb_rlb_shapes'
+    old_files = [source_output/name for name in ('figure04_data.csv', 'figure04_eb_rlb_shapes.png',
+                                                'figure04_eb_rlb_shapes.pdf', 'figure_manifest.json')]
+    hashes = {str(p): sha(p) for p in source_paths(base)+old_files}
     saved = load_saved(base)
+    rows = csv_rows(source_output/'figure04_data.csv')
+    # The original table is read-only, including signed rotations and all contextual fields.
+    assert rows == [{k: str(v) for k, v in row.items()} for row in figure_rows(saved)]
     output.mkdir(parents=True, exist_ok=True)
     with plt.rc_context({'font.family': 'DejaVu Sans', 'font.size': 11, 'pdf.fonttype': 42}):
-        fig = draw(saved)
+        fig = draw_revised(saved, rows, value_labels=value_labels)
         for extension in ('png', 'pdf'):
-            fig.savefig(output/f'figure04_eb_rlb_shapes.{extension}', dpi=300, facecolor='white',
+            fig.savefig(output/f'figure04_eb_rlb_shapes_revised.{extension}', dpi=300, facecolor='white',
                         metadata={'Creator': 'CoupledBeams Figure 4 plot-only'})
         plt.close(fig)
-    rows = figure_rows(saved)
-    with (output/'figure04_data.csv').open('w', encoding='utf-8', newline='') as stream:
-        writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
-        writer.writeheader(); writer.writerows(rows)
     assert all(sha(Path(p)) == h for p, h in hashes.items())
     record = dict(source_sha256=hashes, matching=saved['matching'], K23_context=saved['context'],
         shape_checks=saved['checks'], beta_deg=BETAS, modes=MODES,
         display_scale=saved['display_scale'], maximum_display_displacement=DISPLAY_AMPLITUDE,
-        rotation_field='stored state psi: EB=-dw/dx; RLB independent; no numerical differentiation',
+        lower_panels='abs(Delta_psi) copied from unchanged figure04_data.csv',
+        common_y_scale=True, value_labels=value_labels, original_figure_preserved=True,
         normalization='saved whole-structure physical mass M=1; no rescaling except a global sign',
         reused_elastic_shapes=4, new_roots=0, new_beta=0, new_d=0, matrix_calls=0,
         shape_recoveries=0, tracking_calls=0, interpolation=0, solver_changes=0,
         render_seconds=time.perf_counter()-started)
-    (output/'figure_manifest.json').write_text(json.dumps(record, ensure_ascii=False, indent=2,
+    (output/'figure_manifest_revised.json').write_text(json.dumps(record, ensure_ascii=False, indent=2,
                                                         allow_nan=False)+'\n', encoding='utf-8')
     return {k: record[k] for k in ('reused_elastic_shapes', 'new_roots', 'shape_recoveries', 'render_seconds')}

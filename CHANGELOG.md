@@ -1,7 +1,26 @@
 # CHANGELOG
 
+## 2026-09-28
+
+- Replaced the current Figure 5 candidate with exact modal decay envelopes
+  from saved K23 R2/R3 complex results, using each model's damped periods.
+  Added half-amplitude markers, PNG/PDF/CSV and a short note; preserved the
+  previous bars and their explicit plot-only route. Distinguished dimensional
+  alpha from a, updated navigation, passed 11 focused checks. No new roots,
+  forms, parameters, tracking or solver work; no new D/K entry.
+- Added Figure 5 from four saved K23 complex comparisons at d=.001:
+  separate relative frequency/damping panels, exact-source CSV transformation,
+  PNG/PDF and short figure note. Six focused checks pass; figure-only preset
+  added to the existing runner. No new roots, forms, parameters or solver changes;
+  previous Figure 4 edits preserved, memory navigation updated without new D/K.
+
 ## 2026-09-27
 
+- Revised Figure 4 lower panels to absolute joint-rotation bars on a common
+  scale, retaining the original centreline overlays and physical modal masses.
+  Preserved v1 PNG/PDF, CSV and manifest; separate revised outputs, eight
+  focused passing checks, updated caption discussion/navigation. No new
+  scientific calculations, solver changes or D/K entries.
 - Added Figure 4 overlay of saved elastic EB/RLB shapes and section rotations
   at exactly 45/75 degrees, matched mode 05. Preserved physical modal masses;
   used one common display factor and read-only K23 damping context. Added

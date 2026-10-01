@@ -7,7 +7,12 @@
 [D23/K24 — Figure 3](../laminated_beams/figure03_crossing_veering.md),
 EB crossing/veering K11 и формы, полностью из сохранённых данных.
 [D24/K25 — Figure 4](../laminated_beams/figure04_eb_rlb_shapes.md):
-упругие EB/RLB05 при 45°/75°, осевые линии и psi из K15/K22, без расчётов.
+упругие EB/RLB05 при 45°/75°, без расчётов. Текущий revised-кандидат:
+прежние осевые линии и столбцы |Delta_psi| на общей шкале; v1 с psi сохранена.
+[Figure 5](../laminated_beams/figure05_damping_envelopes.md), 2026-09-28:
+огибающие A/A0 по числу собственных периодов N, K23 R2/R3 (45°/05 и 75°/05)
+при d=.001. PNG/PDF/CSV — в results/laminated_beams/figure05_damping_envelopes/.
+Столбчатая версия сохранена как история; новых корней, форм и D/K-записи нет.
 Следующее физическое исследование по-прежнему не выбрано.
 
 [D22](decisions.md#rlb-d22) / [K23](knowledge.md#rlb-k23): заключительное

@@ -992,9 +992,13 @@ def main():
     figures = parser.add_mutually_exclusive_group()
     figures.add_argument('--figure03',action='store_true',help='plot-only: coordinated EB crossing/veering with saved shapes')
     figures.add_argument('--figure04',action='store_true',help='plot-only: saved elastic EB/RLB centrelines and section rotations')
+    figures.add_argument('--figure05',action='store_true',help='plot-only: saved K23 damping envelopes')
+    parser.add_argument('--figure05-view',choices=('envelopes','corrections'),help='Figure 5 layout; default envelopes, corrections is historical')
     args = parser.parse_args()
-    if (args.figure03 or args.figure04) and args.command!='plot-only':
+    if (args.figure03 or args.figure04 or args.figure05) and args.command!='plot-only':
         parser.error('figure presets are only available with plot-only')
+    if args.figure05_view and not args.figure05:
+        parser.error('--figure05-view requires --figure05')
     if args.command=='plot-only':
         if args.figure03:
             from scripts.lib.inplane_spring_figure03 import render as render_figure03
@@ -1002,6 +1006,10 @@ def main():
         elif args.figure04:
             from scripts.lib.inplane_spring_figure04 import render as render_figure04
             print(json.dumps(render_figure04()))
+        elif args.figure05:
+            from scripts.lib.inplane_spring_figure05 import render as render_corrections, render_envelopes
+            render_figure05 = render_corrections if args.figure05_view=='corrections' else render_envelopes
+            print(json.dumps(render_figure05()))
         else:
             render()
         return

@@ -81,6 +81,35 @@ def test_geometry_overlay_and_rotation_are_unaltered_fields(saved, monkeypatch):
     plt.close(fig)
 
 
+@pytest.mark.parametrize('value_labels', [False, True])
+def test_revised_bars_shared_scale_and_unchanged_top(saved, value_labels):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    rows = plot.csv_rows(plot.OUTPUT/'figure04_data.csv')
+    original = plot.draw(saved)
+    revised = plot.draw_revised(saved, rows, value_labels=value_labels)
+    assert revised.axes[2].get_ylim() == revised.axes[3].get_ylim() == (0., 130.)
+    for col, beta in enumerate(plot.BETAS):
+        for a, b in zip(original.axes[col].lines, revised.axes[col].lines, strict=True):
+            np.testing.assert_array_equal(a.get_xydata(), b.get_xydata())
+            assert a.get_color() == b.get_color()
+        lower = revised.axes[2+col]
+        assert len(lower.patches) == 2 and not lower.lines
+        assert [t.get_text() for t in lower.get_xticklabels()] == ['EB', 'RLB']
+        for bar, theory in zip(lower.patches, plot.THEORIES, strict=True):
+            row, = [r for r in rows if int(r['beta_deg']) == beta and r['theory'] == theory]
+            assert bar.get_height() == abs(float(row['Delta_psi']))
+            assert bar.get_y() == 0
+        assert len(lower.texts) == (2 if value_labels else 0)
+    revised.canvas.draw()
+    # The wider symbolic ylabel must stay inside the canvas.
+    for ax in revised.axes[2:]:
+        bounds = ax.yaxis.label.get_window_extent(revised.canvas.get_renderer())
+        assert bounds.x0 >= 0 and bounds.x1 <= revised.bbox.width
+    plt.close(original); plt.close(revised)
+
+
 def test_plot_only_generation_and_source_preservation(saved, tmp_path, monkeypatch):
     from scripts.analysis.laminated_beams import check_inplane_spring_robustness as run
     def forbidden(*args, **kwargs):
@@ -89,22 +118,25 @@ def test_plot_only_generation_and_source_preservation(saved, tmp_path, monkeypat
                       (run.eb, 'state_matrix'), (run.eb, 'transfer_matrix'),
                       (run.rlb, 'state_matrix'), (run.rlb, 'transfer_matrix')):
         monkeypatch.setattr(obj, name, forbidden)
-    before = {p: plot.sha(p) for p in plot.source_paths()}
+    protected = plot.source_paths()+[plot.OUTPUT/name for name in (
+        'figure04_data.csv', 'figure04_eb_rlb_shapes.png', 'figure04_eb_rlb_shapes.pdf', 'figure_manifest.json')]
+    before = {p: plot.sha(p) for p in protected}
     original = plot.render
     monkeypatch.setattr(plot, 'render', lambda: original(output=tmp_path))
     monkeypatch.setattr(sys, 'argv', ['check_inplane_spring_robustness.py', 'plot-only', '--figure04'])
     run.main()
-    assert before == {p: plot.sha(p) for p in plot.source_paths()}
-    assert plot.csv_rows(tmp_path/'figure04_data.csv') == [
-        {k: str(v) for k, v in row.items()} for row in plot.figure_rows(saved)]
-    manifest = plot.read_json(tmp_path/'figure_manifest.json')
+    assert before == {p: plot.sha(p) for p in protected}
+    assert not (tmp_path/'figure04_data.csv').exists()  # reuse source CSV; never rewrite it
+    assert not (tmp_path/'figure04_eb_rlb_shapes.png').exists()
+    manifest = plot.read_json(tmp_path/'figure_manifest_revised.json')
+    assert manifest['common_y_scale'] and manifest['value_labels'] and manifest['original_figure_preserved']
     assert manifest['reused_elastic_shapes'] == 4
     assert all(manifest[k] == 0 for k in ('new_roots', 'new_beta', 'new_d', 'matrix_calls',
                                          'shape_recoveries', 'tracking_calls', 'interpolation', 'solver_changes'))
     from PIL import Image
-    with Image.open(tmp_path/'figure04_eb_rlb_shapes.png') as image:
+    with Image.open(tmp_path/'figure04_eb_rlb_shapes_revised.png') as image:
         assert image.size == (3000, 2160) and abs(image.info['dpi'][0]-300) < .1
-    pdf = (tmp_path/'figure04_eb_rlb_shapes.pdf').read_bytes()
+    pdf = (tmp_path/'figure04_eb_rlb_shapes_revised.pdf').read_bytes()
     assert pdf.startswith(b'%PDF-') and b'/Subtype /Image' not in pdf
 
 
