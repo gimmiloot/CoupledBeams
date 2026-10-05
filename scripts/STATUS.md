@@ -20,6 +20,16 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
+## Completed single-rod kinematic audit
+
+[`analysis/audit_timoshenko_bishop_single_rod.py`](analysis/audit_timoshenko_bishop_single_rod.py)
+is a completed finite diagnostic with status
+`COMBINED_KINEMATICS_NOT_UNIQUELY_DEFINED`. Exact cross-term and negative
+controls pass; the literal combined field fails the unchanged Timoshenko
+self-term limit. See the [energy audit](../docs/theory/timoshenko_bishop_single_rod.md).
+Use `--compute` for algebra only. No combined spectral solver was implemented;
+the Bishop literature and rectangular Timoshenko helpers remain unchanged.
+
 ## Completed longitudinal literature workflow
 
 The isolated longitudinal literature workflow

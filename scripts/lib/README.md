@@ -15,6 +15,11 @@ Project-wide branch identity and diagnostic-tracking rules are summarized in
   defines signs, scope and qualifications. It does not import or alter the
   baseline bending/joint solver and has no runnable per-case scripts.
 
+  The separate [single-rod kinematic audit](../../docs/theory/timoshenko_bishop_single_rod.md)
+  reads this module and `isotropic_rectangular_timoshenko_coupled_beams.py`
+  only as reference limits. It adds no combined helper/API: candidate fields
+  have zero centered cross terms but incompatible raw bending self terms.
+
 - `analytic_branch_tracking.py` is the source-of-truth helper for analytic branch identity. It tracks branches in memory from `beta = 0`, `mu = 0` for each `epsilon`, separates stable `branch_id` from `current_sorted_index`, and treats low-MAC assignments as non-canonical unless a diagnostic caller explicitly allows them.
 - `analytic_coupled_rods_shapes.py` provides determinant-nullspace reconstruction, endpoint diagnostics, normalization, and analytic arm-energy utilities used by analytic shape and tracking diagnostics.
 - `in_plane_shape_geometry.py` is the shared display-only geometry helper for

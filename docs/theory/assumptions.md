@@ -7,6 +7,26 @@ diagnostic workflow, and model-extension checks, see `../project_rules.md`.
 
 ## Working Notes
 
+## Isolated single-rod Timoshenko--Bishop kinematic audit
+
+- The [single-rod audit](timoshenko_bishop_single_rod.md) is restricted to
+  a straight, unstressed, homogeneous isotropic centered rectangle, linear
+  motion and one bending plane. Local legacy signs are Ux=u-z*psi,
+  Q=kappa*G*A*(w'-psi); b is along y, h along z, I_y=b*h^3/12.
+- Centroid-only Poisson contraction and a full-strain compatible transverse
+  distortion are candidate fields, not accepted combined models. Exact
+  axial--bending cross terms vanish for both centered fields, but the raw
+  first field gives C11*I_y and G*A instead of E*I_y and kappa*G*A; the
+  second adds bending gradient energy/inertia. A relaxed hybrid preserving
+  the original self terms additionally needs an explicit reduction and a
+  reflection-preserving shear closure. Neither is silently adopted.
+- Scientific status: COMBINED_KINEMATICS_NOT_UNIQUELY_DEFINED. This finite
+  audit stops before combined spectra, hierarchy acceptance or boundary
+  selection. It does not establish physical linear coupling, select angular
+  joint conditions, alter the circular literature controls, or replace the
+  frozen equations/API. The Lamé coefficient lambda_L and J_B,H_B are local
+  notation only; no project-wide renaming is implied.
+
 ## Isolated longitudinal Rayleigh–Bishop literature diagnostics
 
 - The [literature reproduction](bishop_literature_reproduction.md) uses linear,

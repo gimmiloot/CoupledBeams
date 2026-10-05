@@ -4,6 +4,29 @@
 
 ## 2026-10-05
 
+- Выполнен [аудит общей кинематики Тимошенко—Бишопа одного прямоугольного
+  стержня](../theory/timoshenko_bishop_single_rod.md). Начальный checkout
+  чистый, main, HEAD a15e3af0e2ccc271a48df484e5d9865dc1cf4596.
+  Знаки и оси восстановлены по текущему rectangular helper и его theory
+  note; Marais и Banerjee проверены по локальным PDF. Yucel остаётся
+  отсутствующим локальным текстом, новых источников не искали.
+- Из двух displacement fields выведены деформации, все смешанные члены,
+  точные моменты и вариационный оператор минимального поля. При центре
+  cross coefficients равны нулю; смещённая ось даёт ненулевые члены.
+  Но полный закон Гука для centroid-only contraction возвращает
+  C11*I_y и G*A вместо E*I_y и kappa*G*A. Полная Poisson contraction
+  добавляет изгибную градиентную инерцию и энергию. Итог
+  COMBINED_KINEMATICS_NOT_UNIQUELY_DEFINED: гибридное замыкание не выбрано,
+  combined spectrum/иерархия A/B/C остановлены на hard gate.
+- Добавлены один algebra-only CLI, один файл тестов и канонический отчёт;
+  README/CHANGELOG и навигация обновлены. SymPy/Lean недоступны, использованы
+  ручной общий вывод и точная Fraction-алгебра без установки зависимостей.
+  Исходные Bishop/Timoshenko helpers, литературные fixtures/benchmarks,
+  equations.tex, source index/bibliography и scoped memory не менялись.
+  Два стержня, угловой узел, нелинейные уравнения и FEM не выполнялись.
+- Проверки нового этапа: 48 targeted tests пройдены (24 новых и 24
+  неизменённых литературных), 4.37 s; `git diff --check` без ошибок.
+
 - Выполнен отдельный узкий [литературный этап Рэлея—Бишопа](../theory/bishop_literature_reproduction.md):
   один диагностический модуль/CLI, транскрипция локальных PDF с SHA256,
   fixtures и целевые тесты. C, F и U=P=0 разделены; пониженные модели H=0,

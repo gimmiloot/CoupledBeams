@@ -10,6 +10,10 @@ CoupledBeams is a research repository for frequency models and computations for 
 - [Longitudinal Rayleigh–Bishop literature checks](docs/theory/bishop_literature_reproduction.md)
   -- fixed circular Marais/Popov controls, source precision, reproducible CLI
   and separate numerical/print-match statuses; no angled-joint extension.
+- [Single-rod Timoshenko--Bishop kinematic audit](docs/theory/timoshenko_bishop_single_rod.md)
+  -- exact mixed-energy checks and an unresolved combined-kinematics gate;
+  reproduce with `python scripts/analysis/audit_timoshenko_bishop_single_rod.py --compute`.
+  This command performs algebra, not a combined spectrum calculation.
 - [Scoped research memory](docs/memory/README.md) -- RLB-2I/RLB-2J and the EB/RLB rotational-spring theory stage, sources, and decisions.
 - [Archive policy](docs/archive_policy.md) -- preservation and soft/hard archive rules.
 - [Refactoring status](docs/refactoring/README.md) -- verified inventory and staged refactoring status.

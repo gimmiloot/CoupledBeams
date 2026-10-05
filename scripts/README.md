@@ -22,6 +22,28 @@ root-calculation path.
 For active, completed, historical, superseded, and compatibility workflow
 status, see [Script and Workflow Status](STATUS.md).
 
+## Single-rod Timoshenko--Bishop kinematic audit
+
+`analysis/audit_timoshenko_bishop_single_rod.py` differentiates two candidate
+displacement fields and integrates their 3D energy Hessians exactly with
+standard-library rational arithmetic. It reuses the existing rectangular
+section and Bishop Segment for coefficient checks. This is a new kinematic
+compatibility contract, not a preset of a spectral solver or a combined solver.
+See the [canonical note](../docs/theory/timoshenko_bishop_single_rod.md).
+
+```powershell
+python scripts/analysis/audit_timoshenko_bishop_single_rod.py --compute
+python -m pytest tests/test_timoshenko_bishop_single_rod.py tests/test_bishop_literature.py -q
+```
+
+`--compute` performs algebra only. Optional `--output-dir` defaults to
+`results/timoshenko_bishop_single_rod/`; the report/manifest are content-addressed
+and always recomputed, without cache reads. Uses the existing NumPy/SciPy
+environment; no SymPy installation is required. The scientific status is
+`COMBINED_KINEMATICS_NOT_UNIQUELY_DEFINED`: exact centered cross zeros do not
+repair the pure-bending self-term mismatch. Combined spectra and joint
+conditions are outside the completed audit.
+
 ## Longitudinal Rayleigh–Bishop literature reproduction
 
 `analysis/reproduce_bishop_literature.py` is a diagnostic-only entry point

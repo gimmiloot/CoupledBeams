@@ -2,6 +2,15 @@
 
 ## 2026-10-05
 
+- Added a finite single-rectangle Timoshenko--Bishop kinematic audit, one exact
+  rational CLI and targeted tests. Derived all candidate cross terms before
+  section integration and checked a shifted-axis negative control. Recorded
+  `COMBINED_KINEMATICS_NOT_UNIQUELY_DEFINED`: centered cross terms vanish,
+  but raw centroid contraction gives C11*I_y/G*A and full Poisson contraction
+  adds bending gradient inertia/energy. No hybrid closure, combined spectra
+  or joint conditions selected; existing helpers and literature benchmarks
+  preserved. Updated the canonical note, assumptions and workflow navigation.
+
 - Added the isolated circular longitudinal Rayleigh–Bishop literature
   reproduction: one kernel/CLI, audited source fixtures, targeted tests,
   bounded searches, modal energy/orthogonality and independent 50/70 dps
