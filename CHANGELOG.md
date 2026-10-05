@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 2026-10-05
+
+- Added the isolated circular longitudinal Rayleigh–Bishop literature
+  reproduction: one kernel/CLI, audited source fixtures, targeted tests,
+  bounded searches, modal energy/orthogonality and independent 50/70 dps
+  state-exponential checks. Documented Marais (23)/(24) reconstructions,
+  1/5 published print match, Popov rounded-table nu=.336842781730, distinct
+  C/F/UP boundaries and source figure/reference qualifications. Updated
+  assumptions, literature/research/results/script navigation and README;
+  retained baseline formulas/APIs, PDFs, prior user edits and scoped memory.
+
+- Registered 11 user-supplied literature PDFs (ten articles and one book
+  chapter), verified metadata and versions, and synchronized bibliography
+  and source index with SHA-256 hashes. Added two thematic reading notes,
+  journal and research navigation; recorded 12 expected texts not found
+  locally. Preserved PDF names/bytes and existing research statuses; no
+  scientific calculations, model changes or memory D/K entries.
+
 ## 2026-10-01
 
 - Added eight user-supplied literature PDFs under canonical filenames;

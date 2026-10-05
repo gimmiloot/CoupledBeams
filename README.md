@@ -7,6 +7,9 @@ CoupledBeams is a research repository for frequency models and computations for 
 - [Research index](docs/research_index.md) -- research directions, canonical documentation,
   and current scientific status.
 - [Generated results index](docs/results_index.md) -- workflow map for ignored/generated results.
+- [Longitudinal Rayleigh–Bishop literature checks](docs/theory/bishop_literature_reproduction.md)
+  -- fixed circular Marais/Popov controls, source precision, reproducible CLI
+  and separate numerical/print-match statuses; no angled-joint extension.
 - [Scoped research memory](docs/memory/README.md) -- RLB-2I/RLB-2J and the EB/RLB rotational-spring theory stage, sources, and decisions.
 - [Archive policy](docs/archive_policy.md) -- preservation and soft/hard archive rules.
 - [Refactoring status](docs/refactoring/README.md) -- verified inventory and staged refactoring status.

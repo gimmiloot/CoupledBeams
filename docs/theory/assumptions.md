@@ -7,6 +7,26 @@ diagnostic workflow, and model-extension checks, see `../project_rules.md`.
 
 ## Working Notes
 
+## Isolated longitudinal Rayleigh–Bishop literature diagnostics
+
+- The [literature reproduction](bishop_literature_reproduction.md) uses linear,
+  local, isotropic circular rods only, with the exact Marais two-section and
+  Popov–Sadovsky uniform-rod geometry. No angled-joint conditions, rectangular
+  section, bending coupling, damping, FEM or nonlinear extension is implied.
+- Local coefficients are m=rho*A, J=nu²*rho*Ip, H=nu²*G*Ip; Ip is the polar
+  area moment. Source Marais eta=nu, mu=G and lambda=omega² are not project
+  geometric eta/mu or Lambda. N=-Gamma' y; state order (U,U',N,P).
+  C (U=U'=0), F (N=P=0), and UP (U=P=0) are distinct physical boundaries.
+  H=0 is a separate second-order problem, with only U=0 or N=0 per end.
+- Marais's thick/short circular sections are retained to reproduce its rod
+  theory, without a 3D accuracy claim. In Popov, division by rho*A permits
+  using c,nu,d alone; no E/rho values are invented. The same printed c is
+  used for all models. c and fitted nu are experiment-derived, and the 30
+  rounded ratios do not recover raw experimental precision.
+- The homogeneous sin(n*pi*x/L) limit is checked against the boundary matrix;
+  the elementary H=J=0 limit agrees with the longitudinal cos/sin block of
+  equations.tex and analytic/formulas.py. Existing baseline formulas are frozen.
+
 ## Literature-only KV benchmarks
 
 - Failla 2014 example 6.1 and Hong–Kim 1999 example 1 use their own straight-beam

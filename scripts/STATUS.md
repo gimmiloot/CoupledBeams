@@ -20,6 +20,16 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
+## Completed longitudinal literature workflow
+
+The isolated longitudinal literature workflow
+[`analysis/reproduce_bishop_literature.py`](analysis/reproduce_bishop_literature.py)
+is `completed` as a finite study and remains diagnostic-only. The
+[report](../docs/theory/bishop_literature_reproduction.md) separates numerical
+PASS from Marais 1/5 print match and Popov rounded-table/figure qualifications.
+Use `--check-sources`, `--compute`, `--plot-only`, or `--high-precision`;
+it is not a new baseline or an angled Bishop extension.
+
 ## Preferred stable entry points
 
 The table groups related commands; it is not a duplicate list of every Python

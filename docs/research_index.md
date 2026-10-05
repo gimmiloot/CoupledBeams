@@ -4,6 +4,23 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
+## Literature preparation (2026-10-05)
+
+- [Longitudinal rod models and published control problems](literature/longitudinal_rod_models_sources.md):
+  six local sources registered. The subsequent narrow Rayleigh–Bishop
+  [literature reproduction](theory/bishop_literature_reproduction.md) is
+  `completed` with separate numerical/source-print statuses: internal checks
+  pass, only one of five Marais frequencies matches print precision, and the
+  rounded Popov table gives nu=.336842781730. Conditions for the project's
+  angular joint remain unchosen.
+- [Nonlinear in-plane and out-of-plane motions](literature/nonlinear_inplane_outofplane_sources.md):
+  five local sources registered. Derivation of the project's nonlinear
+  equations is deferred pending discussion with the supervisor.
+
+The initial registration was a reading/preparation task; the subsequent
+longitudinal reproduction is separately documented above. Existing EB/RLB,
+damping, anisotropic-rod and other research statuses below are unchanged.
+
 ## Status vocabulary
 
 - `stable-baseline`: verified foundation used by current workflows.
@@ -26,6 +43,7 @@ local article workspaces may be absent from a fresh clone.
 
 | Research direction | Status | Main question | Canonical documentation | Main implementation | Current conclusion |
 | --- | --- | --- | --- | --- | --- |
+| Local longitudinal Rayleigh–Bishop literature controls | `completed` finite study; diagnostic-only | Reproduce Marais section 4 and Popov–Sadovsky (5),(6),(9)–(15) | [canonical report](theory/bishop_literature_reproduction.md) | [bounded CLI](../scripts/analysis/reproduce_bishop_literature.py), [module](../scripts/lib/bishop_longitudinal.py) | Source audit, energy/orthogonality, independent 50/70 dps pass. Marais print match 1/5; Popov rounded-table ranking Rayleigh–Love/Bishop/wave, with figure/reference qualifications. No angular joint or rectangular-system conclusions. |
 | Representative complex EB/RLB damping confirmation | `completed`; `PAUSED_FOR_SUPERVISOR_DIRECTION` | Does elastic G-ratio predict actual weak-damping zeta-ratio? | [D22/K23 technical report](laminated_beams/inplane_kelvin_voigt_eb_rlb_complex_confirmation.md); [supervisor synthesis](laminated_beams/inplane_kelvin_voigt_research_status_for_supervisor.md) | [fixed six-target orchestration](../scripts/analysis/laminated_beams/confirm_inplane_kelvin_voigt_eb_rlb.py) | Six new roots at d=.001, four reused states; five ratios agree within .001904%. R3 contrast and positive R4 correction confirmed. Further direction awaits discussion. |
 | Sparse elastic RLB damping participation vs EB | `completed` — `SCREENING_AND_COMPARISON_COMPLETED` | Compare changes of frequency and rotational damping predictor at four fixed angles | [D21/K22 screening](laminated_beams/inplane_kelvin_voigt_rlb_elastic_screening.md) | [bounded reduced screening/comparison](../scripts/analysis/laminated_beams/screen_inplane_kelvin_voigt_rlb_elastic.py) | 24 RLB states, 24 same-angle form matches to K15. At 75 degrees, pair 05 changes Omega by −2.075% and G by −74.49%; 12 exact inactive states. No new positive-d roots or cross-beta tracking. |
 | RLB rotational KV production routing | `completed` technical validation — `RLB_KV_PRODUCTION_PASS` | Extend the existing reduced/full dispatcher without starting a new physical study | [D20/K21 architecture](laminated_beams/inplane_kelvin_voigt_rlb_solver_architecture.md) | [shared dispatcher](../scripts/lib/inplane_kelvin_voigt_solver.py) | K12 RLB active/inactive controls, full/reduced equivalence, exact invS=J=0 EB limit and one unequal-arm elastic K11 control pass. EB regressions preserved; no sparse RLB screening or asymmetric viscous roots. |

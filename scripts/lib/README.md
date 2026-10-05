@@ -5,6 +5,16 @@ This directory contains reusable helper modules that are not meant to be run dir
 Project-wide branch identity and diagnostic-tracking rules are summarized in
 `../../docs/project_rules.md`.
 
+- `bishop_longitudinal.py` is the isolated diagnostic longitudinal kernel:
+  bounded analytic exponential/trigonometric bases, C/F/UP boundary and
+  coaxial-interface assembly, separate H=0 equations, finite root search,
+  mass/energy/ODE checks, Popov (13), and addressed high-precision Marais
+  state-exponential verification. Source fixtures live in
+  `data/input/bishop_literature_sources.json`; the
+  [canonical report](../../docs/theory/bishop_literature_reproduction.md)
+  defines signs, scope and qualifications. It does not import or alter the
+  baseline bending/joint solver and has no runnable per-case scripts.
+
 - `analytic_branch_tracking.py` is the source-of-truth helper for analytic branch identity. It tracks branches in memory from `beta = 0`, `mu = 0` for each `epsilon`, separates stable `branch_id` from `current_sorted_index`, and treats low-MAC assignments as non-canonical unless a diagnostic caller explicitly allows them.
 - `analytic_coupled_rods_shapes.py` provides determinant-nullspace reconstruction, endpoint diagnostics, normalization, and analytic arm-energy utilities used by analytic shape and tracking diagnostics.
 - `in_plane_shape_geometry.py` is the shared display-only geometry helper for

@@ -22,6 +22,31 @@ root-calculation path.
 For active, completed, historical, superseded, and compatibility workflow
 status, see [Script and Workflow Status](STATUS.md).
 
+## Longitudinal Rayleigh–Bishop literature reproduction
+
+`analysis/reproduce_bishop_literature.py` is a diagnostic-only entry point
+for the fixed circular Marais and Popov–Sadovsky rods, with separate
+`uniform`, `marais`, `popov`, or `all` cases. See the
+[source transcription and scientific report](../docs/theory/bishop_literature_reproduction.md).
+This new fourth-order longitudinal/source-data workflow is not a preset of
+the existing angled bending solvers; it reuses `lib/bishop_longitudinal.py`.
+
+```powershell
+python scripts/analysis/reproduce_bishop_literature.py --check-sources
+python scripts/analysis/reproduce_bishop_literature.py --compute --case all
+python scripts/analysis/reproduce_bishop_literature.py --high-precision --case marais
+python scripts/analysis/reproduce_bishop_literature.py --plot-only --case all
+python -m pytest tests/test_bishop_literature.py -q
+```
+
+Requires NumPy, SciPy, Matplotlib and mpmath; tested interpreter and versions
+are in the report. Outputs: `results/bishop_literature/<fingerprint>/<case>/`,
+with `current.json` navigation; `--output-dir` changes the root. Matching
+inputs/code/versions/provenance and artifact hashes are required for reuse.
+Plot-only performs no root work; high precision only checks five saved Marais
+roots. Numerical PASS does not imply published-print match. No parameter
+maps, branch tracking, new materials or angled-joint conditions are included.
+
 ## Branch identity and current sorted index
 
 Analytic branch identity is defined at the base point `beta = 0`, `mu = 0` for each `epsilon` independently. A `branch_id` such as `bending_desc_05` means "the branch seeded by base sorted index 5"; it does not mean "whatever root is currently fifth."
