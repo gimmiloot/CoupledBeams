@@ -1,58 +1,61 @@
 # Текущий контекст
 
-## 1. Состояние и остановка
+## Circular EB reviewer diagnostic — завершён, 2026-10-05
 
-**PAUSED_FOR_SUPERVISOR_DIRECTION**, 2026-09-27.
-Подготовка рисунков по новому запросу завершена:
-[D23/K24 — Figure 3](../laminated_beams/figure03_crossing_veering.md),
-EB crossing/veering K11 и формы, полностью из сохранённых данных.
-[D24/K25 — Figure 4](../laminated_beams/figure04_eb_rlb_shapes.md):
-упругие EB/RLB05 при 45°/75°, без расчётов. Текущий revised-кандидат:
-прежние осевые линии и столбцы |Delta_psi| на общей шкале; v1 с psi сохранена.
-[Figure 5](../laminated_beams/figure05_damping_envelopes.md), 2026-09-28:
-огибающие A/A0 по числу собственных периодов N, K23 R2/R3 (45°/05 и 75°/05)
-при d=.001. PNG/PDF/CSV — в results/laminated_beams/figure05_damping_envelopes/.
-Столбчатая версия сохранена как история; новых корней, форм и D/K-записи нет.
-Следующее физическое исследование по-прежнему не выбрано.
+[D25](decisions.md#rlb-d25) / [K26](knowledge.md#rlb-k26):
+[единая научная заметка](../laminated_beams/circular_eb_rotational_spring_rigid_limit.md).
+Одна геометрия круглых изотропных EB-стержней: mu=.30, beta=15°,
+r=.005 м, l=1 м. Это отдельное продолжение темы поворотного узла,
+без переноса результата на RLB, анизотропию, Bishop или вязкость.
 
-[D22](decisions.md#rlb-d22) / [K23](knowledge.md#rlb-k23): заключительное
-адресное complex-сравнение завершено. Шесть новых корней при d=.001,
-четыре read-only состояния; все пять EB/RLB-пар подтверждают упругий
-прогноз отношения zeta с расхождением не более .001904%.
+Exact RIGID согласован с baseline для первых шести корней и guard 7
+(max|Delta Lambda|=3.016e-10). Generic solver разрешил событие около
+204.287 Гц как один простой корень позиции 5. Sorted spectrum растёт
+1→10→100→RIGID, отличие от RIGID уменьшается для всех шести позиций.
 
-Завершены EB/RLB KV production, трёхмодовый EB weak-damping опыт,
-RLB elastic screening и representative complex confirmation.
-RLB может сильнее менять затухание, чем частоту; знак поправки зависит
-от моды. Новых численных блокеров в выбранном наборе нет.
-Исторические qualifications сохранены и не снимаются общим статусом.
+28 основных форм восстановлены с M=1. Ограниченное продолжение по
+kappa подтвердило все шесть локальных seeds до RIGID:
+1→3.162278→5.623413→10→17.782794→31.622777→100→RIGID.
+Min accepted MAC=.968142, margin=.936732; пороги неизменны,
+endpoint conflicts и смены sorted position отсутствуют.
 
-## 2. Основания и материалы для обсуждения
+## Сохранённые qualifications
 
-- [Сводка для руководителя](../laminated_beams/inplane_kelvin_voigt_research_status_for_supervisor.md) — постановка, научный итог, ограничения, пять неранжированных направлений и вопросы.
-- [K23: технический отчёт и данные](../laminated_beams/inplane_kelvin_voigt_eb_rlb_complex_confirmation.md) — выбранные пары, отношения G/zeta, невязки, provenance и команды.
-- [K22](knowledge.md#rlb-k22) — 24 упругие RLB-моды и matching с EB K15.
-- [K18](knowledge.md#rlb-k18) / [K21](knowledge.md#rlb-k21) — одинаковые плечи: reduced eta±; неодинаковые: full 6×6.
-- [K19](knowledge.md#rlb-k19) / [K20](knowledge.md#rlb-k20) — EB weak damping и общий локальный вывод о чётности по вязкости.
-- [K12](knowledge.md#rlb-k12) / [K14](knowledge.md#rlb-k14) — внутренние и внешние проверки в их исходных границах.
+- Полная 12-root эквивалентность не установлена: отдельная численная
+  SVD-nullity classification на позициях 11–12 около Lambda=18.139529.
+- Direct 1→10 для 02/03/05/06 остаётся UNRESOLVED. Успешное
+  continuation — отдельный результат, а не переименование direct.
+- |Delta psi| и s уменьшаются вдоль проверенного пути у 5/6.
+  Seed 06 от 1 до 10 сначала увеличивает их на 2.95634% и 4.53756%.
+  В exact RIGID относительный поворот проходит physical gate; s не задана.
+- Старые [EB-JOINT-K01](knowledge.md#eb-joint-k01) /
+  [K02](knowledge.md#eb-joint-k02) сохраняют остановки прежнего workflow,
+  без доказательства физической кратности.
+- Локальные raw results игнорируются Git; смысл и ограничения сохраняет
+  научная заметка. Ни реальный k_theta, ни C, ни finite-r/l ошибка не найдены.
 
-## 3. Открытое решение
+## Где остановились и следующий вопрос
 
-Следующее научное направление выбирается пользователем после обсуждения
-с руководителем. Варианты в сводке — предложения, не разрешённая
-программа. Ни near-zero поиск, ни асимметрия, ни FRF автоматически
-не начинаются. Дополнительная complex-проверка текущего вывода не нужна.
+1D spring/RIGID reviewer diagnostic завершён. Следующий выбранный вопрос —
+теоретическое обоснование transmission/equilibrium conditions и границ
+thin-joint asymptotics. В заметке отдельно записаны литературные
+асимптотические условия, баланс на области узла, условный compact-joint
+scaling и конечный 1D численный результат.
 
-## 4. Действующие границы
+Локальная FEM-калибровка реального узла отложена пользователем.
+Новые корни, kappa, геометрии, r/l sweep и исправление high-spectrum
+classification автоматически не разрешены. Текущий этап — документационная
+синхронизация без расчётов или изменения моделей.
 
-Не запускать новые d/beta, d=.005 для новых пар, crossing/veering,
-asymmetric positive-d, strong damping, FRF, FEM, оптимизацию или
-precision refinement без отдельного решения. Источники K12–K22 и
-solver сохранены. Повтор завершённого сценария — missing-only с нулём
-root/matrix/form calls.
+## Независимый статус EB/RLB Kelvin–Voigt
 
-## 5. Среда
-
-D:/python/Pycharm/pythonProject/.venv/Scripts/python.exe,
-Python 3.12.4, NumPy 2.1.3, SciPy 1.15.2, pytest 8.3.4.
-27 целевых тестов K23 и по 6 проверок Figure 3/4 пройдены; полный pytest не запускался.
-Исходный HEAD, рабочее дерево, хеши и затраты — в отчёте/manifest K23.
+Пауза `PAUSED_FOR_SUPERVISOR_DIRECTION` от 2026-09-27 относится к этой
+отдельной линии и сохраняется: [D22/K23](../laminated_beams/inplane_kelvin_voigt_eb_rlb_complex_confirmation.md),
+[сводка для руководителя](../laminated_beams/inplane_kelvin_voigt_research_status_for_supervisor.md).
+Заключительное сравнение пяти EB/RLB-пар подтверждает прогноз отношения
+затуханий в своих исходных границах; новых расчётов по нему не требуется.
+Подготовлены [Figure 3](../laminated_beams/figure03_crossing_veering.md),
+[Figure 4 revised с сохранённой v1](../laminated_beams/figure04_eb_rlb_shapes.md),
+[Figure 5 — огибающие](../laminated_beams/figure05_damping_envelopes.md);
+[прежняя столбчатая версия](../laminated_beams/figure05_frequency_damping_comparison.md)
+остаётся историей. Новая физическая программа KV не выбрана.

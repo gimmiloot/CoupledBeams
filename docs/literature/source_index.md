@@ -21,6 +21,221 @@ coefficient и circular rods:
 Попова–Садовского](../theory/bishop_literature_reproduction.md).
 Статусы транскрипции, численной проверки и совпадения печати разделены.
 
+Следующая регистрация 2026-10-05: три новых PDF (Rucka, Jang–Park–Lee,
+Liu et al. 2021) и дополнительное чтение ранее зарегистрированного
+Banerjee–Ananthapuvirajah. [M-H + Timoshenko: сравнительная карта,
+constitutive reductions и ограничения](mindlin_herrmann_timoshenko_sources.md).
+Это документационный этап, без расчётов и реализации. Полные тексты
+Mindlin–Herrmann и Martin–Gopalakrishnan–Doyle локально не найдены;
+их статус — cited / full text unavailable, без новых BibTeX-записей.
+
+## Junction sources, 2026-10-05
+
+Семь локальных публикаций ниже зарегистрированы при документационном
+аудите [circular EB joint review](../laminated_beams/circular_eb_rotational_spring_rigid_limit.md).
+Метаданные — `VERIFIED_LOCAL_PDF`, без web-поиска; имена файлов сохранены.
+Прочитаны только указанные места. Доказательства независимо не проверялись,
+численные результаты источников не воспроизводились. Это чтение обосновывает
+разграничение asymptotic junction conditions и конечной 1D-диагностики,
+не валидацию наших шести уравнений при конечной толщине.
+
+### `leugering_2019_junction_two_elastic_beams`
+
+- [PDF](pdf/The_asymptotic_analysis_of_a_junction_of_two_elast.pdf), издательская статья;
+  SHA256 `52b6440bff9380150a0846d4c18df10f39f0b58d307f8bbd3c76fe6f71aec163`.
+- G. Leugering, S. A. Nazarov, A. S. Slutskij, *The asymptotic analysis of a
+  junction of two elastic beams*. ZAMM 99 (2019), e201700192;
+  DOI `10.1002/zamm.201700192`. Год выпуска 2019 подтверждён первой
+  страницей и How to cite; copyright/accepted 2018 не заменяет его.
+- Прочитано: PDF pp. 1–4, §1.1–1.2, (1.4),(1.7); текст §2.4
+  около (2.28),(2.33). Плоская статическая задача, тонкие балки,
+  непрерывность вращения и Kirchhoff-type transmission conditions.
+  Подвижность элементов и внешнее закрепление существенны; возможны
+  алгебраические неизвестные и нелокальные условия. Это не самостоятельное
+  доказательство нашего круглого 3D-спектра или finite-thickness точности.
+
+### `kerdid_2026_multi_rod_modes`
+
+- [PDF](pdf/art_01.pdf), издательская статья;
+  SHA256 `cd5e2f6a2661e3edf318e72c4ef7fd1dcfe929a3658d5850f95b49255aed57e2`.
+- Nabil Kerdid, Mohammed Messaoudi, *Asymptotic analysis of flexural,
+  torsional, and stretching modes in a multi-rod structure*.
+  Journal of Applied Mathematics and Computational Mechanics 25(2) (2026),
+  5–27; DOI `10.17512/jamcm.2026.2.01`. Метаданные — первая страница.
+- Прочитано: pp. 5–6 (§1), p. 12 (Lemma 2, (32)–(33), Remark 1),
+  p. 26 (§5). Пространственная линейная упругость, два перпендикулярных
+  тонких стержня с закреплением обоих внешних концов. Низшие предельные
+  формы изгибные; условия (33) сохраняют перпендикулярность проекций осей.
+  Это source-specific thin-domain limit, не наша круглая геометрия beta=15°
+  и не универсальное описание всех высокочастотных мод.
+
+### `kerdid_1997_multi_rod_vibrations`
+
+- [PDF](pdf/M2AN_1997__31_7_891_0.pdf), оцифрованная журнальная статья с
+  обложкой NUMDAM; SHA256 `df7cb20ffec0d7263f4d19dfb11a443c1c6bbbc8b186fc1f7173fa4009a4ca19`.
+- N. Kerdid, *Modeling the vibrations of a multi-rod structure*.
+  M2AN — Modélisation mathématique et analyse numérique 31(7) (1997),
+  891–925. Метаданные — обложка и p. 891; DOI по памяти не добавлен.
+- Прочитано: обложка, начало §0, текст введения о предельных формах и
+  текст около Lemma 7 / (3.42). Сходимость eigenpairs 3D elasticity к
+  1D–1D модели, с различием изгибных и крутильных перемещений;
+  один внешний конец закреплён. Не отождествлять с двухзаделочной
+  постановкой Kerdid–Messaoudi 2026 или нашим конечным spring-узлом.
+
+### `nazarov_2016_l_shaped_junction`
+
+- [PDF](pdf/Asymptotic_Analysis_of_an_L-Shaped_Junction_of_Two.pdf),
+  издательская статья с добавленным листом условий использования;
+  SHA256 `98d95ca443f75b0241bd06d49f4833692fb835c87d142519b1ebe39f3f29a024`.
+- S. A. Nazarov, A. S. Slutskij, *Asymptotic Analysis of an L-Shaped
+  Junction of Two Elastic Beams*. Journal of Mathematical Sciences
+  216(2) (2016), 279–312; DOI `10.1007/s10958-016-2901-3`.
+  Метаданные — p. 279 и последняя страница статьи 312.
+- Прочитано: pp. 279–280, abstract и §1.1–1.2. Две плоские тонкие
+  балки под прямым углом; передаточные условия зависят от внешних
+  закреплений, узловой пограничный слой участвует в выводе.
+  Не выдавать этот источник за общий finite-thickness спектральный тест.
+
+### `nazarov_2002_plane_anisotropic_beams`
+
+- [PDF](pdf/tm295.pdf), русский журнальный текст;
+  SHA256 `6de01a4b55f116260b472927da64187255ee8f6807cad78b843fcb5ddf2eb0d1`.
+- С. А. Назаров, А. С. Слуцкий, *Произвольные плоские системы
+  анизотропных балок*. Труды Математического института им. В. А. Стеклова
+  236 (2002), 234–261; метаданные — первая страница.
+- Прочитано: pp. 234–235, abstract и §1.1–1.2. Классификация
+  закреплённых, малоподвижных и подвижных элементов; при подвижных
+  балках возникают алгебраические уравнения и нелокальные условия.
+  Это отдельная публикация, не отсутствующий текст *Asymptotics of Natural
+  Oscillations of Elastic Junctions with Readily Movable Elements*.
+
+### `kolpakov_2014_joined_elastic_beams`
+
+- [PDF](pdf/2014ZAMMAndrianov.pdf), издательская статья;
+  SHA256 `3d5e753668e326d6b4e7c80f45d982c79f92929079694deb6765abb2a87fda23`.
+- Alexander G. Kolpakov, Igor V. Andrianov, *Asymptotic decomposition
+  in the problem of joined elastic beams*. ZAMM 94(10) (2014), 818–836;
+  DOI `10.1002/zamm.201200278`. Метаданные — p. 818;
+  published online 2013-06-17 отличается от года выпуска 2014.
+- Прочитано: pp. 818–819, abstract, Introduction и начало §1.
+  «Normal type» ограничен узлами размера порядка диаметра балок и
+  упругих свойств того же порядка; мягкие слои и глубокие выточки отделены.
+  Асимптотическое разделение глобальной 1D и локальной 3D задач не
+  означает отсутствия локальных напряжений или универсальной точности
+  point joint. Коэффициент k_theta для нашего углового узла не вычислен.
+
+### `dockerty_1981_jointed_beam_stress`
+
+- [PDF](pdf/0020-74032990052-7.pdf), скан журнальной статьи;
+  SHA256 `b40caede3f453567875fc8d9f36590a3b55673fc9e571c511a7a11f05dbafe1a`.
+- G. J. Dockerty, C. M. Leech, *Stress propagation through jointed beam
+  systems using finite element theory*. International Journal of Mechanical
+  Sciences 23(8) (1981), 457–471. Метаданные — p. 457;
+  DOI не выводился из непрозрачного имени файла.
+- Прочитано: pp. 457–458 и Conclusions на p. 471. Timoshenko/FEM
+  с тремя моделями узла (rigid block, filament, flexible) и экспериментом;
+  отмечена неточность малых transmitted shear signals. Фоновый пример
+  зависимости результата от модели узла, не асимптотическое доказательство
+  `SPRING -> RIGID` и не разрешение FEM-этапа в проекте.
+
+## `rucka_2010_l_joint_guided_waves`
+
+- PDF: `docs/literature/pdf/j.jsv.2009.12.004.pdf`, 20 PDF-страниц (1760–1779); SHA256
+  `d15786c6aa2bf71731c63b16bf594739a626e6c45461e63689d90a36d472ce5f`.
+- Тип: журнальная статья, издательский PDF с финальными томом и страницами.
+- Метаданные: `VERIFIED_LOCAL_PDF_AND_PUBLISHER`, 2026-10-05. Magdalena Rucka;
+  *Experimental and numerical study on damage detection in an L-joint using guided wave propagation*;
+  Journal of Sound and Vibration 329(10) (2010), 1760–1779;
+  DOI `10.1016/j.jsv.2009.12.004`. Автор, название, том, страницы и
+  available online 2009-12-30 — PDF p. 1; выпуск 10 и дата выпуска
+  2010-05-10 уточнены у [издателя](https://doi.org/10.1016/j.jsv.2009.12.004).
+- Роль: прямой M-H-Tim frame precedent с экспериментом: straight rod,
+  затем steel L-joint, квадрат 6×6 mm, intact/notched specimens.
+- Прочитано: §2.1–2.3, pp. 1761–1764 (PDF 2–5); §3, p. 1764;
+  §4, pp. 1766–1768; §5, pp. 1768–1775; §6, pp. 1776–1778;
+  refs. [34],[35], p. 1779. PDF 3–5,7 сверены по изображениям.
+- Структура: independent contraction **ψ**, не латинская c; source φ —
+  Timoshenko rotation. Четыре поля (u,ψ,v,φ); D/E/μ блочные, (8)–(13).
+  Time-domain SEM, GLL quadrature; (26)–(28) преобразуют local в global
+  и собирают frame. §5.2 p. 1770 и §5.3 p. 1774: mode conversion
+  longitudinal→flexural и flexural→longitudinal соответственно.
+- **SOURCE-SPECIFIC / NOT A PROJECT DEFAULT:** §2.1–2.2, p. 1762,
+  K₁ᴹᴴ=1.1, K₂ᴹᴴ=2.1 — совместный least-squares fit axial wave velocities
+  при 100 и 120 kHz; K₁ᵀⁱᵐ=.95 — fit flexural velocities при тех же
+  частотах; K₂ᵀⁱᵐ=12K₁ᵀⁱᵐ/π² выбран по совпадению cutoff с Lamb modes,
+  не отдельный экспериментальный fit. §4 p. 1766 также подбирает damping
+  по амплитудам отражений. Это не independently calibrated low-frequency
+  validation и не значения для будущей модели CoupledBeams.
+- Ограничения: локальная блочность совместима с глобальной конверсией;
+  source frame assembly не выбирает наши условия углового узла.
+  Подробности и разграничение обозначений — в [тематической заметке](mindlin_herrmann_timoshenko_sources.md).
+
+## `jang_2014_timoshenko_composite_patch_guided_waves`
+
+- PDF: `docs/literature/pdf/j.compositesb.2013.12.050.pdf`, 13 PDF-страниц (248–260); SHA256
+  `8d945ae828f5a794090df67b968ca84901ff7e3441e6a2d5a4435c025b5c1929`.
+- Тип: журнальная статья, издательский PDF.
+- Метаданные: `VERIFIED_LOCAL_PDF_AND_PUBLISHER`, 2026-10-05. Injoon Jang,
+  Ilwook Park, Usik Lee; *Guided waves in a Timoshenko beam with a bonded composite patch:
+  Frequency domain spectral element modeling and analysis*;
+  Composites Part B: Engineering 60 (2014), 248–260;
+  DOI `10.1016/j.compositesb.2013.12.050`. Авторы, название, том, страницы,
+  available online 2014-01-03 — PDF p. 1. Полное имя журнала и том без
+  отдельного номера выпуска — [издатель](https://www.sciencedirect.com/science/article/abs/pii/S1359836813007804).
+- Прочитано: §2.1–2.2, pp. 249–250 (PDF 2–3); Appendix A, pp. 258–259
+  (PDF 11–12), (A1)–(A10); §5.1, pp. 254–255, Table 1, Figs. 6,8;
+  описание §5.2 p. 255; Conclusions p. 258. PDF 2,11,12 сверены визуально.
+- Роль: четыре поля isotropic base beam (1): u_b0, w_b0, θ_b (rotation),
+  ψ_b (independent lateral contraction); `u_b=u_b0−zθ_b`, `w_b=w_b0+zψ_b`.
+  По (A5)–(A7) strains и energy делятся на axial/M-H и bending/Timoshenko
+  contributions с **разными reduced constitutive relations**.
+- Appendix A: M-H обнуляет σ_yy, τ_xy, τ_yz; C₁₁*=E/(1−ν²),
+  C₁₃*=Eν/(1−ν²), C₅₅*=G. Timoshenko дополнительно обнуляет σ_zz;
+  Q₁₁*=E, Q₅₅*=G. κ_b включён в оба shear terms (5) и resultants
+  (A8)–(A9); его численный default в проверенном тексте не установлен.
+  Нельзя описывать это как применение единого полного 3D law без редукций.
+- **Source warnings:** (A3), p. 258: справа напечатано σ_xx^(b) вместо
+  ожидаемой strain ε_xx^(b), что несовместимо с размерностью Q₁₁*=E;
+  (A10), p. 259: напечатано `A_b=b∫ z dz=b h_b` при симметричных пределах,
+  лишний z несовместим с определением площади. В (A7) нет явного κ_b,
+  в (5),(A8),(A9) он есть. Печать подтверждена изображениями; PDF сохранён,
+  программные исправления не делались. [Точные записи и основания](mindlin_herrmann_timoshenko_sources.md#предупреждения-к-печати-appendix-a).
+- Validation: SEM сравнивается с собственным 1D FEM и ANSYS 2D plane-stress
+  на задачах metallic base + composite patch. Coupling шести полей после
+  constraints (3) не доказывает обязательную axial-bending coupling bare
+  isotropic symmetric beam. Это не validation нашей геометрии и не
+  отмена результата предыдущего Bishop audit.
+
+## `liu_2021_multibody_beams_rigid_bodies`
+
+- PDF: `docs/literature/pdf/Journal Paper 122-accepted version.pdf`, 37 PDF-страниц
+  (репозиторная обложка и accepted manuscript); SHA256
+  `bcf7aa91672df9407bd9d624053c296dcdad6f4e166658a8ed6abdf169efe7a6`.
+- Тип: журнальная статья; accepted manuscript с обложкой City Research Online.
+- Метаданные: `VERIFIED_LOCAL_PDF_AND_REPOSITORY`, 2026-10-05. Xiang Liu,
+  Chengli Sun, J. Ranjan Banerjee, Han-Cheng Dan, Le Chang;
+  *An Exact Dynamic Stiffness Method for Multibody Systems Consisting of Beams and Rigid-Bodies*;
+  Mechanical Systems and Signal Processing 150 (2021), article 107264;
+  DOI `10.1016/j.ymssp.2020.107264`. Имена и название — PDF p. 2,
+  финальный том/год/article number — обложка. [Репозиторий](https://openaccess.city.ac.uk/id/eprint/26468/)
+  отдельно указывает online 2020-09-16 и выпуск 2021-03-31; отдельный
+  номер issue не указан. Не смешивать с `liu_2022_longitudinal_dynamic_stiffness`.
+- Прочитано: title/abstract; §2.1 (PDF 8–9), описание §2.2–2.3 (PDF 9–16),
+  §3.1 representative validations (PDF 19–21), conclusion (PDF 25–26),
+  Appendix (PDF 26–30). Matrix (2) на PDF 9 сверена визуально.
+- Роль: general DS assembly beams + rigid bodies; local axial/bending
+  могут быть независимы, structural coupling возникает через coordinate
+  transformations, относительные положения и assembly.
+- Существенное разграничение: обзор §2.1 PDF 8 упоминает classical,
+  Rayleigh–Love, **Rayleigh–Bishop** и higher-order bending. Но demonstration
+  PDF 9, §3.1 PDF 21 и Appendix PDF 26–30 используют только axial
+  **classical/Rayleigh–Love** и bending **Euler–Bernoulli/Timoshenko**.
+  Статья не является прямой validation Bishop + Timoshenko или M-H.
+- Validation у авторов: conventional DSM, опубликованные результаты и
+  ANSYS FEM; здесь не воспроизводилась. Например k=1 в §3.1 — source
+  input, не проектный default. Accepted manuscript не принят как готовый
+  проверенный набор формул/API или условий нашего углового узла.
+
 ## `marais_2015_rayleigh_bishop_cylindrical_rod`
 
 - PDF: `docs/literature/pdf/s13370-014-0286-3.pdf`, 12 PDF-страниц; SHA256
@@ -124,6 +339,16 @@ coefficient и circular rods:
 - Прочитано: обложка, abstract, начало introduction, вводное описание трёх примеров и §4.1 на p. 19 рукописи.
 - Замечание по применимости: источник по Rayleigh–Love, не готовое обоснование дополнительных условий Bishop; условия нашего узла остаются невыбранными.
 - Метаданные: `VERIFIED_LOCAL_PDF_AND_CROSSREF`, 2026-10-05. J. R. Banerjee, A. Ananthapuvirajah; International Journal of Mechanical Sciences 150 (2019), 337–347; DOI `10.1016/j.ijmecsci.2018.10.012`. Финальные данные по обложке и Crossref; online 2018-10-10 по [City Research Online](https://openaccess.city.ac.uk/id/eprint/20916/). Журнальные и рукописные страницы различаются.
+- Дополнительное чтение для M-H/Timoshenko navigation, 2026-10-05:
+  конец §2, рукопись p. 5 (PDF 6); (1),(2), p. 6 (PDF 7);
+  (22)–(28), pp. 9–10 (PDF 10–11); §2.3 (65),(66), p. 15 (PDF 16);
+  §4.3, pp. 24–25 (PDF 25–26). Axial Rayleigh–Love и Timoshenko bending
+  явно приняты uncoupled, treated independently; отдельно полученные
+  DSM объединяются simple superposition в 6×6 plane-frame matrix.
+  Роль — **published precedent for modular assembly**, не источник M-H
+  equations. В frame example k=2/3 — заданный source parameter.
+  Citation key, PDF и результаты прежнего Bishop audit сохранены.
+  [Сравнение с M-H formulations](mindlin_herrmann_timoshenko_sources.md).
 
 ## `georgiades_2017_nonlinear_l_shaped_beams`
 

@@ -537,3 +537,30 @@ EB/RLB-формы пятой согласованной пары при ровн
 Новых roots/d/beta, matching, solver changes и физического исследования нет.
 Остановка — после рисунка и краткого пояснения.
 [K25 / Figure 4](../laminated_beams/figure04_eb_rlb_shapes.md).
+
+## RLB-D25
+
+**COMPLETED — bounded circular-EB reviewer diagnostic**, 2026-10-05.
+Одна сводная запись последовательных решений пользователя по проверке
+`SPRING -> RIGID`; номер продолжает журнал, но scope — отдельные круглые
+изотропные EB-стержни, не RLB/KV. Геометрия mu=.30, beta=15°, r=.005 м,
+l=1 м; исходные состояния kappa=1,10,100 и exact RIGID.
+
+**Решение / основание:** после остановок старого pilot использовать готовые
+baseline-параметры, spring kernel и публичный generic solver без изменений.
+Научная цель — шесть низших sorted eigenvalues плюс guard 7; штатный
+12-root поиск и его higher-spectrum qualifications сохраняются отдельно.
+После частотной проверки — физические формы с M=1 и mass-MAC descendants.
+Промежуточные kappa разрешены только по MAC-trigger в ограниченном
+log-continuation; MAC>=.95, margin>=.20, root/physical gates неизменны.
+Direct failures не переименовываются в успешные.
+
+**Границы / остановка:** одна геометрия, без FEM, калибровки реального узла,
+r/l sweep, нового solver или исправления high-spectrum nullity 11–12.
+Программа завершена; следующая выбранная тема — обоснование transmission /
+equilibrium conditions и границ thin-joint asymptotics. FEM-калибровка
+отложена пользователем; автоматическое продолжение расчётов не разрешено.
+Происхождение: последовательные задания пользователя и документационный
+аудит локального дерева 2026-10-05, HEAD `7ef59a5`, до commit/push.
+[Результат K26](knowledge.md#rlb-k26),
+[единая научная заметка](../laminated_beams/circular_eb_rotational_spring_rigid_limit.md).

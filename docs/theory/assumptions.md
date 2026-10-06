@@ -7,6 +7,32 @@ diagnostic workflow, and model-extension checks, see `../project_rules.md`.
 
 ## Working Notes
 
+## Isolated Mindlin--Herrmann / Timoshenko source audit
+
+- The [one-rectangle source audit](mindlin_herrmann_timoshenko_single_rod.md)
+  uses planar, homogeneous isotropic, unstressed linear source energies.
+  Local q=(u,c,w,theta); c is independent dimensionless contraction along z,
+  theta is the legacy-sign Timoshenko rotation. b along y, h along z;
+  source I is I_y=b*h^3/12, not I_p. This is not full two-direction lateral
+  contraction or a new literal common 3D displacement/Hooke law.
+- Jang's source closure sums axial/M-H and bending/Timoshenko reduced
+  stress-work contributions. Axial suppresses sigma_yy,tau_xy,tau_yz;
+  bending additionally suppresses sigma_zz and returns Q11=E. Corrected
+  energy (5) / resultants (A9) fix the implemented shear prescription;
+  uncorrected (A7) and printed (A3),(A10) are not copied literally.
+- Rucka K_MH1=1.1, K_MH2=2.1, K_Tim1=.95 and K_Tim2=12*.95/pi^2 are
+  source-specific fitted/selected factors, not project defaults. Jang uses
+  K_MH1=K_Tim1=kappa_b, K_MH2=K_Tim2=1; numeric kappa_b is unstated in the
+  audited text. The explicit 5/6 run is a conditional control only.
+- Centered homogeneous geometry eliminates kinetic first-moment cross
+  terms; local potential separation follows the source constitutive blocks.
+  Acoustic/optical dispersion labels are continued from k=0, not descendant
+  mode identities. Figure comparisons are qualitative without digital data.
+- `MHTIM_VARIANT_DEPENDENT`, `MH_SOURCE_VARIANTS_NOT_EQUIVALENT` for the
+  published prescriptions, and `PRODUCTION_MH_COEFFICIENTS_UNRESOLVED` are
+  distinct statuses. Production promotion, finite-rod extra BC and angular
+  joint conditions are not selected. The closed Bishop gate is preserved.
+
 ## Isolated single-rod Timoshenko--Bishop kinematic audit
 
 - The [single-rod audit](timoshenko_bishop_single_rod.md) is restricted to

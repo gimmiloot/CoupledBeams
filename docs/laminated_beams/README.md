@@ -10,6 +10,10 @@ unless a local note records an explicit override.
 
 Теоретическое продолжение: [поворотно-упругий узел EB/RLB](inplane_rotational_spring_joint.md)
 — вариационные выводы, матрица и пределы.
+[Отдельная проверка SPRING → RIGID для круглых изотропных EB-стержней](circular_eb_rotational_spring_rigid_limit.md):
+завершены target prefix 6+guard и продолжение шести локальных мод;
+сохранены high-spectrum и немонотонная seed-06 qualifications.
+Это reviewer diagnostic общего механизма узла, не результат для ламинатов.
 [Первый EB-пилот](inplane_rotational_spring_eb_pilot.md): 50 тестов пройдены,
 10/12 BASE-групп приняты; два случая большой жёсткости и один дополнительный
 rigid-контроль не разрешены. Рабочее окружение Python найдено.

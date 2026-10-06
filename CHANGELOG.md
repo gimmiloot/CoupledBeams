@@ -1,6 +1,95 @@
 # CHANGELOG
 
+## 2026-10-06
+
+- Added the isolated planar rectangular M-H/Timoshenko source-energy audit:
+  one explicit-factor helper/CLI, audited source fixtures, targeted tests
+  and a canonical note. Reconstructed Rucka/Jang energy/PDE/boundary blocks,
+  exact family mapping and low-k limits; reproduced Rucka dispersion/count
+  statements and conditional Jang bare dispersion with analytic group
+  velocities and independent variational/HF checks. Recorded
+  `MHTIM_VARIANT_DEPENDENT` and unresolved production coefficients; Jang's
+  numeric kappa is not guessed. Added hash-validated caches/plot-only and
+  navigation. Preserved baseline APIs, Bishop's closed gate/benchmarks,
+  existing user changes, other branches and scoped memory; no coupled model.
+
 ## 2026-10-05
+
+- Synchronized circular EB joint-review documentation with the saved local
+  results: one durable scientific note, one combined D25/K26 record, current
+  context and research/results/thematic/script navigation. Registered seven
+  local junction papers from PDF metadata, retaining source-specific limits.
+  Preserved full-spectrum, direct-MAC and seed-06 qualifications; no numerical
+  reruns, code/threshold/data edits or rewriting of historical D/K entries.
+  Top-level README intentionally unchanged: baseline usage is unaffected.
+
+- Added bounded `--mode kappa-continuation` to the existing circular EB
+  diagnostic. Four triggered log-midpoints (sqrt(10), 10^.75, 10^1.5,
+  10^1.25) pass the unchanged 6+guard prefix and reconstruction gates.
+  All six local seeds reach exact RIGID with minimum accepted MAC .968142
+  and margin .936732; endpoint mappings agree and sorted positions persist.
+  Original direct failures and all endpoint artifacts remain unchanged.
+  Five rotation/sensitivity sequences decrease; seed 06 increases from 1
+  to 10 before decreasing, retained explicitly. Added separate continuation
+  tables/diagnostics and bounded-orchestration tests: 123 targeted checks
+  passed. No physical/helper module, solver, threshold, README, index,
+  project-memory or old-pilot changes; no finite bridge to RIGID was needed.
+
+- Added saved-root `--mode shapes` to the existing circular EB diagnostic.
+  All 28 unequal-arm, unit-modal-mass forms pass unchanged reconstruction
+  gates; no pilot roots were searched or modified. Existing physical mass-MAC
+  assignment confirms only local seeds 01 and 04 through 1/10/100/RIGID;
+  seeds 02/03/05/06 fail MAC>=.95 at the first link and remain unresolved.
+  Rotation differences and existing sensitivity s decrease for the two
+  confirmed descendants. Saved fields, mappings, full diagnostics and explicit
+  limitations; 110 targeted tests passed. Physical/helper modules, solver,
+  frequency artifacts, old pilot, README, index and memory are unchanged.
+
+- Scoped only the circular EB diagnostic gate to six sorted eigenvalues plus
+  guard 7, retaining native solver statuses and the prior failed first-12
+  RIGID comparison. Reused the saved baseline/RIGID pair and computed only
+  kappa=1/10/100 with unchanged generic defaults: all target prefixes passed,
+  all six sorted Lambda sequences increased and their RIGID discrepancies
+  decreased. The old 204.287 Hz area is one native simple event at position 5.
+  Retained higher-spectrum qualifications, added trend_summary.csv, and split
+  prefix regression from historical-qualification metadata; 82 targeted
+  checks passed. No kernel, solver, old-pilot, README, index or memory edits.
+
+- Added a thin circular EB spring-spectrum diagnostic using the existing
+  BeamParams/EB joint APIs and public general-spectrum solver with unchanged
+  defaults. Gate A stopped at the main exact-RIGID comparison: first seven
+  Lambda values agree within 3.02e-10, but native nullity=2 at position 11
+  repeats the kernel root at position 12 and breaks first-12 equivalence.
+  Saved native diagnostics and the failed regression; 69 composition/related
+  checks passed. No spring calculation, control geometry, kernel/solver fix,
+  old-result change, README/research-index or project-memory update.
+
+- Tried the predeclared circular EB geometry sequence A(.30,5 degrees),
+  B(.30,45 degrees), C(.20,15 degrees), each only at kappa=1. All three
+  stopped after the unchanged local candidate recovery, so no geometry was
+  selected and no kappa=10/100/RIGID comparison or trend claim was made.
+  Added separate geometry-retry diagnostics, status CSV and a short report;
+  preserved the earlier unresolved case, all solver/gate definitions and
+  README. Updated scoped memory without extending the allowed case set.
+
+- Attempted the four-state circular-isotropic EB spring-to-rigid diagnostic
+  at mu=.30, beta=15 degrees, r=.005 m. The unchanged detector/recovery
+  workflow stopped at kappa=1 near the fifth root; kappa=10/100 and exact
+  RIGID were not run, following the requested stop rule. Saved candidate
+  provenance, four explicit status rows and the report under
+  `results/joint_review/rotational_spring_rigid_trend_pilot/`, with a scoped
+  memory record. No convergence claim, gate/physics changes, production
+  edits or permanent entry point; existing results and README preserved.
+
+- Registered three local full texts on M-H/Timoshenko and frame assembly
+  (Rucka 2010, Jang--Park--Lee 2014, Liu et al. 2021), retaining Banerjee's
+  existing key and extending its reading record. Added one comparative source
+  note, PDF hashes, metadata provenance, fitted-factor restrictions, Jang's
+  distinct constitutive reductions and source-print warnings. Documented
+  M-H + Timoshenko as the current candidate with implementation/validation
+  pending; preserved standalone Bishop and its unresolved combined-kinematics
+  audit. Updated literature/research/README navigation and journal. No solver,
+  benchmark, test, generated-result, article or scoped-memory changes.
 
 - Added a finite single-rectangle Timoshenko--Bishop kinematic audit, one exact
   rational CLI and targeted tests. Derived all candidate cross terms before

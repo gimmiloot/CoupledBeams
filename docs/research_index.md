@@ -4,10 +4,35 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
+## Single-rod M-H/Timoshenko source audit (2026-10-06)
+
+The [canonical audit](theory/mindlin_herrmann_timoshenko_single_rod.md) is
+`completed` as a diagnostic: `MHTIM_VARIANT_DEPENDENT`. Source energies,
+local block structure, exact family mapping and low-frequency limits are
+verified. Rucka's 100--120 kHz mode-count statements pass; figure agreement
+is qualitative. Jang Fig.9(a) is conditional on explicit kappa (5/6 control),
+whose numeric source value remains unstated. Published prescriptions are
+`MH_SOURCE_VARIANTS_NOT_EQUIVALENT`; production coefficients remain
+`PRODUCTION_MH_COEFFICIENTS_UNRESOLVED`. No angular joint or coupled-beam
+implementation is implied. Bishop remains a standalone reference and its
+closed combined-kinematics result is retained.
+
 ## Literature preparation (2026-10-05)
 
+- [Mindlin–Herrmann + Timoshenko source map](literature/mindlin_herrmann_timoshenko_sources.md):
+  literature preparation `completed`: three new local full texts (Rucka,
+  Jang–Park–Lee, Liu 2021), extended reading of Banerjee 2019, source-specific
+  factors and distinct reduced constitutive blocks documented. M-H axial +
+  Timoshenko bending is the **current candidate** for the combined in-plane
+  model; implementation/validation were pending at registration. The subsequent
+  isolated diagnostic source audit is recorded above; production remains pending.
+  Bishop is retained as a standalone reference/diagnostic theory, rather
+  than the preferred production candidate for that combination. The prior
+  [Timoshenko–Bishop audit](theory/timoshenko_bishop_single_rod.md) retains
+  `COMBINED_KINEMATICS_NOT_UNIQUELY_DEFINED`; no hybrid closure or angular-joint
+  conditions have been selected. Source validations apply to their own problems.
 - [Longitudinal rod models and published control problems](literature/longitudinal_rod_models_sources.md):
-  six local sources registered. The subsequent narrow Rayleigh–Bishop
+  six sources in the initial registration. The subsequent narrow Rayleigh–Bishop
   [literature reproduction](theory/bishop_literature_reproduction.md) is
   `completed` with separate numerical/source-print statuses: internal checks
   pass, only one of five Marais frequencies matches print precision, and the
@@ -17,8 +42,8 @@ local article workspaces may be absent from a fresh clone.
   five local sources registered. Derivation of the project's nonlinear
   equations is deferred pending discussion with the supervisor.
 
-The initial registration was a reading/preparation task; the subsequent
-longitudinal reproduction is separately documented above. Existing EB/RLB,
+The new M-H/Timoshenko registration is documentation only; the earlier
+longitudinal reproduction and kinematic audit remain separate stages. Existing EB/RLB,
 damping, anisotropic-rod and other research statuses below are unchanged.
 
 ## Status vocabulary
@@ -43,6 +68,8 @@ damping, anisotropic-rod and other research statuses below are unchanged.
 
 | Research direction | Status | Main question | Canonical documentation | Main implementation | Current conclusion |
 | --- | --- | --- | --- | --- | --- |
+| Single rectangular rod: M-H axial + Timoshenko bending | `completed` source diagnostic — `MHTIM_VARIANT_DEPENDENT` | Are the Rucka/Jang source blocks equivalent and source dispersion reproducible? | [energy, mapping, limits and benchmarks](theory/mindlin_herrmann_timoshenko_single_rod.md) | [one source CLI](../scripts/analysis/reproduce_mindlin_herrmann_timoshenko_literature.py), [M-H helper](../scripts/lib/mindlin_herrmann_longitudinal.py) | Exact family mapping; different published correction prescriptions. Rucka statements pass, Jang numeric kappa and production coefficients unresolved. No coupled rods or joint selection. |
+| Rotational-joint continuation: circular EB reviewer diagnostic | `completed` finite diagnostic | Do six low modes approach exact RIGID as rotational stiffness grows? | [scientific note and qualifications](laminated_beams/circular_eb_rotational_spring_rigid_limit.md) | [existing-kernel/generic-solver orchestration](../scripts/analysis/joint_review/check_circular_eb_spring_spectrum.py) | Six local descendants confirmed; rigid equivalence only for 6+guard 7. Positions 11–12 and seed-06 nonmonotonic rotation remain qualified. Transmission/equilibrium and thin-joint asymptotic justification remain an open theoretical question; no real-joint calibration. |
 | Single rectangular rod: Timoshenko + Rayleigh–Bishop kinematics | `completed` finite audit; diagnostic-only | Does a common displacement/energy field yield the two unchanged linear subsystems? | [kinematics and energy audit](theory/timoshenko_bishop_single_rod.md) | [exact algebra CLI](../scripts/analysis/audit_timoshenko_bishop_single_rod.py), [targeted tests](../tests/test_timoshenko_bishop_single_rod.py) | `COMBINED_KINEMATICS_NOT_UNIQUELY_DEFINED`: centered cross coefficients vanish in two candidates, but raw self terms fail the unchanged Timoshenko limit. A relaxed hybrid needs explicit extra closure; no combined spectrum or joint conditions. |
 | Local longitudinal Rayleigh–Bishop literature controls | `completed` finite study; diagnostic-only | Reproduce Marais section 4 and Popov–Sadovsky (5),(6),(9)–(15) | [canonical report](theory/bishop_literature_reproduction.md) | [bounded CLI](../scripts/analysis/reproduce_bishop_literature.py), [module](../scripts/lib/bishop_longitudinal.py) | Source audit, energy/orthogonality, independent 50/70 dps pass. Marais print match 1/5; Popov rounded-table ranking Rayleigh–Love/Bishop/wave, with figure/reference qualifications. No angular joint or rectangular-system conclusions. |
 | Representative complex EB/RLB damping confirmation | `completed`; `PAUSED_FOR_SUPERVISOR_DIRECTION` | Does elastic G-ratio predict actual weak-damping zeta-ratio? | [D22/K23 technical report](laminated_beams/inplane_kelvin_voigt_eb_rlb_complex_confirmation.md); [supervisor synthesis](laminated_beams/inplane_kelvin_voigt_research_status_for_supervisor.md) | [fixed six-target orchestration](../scripts/analysis/laminated_beams/confirm_inplane_kelvin_voigt_eb_rlb.py) | Six new roots at d=.001, four reused states; five ratios agree within .001904%. R3 contrast and positive R4 correction confirmed. Further direction awaits discussion. |

@@ -1,0 +1,64 @@
+{
+  "schema": "mh-tim-literature-sources-v1",
+  "audit_date": "2026-10-06",
+  "equations_version": "planar-mh-tim-source-energy-v1",
+  "scope": "one straight homogeneous isotropic rectangle; planar source blocks; diagnostic only",
+  "sources": {
+    "rucka": {
+      "key": "rucka_2010_l_joint_guided_waves",
+      "doi": "10.1016/j.jsv.2009.12.004",
+      "path": "docs/literature/pdf/j.jsv.2009.12.004.pdf",
+      "sha256": "d15786c6aa2bf71731c63b16bf594739a626e6c45461e63689d90a36d472ce5f",
+      "pages": {"kinematics": "PDF 2 / p.1761 (1)", "energies_pdes_factors": "PDF 3 / p.1762 (2)-(9)", "blocks": "PDF 4 / p.1763 (10)-(13)", "geometry": "PDF 5 / p.1764 section 3", "figure": "PDF 7 / p.1766 Fig.4"},
+      "notation": {"lateral_contraction": "psi", "rotation": "phi", "transverse_coordinate": "y", "transverse_displacement": "v", "I": "planar second moment, mapped to project Iy"},
+      "printed_parameters": {"E_GPa": "200.11", "rho_kg_m3": "7556", "nu": "0.33", "b_mm": "6", "h_mm": "6", "straight_length_mm": "1000", "K_MH1": "1.1", "K_MH2": "2.1", "K_Tim1": "0.95", "K_Tim2": "12*K_Tim1/pi^2", "calibration_kHz": ["100", "120"]},
+      "factor_rules": {"K_MH1": "least-squares fit axial velocities at 100/120 kHz", "K_MH2": "same joint fit", "K_Tim1": "least-squares fit flexural velocities at 100/120 kHz", "K_Tim2": "Lamb-mode cutoff matching; not an independent least-squares fit"},
+      "statements": [{"id": "one_longitudinal", "frequency_interval_hz": [100000, 120000], "propagating_count": 1, "block": "mh", "page": "p.1766 section 4"}, {"id": "one_flexural", "frequency_interval_hz": [100000, 120000], "propagating_count": 1, "block": "tim", "page": "p.1766 section 4"}],
+      "figure_precision": "No digital curve data or printed numeric group velocities/cutoffs; visual comparison only. Integer mode counts are exact statements."
+    },
+    "jang": {
+      "key": "jang_2014_timoshenko_composite_patch_guided_waves",
+      "doi": "10.1016/j.compositesb.2013.12.050",
+      "path": "docs/literature/pdf/j.compositesb.2013.12.050.pdf",
+      "sha256": "8d945ae828f5a794090df67b968ca84901ff7e3441e6a2d5a4435c025b5c1929",
+      "pages": {"fields_energy": "PDF 2 / p.249 (1),(5)", "kinetic": "PDF 3 / p.250 (6),(7)", "material_geometry": "PDF 7 / p.254 section 5.1", "bare_dispersion": "PDF 8-9 / pp.255-256 section 5.2 Fig.9(a)", "constitutive": "PDF 11 / p.258 (A1)-(A5)", "decomposition_resultants": "PDF 12 / p.259 (A6)-(A10)"},
+      "notation": {"axial": "u_b0", "transverse": "w_b0", "rotation": "theta_b", "lateral_contraction": "psi_b", "transverse_coordinate": "z", "moment": "I_0b"},
+      "printed_parameters": {"E_GPa": "69", "rho_kg_m3": "2700", "nu": "0.33", "b_mm": "20", "h_mm": "2"},
+      "factors": {"K_MH1": "kappa_b", "K_MH2": "1 (from kinetic energy (6))", "K_Tim1": "kappa_b", "K_Tim2": "1 (from kinetic energy (6))", "kappa_b_numeric": null, "numeric_status": "NOT_ESTABLISHED_IN_LOCAL_FULL_TEXT; explicit user/config input required"},
+      "printed_warnings": {"A3": "RHS first component printed sigma_xx^(b), not strain epsilon_xx^(b)", "A10": "Printed A_b=b*integral(z dz)=b*h_b with centered limits; extra z contradicts area", "A7": "No explicit kappa; corrected energy (5) and resultants (A8),(A9) are the implemented source variant"},
+      "figure_precision": "No digital data or numeric cutoff/velocity labels. Numeric kappa unspecified; any plotted explicit kappa is a conditional control, not recovered author data."
+    },
+    "banerjee": {
+      "key": "banerjee_2019_rayleigh_love_timoshenko",
+      "path": "docs/literature/pdf/Rayleigh_Love accepted version.pdf",
+      "sha256": "26db797736decf81428d3f990afac5a9b48a5ee60f06cfc31eb6b52b052fcd48",
+      "pages": "PDF 6-7,10-11,16; manuscript p.5 independence, section 2.3 (65),(66) modular combination",
+      "role": "Rayleigh-Love/Timoshenko modular precedent only"
+    },
+    "liu": {
+      "key": "liu_2021_multibody_beams_rigid_bodies",
+      "path": "docs/literature/pdf/Journal Paper 122-accepted version.pdf",
+      "sha256": "bcf7aa91672df9407bd9d624053c296dcdad6f4e166658a8ed6abdf169efe7a6",
+      "pages": "PDF 8-9 (1),(2); PDF 26-30 Appendix; local versus structural coupling",
+      "role": "Bishop listed in review, not in demonstration; no M-H numerical validation"
+    }
+  },
+  "cases": {
+    "rucka": {"variant": "rucka_2010", "parameters_si": {"E": 200110000000, "rho": 7556, "nu": 0.33, "b": 0.006, "h": 0.006, "L": 1.0}, "frequency_grid_hz": {"start": 0, "stop": 500000, "count": 1001}, "mh_shear_factor": 1.1, "mh_inertia_factor": 2.1, "tim_shear_factor": 0.95, "tim_rotary_factor_rule": "12*tim_shear_factor/pi^2", "coefficient_status": "SOURCE-SPECIFIC / NOT A PROJECT DEFAULT"},
+    "jang": {"variant": "jang_2014_bare_isotropic", "parameters_si": {"E": 69000000000, "rho": 2700, "nu": 0.33, "b": 0.020, "h": 0.002}, "frequency_grid_hz": {"start": 0, "stop": 2000000, "count": 1001}, "kappa_b": null, "mh_inertia_factor": 1.0, "tim_rotary_factor": 1.0},
+    "comparison": {"geometry_source": "rucka", "frequency_grid_hz": {"start": 0, "stop": 500000, "count": 501}, "k_control_per_m": [0, 1, 10, 100, 500, 1000], "jang_kappa_rule": "explicit input only; chosen 5/6 control is not claimed as Jang's value"}
+  },
+  "numerical_contract": {
+    "defined_before_computation": true,
+    "eigenvalue_relative_tol": 3e-10,
+    "mass_normalized_equation_residual_tol": 1e-10,
+    "group_velocity_relative_tol": 3e-10,
+    "spatial_roundtrip_relative_tol": 5e-10,
+    "polynomial_scaled_residual_tol": 1e-10,
+    "project_spatial_root_relative_tol": 3e-11,
+    "verification_k_per_m": [1, 10, 100, 500, 1000],
+    "low_k_dimensionless_values": [0.001, 0.0001, 0.00001],
+    "attempt_policy": "analytic quadratic, bounded fixed grid; no fit, scan or retry; exceptions recorded as unresolved",
+    "figure_match": "QUALITATIVE_ONLY; no pixel or numeric tolerance"
+  }
+}

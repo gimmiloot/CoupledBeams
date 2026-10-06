@@ -5,6 +5,19 @@
 версии файлов, пути, SHA256 и фактически прочитанные места находятся в
 [source index](source_index.md); citation keys — в [bibliography.bib](bibliography.bib).
 
+Дополнение того же дня: [Mindlin–Herrmann + Timoshenko](mindlin_herrmann_timoshenko_sources.md)
+систематизирует три новых полных текста (Rucka 2010, Jang–Park–Lee 2014,
+Liu et al. 2021) и расширенное чтение Banerjee 2019. Исходные шесть записей
+ниже сохранены. M-H + Timoshenko — текущий кандидат будущей combined
+in-plane model; его реализация и валидация в проекте не выполнены.
+Bishop сохраняется как standalone reference/diagnostic model;
+[аудит общей кинематики](../theory/timoshenko_bishop_single_rod.md) сохраняет
+`COMBINED_KINEMATICS_NOT_UNIQUELY_DEFINED`. Независимое contraction DOF
+и разные reduced constitutive blocks новых источников не отменяют этот
+результат. Оригиналы Mindlin–Herrmann и Martin–Gopalakrishnan–Doyle
+локально не найдены; ссылки и статус cited / full text unavailable — в
+новой заметке. Условия углового узла по этим источникам не выбирались.
+
 При исходной регистрации воспроизведение задач Рэлея—Бишопа было
 запланировано отдельно. Последующий этап 2026-10-05 выполнен:
 [канонический отчёт, код, source fixtures и результаты](../theory/bishop_literature_reproduction.md).
@@ -96,9 +109,11 @@ Rayleigh–Love/Rayleigh–Bishop из этих источников не сле
 ## Ожидаемые полные тексты, не найденные локально
 
 Инвентаризация 2026-10-05 учитывала tracked, untracked и ignored PDF.
-Следующие названия взяты из задания как ориентиры, а не как проверенные
-библиографические записи. Их PDF не найден; новые BibTeX-записи по одним
-упоминаниям не создавались. Прежние записи без PDF сохранены.
+Следующие названия первоначально взяты из задания как ориентиры.
+Исключение после локального joint-review аудита 2026-10-05 — найденный и
+зарегистрированный Leugering–Nazarov–Slutskij, указанный ниже. Для остальных
+PDF не найден; BibTeX-записи по одним упоминаниям не создавались.
+Прежние записи без PDF сохранены.
 
 | Авторы / ожидаемое название | Статус и вопрос будущего чтения |
 | --- | --- |
@@ -109,10 +124,10 @@ Rayleigh–Love/Rayleigh–Bishop из этих источников не сле
 | Williams, Wittrick — *Exact Buckling and Frequency Calculations Surveyed* | PDF отсутствует; метаданные и содержание не проверены |
 | Rutenberg — *A lower bound for Dunkerley’s formula in continuous elastic systems* | PDF отсутствует; вопрос о различии разложения податливости и независимых семейств движений требует проверки |
 | Luco — *Bounds for natural frequencies, Dunkerley’s formula and application to soil–structure interaction* | PDF отсутствует; различие строгой нижней оценки и уточнённого приближения требует проверки |
-| Leugering, Nazarov, Slutskij — *The asymptotic analysis of a junction of two elastic beams* | PDF отсутствует; размерность, статический/спектральный характер постановки и пределы переноса на 3D-спектр не проверены |
+| Leugering, Nazarov, Slutskij — *The asymptotic analysis of a junction of two elastic beams* | PDF найден и [зарегистрирован](source_index.md#leugering_2019_junction_two_elastic_beams); плоская статическая асимптотика с source-specific transmission conditions, не проверка нашего круглого 3D-спектра |
 | Nazarov, Slutskii — *Asymptotics of Natural Oscillations of Elastic Junctions with Readily Movable Elements* | PDF отсутствует; метаданные и постановка не проверены |
 
-Для последних методических источников точные страницы предупреждений пока
+Для оставшихся отсутствующих методических источников точные страницы предупреждений пока
 указать нельзя: самих PDF нет. Упомянутая в задании пагинация `S101–S115`
 не присвоена какой-либо записи без проверки; префикс `S` при последующей
 регистрации нельзя автоматически отбрасывать. Ещё три отсутствующих

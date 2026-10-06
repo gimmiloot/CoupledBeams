@@ -27,6 +27,7 @@
 |---|---|
 | Базовая RLB, эквивалентность ламинатов и переносы | [K01](knowledge.md#rlb-k01), [K02](knowledge.md#rlb-k02), [K03](knowledge.md#rlb-k03), [K04](knowledge.md#rlb-k04) |
 | Поворотная пружина: теория, EB-пилот, RLB → EB, карты, формы, шарнир, устойчивость механизма | [K05](knowledge.md#rlb-k05), [K06](knowledge.md#rlb-k06), [K07](knowledge.md#rlb-k07), [K08](knowledge.md#rlb-k08), [K09](knowledge.md#rlb-k09), [K10](knowledge.md#rlb-k10), [K11](knowledge.md#rlb-k11) |
+| Отдельный reviewer diagnostic: круглые EB-стержни, SPRING → RIGID | [D25](decisions.md#rlb-d25), [K26](knowledge.md#rlb-k26), [научная заметка](../laminated_beams/circular_eb_rotational_spring_rigid_limit.md); прежние остановки [EB-JOINT-K01](knowledge.md#eb-joint-k01), [K02](knowledge.md#eb-joint-k02) |
 | Kelvin–Voigt: теория и внутренний пилот | [K12](knowledge.md#rlb-k12) |
 | Внешняя литературная проверка и точность печати | [K13](knowledge.md#rlb-k13), [K14](knowledge.md#rlb-k14) |
 | Упругий screening участия демпфера | [K15](knowledge.md#rlb-k15) |

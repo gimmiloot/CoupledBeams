@@ -2,7 +2,88 @@
 
 Здесь ведётся рабочий журнал проекта: этапы, решения и важные исследовательские заметки.
 
+## 2026-10-06
+
+- Выполнен [single-rod M-H + Timoshenko source audit](../theory/mindlin_herrmann_timoshenko_single_rod.md).
+  Начальный main/HEAD 7ef59a5d8340d46735363d789ec557cca5144422 содержит
+  незакоммиченные изменения предыдущей литературной регистрации и другого
+  circular EB reviewer этапа. Их initial diff/hashes сохранены, staged
+  содержимое и пользовательские изменения сохранены. Memory не менялась.
+- По локальным Rucka и Jang восстановлены поля, разные reduced constitutive
+  contributions Jang, corrected energies, PDE, boundary quantities, размеры,
+  локальное разделение, acoustic/optical dispersion и low-k limits.
+  Точное family mapping: K₁ᴹᴴ=K₁ᵀⁱᵐ=κ_b, K₂ᴹᴴ=K₂ᵀⁱᵐ=1. Fitted Rucka
+  variant ему не соответствует: MH_SOURCE_VARIANTS_NOT_EQUIVALENT для
+  опубликованных prescriptions. Source-specific факторы не стали defaults.
+- Rucka Fig.4: square 6×6 mm, steel source properties/factors, 0–500 kHz;
+  counts longitudinal/flexural по одному на всём [100,120] kHz подтверждены.
+  Cutoffs contraction/shear 345680.639263 / 262945.871880 Hz. Jang Fig.9(a)
+  восстановлен условно при **явном** κ_b=5/6: contraction cutoff
+  1476250.985206 Hz независимо от κ_b, shear 779995.291328 Hz для этого
+  input. Численное κ_b авторов не установлено; никакого fit по графику.
+  Один common comparison использует geometry/material Rucka.
+- Добавлены один helper, один CLI, source fixtures, targeted tests и
+  канонический отчёт. Source reproduction MHTIM_VARIANT_DEPENDENT;
+  PRODUCTION_MH_COEFFICIENTS_UNRESOLVED. Numerical/HF/full-operator checks
+  проходят, графики qualitative/conditional qualitative. Первые tests нашли
+  one-ulp strict comparison и ошибку renderer; исправлены с неизменными
+  numeric contract/factors. Старые namespace bundles сохранены, current.json
+  указывает актуальный. Plot-only и matching-cache reuse не вычисляют roots.
+- README/CHANGELOG и theory/research/results/script navigation обновлены.
+  Frozen equations, helpers, Bishop benchmarks и closed kinematic gate
+  сохранены. Coupled rods, angular-joint M-H BC, L-joint production,
+  nonlinear equations, anisotropic/viscous branches и 3D FEM не выполнялись.
+- Финальные проверки: 74 tests (26 новых + 48 Bishop), затем 3 существующих
+  rectangular Timoshenko regression checks — PASS. Source hashes, smoke
+  compute/plot-only, matching-cache reuse с zero root evaluations и
+  `git diff --check` проходят. Numeric gates заданы в fixtures до расчёта;
+  display/source precision не подменены machine tolerances.
+  Source-check дополнительно сверяет SI parameters/factors с печатными
+  строками, чтобы изменённая geometry не сохраняла source-reproduction label.
+
 ## 2026-10-05
+
+- Документационно завершён [circular EB reviewer diagnostic](../laminated_beams/circular_eb_rotational_spring_rigid_limit.md):
+  сохранён итог 6/6 локальных descendants, ограничения target prefix,
+  прежних direct MAC и немонотонности seed 06. Добавлены D25/K26,
+  обновлены текущий контекст и навигация, зарегистрированы локальные
+  junction sources. Расчёты и модели не менялись. Следующий выбранный
+  вопрос — transmission/equilibrium и thin-joint asymptotics;
+  FEM-калибровка реального узла отложена пользователем.
+
+- Выполнена [литературная регистрация M-H + Timoshenko](../literature/mindlin_herrmann_timoshenko_sources.md).
+  Начальное состояние: cwd/git root D:/PHD/CoupledBeams/CoupledBeams,
+  main, HEAD 7ef59a5d8340d46735363d789ec557cca5144422; tracked diff пуст,
+  три пользовательских untracked PDF сохранены под исходными именами.
+  Найдены Rucka 2010, Jang–Park–Lee 2014, Banerjee–Ananthapuvirajah 2019
+  и Liu et al. 2021; Banerjee сохраняет прежний citation key. Source index
+  и bibliography синхронизированы, добавлена одна сравнительная заметка.
+- Прочитаны постановки и source validations в пределах указанных разделов.
+  Rucka: contraction — source ψ; K₁ᴹᴴ=1.1, K₂ᴹᴴ=2.1 и K₁ᵀⁱᵐ=.95 fitted
+  по скоростям при 100/120 kHz; K₂ᵀⁱᵐ выбран по Lamb cutoff. Все отмечены
+  SOURCE-SPECIFIC / NOT A PROJECT DEFAULT. Jang: разные reduced laws
+  для M-H и Timoshenko, предупреждения к (A3), (A7), (A10). Banerjee —
+  modular Rayleigh–Love/Timoshenko precedent, не M-H. Liu 2021 упоминает
+  Bishop в обзоре, но не использует его в demonstration/Appendix.
+- Оригиналы Mindlin–Herrmann и Martin–Gopalakrishnan–Doyle не найдены в
+  локальном каталоге; сохранены как cited / full text unavailable, без
+  выдуманных canonical records. Адресная внешняя проверка ограничена
+  недостающими метаданными трёх работ; широкого поиска и OCR не было.
+- Текущий кандидат combined in-plane model — M-H axial + Timoshenko;
+  проектная реализация и валидация не выполнены. Bishop standalone,
+  benchmarks и прежний COMBINED_KINEMATICS_NOT_UNIQUELY_DEFINED сохранены.
+  README обновлён для новой навигации, CHANGELOG — для регистрации этапа.
+  Assumptions и scoped memory другой ветви не менялись: новых проектных
+  физических предпосылок не принято. Solvers, tests, results, article files
+  и другие исследовательские ветви не менялись; расчёты и FEM не запускались.
+- Документационные проверки: строгий синтаксический разбор всего BibTeX,
+  69 уникальных ключей с полным соответствием source index, 56 DOI без
+  дубликатов; 66 canonical PDF-путей существуют. SHA256 четырёх основных
+  работ подтверждены, все 76 PDF побайтно сохранены; новые локальные ссылки
+  разрешаются, `git diff --check` без ошибок. Сам BibTeX engine не запустился:
+  незавершённая установка MiKTeX и недоступная запись его user configuration.
+  Установка/настройка окружения не выполнялась; синтаксис проверен отдельным
+  временным parser, без нового проектного скрипта.
 
 - Выполнен [аудит общей кинематики Тимошенко—Бишопа одного прямоугольного
   стержня](../theory/timoshenko_bishop_single_rod.md). Начальный checkout

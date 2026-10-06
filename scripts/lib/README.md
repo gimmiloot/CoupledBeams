@@ -5,6 +5,17 @@ This directory contains reusable helper modules that are not meant to be run dir
 Project-wide branch identity and diagnostic-tracking rules are summarized in
 `../../docs/project_rules.md`.
 
+- `mindlin_herrmann_longitudinal.py` is the isolated planar one-rectangle
+  source-energy helper for M-H/Timoshenko diagnostics. Independent c,
+  corrected source mass/stiffness, explicit factor inputs, natural boundary
+  quantities, stable two-branch dispersion and analytic group velocities.
+  It reuses the rectangular Timoshenko section coefficients and leaves that
+  helper/API unchanged. No production defaults, frame assembly or joint BC.
+  Source fixtures: `data/input/mindlin_herrmann_timoshenko_sources.json`;
+  [canonical audit](../../docs/theory/mindlin_herrmann_timoshenko_single_rod.md)
+  records variant-dependent source prescriptions and unresolved production
+  coefficients. Jang requires explicit numeric kappa; Rucka factors are fitted.
+
 - `bishop_longitudinal.py` is the isolated diagnostic longitudinal kernel:
   bounded analytic exponential/trigonometric bases, C/F/UP boundary and
   coaxial-interface assembly, separate H=0 equations, finite root search,

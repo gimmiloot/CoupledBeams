@@ -22,6 +22,64 @@ root-calculation path.
 For active, completed, historical, superseded, and compatibility workflow
 status, see [Script and Workflow Status](STATUS.md).
 
+## Single-rod Mindlin--Herrmann / Timoshenko source reproduction
+
+[`analysis/reproduce_mindlin_herrmann_timoshenko_literature.py`](analysis/reproduce_mindlin_herrmann_timoshenko_literature.py)
+is diagnostic-only: Rucka Fig.4, conditional Jang bare-beam Fig.9(a), one
+common geometry. This independent-contraction/dispersion contract is not a
+preset of the Bishop fourth-order or existing angled-beam solvers. It reuses
+the rectangular Timoshenko section/basis and existing atomic artifact writers.
+See the [canonical source audit](../docs/theory/mindlin_herrmann_timoshenko_single_rod.md).
+
+```powershell
+python scripts/analysis/reproduce_mindlin_herrmann_timoshenko_literature.py --check-sources
+python scripts/analysis/reproduce_mindlin_herrmann_timoshenko_literature.py --compute --case rucka
+python scripts/analysis/reproduce_mindlin_herrmann_timoshenko_literature.py --compute --case all --jang-kappa 5/6
+python scripts/analysis/reproduce_mindlin_herrmann_timoshenko_literature.py --plot-only --case all --jang-kappa 5/6
+python -m pytest tests/test_mindlin_herrmann_timoshenko_literature.py tests/test_bishop_literature.py tests/test_timoshenko_bishop_single_rod.py -q
+```
+
+Requires existing NumPy/SciPy/Matplotlib. `--case` accepts rucka, jang,
+comparison, all; `--variant` selects rucka_2010 or jang_2014_bare_isotropic.
+Jang kappa is not numerically stated in the audited PDF: 5/6 is an explicit
+conditional control, not recovered author data or a production default.
+Missing kappa records unresolved and returns exit 2 for Jang/comparison.
+Results default to `results/mindlin_herrmann_timoshenko_literature/`;
+`--output-dir` changes the root. Input/code/versions/source hashes identify
+bundles, checked artifact hashes guard reuse. Plot-only reads saved CSV.
+Group velocities are analytic, with independent variational/HF checks;
+labels are source dispersion branches, not descendant mode IDs. Overall
+`MHTIM_VARIANT_DEPENDENT`; production coefficients and angular-joint BC
+remain unresolved. No coupled rods, patch model, damping or FEM.
+
+## Circular EB SPRING/RIGID reviewer diagnostic
+
+Category: diagnostic; status: completed bounded study, not a production API.
+[`analysis/joint_review/check_circular_eb_spring_spectrum.py`](analysis/joint_review/check_circular_eb_spring_spectrum.py)
+composes the existing circular baseline, EB spring kernel, public generic
+spectrum solver and physical mass-MAC functions. See the
+[scientific note](../docs/laminated_beams/circular_eb_rotational_spring_rigid_limit.md)
+for the fixed geometry, 6+guard acceptance and unresolved high-spectrum
+qualification. No new physical/helper module or solver is introduced.
+
+Reproduction modes, in dependency order (these are computational commands,
+not required to read the completed report):
+
+```powershell
+python scripts/analysis/joint_review/check_circular_eb_spring_spectrum.py --mode spectrum
+python scripts/analysis/joint_review/check_circular_eb_spring_spectrum.py --mode shapes
+python scripts/analysis/joint_review/check_circular_eb_spring_spectrum.py --mode kappa-continuation
+```
+
+`spectrum` retains native 12-root records while accepting only the target
+prefix; `shapes` reads saved roots and performs no root search;
+`kappa-continuation` treats the four original endpoint datasets as immutable
+and adds only MAC-triggered points within its fixed refinement budget.
+Review existing artifacts before rerunning: outputs default to
+`results/joint_review/circular_eb_spring_general_spectrum/`, with optional
+`--output-dir`. Original direct failures remain a separate historical result.
+The old `rotational_spring_rigid_trend_pilot/` is historical evidence.
+
 ## Single-rod Timoshenko--Bishop kinematic audit
 
 `analysis/audit_timoshenko_bishop_single_rod.py` differentiates two candidate

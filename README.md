@@ -14,6 +14,14 @@ CoupledBeams is a research repository for frequency models and computations for 
   -- exact mixed-energy checks and an unresolved combined-kinematics gate;
   reproduce with `python scripts/analysis/audit_timoshenko_bishop_single_rod.py --compute`.
   This command performs algebra, not a combined spectrum calculation.
+- [Mindlin–Herrmann + Timoshenko literature map](docs/literature/mindlin_herrmann_timoshenko_sources.md)
+  -- current candidate for the combined in-plane model, with source-specific
+  correction factors and reduced constitutive assumptions. The subsequent
+  [single-rod source audit](docs/theory/mindlin_herrmann_timoshenko_single_rod.md)
+  records `MHTIM_VARIANT_DEPENDENT`; production coefficients remain unresolved.
+  Reproduce with `python scripts/analysis/reproduce_mindlin_herrmann_timoshenko_literature.py --compute --case all --jang-kappa 5/6`;
+  5/6 is an explicit conditional control, not a recovered Jang/default value.
+  Bishop stays a standalone reference and retains its closed kinematics gate.
 - [Scoped research memory](docs/memory/README.md) -- RLB-2I/RLB-2J and the EB/RLB rotational-spring theory stage, sources, and decisions.
 - [Archive policy](docs/archive_policy.md) -- preservation and soft/hard archive rules.
 - [Refactoring status](docs/refactoring/README.md) -- verified inventory and staged refactoring status.

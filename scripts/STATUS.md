@@ -20,6 +20,17 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
+## Completed single-rod M-H/Timoshenko source audit
+
+The subsequent [M-H/Timoshenko source workflow](analysis/reproduce_mindlin_herrmann_timoshenko_literature.py)
+is separately `completed` as a fixed single-rectangle diagnostic,
+`MHTIM_VARIANT_DEPENDENT`. Source energy/mapping/low-k checks pass; Rucka
+100--120 kHz mode counts pass. Jang numeric kappa is unstated, so its plot
+requires an explicit conditional value. Production coefficients remain
+`PRODUCTION_MH_COEFFICIENTS_UNRESOLVED`. Use --check-sources/--compute/
+--plot-only and --case; see [report](../docs/theory/mindlin_herrmann_timoshenko_single_rod.md).
+This does not reopen or resolve the closed Bishop kinematic gate below.
+
 ## Completed single-rod kinematic audit
 
 [`analysis/audit_timoshenko_bishop_single_rod.py`](analysis/audit_timoshenko_bishop_single_rod.py)
