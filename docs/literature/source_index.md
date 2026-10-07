@@ -472,6 +472,46 @@ rectangular sources не подтверждено. Имена и байты PDF 
   Citation key, PDF и результаты прежнего Bishop audit сохранены.
   [Сравнение с M-H formulations](mindlin_herrmann_timoshenko_sources.md).
 
+## `crespo_da_silva_1988_flexural_torsional_extensional_formulation`
+
+- PDF: `docs/literature/pdf/0020-76832990087-x.pdf`, 10 PDF-страниц
+  (журнальные 1225–1234); SHA256
+  `2949bede93118adf29f18cb3e8f9bf2e1faf2b611c9c71e3c5211ee9cbf4e128`.
+  Пользовательский файл `C:/Users/Nikita/Downloads/0020-76832990087-x.pdf`
+  скопирован в каталог литературы побайтово; SHA256 оригинала и копии совпадают.
+- Тип: журнальная статья, скан опубликованных страниц с существующим
+  OCR-слоем; не accepted manuscript. Имя файла не используется как
+  идентификатор DOI: PDF Title содержит PII `0020-7683(88)90087-X`, а
+  название, автор и выходные данные сверены по изображению первой страницы.
+- Метаданные: `VERIFIED_LOCAL_PDF`, 2026-10-07. M. R. M. Crespo da Silva;
+  *Non-linear flexural-flexural-torsional-extensional dynamics of beams—I.
+  Formulation*. International Journal of Solids and Structures 24(12)
+  (1988), 1225–1234; DOI `10.1016/0020-7683(88)90087-X`. На PDF1/p.1225:
+  received 13 January 1988, revised 20 May 1988. Дата acceptance/online-first
+  по локальному источнику не установлена; даты создания скана не являются
+  датами публикации. Web-поиск и новый OCR не выполнялись.
+- Роль: опубликованный пример вариационного вывода нелинейных пространственных
+  уравнений, граничной работы и последующего амплитудного усечения.
+  Это **Euler–Bernoulli/no-shear** source model, не наша M-H/Timoshenko
+  семиполевая теория и не доказательство её физической точности.
+- Прочитано визуально: PDF1/p.1225 (metadata, abstract); PDF3/p.1227,
+  (1a–c); PDF5–6/pp.1229–1230, (8)–(14) и пояснения; PDF7–8/pp.1231–1232,
+  (15)–(19), особенно абзац об ordering перед (18). Изображения извлечены
+  из embedded scan strips без распознавания текста.
+- Проверенные ограничения: (1a,b) связывают углы с производными осевых
+  перемещений вследствие no-shear; (1c) задаёт elongation. В (9),(10)
+  кинетическая энергия сокращается при выборе центра масс и главных осей
+  инерции. Перед (12) эффект Пуассона отброшен; депланация сохраняется
+  только в torsional stiffness, дополнительные higher-order section integrals
+  после (14) исключаются. Эти допущения не переносятся автоматически в проект.
+- Амплитудный порядок: PDF7/p.1231 перед (18) явно принимает
+  `(v,w,theta_x)=O(epsilon)`, `u=O(epsilon^2)` и `EA=O(epsilon^-1)`.
+  В новой проектной семиполевой модели все семь полей имеют первый
+  амплитудный порядок при фиксированных коэффициентах. Поэтому буквальное
+  совпадение с source (18) не является её regression criterion. Независимый
+  вывод всех source equations не заявляется; подтверждены содержание и
+  границы использованных мест. [Тематическая карта](nonlinear_inplane_outofplane_sources.md#crespo-da-silva-1988--роль-в-пространственном-аудите).
+
 ## `georgiades_2017_nonlinear_l_shaped_beams`
 
 - PDF: `docs/literature/pdf/j.euromechsol.2017.03.007.pdf`, 32 PDF-страницы (91–122); SHA256

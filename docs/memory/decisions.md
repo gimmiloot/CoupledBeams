@@ -651,3 +651,85 @@ reviewer diagnostic [D25](#rlb-d25)/[K26](knowledge.md#rlb-k26) не переп�
 `05ccf101fdc7adc6f6a1e87143c5987b0efe351a`. Новое supervisor approval
 не утверждается. Это memory condensation/navigation, без изменения
 canonical theory, reports, моделей или результатов.
+
+## NLSP-D01
+
+**Принято — отдельный seven-field nonlinear spatial action audit**, 2026-10-07.
+Новое явное задание пользователя после [LONG-D02](#long-d02) выбирает
+семиполевую кинематику q=(u,w,v,Phi,psi,theta,c), a=(Phi,-psi,theta),
+R=exp([a]x) и фиксированный V0 из
+[canonical note](../theory/weakly_nonlinear_spatial_rod.md).
+
+**Почему / статус допущения:** это принятое проектное nonlinear reduced
+продолжение с заданными M-H/Timoshenko и isotropic Timoshenko/generalized
+rectangular torsion linear limits, objective strain measures, положительной
+reference strain energy и ненапряжённым origin. Constant original-section
+elastic coefficients и c-dependent section inertia — разные явно принятые
+редукции, не полный 3D Hooke-law вывод или опубликованная nonlinear Jang/Yartsev
+система. Отсутствие дополнительных elastic products — допущение, не доказанная
+высшая степень. Коэффициенты не подбираются; project κ=5/6 сохраняется.
+
+**Область / разрешённые действия:** independently vary quartic action,
+compare cubic expansion of full balances and supplied analytical draft,
+implement isolated reusable energy/residual/flux evaluator, check invariants,
+linear limits, straight artificial split and manufactured amplitude order.
+Common translations/rotation-vector/c дают dual14 joint rows. c1=c2 остаётся
+reduced common-DOF variational closure, не direct 3D welded-joint derivation.
+Новая full section clamp U=z=c=0 не накладывает slopes и не равна source
+book_slope_clamp. Результат — [NLSP-K01](knowledge.md#nlsp-k01).
+
+**Остановка / пересмотр:** после фиксации и bounded audit остановиться.
+Не разрешены nonlinear time integration, periodic orbits, Galerkin/Floquet,
+critical-amplitude search, frequency/amplitude/geometry maps, прежний close pair,
+energy modal classification, forcing, springs/KV transfer или FEM/3D validation.
+Новый этап после audit требует отдельного решения пользователя.
+
+**Не заменяет:** LONGITUDINAL MODEL QUESTION CLOSED IN THE ADOPTED 1D SCOPE;
+[RLB-D22](#rlb-d22)/[RLB-K23](knowledge.md#rlb-k23)
+PAUSED_FOR_SUPERVISOR_DIRECTION и completed circular EB diagnostic сохранены.
+Elastic/KV уже существуют в EB/RLB, в эту ветвь не переносились. Историческое
+«next direction not selected» LONG-D02 относится к прошлой memory-sync;
+его история не переписывается, а дополняется этим новым явным заданием.
+
+**Происхождение:** пользовательское задание
+`d99b5093-4aab-4b8e-ab37-aa51e0398102/Pasted text.txt`, 2026-10-07;
+исходный main HEAD `7b3d667d5418cde247a6ca09fe9186945177537b`, чистый checkout.
+Supplied MD имеет отдельные origin/hash и статус comparison artifact;
+его заявленные проверки не принимаются как уже выполненные проектные tests.
+Supervisor approval или physical nonlinear validation не утверждаются.
+
+## NLSP-D02
+
+**Разрешён первый ограниченный planar time pilot**, 2026-10-07.
+Новое явное задание после [NLSP-D01](#nlsp-d01)/[NLSP-K01](knowledge.md#nlsp-k01)
+требует реальные траектории принятой cubic model, а не повторную подготовку
+алгебры. [Численный контракт](../theory/weakly_nonlinear_planar_time_pilot.md)
+ограничен одним прямым однородным G20 fixed-fixed стержнем и независимыми
+u,w,theta,c. Начальная continuous analytic Tim pair нормируется одним
+множителем; A/h=.05/.025, нулевые скорости и u=c=0, интервал5 linear periods.
+
+**Почему / область:** следующий вычислительный вопрос — решение quartic
+action с variable mass и всеми инерционными членами. Shen spatial levels
+16/24/32 и последовательные time settings проверяют все четыре поля и
+скорости, не составляют физическую двухмодовую модель. V0, source variants,
+baseline solvers и old references не пересматриваются. Критерии сходимости
+зафиксированы до main runs; допуски нельзя ослаблять по результату.
+
+**Бюджет / остановка:** после короткого smoke зафиксированы2400s total и
+480s integration на case, семь required trajectories, не более одного
+extra spatial level48 и одного addressed time tightening в том же бюджете.
+Завершённые cases сохраняются атомарно; numerical failure/budget exhaustion
+должны оставлять явный PARTIAL/FAIL, не заменяться claim о сходимости.
+Результат и фактическая остановка — [NLSP-K02](knowledge.md#nlsp-k02).
+
+Не разрешены angular/time maps, periodic continuation, out-of-plane
+perturbations/stability, Floquet, critical amplitude, fitting или FEM truth.
+Плоский pilot не закрывает historical angular same-clamp reference
+UNAVAILABLE. LONG closed и EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION
+сохраняются; spring/KV существуют в прежней ветви и сюда не переносились.
+После bounded report остановиться, без автоматического следующего этапа.
+
+**Происхождение:** explicit user request
+`f352f4d1-b074-4046-871a-313a14573314/Pasted text.txt`, 2026-10-07;
+main HEAD7b3d667d5418cde247a6ca09fe9186945177537b, pre-existing dirty
+completed audit сохранён. Supervisor approval не предполагается.

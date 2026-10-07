@@ -1,0 +1,38 @@
+{
+  "schema": "nlsp-cubic-audit-v1",
+  "model": "seven_field_reference_section_V0",
+  "field_order": ["u", "w", "v", "Phi", "psi", "theta", "c"],
+  "primary_source": {
+    "citation_key": "crespo_da_silva_1988_flexural_torsional_extensional_formulation",
+    "path": "docs/literature/pdf/0020-76832990087-x.pdf",
+    "sha256": "2949bede93118adf29f18cb3e8f9bf2e1faf2b611c9c71e3c5211ee9cbf4e128",
+    "pdf_pages": 10,
+    "pages_read": [1, 3, 5, 6, 7, 8],
+    "role": "variational/cubic literature antecedent; no-shear constraints and unequal amplitude orders are not adopted"
+  },
+  "supplied_expansion": {
+    "path": "data/input/cubic_seven_field_expansion_supplied.md",
+    "sha256": "87d7ce3c0ba1f00e1f282fdf68f6392f6e73f1bc178fdec60aec614e1dad063f",
+    "origin": "User analytical draft, C:/Users/Nikita/Downloads/cubic_seven_field_expansion.md; received 2026-10-07",
+    "role": "supplied analytical draft / comparison artifact; its stated checks are not project test evidence"
+  },
+  "material_geometry": {"E": 1.0, "rho": 1.0, "nu": 0.3, "b": 0.20, "h": 0.05, "L": 1.0, "kappa": "5/6"},
+  "amplitude_epsilons": [0.04, 0.02, 0.01, 0.005, 0.0025],
+  "manufactured_samples": [[0.23, 0.17], [0.61, 0.39]],
+  "manufactured_profiles": 3,
+  "manufactured_definition": "qbar_j=Aj sin(ks*s+wt*t+phase)+Bj cos(ps*s+vt*t-phase); analytic jets, formula fixed in CLI; all seven fields have degree one",
+  "length_scale": 1.0,
+  "time_scale": 1.0,
+  "policy": {
+    "symbolic": "exact Fraction sparse polynomials; canonical jet symbols then coefficients; zero coefficient differences required",
+    "linear_relative": 2e-8,
+    "boundary_work_absolute": 1e-12,
+    "numerical_identity_relative": 2e-12,
+    "amplitude_aggregate_final_order": [3.7, 4.3],
+    "numerical_floor_scaled": 1e-13,
+    "mass_small_neighborhood_rotation_norm": 0.1,
+    "mass_small_neighborhood_contraction_abs": 0.1,
+    "no_time_integration": true,
+    "no_parameter_map": true
+  }
+}

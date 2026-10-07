@@ -4,6 +4,37 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
+## First four-field planar nonlinear time pilot (2026-10-07)
+
+The [bounded numerical note](theory/weakly_nonlinear_planar_time_pilot.md)
+extends the accepted cubic model to a fixed-fixed straight G20 initial-value
+problem, with independent u,w,theta,c, two prescribed small amplitudes and
+spatial/time convergence. It discretizes the quartic action, retains variable
+mass and compares against continuous and semidiscrete linear references.
+Actual trajectory/convergence statuses are recorded in that note; an algebra
+PASS alone is not trajectory validation. No angular or out-of-plane stability
+study is authorized; LONG remains closed and EB/RLB-KV remains paused.
+
+**Bounded result: NLSP_PLANAR_TIME_PILOT=PARTIAL.** Both final p32 histories
+reach5T1; linear and temporal controls pass, but u/c and several velocities
+remain spatially unresolved. The final neighboring-p small-amplitude case
+has a saved2.648T1 prefix after the fixed budget stop. Energy/mass remain
+safe on computed histories; no complete nonlinear validation is claimed.
+
+## Seven-field spatial nonlinear action audit (2026-10-07)
+
+The [NLSP model note](theory/weakly_nonlinear_spatial_rod.md) records the
+explicitly adopted nonlinear reduced V0 separately from frozen linear models.
+One isolated helper/CLI compares variation of the quartic action with an
+independent cubic expansion of the exact balances. All21 coefficient identities
+and all21 supplied-draft parts agree; boundary/energy/reflection/planar/axial
+checks pass. Manufactured jets verify fourth-order residual truncation;
+bounded old-operator and straight-split controls use section-rotation clamps.
+This is mathematical/model verification, not nonlinear physical validation.
+No evolution, threshold, maps or spring/KV transfer. The longitudinal-model
+selection remains CLOSED in its adopted 1D scope; EB/RLB-KV remains paused.
+[Decision](memory/decisions.md#nlsp-d01), [evidence](memory/knowledge.md#nlsp-k01).
+
 ## Production M-H/Timoshenko Lambda(beta) implementation checks (2026-10-07)
 
 The [large geometry check](theory/mindlin_herrmann_timoshenko_lambda_beta_large_checks.md)

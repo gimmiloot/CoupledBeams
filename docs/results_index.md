@@ -15,6 +15,33 @@ index should be run without first reviewing its cost and output contract.
 
 ## Result directories
 
+`results/weakly_nonlinear_planar_time_pilot/<fingerprint>/` contains the
+[first four-field time pilot](theory/weakly_nonlinear_planar_time_pilot.md):
+atomic per-case coefficient/velocity NPZ histories, initial shape/projections,
+linear controls, convergence, quartic energy/mass/domain diagnostics and up
+to three PDF/PNG figures. Fixed numerical budgets preserve completed cases
+if a later gate is unresolved. Identity includes protected model/reference
+hashes, geometry, basis, quadrature, initial shape, integrator settings and
+versions. Matching compute and plot/report-only perform zero integrations,
+root solves and symbolic derivations. Old bundles are not overwritten.
+
+Current bounded bundle: `c97287772bc461ef`, six full5T1 histories and one
+budget-stopped prefix. The [tracked numerical report](theory/weakly_nonlinear_planar_time_pilot.md)
+records overall PARTIAL despite passing temporal/energy checks; p24→32
+spatial convergence fails for u,c and several velocities. Three figures use
+only the two completed final-degree amplitude histories.
+
+`results/weakly_nonlinear_spatial_rod/<fingerprint>/` contains the
+[completed seven-field action audit](theory/weakly_nonlinear_spatial_rod.md):
+exact rational quartic action, two cubic residual representations, all21
+coefficient differences, supplied-draft comparison, boundary/energy/symmetry
+identities, manufactured jets/amplitude orders, limited linear/split profiles
+and source/input/code/version/Git provenance. `current.json` selects a matching
+bundle. `--compute` reuses identity/artifact-checked results; `--report-only`
+performs zero derivations and roots. A tracked generated appendix preserves
+the full expansion. Source page images remain in sibling `source_audit/`.
+No nonlinear time evolution, threshold, modal classification or parameter map.
+
 `results/mindlin_herrmann_timoshenko_lambda_beta_large_checks/356c3be4953268f2/`
 contains the completed [production geometry checks](theory/mindlin_herrmann_timoshenko_lambda_beta_large_checks.md):
 fixed Lambda reference,37-angle spectra, shared baseline, paired-section

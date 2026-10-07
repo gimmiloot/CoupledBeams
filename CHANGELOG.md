@@ -2,6 +2,31 @@
 
 ## 2026-10-07
 
+- Added the first bounded four-field planar free-motion pilot of the accepted
+  quartic action: independent u,w,theta,c, Shen discretization, exact-degree
+  quadrature, variable mass/inertial terms and verified analytic Radau Jacobian.
+  Six full5T1 trajectories include both A/h=.05/.025 at p32; the seventh
+  neighboring-p control stopped at2.648T1 under the predeclared budget.
+  Linear/action/energy/mass and temporal controls pass; spatial u,c and several
+  velocities remain unresolved. Overall NLSP_PLANAR_TIME_PILOT=PARTIAL, with
+  unchanged tolerances and preserved data. Added one helper/CLI/config/test
+  module/numerical note, three PDF/PNG figures and scoped NLSP-D02/K02 memory.
+  247 unique relevant checks pass; matching cache/report/plot-only does zero
+  integrations, roots and derivations. No accepted nonlinear physical/stability
+  claim, angular study, fitting or changes to prior model/audit/reference files.
+
+- Fixed and verified the isolated seven-field nonlinear spatial reduced model:
+  one lazy Fraction-polynomial/analytic Rodrigues-Jr helper, one action-audit
+  CLI/config, supplied MD preserved byte-for-byte and generated full appendix.
+  All21 independent A/B parts and supplied parts agree; boundary/energy/symmetry,
+  dimensions, linear/planar/axial/split and manufactured fourth-order residual
+  checks pass.246 unique targeted/regression checks pass; cached report/compute
+  performs zero derivations/roots. Registered only the local Crespo1988 source,
+  keeping its no-shear/order assumptions separate. Added canonical note and
+  NLSP memory records/navigation. V0 is an explicit project constitutive choice,
+  not nonlinear physical/3D validation; no trajectories, threshold, maps, spring/
+  KV transfer or model fitting. Frozen linear models and reference bundles retained.
+
 - Completed the production-only M-H/Timoshenko Lambda(beta) large checks:
   fixed canonical reference, length asymmetry and mass-preserving section
   contrast,37 angles,185 unique map points +20 sparse swap controls.

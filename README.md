@@ -4,6 +4,19 @@ CoupledBeams is a research repository for frequency models and computations for 
 
 ## Project Layout
 
+- [Four-field planar nonlinear time pilot](docs/theory/weakly_nonlinear_planar_time_pilot.md)
+  -- bounded free-motion calculation of the audited quartic action, two
+  amplitudes, spatial/time controls and preserved per-case histories.
+  Reproduce with `python scripts/analysis/simulate_weakly_nonlinear_planar_rod.py --compute`;
+  use `--plot-only <bundle>` for redraw without integration. Read the note
+  for fixed budgets, actual convergence statuses and model limitations.
+
+- [Seven-field spatial nonlinear action audit](docs/theory/weakly_nonlinear_spatial_rod.md)
+  -- isolated accepted reduced energy, exact/cubic expressions and bounded
+  algebra/linear/amplitude checks. Reproduce with
+  `python scripts/analysis/verify_weakly_nonlinear_spatial_rod.py --compute`;
+  `--report-only <bundle>` reads saved evidence with zero roots/derivations.
+  Nonlinear evolution and critical amplitudes have not been calculated.
 - [Research index](docs/research_index.md) -- research directions, canonical documentation,
   and current scientific status.
 - [Generated results index](docs/results_index.md) -- workflow map for ignored/generated results.

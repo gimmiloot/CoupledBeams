@@ -1,5 +1,49 @@
 # Scripts guide
 
+## Four-field planar free-motion pilot
+
+`analysis/simulate_weakly_nonlinear_planar_rod.py` adds the distinct
+action-discretization/time-history workflow. It reuses the accepted polynomial
+model and saved analytic first Timoshenko pair; it is not a preset of the
+algebra-only audit or a frequency-map runner.
+
+```powershell
+python scripts/analysis/simulate_weakly_nonlinear_planar_rod.py --check
+python scripts/analysis/simulate_weakly_nonlinear_planar_rod.py --smoke
+python scripts/analysis/simulate_weakly_nonlinear_planar_rod.py --compute
+python scripts/analysis/simulate_weakly_nonlinear_planar_rod.py --report-only results/weakly_nonlinear_planar_time_pilot/<fingerprint>
+python scripts/analysis/simulate_weakly_nonlinear_planar_rod.py --plot-only results/weakly_nonlinear_planar_time_pilot/<fingerprint>
+python -m pytest tests/test_weakly_nonlinear_planar_dynamics.py -q
+```
+
+Read the [numerical note](../docs/theory/weakly_nonlinear_planar_time_pilot.md)
+before compute: the frozen pilot budget is2400s total/480s per case, with
+atomic saves and explicit PARTIAL on exhaustion. BLAS thread limits apply
+only to the CLI process. `--config`/`--output-dir` are explicit; matching
+compute and plot/report-only do zero integrations, roots and derivations.
+The accepted prior audit and frozen reference bundles must exist locally.
+No packages are installed by this workflow.
+
+## Seven-field spatial action audit
+
+`analysis/verify_weakly_nonlinear_spatial_rod.py` is a separate diagnostic
+action/jet workflow, not another linear spectrum solver or a frequency map.
+It reuses the old M-H/Timoshenko/Yartsev operators only for limited references.
+
+```powershell
+python scripts/analysis/verify_weakly_nonlinear_spatial_rod.py --check-sources
+python scripts/analysis/verify_weakly_nonlinear_spatial_rod.py --compute
+python scripts/analysis/verify_weakly_nonlinear_spatial_rod.py --report-only results/weakly_nonlinear_spatial_rod/<fingerprint>
+python -m pytest tests/test_weakly_nonlinear_spatial_rod.py -q
+```
+
+The checked existing NumPy/SciPy Python environment is sufficient; exact
+Fraction polynomials need no SymPy installation. Heavy work is not done on
+helper import; matching cache/report reuse performs zero roots/derivations.
+`--config` and `--output-dir` are explicit. Model, qualifiers and stopping
+conditions: [canonical note](../docs/theory/weakly_nonlinear_spatial_rod.md).
+No nonlinear integration, periodic solutions, Floquet analysis or threshold.
+
 This directory keeps the historical script names working. Most baseline
 presentation entry points are in `scripts/run/`, while some diagnostic-only
 families, including thickness mismatch, still use `scripts/analysis/`.

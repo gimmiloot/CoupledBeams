@@ -1,0 +1,24 @@
+{
+  "schema": "nlsp-planar-time-pilot-v1",
+  "model": "seven-field-reduced-v0-quartic-action-v1",
+  "fields": ["u", "w", "theta", "c"],
+  "material_geometry": {"E": 1.0, "rho": 1.0, "nu": 0.3, "b": 0.20, "h": 0.05, "L": 1.0, "kappa": "5/6"},
+  "boundary_conditions": "u=w=theta=c=0 at s=0,L; section-rotation clamp; no slope constraints",
+  "audit_bundle": "results/weakly_nonlinear_spatial_rod/a9cedd4b6de99295",
+  "linear_reference_bundle": "results/mindlin_herrmann_timoshenko_single_rod/342ce44bff81c36f",
+  "amplitude_over_h": [0.05, 0.025],
+  "periods": 5,
+  "spatial": {"degrees": [16, 24, 32], "allowed_extra_degree": 48, "basis": "P_n-P_(n+2); n=0,...,p-2", "quadrature": "2*p+1 Gauss points; exact through degree 4*p+1", "comparison_quadrature": 100},
+  "time_levels": {
+    "coarse": {"rtol": 1e-8, "atol_relative": 1e-8, "max_step_cutoff_period_fraction": 0.08333333333333333},
+    "medium": {"rtol": 1e-9, "atol_relative": 1e-9, "max_step_cutoff_period_fraction": 0.05555555555555555},
+    "tight": {"rtol": 1e-10, "atol_relative": 1e-10, "max_step_cutoff_period_fraction": 0.041666666666666664},
+    "allowed_extra": {"rtol": 2e-11, "atol_relative": 2e-11, "max_step_cutoff_period_fraction": 0.027777777777777776}
+  },
+  "integrator": {"method": "Radau", "jacobian": "analytic, including coordinate-dependent mass derivative", "coordinates": "constant-M0 Cholesky whitening; reversible, no mass replacement", "blas_threads": 1, "atol_policy": "field characteristic scales [A,A,A/L,A/L]*sqrt([m,m,jp,jp]*L/(p-1)); velocity scales times contraction cutoff omega; fixed component atol, no state-dependent relaxation"},
+  "sampling": {"steps_per_fastest_retained_linear_period": 12, "diagnostic_stride": 24, "snapshots_periods": [0, 0.25, 1, 2, 3, 4, 5]},
+  "gates": {"w_theta_relative": 1e-4, "u_c_relative": 1e-3, "energy_relative_drift": 1e-6, "identity_scaled": 2e-12, "finite_difference_jacobian_relative": 2e-7, "linear_final_frequency_relative": 2e-8, "relative_numerical_floor": 1e-10},
+  "safety": {"min_one_plus_c": 0.9, "max_abs_c": 0.1, "max_abs_theta": 0.1, "max_abs_axial_gradient": 0.1, "max_abs_transverse_gradient": 0.1, "max_L_abs_curvature": 0.2, "min_relative_mass_eigenvalue": 0.8},
+  "budget": {"status": "FIXED_AFTER_SMOKE", "smoke_duration": 0.1, "smoke_medium_p16_wall_seconds": 0.22742160002235323, "smoke_medium_p16_nfev": 575, "smoke_5T1_linear_wall_estimate_seconds": 225.0468931277383, "total_wall_seconds": 2400, "per_case_wall_seconds": 480, "max_cases": 10, "policy": "seven required trajectories; at most one extra p48 and one addressed extra time level; stop with saved PARTIAL if budget is exhausted"},
+  "semantics": {"initial_shape": "one common max|w_hat|=1 normalization of saved analytic Timoshenko first eigenpair", "static_initial_correction": false, "nonlinear_modal_truncation": false, "phase_alignment": false, "period_fit": false, "energy_classification": false, "out_of_plane_stability": false, "parameter_maps": false}
+}

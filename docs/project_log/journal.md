@@ -4,6 +4,75 @@
 
 ## 2026-10-07
 
+- Завершён bounded [первый planar time pilot](../theory/weakly_nonlinear_planar_time_pilot.md)
+  по explicit user request f352f4d1-b074-4046-871a-313a14573314. Initial main
+  HEAD7b3d667d5418cde247a6ca09fe9186945177537b,16modified/8untracked prior
+  audit files сохранены вместе с index; old helpers/appendix/source/reference
+  hashes не менялись. Новые helper/CLI/config/tests/note дискретизируют
+  accepted quartic action, не exact untruncated model. Четыре independent
+  поля, clamps по значениям, без slope/inextensibility/quasistatic-c условий.
+- До main зафиксированы p16/24/32,nq2p+1, две A/h=.05/.025 и5T1,
+  Radau analytic Jacobian, три time levels, numerical gates и smoke-based
+  2400s scheduling/480s per-integration budget. В main6 full histories,
+  включая обе finalp32 amplitudes, и один saved p24 small prefix до2.648T1.
+  Root solves0, model derivation1;5,090,009 RHS,13 Jacobians,26 Newton LU,
+  5,089,987 mass factorizations. Integration stopped at deadline; saving/
+  postprocessing completed at2425.512s. Бюджет и допуски не повышались.
+- Linear MH first3 и Tim first3, continuous initial pair/projections,
+  exact-in-time semidiscrete controls, weak/action/Jacobian/RHS energy и
+  source-polynomial saved-snapshot energy проходят. Last temporal pair
+  PASS. Last spatial p24→32: q u/c .274%/3.058%, velocities u/theta/c
+  2.200%/.1432%/5.750%, выше заданных gates. Поэтому общий
+  NLSP_PLANAR_TIME_PILOT=PARTIAL; small-amplitude neighboring-p check
+  incomplete, p48/extra tightening не запускались в исчерпанном бюджете.
+- Finalp32 drift9.53e-11/5.66e-11; mass positive, all sampled safety measures
+  bounded. Inducedu/c nonzero; normalized departures decrease with smallerA,
+  но complete four-field nonlinear effect/physical validation не объявлены.
+  Три PDF/PNG figures из full trajectories,247 unique targeted/regression
+  tests PASS, cache compute/report/plot-only zero integration/root/derivation.
+  README/CHANGELOG/navigation обновлены; append-only NLSP-D02/K02 фиксируют
+  PARTIAL и остановку. LONG closed, EB/RLB-KV paused, angular same-clamp
+  out-of-plane reference UNAVAILABLE. Нет periodic/Floquet/threshold/maps,
+  3D truth, source/model fitting или автоматического следующего этапа.
+
+- По новому явному заданию завершён отдельный
+  [семиполевой nonlinear spatial action audit](../theory/weakly_nonlinear_spatial_rod.md).
+  Исходный main HEAD7b3d667d5418cde247a6ca09fe9186945177537b, checkout clean;
+  до редактирования сохранены документы,658 tracked hashes, index hash и104
+  protected old-result hashes. Supplied MD сохранён побайтово SHA87d7ce3c...063f.
+  Новая модель не переоткрывает LONG и не переносит EB/RLB spring/KV.
+- Принятые V0/kinematics вынесены в isolated helper/note, frozen equations и
+  oldsolvers/variants/tolerances не менялись. Independent quartic-action A и
+  matrix-exponential-balance B:21/21 exact zero differences,21/21 supplied MATCH.
+  Exact Fraction ring (SymPy unavailable, no installs); boundary/energy/
+  reflection/dimension/axial/independent planar/rigid/split identities PASS.
+  Numerical evaluator uses full Rodrigues/Jr with analytic derivatives.
+- Fixed manufactured3profiles,2samples,epsilon .04→.0025: aggregate error
+  6.76753e-8→1.03264e-12, order≈4; final small rotation/c components below
+  predeclared reporting floor flagged. No PDE integration or trajectory claim.
+  G20 CT from isotropic generalized rectangular torsion, correct book-axis swap;
+  section-rotation clamp distinguished from historical book_slope_clamp.
+- Bounded direct first6+guard7 and3 MH family pairs match independently
+  established old blocks. Direct old min-max/scalar count9/9 belowomega2.7;
+ 10 direct profiles, two split profiles/roots including c/R PASS. Rank14/
+  duality0/45/90; saved planar first3 at45/90 pass. Out-of-plane angular
+  same-clamp spectrum reference unavailable; no forced source comparison.
+- Final bundle results/weakly_nonlinear_spatial_rod/a9cedd4b6de99295/:
+  model/identity/coefficients,polynomials/differences,profiles/brackets/counts,
+  manufactured errors,joint diagnostics/generated appendix. Runtime2.07s,
+ 715 boundary evaluations, cache/report-only zero derivations/roots.
+  Earlier developmental bundles retained. New57 tests plus189 unchanged
+  relevant MH/Bishop/Yartsev/rectangular Tim regressions:246unique PASS.
+  Initial test metadata-key mismatch corrected without physics/tolerance change;
+  review added explicit frozen-reference cache hashes and strict parser guards.
+- Registered Crespo1988 journal scan (10pages,SHA2949bede...4e128), checked
+  relevant page images. No-shear/u-order/EA-scaling not imported. README,
+  CHANGELOG/navigation/assumptions/scripts guides updated; append-only NLSP-D01/
+  NLSP-K01 added. AllNLSP audit statuses PASS, supplied MATCH; c continuity
+  remains reduced variational closure. No physical nonlinear validation,
+  nonlinear time integration, Floquet/periodic/modal reduction, critical amplitude,
+  maps, forcing/damping/FEM or fitting. Afteraudit stop; no automatic next stage.
+
 - Завершены [production Lambda(beta) large checks](../theory/mindlin_herrmann_timoshenko_lambda_beta_large_checks.md)
   по отдельному implementation-only заданию. Initial main/HEAD
   0f961acb227b504439408d3484b13a72a7acf3be:16modified/21untracked.

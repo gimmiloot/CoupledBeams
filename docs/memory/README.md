@@ -13,6 +13,9 @@
 завершённый circular EB reviewer diagnostic. Их решения и остановки не
 переносятся между моделями автоматически.
 
+Отдельное явное задание 2026-10-07 добавляет пространственную нелинейную
+семиполевую линию (`NLSP`); она не открывает заново выбор продольной модели.
+
 ## Как читать
 
 Этот README → [текущий контекст](current.md) → относящиеся к задаче D/K
@@ -30,6 +33,7 @@
 
 | Тема | Ключевые записи |
 |---|---|
+| Семиполевая модель: V0 → exact/cubic audit → первый four-field planar time pilot PARTIAL; без stability/порога | [NLSP-D01](decisions.md#nlsp-d01), [NLSP-K01](knowledge.md#nlsp-k01), [NLSP-D02](decisions.md#nlsp-d02), [NLSP-K02](knowledge.md#nlsp-k02), [numerical note](../theory/weakly_nonlinear_planar_time_pilot.md) |
 | Продольные модели: Bishop diagnostic → M-H/Timoshenko production selection → joint gates → hierarchy/thickness/Lambda checks → закрыта в принятом 1D scope | [LONG-D01](decisions.md#long-d01), [LONG-K01](knowledge.md#long-k01), [LONG-D02](decisions.md#long-d02) |
 | Базовая RLB, эквивалентность ламинатов и переносы | [K01](knowledge.md#rlb-k01), [K02](knowledge.md#rlb-k02), [K03](knowledge.md#rlb-k03), [K04](knowledge.md#rlb-k04) |
 | Поворотная пружина: теория, EB-пилот, RLB → EB, карты, формы, шарнир, устойчивость механизма | [K05](knowledge.md#rlb-k05), [K06](knowledge.md#rlb-k06), [K07](knowledge.md#rlb-k07), [K08](knowledge.md#rlb-k08), [K09](knowledge.md#rlb-k09), [K10](knowledge.md#rlb-k10), [K11](knowledge.md#rlb-k11) |

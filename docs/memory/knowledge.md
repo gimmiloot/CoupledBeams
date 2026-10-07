@@ -1242,3 +1242,106 @@ maps не являются текущей задачей; исторически
 Новая LONG запись не изменяет historical RLB-D/K, D22/K23 pause или K26.
 Большие таблицы и local ignored results не копируются и не служат
 единственным основанием памяти.
+
+## NLSP-K01
+
+**NLSP_CUBIC_MODEL_AUDIT=PASS — mathematical/computational audit**, 2026-10-07,
+[NLSP-D01](decisions.md#nlsp-d01),
+[canonical note](../theory/weakly_nonlinear_spatial_rod.md),
+[tracked generated expansion](../theory/weakly_nonlinear_spatial_rod_expansion_generated.md).
+
+**Установлено:** принятую энергию независимо воспроизвели двумя путями:
+variation quartic action и cubic expansion matrix-exponential full balances.
+Все7×3 coefficient differences точно нулевые в sparse Fraction arithmetic;
+coordinate rotations включают P^T Jr^T. Supplied MD сохранён побайтово,
+отдельное сравнение21parts MATCH. Boundary fluxes, dimensions, energy identity,
+reflection parity, pure axial и independently reconstructed planar limits,
+rigid-motion retained order и negative omission controls проверены.
+Плоское подпространство инвариантно; его устойчивость не установлена.
+
+Exact reduced evaluator отличается от cubic truncation. На3 predeclared
+manufactured all-field profiles,5 epsilon_a values и fixed scales aggregate
+residual order≈4; некоторые последние component values ниже conservative
+reporting floor и не используются как slope evidence. Это не ошибка частоты,
+периода или trajectory. Symmetric mass и small-neighborhood positivity
+проверены без global-positivity claim; nu=0 не удаляет rotation-driven c.
+
+**Линейные/интерфейсные evidence:** новый zero-Jacobian оператор совпадает
+со старыми независимыми M-H/Tim/Yartsev blocks после явного axis/sign map.
+G20 direct first6+guard7 сертифицирован saturated bounded count; M-H first3
+проверены отдельно, поскольку их нет в lower prefix. Splits .50/.35 совпали
+по roots/profiles, включая c/R и moment/force transmission; action additivity
+и внутренний nonlinear prescribed-field boundary power cancel. Beta0/45/90
+joint rank14/duality и available old in-plane first3 references проходят.
+246 unique targeted/regression checks PASS; matching cache/report gives
+zero derivations/roots, old reference/source hashes preserved.
+
+**Qualifications:** V0 — проектное nonlinear reduced assumption, не nonlinear
+система Jang/Ярцева и не единый 3D constitutive reduction. c1=c2 — adopted
+common-DOF variational closure, не finite welded-region 3D elasticity.
+C_T использует existing generalized rectangular torsion, не GIp; моноклинные
+материалы/coupling не переносились. Angular out-of-plane same-clamp spectrum
+reference UNAVAILABLE: исторический Yartsev pilot имеет book_slope_clamp.
+Новый section-rotation clamp не исправляет старый source benchmark.
+Исходная статья Crespo da Silva используется как вариационный antecedent:
+её no-shear constraints, u=O(epsilon^2), EA=O(epsilon^-1) не приняты.
+
+**Следствие / остановка:** принятую семиполевую модель можно использовать
+как зафиксированную основу следующего отдельно выбранного шага. Здесь нет
+PHYSICAL_NONLINEAR_VALIDATION_PASS, nonlinear trajectories, periodic/Floquet
+results или critical amplitude. После bounded audit остановка; новая программа
+автоматически не разрешена. LONG закрыт, EB/RLB-KV paused; spring/KV существуют
+в прежней ветви и не реализовывались/не переносились заново.
+
+**Происхождение / не отменяет:** текущий local main HEAD
+`7b3d667d5418cde247a6ca09fe9186945177537b`; сохранённые old reports/operators,
+registered local Crespo PDF и supplied MD, explicit user model definition.
+Полные numerical tables, tolerances, команды, current bundle provenance и
+limitations находятся в tracked note, не только в ignored result files.
+Исторические LONG/RLB-D/K и circular EB qualifications не переписаны.
+
+## NLSP-K02
+
+**NLSP_PLANAR_TIME_PILOT=PARTIAL**, 2026-10-07, по
+[NLSP-D02](decisions.md#nlsp-d02):
+[canonical numerical note](../theory/weakly_nonlinear_planar_time_pilot.md).
+Реально рассчитаны шесть full5T1 histories принятой quartic-action model,
+включая обе A/h=.05/.025 при p32. Все u,w,theta,c независимы; initial
+continuous Tim pair имеет один общий множитель, без static correction.
+Седьмой small-amplitude neighboring-p case сохранён до2.648T1:
+PREDECLARED_COMPUTATIONAL_BUDGET_EXHAUSTED. Это не полный5T1 контроль.
+
+**Установлено:** action/weak/Jacobian/linear reference controls PASS;
+time convergence при основной amplitude PASS по всем четырём fields
+и velocities. Quartic discrete energy drift и положительность relative
+mass проходят на всех computed intervals. Independent source T4/V4
+snapshot energies согласуются со stored values; BC по значениям точны.
+Matching compute/report/plot-only:0 integrations/roots/derivations.
+247 unique relevant tests PASS. Три figures показывают два completed
+final-degree histories, не periodic orbits или energy mode classes.
+
+**Unresolved:** last spatial p24→32 не проходит по u,c и velocities
+u,theta,c; малость energy drift не заменяет convergence trajectories.
+Normalized departures уменьшаются при меньшей amplitude, но это
+diagnostic two-case observation; общий effect acceptance остаётся
+EFFECT_NOT_RESOLVED для полной four-field distributed trajectory.
+Полный neighboring-p контроль малой amplitude не завершён; p48 и
+extra time tightening не запускались в исчерпанном fixed budget.
+Физическая nonlinear validation или универсальный amplitude law
+не утверждаются. Числа/таблицы остаются в tracked numerical note.
+
+**Остановка / не отменяет:** V0 и NLSP-K01 algebra audit не менялись;
+новая работа — numerical solution принятой модели. Out-of-plane
+fields не интегрировались; их stability/Floquet/critical amplitude
+не определены. Historical angular same-clamp reference UNAVAILABLE
+сохраняется. c1=c2 остаётся reduced variational closure, не 3D joint law.
+LONG closed, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION: spring/KV
+уже существуют в другой ветви и сюда не переносились. После bounded
+pilot остановка; новый refinement/research stage автоматически не выбран.
+
+**Происхождение:** user request f352f4d1-b074-4046-871a-313a14573314,
+local main HEAD7b3d667d5418cde247a6ca09fe9186945177537b; pre-existing
+completed audit и staging сохранены. Budget/tolerances фиксированы
+до main, не повышались; нет fit, FEM/experimental truth или нового
+literature search. Raw bundle локальный/ignored; canonical note
+сохраняет результат и qualifications независимо от его наличия.

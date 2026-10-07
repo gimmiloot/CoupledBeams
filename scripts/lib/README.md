@@ -2,6 +2,21 @@
 
 This directory contains reusable helper modules that are not meant to be run directly.
 
+- `weakly_nonlinear_planar_dynamics.py` restricts the audited quartic action
+  to independent u,w,theta,c and discretizes it in an essential-BC Shen basis.
+  Exact-degree quadrature, variable theta mass, both inertial terms and its
+  analytic Jacobian support the [bounded time pilot](../../docs/theory/weakly_nonlinear_planar_time_pilot.md).
+  Reversible M0 whitening is not mass replacement/modal truncation. Linear
+  eigenpairs/time references, reconstruction, weak residual and energy checks
+  are local numerical tools; no new physical closure or baseline API change.
+
+- `weakly_nonlinear_spatial_rod.py` isolates the adopted seven-field reduced
+  nonlinear model. Exact Rodrigues/Jr mass-form residuals and energies remain
+  distinct from quartic-action/cubic polynomial expressions. Lazy exact
+  Fraction derivation supplies independent A/B residuals and conjugate boundary
+  covectors; no optional CAS install, mass inverse, spectrum solver or dynamics
+  integration. [Model contract and audit](../../docs/theory/weakly_nonlinear_spatial_rod.md).
+
 The [production Lambda geometry check](../../docs/theory/mindlin_herrmann_timoshenko_lambda_beta_large_checks.md)
 composes `mindlin_herrmann_timoshenko_joint.arm_basis`, `arm_state`,
 `arm_dynamic_stiffness` and the same `joint_matrix` for two separate section

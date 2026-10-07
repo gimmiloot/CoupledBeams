@@ -1,5 +1,39 @@
 # Текущий контекст
 
+## Нелинейная пространственная ветвь — первый planar time pilot PARTIAL, 2026-10-07
+
+[NLSP-D02](decisions.md#nlsp-d02), [NLSP-K02](knowledge.md#nlsp-k02),
+[численный отчёт](../theory/weakly_nonlinear_planar_time_pilot.md).
+Рассчитаны реальные four-field trajectories принятой cubic model:
+один прямой G20 fixed-fixed rod, u,w,theta,c независимы, две amplitudes
+A/h=.05/.025. Обе finalp32 trajectories доходят до5T1. Linear/action и
+time controls PASS, energy/mass safe; spatial convergence u,c и части
+velocities не достигнута. Последний neighboring-p small-amplitude case
+сохранён до2.648T1 по заранее заданному budget, без ослабления tolerances.
+Общий NLSP_PLANAR_TIME_PILOT=PARTIAL; полный nonlinear effect acceptance
+не объявлен. Вопросы periodic/Floquet/out-of-plane stability/threshold
+не рассчитывались. Новый stage/refinement автоматически не разрешён.
+
+## Предыдущий семиполевой model/action audit — сохранён
+
+Новое явное задание пользователя после LONG-D02 выбрало ограниченную
+фиксацию/верификацию семиполевой кинематики и принятого V0:
+[NLSP-D01](decisions.md#nlsp-d01), [NLSP-K01](knowledge.md#nlsp-k01),
+[canonical note](../theory/weakly_nonlinear_spatial_rod.md).
+Это нелинейное пространственное продолжение, не новый Bishop/RL/M-H выбор.
+Историческое «следующее направление не выбрано» ниже относится к прежней
+memory-sync задаче и не переписывается задним числом в D/K.
+
+Завершены независимая quartic-action/cubic-balance сверка, supplied MD,
+boundary/energy/reflection/linear/planar/axial/split controls и проверка
+амплитудного порядка на manufactured jets. V0 — наше принятое nonlinear
+reduced constitutive assumption, не source-attributed nonlinear Jang/Yartsev
+и не полная 3D редукция. c1=c2 сохраняет reduced common-DOF qualification.
+На этом audit остановка: nonlinear time evolution, периодические орбиты,
+Galerkin/Floquet и критическая амплитуда ещё не рассчитаны/не разрешены
+автоматически. LONG закрыт; EB/RLB-KV остаётся PAUSED_FOR_SUPERVISOR_DIRECTION;
+упругость/вязкость там уже существуют и сюда не переносились.
+
 ## Продольная модель сопряжённых стержней — закрыта, 2026-10-07
 
 [LONG-D01](decisions.md#long-d01) — восстановленная история production выбора;
@@ -108,9 +142,27 @@ scaling и конечный 1D численный результат.
 classification автоматически не разрешены. Текущий этап — документационная
 синхронизация без расчётов или изменения моделей.
 
-## Текущая остановка
+## Историческая остановка после memory-sync
 
 Продольная линия закрыта в принятом 1D scope; EB/RLB-KV остаётся
 `PAUSED_FOR_SUPERVISOR_DIRECTION`; circular EB diagnostic завершён
 со своими qualifications. **Следующее научное направление не выбрано
 этим заданием.** Автоматическое продолжение любой из этих линий не разрешено.
+
+## Историческая остановка после NLSP audit
+
+Принятая семиполевая модель зафиксирована и проверена в объявленном
+математическом/вычислительном scope. Это не PHYSICAL_NONLINEAR_VALIDATION_PASS.
+Следующий этап после аудита не выбран автоматически: ни движение, ни порог
+выхода из плоскости не рассчитывались. LONG остаётся CLOSED; EB/RLB-KV paused.
+
+## Текущая остановка после planar time pilot
+
+Bounded программа завершена с PARTIAL и сохранёнными trajectories/figures.
+Spatial four-field convergence и полный малый-amplitude neighboring-p
+контроль unresolved. Дальнейшие вычисления не запускаются автоматически.
+LONGITUDINAL MODEL QUESTION CLOSED IN THE ADOPTED 1D SCOPE сохраняется;
+EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION сохраняется. Упругость/вязкость
+уже реализованы в прежней ветви, не перенесены сюда. Angular same-clamp
+out-of-plane reference остаётся UNAVAILABLE; прямой planar pilot его не
+закрывает. Следующее научное направление после этого pilot не выбрано.

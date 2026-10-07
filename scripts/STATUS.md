@@ -20,6 +20,25 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
+## Bounded planar nonlinear time pilot
+
+`simulate_weakly_nonlinear_planar_rod.py` completed its bounded diagnostic
+program with **NLSP_PLANAR_TIME_PILOT=PARTIAL**: two final-degree amplitudes
+reach5T1, temporal controls pass, spatial u/c and some velocities do not.
+The final auxiliary case has a saved budget-stopped prefix. Workflow
+completion is distinct from full convergence in the [numerical note](../docs/theory/weakly_nonlinear_planar_time_pilot.md).
+It integrates the audited quartic action, not the untruncated exact model;
+cached and plot/report-only paths perform no integration or derivation.
+No angular, out-of-plane stability or continuation stage is implied.
+
+## Completed seven-field spatial model/action audit
+
+The separate `verify_weakly_nonlinear_spatial_rod.py` is a completed bounded
+nonlinear model/action audit: exact quartic/cubic A/B identities, supplied MD,
+energy/boundary/symmetry/linear/split and manufactured-amplitude checks.
+It is not a production nonlinear evolution solver and does not reopen LONG
+or transfer EB/RLB spring/KV. [Canonical NLSP note](../docs/theory/weakly_nonlinear_spatial_rod.md).
+
 ## Completed general-angle reduced M-H/Timoshenko joint gate
 
 Subsequent `verify_mindlin_herrmann_timoshenko_lambda_beta_large_checks.py`

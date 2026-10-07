@@ -7,6 +7,64 @@ diagnostic workflow, and model-extension checks, see `../project_rules.md`.
 
 ## Working Notes
 
+## Four-field planar free-motion pilot (NLSP)
+
+- The [numerical pilot](weakly_nonlinear_planar_time_pilot.md) restricts the
+  accepted quartic action to v=Phi=psi=0, retaining independent u,w,theta,c.
+  One homogeneous straight G20 rod has u=w=theta=c=0 at both ends, without
+  slope constraints, an internal joint or book_slope_clamp.
+- Shen polynomials P_n-P_(n+2), maximum degrees16/24/32, provide p-1 numerical
+  unknowns per field. Gauss nq=2p+1 integrates quartic products exactly.
+  The numerical note uses d_h only for the full spatial coefficient vector;
+  it does not denote the geometric beta or a rotation-vector chart.
+  This is spatial approximation of the distributed action, not a physical
+  two-mode model. No quasistatic c, no-shear or inextensibility constraint.
+- Initial bending is one unchanged continuous analytic Timoshenko pair,
+  with one common max|w_hat|=1 normalization, A/h=.05/.025 and zero velocities,
+  u=c=0. No static correction; the horizon is5 fixed linear periods.
+- Variable theta mass and both conjugate inertial terms are retained.
+  Constant-M0 whitening is an invertible numerical basis transformation.
+  Radau uses a verified analytic Jacobian and solves the actual mass system;
+  no inverse expansion, damping, filtering or energy projection.
+- Declared numerical convergence gates: w/theta and velocities1e-4,
+  u/c and velocities1e-3 relative to their own nonzero characteristic scales,
+  quartic discrete energy drift1e-6. Small-neighborhood safety and bounded
+  wall-time policies are numerical stopping rules, not physical applicability.
+- A planar trajectory cannot establish out-of-plane stability. The angular
+  same-clamp out-of-plane reference remains UNAVAILABLE. No parameter maps,
+  periodic continuation, Floquet, critical amplitude or spring/KV transfer;
+  V0 and prior algebra stay unchanged, LONG closed, EB/RLB-KV paused.
+
+## Seven-field spatial nonlinear continuation (NLSP)
+
+- The [isolated canonical note](weakly_nonlinear_spatial_rod.md) fixes
+  q=(u,w,v,Phi,psi,theta,c), B=[t,n,k], a=(Phi,-psi,theta), R=exp([a]x).
+  All fields and normalized jets have amplitude degree one; geometry and
+  scales stay fixed. No no-shear, inextensible or quasistatic-c constraint.
+- V0 is an explicitly adopted project nonlinear reduced constitutive law,
+  with constant effective coefficients of the original section, not a
+  published nonlinear Jang/Yartsev system or a full 3D Hooke-law reduction.
+  Its objective measures, positive reference energy, unstressed origin and
+  accepted linear limits motivate the choice; they do not validate a real
+  joint's nonlinear threshold. Additional c/strain-curvature elastic products
+  are omitted by assumption, not because all have higher amplitude order.
+- J(c) is obtained from the declared affine section mass displacement and
+  original mass. No extra (1+c) volume/mass factor is applied. Constant elastic
+  coefficients and c-dependent inertia are distinct adopted reductions.
+  C_T retains the existing rectangular generalized torsion reduction, not GIp;
+  no dynamic warping/bimoment or monoclinic Sbar16 is introduced.
+- Quartic action gives cubic coordinate residuals and their conjugate fluxes.
+  The rotational covector includes P^T Jr^T; it is not the raw body moment.
+  Common translation, rotation-vector and c DOFs give 7+7 dual joint rows;
+  c1=c2 remains a reduced variational closure, not finite-joint 3D elasticity.
+  Outer U=z=c=0 clamps do not impose centerline slopes and differ from
+  Yartsev's book_slope_clamp. New notation is local; frozen equations stay intact.
+- Exact A/B and supplied-draft comparison, manufactured-jet O(epsilon_a^4)
+  residual checks and bounded linear/split controls audit this mathematical
+  model. Plane invariance is not plane stability. No nonlinear trajectory,
+  periodic orbit, modal reduction, Floquet multiplier or critical amplitude
+  was calculated. LONG remains closed; EB/RLB-KV remains paused, not transferred.
+
 ## Production Lambda(beta) implementation checks
 
 - The [large geometry check](mindlin_herrmann_timoshenko_lambda_beta_large_checks.md)
