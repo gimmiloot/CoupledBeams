@@ -564,3 +564,90 @@ equilibrium conditions и границ thin-joint asymptotics. FEM-калибр�
 аудит локального дерева 2026-10-05, HEAD `7ef59a5`, до commit/push.
 [Результат K26](knowledge.md#rlb-k26),
 [единая научная заметка](../laminated_beams/circular_eb_rotational_spring_rigid_limit.md).
+
+## LONG-D01
+
+**PRODUCTION_MHTIM_FORMULATION_SELECTED=PASS — историческое решение о
+production longitudinal model.** Выбор 2026-10-06 восстановлен по canonical
+reports; запись памяти добавлена 2026-10-07, не является новым выбором модели.
+
+**Принято / почему:** для rectangular homogeneous isotropic in-plane линии
+выбрана опубликованная совместная Jang-type reduced Mindlin–Herrmann
+axial/contraction + Timoshenko bending formulation. Preset
+`project_jang_reduced_rectangular` сохраняет самостоятельную contraction
+coordinate и принятые reduced constitutive blocks. κ=5/6 — отдельное
+project rectangular решение (`PRODUCTION_MHTIM_KAPPA_RESOLVED`), общее для
+M-H gradient и Timoshenko shear terms. Численный κ source Jang не был
+восстановлен; project значение не приписывается Jang и не является fit.
+
+**Область / разграничение:** малая линейная planar reduced 1D модель с
+объявленными clamps и geometry ranges. Rayleigh–Bishop сохраняется как
+standalone literature/diagnostic model; неизменённое общее Timoshenko+Bishop
+kinematic field не принято: `COMBINED_KINEMATICS_NOT_UNIQUELY_DEFINED`.
+Elementary axial и planar Rayleigh–Love — comparator/reduced models.
+Ng/Fernandes Lamé-type M-H — alternative source formulation, не production
+normal block; Rucka/Jang source-specific variants сохранены. Эти роли не
+означают, что альтернативные теории неправильны. Исторические
+`MHTIM_VARIANT_DEPENDENT`, `MH_SOURCE_VARIANTS_NOT_EQUIVALENT` и
+`RECTANGULAR_MH_PRESET_MAPPING_UNRESOLVED` относятся к своим source audits.
+
+Принятое впоследствии rigid common-DOF closure: d1=d2, theta1=theta2,
+c1=c2; dual equilibrium: sum physical nodal forces=0, sum nodal moments=0,
+sum R_node=0. c1=c2 — variational/common-DOF reduced-frame closure,
+поддержанное принятой published frame assembly structure, **не прямой
+вывод из 3D elasticity конечной области сварного углового узла**.
+
+**Основания:** [production decision, κ и finite rod](../theory/mindlin_herrmann_timoshenko_single_rod.md#14-production-formulation-decision),
+[rigid joint и assembly provenance](../theory/mindlin_herrmann_timoshenko_rigid_joint.md),
+[закрытый Bishop kinematic audit](../theory/timoshenko_bishop_single_rod.md),
+[standalone Bishop](../theory/bishop_literature_reproduction.md).
+Выбор требовал последовательной верификации до закрытия исследовательской
+линии; завершённые проверки и их ограничения собраны в
+[LONG-K01](knowledge.md#long-k01).
+
+**Остановка / пересмотр:** выбор не разрешает открытый parameter study или
+перенос spring/KV. Текущее закрытие и условия возобновления —
+[LONG-D02](#long-d02). Нет утверждения единственности, оптимальности или
+универсальной физической точности M-H.
+**Происхождение:** история решений по tracked reports, прочитанным
+2026-10-07 на main, HEAD `05ccf101fdc7adc6f6a1e87143c5987b0efe351a`,
+Version 0.5.14. Расчёты при синхронизации не повторялись; согласование
+с руководителем этой записи не предполагается.
+
+## LONG-D02
+
+**LONGITUDINAL MODEL QUESTION CLOSED IN THE ADOPTED 1D SCOPE**, 2026-10-07.
+Явное текущее решение пользователя после завершения Version 0.5.14:
+вопрос выбора и проверки продольной модели в принятом reduced 1D scope
+**закрыт**. Production модель выбрана и проверена в объявленных границах;
+это не утверждение exact truth, универсальной применимости, 3D joint
+validation или проверки всех геометрий/частот.
+
+**Почему / основание:** завершена цепочка evidence
+[LONG-K01](knowledge.md#long-k01), от finite rod до
+[production Lambda(beta) geometry checks](../theory/mindlin_herrmann_timoshenko_lambda_beta_large_checks.md).
+Дальнейшие проверки без нового физического вопроса не являются текущей задачей.
+
+**Область / остановка:** не продолжать автоматически Bishop comparisons,
+RL/M-H hierarchy, open-ended thickness extension, дополнительные beta maps
+или beta refinement, close-pair analysis и further implementation checks.
+Пользователь явно решил не исследовать close pair; исторический кандидат
+из thickness report не является следующим шагом.
+
+Отдельная EB/RLB rotational spring / Kelvin–Voigt ветвь **уже существует**:
+упругость и вязкость узла там вводились и исследовались. Её
+[PAUSED_FOR_SUPERVISOR_DIRECTION, RLB-D22](#rlb-d22) /
+[RLB-K23](knowledge.md#rlb-k23) сохраняется. Перенос/generalization spring/KV
+на production M-H/Timoshenko не объявлен выполненным и не выбран как
+автоматический следующий этап. Historical RLB records и circular EB
+reviewer diagnostic [D25](#rlb-d25)/[K26](knowledge.md#rlb-k26) не переписываются.
+
+**Возобновление:** только отдельное явное научное решение пользователя
+при новом физическом вопросе или validation target. **Next scientific
+(PhD) direction NOT SELECTED by this memory-sync task.** Исторические
+выборы отдельных ветвей сохраняются как история, не назначают текущую работу.
+**Происхождение:** explicit user decision after Version 0.5.14 completion,
+2026-10-07; фактический main HEAD
+`05ccf101fdc7adc6f6a1e87143c5987b0efe351a`. Новое supervisor approval
+не утверждается. Это memory condensation/navigation, без изменения
+canonical theory, reports, моделей или результатов.

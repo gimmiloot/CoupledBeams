@@ -1166,3 +1166,79 @@ bounded continuation через 3.162278,5.623413,17.782794,31.622777
 Литературная асимптотика и условный compact-joint scaling отделены от
 численного результата. Запись расширяет историю K05–K11 отдельным
 circular diagnostic и не изменяет выводы RLB/KV, анизотропии или Bishop.
+
+## LONG-K01
+
+**Completed longitudinal-model validation evidence**, 2026-10-07.
+[LONG-D01](decisions.md#long-d01) фиксирует исторический выбор;
+[LONG-D02](decisions.md#long-d02) — текущее закрытие линии.
+
+**Установлено в объявленном scope:** выбран Jang-type reduced
+M-H axial/contraction + Timoshenko bending,
+`project_jang_reduced_rectangular`, project κ=5/6. Завершена последовательная
+вариационная/численная проверка, а не proof физической точности всей теории:
+
+| Этап и canonical tracked report | Статус / установленный результат |
+|---|---|
+| [Finite fixed–fixed rod, §14–20](../theory/mindlin_herrmann_timoshenko_single_rod.md#14-production-formulation-decision) | `MHTIM_SINGLE_ROD_FINITE_SPECTRUM=PASS`: production finite rod, primary/independent representation, BC и bounded completeness. `HIERARCHY_SINGLE_ROD=PARTIAL_PASS` сохраняет contraction-clamp qualification ниже. |
+| [Artificial beta0 joint](../theory/mindlin_herrmann_timoshenko_rigid_joint.md) | `MHTIM_BETA0_JOINT_GATE=PASS`: homogeneous straight-rod split прозрачен для спектра и форм, включая c/R. |
+| [General-beta joint, §9–16](../theory/mindlin_herrmann_timoshenko_rigid_joint.md#9-general-angle-geometry-действующий-project-contract) | `MHTIM_GENERAL_BETA_JOINT_GATE=PASS`: geometry, virtual-work duality, rank, beta→0, beta90, arm swap, reflection и bounded pilot. |
+| [G20 hierarchy screening](../theory/coupled_longitudinal_theory_hierarchy_screening.md) | `COUPLED_HIERARCHY_SCREENING=COMPLETE`: differences small в первом 12-position prefix на восьми fixed beta; best fixed-beta shape correspondences diagonal. Planar RL не показал систематического преимущества как intermediate improvement toward MH. |
+| [Bounded thickness screening](../theory/coupled_longitudinal_theory_thickness_screening.md) | `COUPLED_THICKNESS_SCREENING=COMPLETE`: h/h0=1…2, beta0/45/90; differences растут в целом, остаются sub-percent в lower-spectrum prefix. Нет единого h² spectral law или non-diagonal correspondences. |
+| [Production Lambda(beta) large checks](../theory/mindlin_herrmann_timoshenko_lambda_beta_large_checks.md) | `MHTIM_LAMBDA_BETA_LARGE_CHECKS=PASS`: length asymmetry и thickness contrast на 37 beta points; homogeneous beta0 collapse, independent stepped beta0 reference, signed arm swaps, root quality/completeness и baseline regression. Implementation достаточно проверена для объявленных geometry/grid ranges adopted 1D model. |
+
+**Область и qualifications:**
+
+- M-H — model-to-model comparison reference, **не exact truth**; bounded
+  1D результаты не являются validation по 2D/3D elasticity и не охватывают
+  произвольные геометрии/частоты. Утолщение снижает стройность; применимость
+  по новому threshold не устанавливалась.
+- Приняты d1=d2, theta1=theta2, c1=c2 и dual sum physical nodal forces,
+  moments, R_node=0. **c1=c2 — variational/common-DOF reduced-frame closure,
+  supported by the adopted published frame assembly structure, не прямой
+  вывод из 3D elasticity конечной области сварного углового узла.**
+- Numeric κ source Jang не восстановлен. κ=5/6 — отдельное project
+  rectangular решение, не source-attributed value и не fit.
+- Elementary/RL не имеют independent contraction coordinate и не могут
+  наложить тот же resolved c-clamp. `HIERARCHY_SINGLE_ROD=PARTIAL_PASS`
+  не отменяет production-model finite-spectrum PASS; comparisons включают
+  различие соответствующих reduced boundary closures.
+- Fixed-case shape correspondence не является across-beta/across-thickness
+  tracking; spectral positions сортировались независимо, roots автоматически
+  не переставлялись. Energy-based modal classification не использовалась.
+- Standalone Bishop сохранён. Его закрытый combined-kinematics audit
+  `COMBINED_KINEMATICS_NOT_UNIQUELY_DEFINED` не стал production closure.
+  Elementary/planar RL — comparators; Ng/Fernandes Lamé-type — literature
+  alternative. Исторические source variant/mapping statuses сохранены,
+  не заменены общим PASS ([LONG-D01](decisions.md#long-d01)).
+
+**Отдельная уже существующая ветвь:** EB/RLB rotational elastic joint +
+Kelvin–Voigt rotational damping включает spring theory,
+EB implementation/maps/forms и RLB→EB limit ([K05–K11](README.md#темы)),
+KV theory и literature benchmarks ([K12](#rlb-k12), [K14](#rlb-k14)),
+elastic damping-participation screening и complex weak-damping confirmation
+([K15](#rlb-k15), [K19](#rlb-k19), [K22](#rlb-k22), [K23](#rlb-k23)),
+production EB/RLB routing ([K18](#rlb-k18), [K21](#rlb-k21)).
+Canonical synthesis — [сводка для руководителя](../laminated_beams/inplane_kelvin_voigt_research_status_for_supervisor.md).
+`PAUSED_FOR_SUPERVISOR_DIRECTION` [D22](decisions.md#rlb-d22)/[K23](#rlb-k23)
+сохраняется. Spring/KV не предстоит впервые вводить; их перенос на новую
+M-H production model не выполнен/не выбран этой синхронизацией.
+Circular EB reviewer diagnostic [K26](#rlb-k26) остаётся завершённым
+independent subtopic со своими qualifications.
+
+**Следствие:** production longitudinal selection/validation line закрыта
+в принятом 1D scope по [LONG-D02](decisions.md#long-d02). Дополнительные
+comparisons, thickness/beta extension, close-pair analysis или implementation
+maps не являются текущей задачей; исторический close-pair candidate не
+переносится в следующий этап. Возобновление — только по отдельному явному
+решению. Следующее научное направление этим заданием не выбрано.
+
+**Происхождение / не отменяет:** synthesis tracked canonical reports,
+[research navigation](../research_index.md), [results navigation](../results_index.md),
+[assumptions](../theory/assumptions.md) и [journal](../project_log/journal.md),
+прочитанных 2026-10-07 на main, HEAD
+`05ccf101fdc7adc6f6a1e87143c5987b0efe351a`, Version 0.5.14.
+Численные evidence/statuses переданы по отчётам без повторных расчётов.
+Новая LONG запись не изменяет historical RLB-D/K, D22/K23 pause или K26.
+Большие таблицы и local ignored results не копируются и не служат
+единственным основанием памяти.

@@ -1,4 +1,4 @@
-# Память исследования EB/RLB и поворотного узла
+# Память исследования сопряжённых стержней
 
 ## Назначение
 
@@ -7,6 +7,11 @@
 теорию, model-specific contracts и отчёты и не разрешает новые действия.
 Отсутствие записи означает неполноту покрытия памяти, а не отсутствие
 исследования в проекте.
+
+Покрыты отдельные scoped линии: продольные модели и production M-H/Timoshenko
+(`LONG`), EB/RLB с поворотной пружиной и Kelvin–Voigt (`RLB`), а также
+завершённый circular EB reviewer diagnostic. Их решения и остановки не
+переносятся между моделями автоматически.
 
 ## Как читать
 
@@ -25,6 +30,7 @@
 
 | Тема | Ключевые записи |
 |---|---|
+| Продольные модели: Bishop diagnostic → M-H/Timoshenko production selection → joint gates → hierarchy/thickness/Lambda checks → закрыта в принятом 1D scope | [LONG-D01](decisions.md#long-d01), [LONG-K01](knowledge.md#long-k01), [LONG-D02](decisions.md#long-d02) |
 | Базовая RLB, эквивалентность ламинатов и переносы | [K01](knowledge.md#rlb-k01), [K02](knowledge.md#rlb-k02), [K03](knowledge.md#rlb-k03), [K04](knowledge.md#rlb-k04) |
 | Поворотная пружина: теория, EB-пилот, RLB → EB, карты, формы, шарнир, устойчивость механизма | [K05](knowledge.md#rlb-k05), [K06](knowledge.md#rlb-k06), [K07](knowledge.md#rlb-k07), [K08](knowledge.md#rlb-k08), [K09](knowledge.md#rlb-k09), [K10](knowledge.md#rlb-k10), [K11](knowledge.md#rlb-k11) |
 | Отдельный reviewer diagnostic: круглые EB-стержни, SPRING → RIGID | [D25](decisions.md#rlb-d25), [K26](knowledge.md#rlb-k26), [научная заметка](../laminated_beams/circular_eb_rotational_spring_rigid_limit.md); прежние остановки [EB-JOINT-K01](knowledge.md#eb-joint-k01), [K02](knowledge.md#eb-joint-k02) |
