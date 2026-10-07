@@ -4,6 +4,26 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
+## Targeted planar solver diagnosis and recovery (2026-10-07)
+
+The [diagnostic continuation](theory/weakly_nonlinear_planar_time_pilot.md)
+reads the immutable first-pilot histories before any new integration. Physical
+L2 projection separates unresolved spatial tails from different evolution in
+the common space; the latter dominates the full-interval differences, without
+establishing a phase-only explanation. The continuous initial form has an
+axial acceleration trace mismatch of order A² at the clamps. This is a
+qualification of boundary smoothness, not a code-error or invalid-IVP claim.
+
+The existing helper now evaluates energy, gradient and Hessian only when
+requested; action, variable mass, inertial terms, initial fields and BC are
+unchanged. Pointwise equivalence and identical-settings old/new p32 controls
+on 0...0.1T1 pass. The guarded p48 full-run forecast exceeds the remaining
+fixed 900s budget, so **NLSP_PLANAR_P48_SPATIAL_CHECK=
+REFINEMENT_DEFERRED_BY_BUDGET** and **NLSP_PLANAR_SOLVER_RECOVERY=PARTIAL**.
+Exactly three short controls and no new full trajectory were performed.
+The original two-amplitude pilot and its incomplete small-amplitude control
+retain their historical PARTIAL status; no further refinement is selected.
+
 ## First four-field planar nonlinear time pilot (2026-10-07)
 
 The [bounded numerical note](theory/weakly_nonlinear_planar_time_pilot.md)

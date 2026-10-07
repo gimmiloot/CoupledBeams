@@ -733,3 +733,39 @@ UNAVAILABLE. LONG closed и EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION
 `f352f4d1-b074-4046-871a-313a14573314/Pasted text.txt`, 2026-10-07;
 main HEAD7b3d667d5418cde247a6ca09fe9186945177537b, pre-existing dirty
 completed audit сохранён. Supervisor approval не предполагается.
+
+
+## NLSP-D03
+
+**Адресная диагностика и bounded solver recovery после PARTIAL**, 2026-10-07.
+Новое явное задание после [NLSP-D02](#nlsp-d02)/[NLSP-K02](knowledge.md#nlsp-k02)
+сохраняет принятую cubic/quartic модель, variable mass, независимые u,w,theta,c,
+Shen–Legendre basis, G20 fixed-fixed geometry, original initial pair и clamps.
+[Canonical continuation](../theory/weakly_nonlinear_planar_time_pilot.md#14-адресная-диагностика-и-восстановление-вычислительного-пути-2026-10-07).
+
+**Почему / область:** сначала читать неизменные исторические данные, локализовать
+spatial differences и разложить их физической L2-проекцией; независимо проверить
+continuous initial acceleration traces; затем профилировать и убрать только
+доказанную лишнюю работу. Разрешена lazy energy/gradient/Hessian оптимизация с
+old/new equivalence и cache controls. Tolerances, quadrature, IC/BC/V0 не меняются.
+Начальная несовместность проверяется как гипотеза о гладкости, не как доказанная
+ошибка модели/кода и не как разрешение initial correction или slope constraints.
+
+**Бюджет / остановка:** максимум3 short controls,1 full p48 большой amplitude,
+900s profiling+new integration. Full p48 допускается только после gates и
+cost estimate; бюджет/forecast margin не увеличиваются по результату.
+Фактически3 shorts выполнены, полный p48 отложен по исходной inequality;
+[NLSP-K03](knowledge.md#nlsp-k03) сохраняет результат PARTIAL. Малая amplitude
+не пересчитывается. Новый basis, локальная сетка/FEM, modal reduction, фильтр,
+artificial damping, angle/out-of-plane/Floquet, amplitudes и V0 revision не выбраны.
+
+**Не отменяет:** NLSP-D02/K02 и исходный bundle остаются историей с PARTIAL;
+LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION и angular out-of-plane
+same-clamp reference UNAVAILABLE сохраняются. Spring/KV уже существуют в другой
+ветви и сюда не перенесены. После bounded report остановка; дальнейшее решение
+не выбирается автоматически.
+
+**Происхождение:** explicit user request об адресной диагностике/быстром улучшении,
+2026-10-07; main HEAD `1510d75c106a28a4da899c7eea1a337f11791ce6`, Version0.6.0,
+initial clean checkout/staging. Это новое разрешение конкретных numerical checks,
+не supervisor approval и не расширение physical claims.

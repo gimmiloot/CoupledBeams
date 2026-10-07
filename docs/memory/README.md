@@ -34,6 +34,7 @@
 | Тема | Ключевые записи |
 |---|---|
 | Семиполевая модель: V0 → exact/cubic audit → первый four-field planar time pilot PARTIAL; без stability/порога | [NLSP-D01](decisions.md#nlsp-d01), [NLSP-K01](knowledge.md#nlsp-k01), [NLSP-D02](decisions.md#nlsp-d02), [NLSP-K02](knowledge.md#nlsp-k02), [numerical note](../theory/weakly_nonlinear_planar_time_pilot.md) |
+| Адресная planar диагностика: physical L2 split / initial compatibility / lazy RHS recovery; full p48 отложен, PARTIAL | [NLSP-D03](decisions.md#nlsp-d03), [NLSP-K03](knowledge.md#nlsp-k03), [continuation](../theory/weakly_nonlinear_planar_time_pilot.md#14-адресная-диагностика-и-восстановление-вычислительного-пути-2026-10-07) |
 | Продольные модели: Bishop diagnostic → M-H/Timoshenko production selection → joint gates → hierarchy/thickness/Lambda checks → закрыта в принятом 1D scope | [LONG-D01](decisions.md#long-d01), [LONG-K01](knowledge.md#long-k01), [LONG-D02](decisions.md#long-d02) |
 | Базовая RLB, эквивалентность ламинатов и переносы | [K01](knowledge.md#rlb-k01), [K02](knowledge.md#rlb-k02), [K03](knowledge.md#rlb-k03), [K04](knowledge.md#rlb-k04) |
 | Поворотная пружина: теория, EB-пилот, RLB → EB, карты, формы, шарнир, устойчивость механизма | [K05](knowledge.md#rlb-k05), [K06](knowledge.md#rlb-k06), [K07](knowledge.md#rlb-k07), [K08](knowledge.md#rlb-k08), [K09](knowledge.md#rlb-k09), [K10](knowledge.md#rlb-k10), [K11](knowledge.md#rlb-k11) |

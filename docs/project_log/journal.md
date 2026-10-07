@@ -4,6 +4,40 @@
 
 ## 2026-10-07
 
+- По отдельному явному заданию выполнена
+  [адресная диагностика planar solver](../theory/weakly_nonlinear_planar_time_pilot.md).
+  Исходный main HEAD1510d75c106a28a4da899c7eea1a337f11791ce6, Version0.6.0;
+  старый bundle c97287772bc461ef и все его hashes/timestamps проверены,
+  trajectories/manifest не пересчитывались и не менялись. Прежние L2/max
+  разности воспроизведены; физическая L2-проекция показывает преобладание
+  разности эволюции в общем пространстве, без доказательства phase-only причины.
+- Из protected quartic action независимо подтверждён начальный axial trace
+  u_tt=±1.10185433e-5 при A=.0025, порядок A². Для остальных трёх полей
+  traces исчезают по continuous linear eigenpair identities. Это mismatch
+  гладкой совместности у неподвижных границ, не недопустимость weak IVP,
+  не доказанная ошибка программы и не единственная причина всех разностей.
+  Initial fields, четыре independent fields, clamps и Shen basis сохранены.
+- В existing planar helper разделены запросы energy/gradient/Hessian;
+  variable mass и все inertia terms сохранены. Pointwise V/derivatives/RHS/
+  Jacobian/energy/weak equivalence PASS. Short old/new p32 на0...0.1T1
+  имеют нулевые разности всех восьми metrics; runtime9.02→7.13s.
+- Всего ровно3 short controls,0 new full runs. p48 strict short13.81s;
+  guarded full forecast863.33s превышает remaining859.59s. Charged total
+  profiling/integration40.41s при fixed900s budget, без повышения лимита.
+  NLSP_PLANAR_P48_SPATIAL_CHECK=REFINEMENT_DEFERRED_BY_BUDGET;
+  NLSP_PLANAR_SOLVER_RECOVERY=PARTIAL. Полное p32→48 сравнение отсутствует,
+  smaller-amplitude old PARTIAL control не продолжался.
+- New evidence results/weakly_nonlinear_planar_recovery/054874a4a4c9c9ff/
+  сохраняет original execution db47d4efb6941bed с прозрачным cache revision
+  для plot lookups и двух guards в неисполненном full-run path: проверка
+  PASS всех коротких controls и различение master/comparison timestamps.
+  Исходные numerical data не менялись, повторных интегрирований нет.
+  31 targeted и165 combined tests PASS;3 ODE tests намеренно deselected.
+  Две diagnostic PDF/PNG figures;
+  report/plot-only и matching cache compute выполняют0 integrations.
+  LONG closed, EB/RLB-KV paused, angular same-clamp reference UNAVAILABLE
+  сохранены. Новый научный этап или смена basis/model/IC не выбраны.
+
 - Завершён bounded [первый planar time pilot](../theory/weakly_nonlinear_planar_time_pilot.md)
   по explicit user request f352f4d1-b074-4046-871a-313a14573314. Initial main
   HEAD7b3d667d5418cde247a6ca09fe9186945177537b,16modified/8untracked prior

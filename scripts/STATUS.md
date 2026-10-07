@@ -20,6 +20,20 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
+## Targeted planar solver recovery
+
+`diagnose_weakly_nonlinear_planar_rod.py` completed the addressed diagnostic
+program with **NLSP_PLANAR_SOLVER_RECOVERY=PARTIAL**. Historical difference
+metrics, physical L2 projection and continuous initial compatibility are
+recorded in the [numerical note](../docs/theory/weakly_nonlinear_planar_time_pilot.md).
+Lazy energy/gradient/Hessian evaluation passes old/new pointwise checks and
+the short p32 trajectory control without changing the action or initial data.
+Exactly three short integrations were performed; the sole candidate full p48
+run was **REFINEMENT_DEFERRED_BY_BUDGET** before launch. This does not certify
+spatial convergence or complete the first two-amplitude pilot. `--diagnose`
+and report/plot-only have no ODE work; matching compute reuses saved evidence.
+No automatic replacement of basis, initial fields or model is selected.
+
 ## Bounded planar nonlinear time pilot
 
 `simulate_weakly_nonlinear_planar_rod.py` completed its bounded diagnostic

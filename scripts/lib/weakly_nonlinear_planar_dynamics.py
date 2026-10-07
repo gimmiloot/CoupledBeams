@@ -25,7 +25,7 @@ from scipy.linalg import cho_factor, cho_solve, eigh, solve_triangular
 from scripts.lib import weakly_nonlinear_spatial_rod as rod
 
 
-VERSION = "audited-planar-quartic-shen-variable-mass-v1"
+VERSION = "audited-planar-quartic-shen-variable-mass-v2-lazy-potential"
 FIELDS = ("u", "w", "theta", "c")
 PLANAR_SPATIAL_INDICES = (0, 1, 5, 6)
 _LOCAL_POTENTIAL_NAMES = ("u_s", "w_s", "theta", "c", "c_s", "theta_s")
@@ -73,6 +73,13 @@ class _CompiledPolynomials:
         self.exponents = np.array(keys, dtype=np.int8)
         self.coefficients = np.array([[row.get(key, 0.) for key in keys] for row in rows])
         self.max_power = int(self.exponents.max(initial=0))
+        # The exponent pattern is fixed by the audited polynomials.  Finding
+        # these selectors on every RHS call does no state-dependent work.
+        self._multipliers = tuple(
+            (index, power, selected)
+            for index in range(len(self.names))
+            for power in range(1, self.max_power+1)
+            if (selected := np.flatnonzero(self.exponents[:, index] == power)).size)
 
     def evaluate(self, variables):
         variables = np.asarray(variables)
@@ -82,11 +89,8 @@ class _CompiledPolynomials:
         powers = [np.ones_like(variables)]
         for _ in range(self.max_power):
             powers.append(powers[-1]*variables)
-        for index in range(len(self.names)):
-            for power in range(1, self.max_power+1):
-                selected = self.exponents[:, index] == power
-                if selected.any():
-                    features[selected] *= powers[power][index]
+        for index, power, selected in self._multipliers:
+            features[selected] *= powers[power][index]
         return self.coefficients@features
 
 
@@ -147,8 +151,14 @@ class PlanarGalerkin:
             raise ValueError("Audited planar kinetic restriction differs from the expected quartic action")
         gradients = [potential.derivative(name) for name in _LOCAL_POTENTIAL_NAMES]
         hessians = [gradient.derivative(name) for gradient in gradients for name in _LOCAL_POTENTIAL_NAMES]
-        self._potential = _CompiledPolynomials([potential]+gradients+hessians,
-                                               _LOCAL_POTENTIAL_NAMES, coefficients)
+        # Ordinary RHS requests need V/gradient, not the 36 local Hessian
+        # entries.  Compile separate paths from the same exact derivatives.
+        self._potential_energy = _CompiledPolynomials([potential],
+                                                      _LOCAL_POTENTIAL_NAMES, coefficients)
+        self._potential_gradient = _CompiledPolynomials([potential]+gradients,
+                                                        _LOCAL_POTENTIAL_NAMES, coefficients)
+        self._potential_hessian = _CompiledPolynomials(hessians,
+                                                       _LOCAL_POTENTIAL_NAMES, coefficients)
         names = tuple(field+suffix for suffix in _JET_SUFFIXES for field in FIELDS)
         residuals = [_restrict_to_plane(self.model.residual_a[index]) for index in PLANAR_SPATIAL_INDICES]
         self._residual = _CompiledPolynomials(residuals, names, coefficients)
@@ -256,18 +266,27 @@ class PlanarGalerkin:
         return np.vstack([matrix@coordinate[self.slices[FIELDS[field]]]
                           for field, matrix in zip(_LOCAL_FIELDS, self._potential_matrices)])
 
-    def _local_potential(self, coordinate):
+    def _local_potential(self, coordinate, gradient=True, hessian=False):
         coordinate = self._check_coordinate(coordinate)
-        if self._potential_cache_q is not None and np.array_equal(coordinate, self._potential_cache_q):
-            return self._potential_cache
-        self.force_evaluations += 1
-        values = self._potential.evaluate(self._local_variables(coordinate))
-        self._potential_cache_q = coordinate.copy()
-        self._potential_cache = (float(self.weights@values[0]), values[1:7], values[7:].reshape(6,6,self.nq))
-        return self._potential_cache
+        if self._potential_cache_q is None or not np.array_equal(coordinate, self._potential_cache_q):
+            self.force_evaluations += 1
+            self._potential_cache_q = coordinate.copy()
+            self._potential_cache = {"variables": self._local_variables(coordinate),
+                                     "energy": None, "gradient": None, "hessian": None}
+        cache = self._potential_cache
+        if gradient and cache["gradient"] is None:
+            values = self._potential_gradient.evaluate(cache["variables"])
+            cache["energy"], cache["gradient"] = float(self.weights@values[0]), values[1:]
+        elif cache["energy"] is None:
+            values = self._potential_energy.evaluate(cache["variables"])
+            cache["energy"] = float(self.weights@values[0])
+        if hessian and cache["hessian"] is None:
+            values = self._potential_hessian.evaluate(cache["variables"])
+            cache["hessian"] = values.reshape(6, 6, self.nq)
+        return cache["energy"], cache["gradient"], cache["hessian"]
 
     def potential(self, coordinate, gradient=True, hessian=False):
-        energy, local_gradient, local_hessian = self._local_potential(coordinate)
+        energy, local_gradient, local_hessian = self._local_potential(coordinate, gradient, hessian)
         result = {"V": energy}
         if gradient:
             force = np.zeros(self.ndof)

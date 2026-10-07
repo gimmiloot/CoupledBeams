@@ -2,6 +2,19 @@
 
 ## 2026-10-07
 
+- Diagnosed the preserved PARTIAL planar pilot through physical L2 projection,
+  error localization and continuous initial acceleration traces; confirmed an
+  A-squared axial compatibility mismatch without changing the model or IC/BC.
+  Split numerical energy/gradient/Hessian paths lazily, preserving variable
+  mass/inertia and analytic Jacobian. Pointwise/cache equivalence passes;
+  short old/new p32 trajectories coincide, integration speedup about1.26x.
+  Exactly3 short controls were run; the sole full p48 candidate was deferred
+  by the unchanged900s budget forecast, so solver recovery remains PARTIAL.
+  Added one diagnostic CLI/tests, two PDF/PNG figures and NLSP-D03/K03 memory;
+  report/plot/cache reuse performs zero integrations. Historical results,
+  frozen model/audit/reference files and the smaller-amplitude PARTIAL remain.
+
+
 - Added the first bounded four-field planar free-motion pilot of the accepted
   quartic action: independent u,w,theta,c, Shen discretization, exact-degree
   quadrature, variable mass/inertial terms and verified analytic Radau Jacobian.

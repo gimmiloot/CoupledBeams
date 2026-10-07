@@ -1345,3 +1345,56 @@ completed audit и staging сохранены. Budget/tolerances фиксиро�
 до main, не повышались; нет fit, FEM/experimental truth или нового
 literature search. Raw bundle локальный/ignored; canonical note
 сохраняет результат и qualifications независимо от его наличия.
+
+
+## NLSP-K03
+
+**NLSP_PLANAR_SOLVER_RECOVERY=PARTIAL**, 2026-10-07, по
+[NLSP-D03](decisions.md#nlsp-d03):
+[canonical continuation](../theory/weakly_nonlinear_planar_time_pilot.md#14-адресная-диагностика-и-восстановление-вычислительного-пути-2026-10-07).
+
+**Установлено:** historical manifest и actual time arrays проверены;
+large-amplitude p24→32 norms воспроизведены без изменения criteria. Разности
+u,c и части velocities появляются рано и развиваются по длине, не только
+на концах. Физическая L2-проекция отделяет tail вне p24 от общего пространства:
+на полном интервале преобладает разность эволюции общих компонент, которую
+нельзя автоматически называть исключительно фазовой ошибкой. Pythagoras и
+ортогональность проходят на arithmetic scale; whitened tails не использованы.
+
+**Initial compatibility:** CONFIRMED_LOW_ORDER_MISMATCH. Independent derivative
+защищённого action и continuous analytic bending pair дают ненулевые axial
+initial acceleration traces порядка A². Values/velocities и linear control
+совместны, другие acceleration traces нулевые до roundoff. Это ограничение
+гладкости до boundary в начальный момент, не доказательство invalid weak IVP,
+code error или необходимости добавить slopes/correct initial fields. Mismatch
+не является единственной доказанной причиной всех spatial differences.
+
+**Numerical path:** разделение energy/gradient/Hessian исключило ненужные Hessian
+RHS evaluations; variable mass/inertia/Jacobian physics сохранены. Pointwise
+old/new equivalence PASS на real/tiny states; cache controls PASS. Короткие
+old/new p32 trajectories совпадают по всем8 norms, integration ускорена примерно
+1.26×; distinct-state RHS profiling даёт примерно1.3–1.4×, не гарантию полной серии.
+
+**Coverage / unresolved:** ровно3 new short controls до0.1T1, включая p48
+stricter;0 full runs. По заранее фиксированному conservative forecast полный
+p48 не помещается в остаток900s: REFINEMENT_DEFERRED_BY_BUDGET. Short p32→p48
+не проходит все прежние four-field gates и имеет SHORT_ONLY qualification;
+он не является full spatial/temporal convergence certificate. Full p32→48 и
+исходный smaller-amplitude neighboring-p control остаются unresolved;
+NLSP_PLANAR_TIME_PILOT=PARTIAL не повышен. Математическая модель не исправлялась.
+
+**Basis / implication:** сохранён отдельный fingerprint diagnostic bundle со
+ссылкой на неизменный historical source; old execution helper/CLI hashes и
+post-execution plot/safety metadata fixes явно различены. Report-only/plot-only
+и matching compute cache выполняют0 integrations/roots/derivations. Две figures
+— локализация contraction difference и tail/common split, не energy classes.
+Полные числа находятся в tracked canonical note; raw results не единственное
+основание memory. Небольшая оптимизация полезна по стоимости, но four-field
+пространственный PASS пока не установлен. Дальнейшее решение отдельно; никаких
+автоматических basis/FEM/IC/angle/out-of-plane/Floquet переходов.
+
+**Не отменяет / provenance:** historical NLSP-D02/K02 append-only сохранены;
+LONG CLOSED, RLB/KV PAUSED и angular same-clamp reference UNAVAILABLE сохранены.
+User request2026-10-07, current main HEAD1510d75c106a28a4da899c7eea1a337f11791ce6;
+no fitting, new literature, nonlinear physical validation или higher-order
+compatibility claim. Исходные model/reference/results/staging сохранены.

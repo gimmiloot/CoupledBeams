@@ -15,6 +15,24 @@ index should be run without first reviewing its cost and output contract.
 
 ## Result directories
 
+`results/weakly_nonlinear_planar_recovery/054874a4a4c9c9ff/` contains the
+[targeted continuation](theory/weakly_nonlinear_planar_time_pilot.md): validated
+historical manifests, physical error localization and L2 projection/tail
+data, continuous initial-compatibility evidence, preserved baseline helper,
+pointwise equivalence, profiling, three short integration controls, fixed
+budget decision and two PDF/PNG diagnostic figures. The original execution
+bundle `db47d4efb6941bed` is retained. The transparent post-execution cache
+revision records plot lookup corrections and safety/timestamp fixes in the
+unexecuted full-run path. Original numerical data are unchanged; no controls
+or trajectories were reintegrated.
+
+The p48 full-run forecast was 863.33s against 859.59s remaining; charged
+profiling/integration time was 40.41s. No full p48 trajectory was started:
+`REFINEMENT_DEFERRED_BY_BUDGET`; solver recovery remains PARTIAL. Matching
+`diagnose_weakly_nonlinear_planar_rod.py --compute` and report/plot-only read
+saved evidence with zero integrations. The first-pilot bundle below, its
+manifest and actual incomplete-case timestamps are unchanged.
+
 `results/weakly_nonlinear_planar_time_pilot/<fingerprint>/` contains the
 [first four-field time pilot](theory/weakly_nonlinear_planar_time_pilot.md):
 atomic per-case coefficient/velocity NPZ histories, initial shape/projections,

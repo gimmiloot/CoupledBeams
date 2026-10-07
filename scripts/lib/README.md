@@ -9,6 +9,11 @@ This directory contains reusable helper modules that are not meant to be run dir
   Reversible M0 whitening is not mass replacement/modal truncation. Linear
   eigenpairs/time references, reconstruction, weak residual and energy checks
   are local numerical tools; no new physical closure or baseline API change.
+  The targeted recovery splits energy-only, gradient and Hessian requests so
+  ordinary RHS calls do not evaluate unused second derivatives. State-aware
+  caches retain the same variable-mass solve and analytic Jacobian; numerical
+  equivalence is checked against the preserved historical implementation.
+  This optimization does not resolve the reported spatial-convergence gates.
 
 - `weakly_nonlinear_spatial_rod.py` isolates the adopted seven-field reduced
   nonlinear model. Exact Rodrigues/Jr mass-form residuals and energies remain

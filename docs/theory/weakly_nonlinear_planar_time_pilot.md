@@ -577,3 +577,290 @@ full/cubic residual не является таким законом.
 Плоский pilot не устанавливает пространственную устойчивость и не
 снимает qualification `c1=c2` будущего reduced angular closure.
 Следующий nonlinear этап не запускается автоматически после проверки.
+
+
+## 14. Адресная диагностика и восстановление вычислительного пути, 2026-10-07
+
+Это продолжение после Version 0.6.0, main HEAD
+`1510d75c106a28a4da899c7eea1a337f11791ce6`. Первоначальные разделы 1–13,
+исходный bundle `c97287772bc461ef`, его manifest и семь histories сохранены
+неизменными. Новая диагностика не превращает предыдущий PARTIAL в COMPLETE.
+V0, quartic action, cubic equations, variable kinetic energy, четыре поля,
+Shen–Legendre basis, G20 geometry, initial pair и essential-only clamps не менялись.
+
+### Исторические данные и нормы
+
+Все artifact hashes старого manifest проверены на его собственных условиях;
+новый code hash не предъявляется историческому execution identity.
+Large-amplitude p16/p24/p32 tight и p32 medium/coarse содержат 70985 одинаковых
+фактических времён: 0…98.9558129508 = 5T1, output dt≈0.001394058.
+Small-amplitude p24 действительно заканчивается на 52.4096104458 = 2.648132T1;
+повторённые последние snapshot indices означают одно и то же время, не 3/4/5T1.
+Ни один старый case не пересчитывался.
+
+Воспроизведены прежние max-over-time physical L2 и max-over-time/space нормы,
+знаменатели, reporting floor и 100 Gauss comparison nodes. Фазового сдвига,
+амплитудного масштабирования и исключения времени/краевых зон нет.
+Профили на 1001 равномерной точке служат дополнительной локализацией и
+не подменяют прежний max criterion. Обработка coefficients выполняется блоками.
+
+| Компонента | p24→p32, relative L2 | relative max | Прежний допуск | Результат |
+|---|---:|---:|---:|---|
+| u | 2.738887e-3 | 3.887637e-3 | 1e-3 | FAIL |
+| w | 7.278650e-7 | 1.061108e-6 | 1e-4 | PASS |
+| theta | 1.194019e-5 | 1.844444e-5 | 1e-4 | PASS |
+| c | 3.058208e-2 | 4.571499e-2 | 1e-3 | FAIL |
+| u_t | 2.200272e-2 | 3.385145e-2 | 1e-3 | FAIL |
+| w_t | 4.116842e-5 | 7.715395e-5 | 1e-4 | PASS |
+| theta_t | 1.432452e-3 | 2.230099e-3 | 1e-4 | FAIL |
+| c_t | 5.750326e-2 | 7.769096e-2 | 1e-3 | FAIL |
+
+Все восемь исторических relative L2/max значений воспроизведены с разностью 0.
+Контекст p16→p24 сохранён отдельно. Основные ограничения дают u,c, u_t,c_t
+и theta_t. Превышение fixed L2 gates начинается уже при t/T1≈0.002465 для c_t,
+0.005001 для u_t, 0.006762 для c, 0.026203 для u, 0.051490 для theta_t.
+К 0.1T1 достигнуто около 43% полного максимума L2-разности c, 51% для u,
+64% для u_t. Это не только накопление поздней ошибки.
+
+Максимумы c и c_t по исходным Gauss nodes находятся при
+(t/T1,s/L)≈(4.703525,0.507814) и (4.848628,0.972028), соответственно;
+точные координаты/времена всех восьми максимумов сохранены в JSON.
+Интеграл по времени квадрата разности распределён по всей длине:
+71–88% приходится на [.1L,.9L], 12–29% суммарно на две крайние зоны.
+При максимуме L2-разности u крайние зоны дают 52.9%.
+Это не универсальная локализация всех разностей только у заделок.
+
+### Физическая L2-проекция и разложение ошибки
+
+Для каждого поля и скорости p32 физически восстановлен из собственной
+mass-whitening transformation, затем ортогонально спроецирован на p24:
+
+$$ f_{32}-f_{24}=(f_{32}-\Pi_{24}f_{32})+(\Pi_{24}f_{32}-f_{24}). $$
+
+Gram matrices используют physical L2 weights, не необработанные whitened
+coefficients. Точное полиномиальное интегрирование выполняется прежней
+100-point Gauss quadrature; отдельно проверены ортогональность и Pythagoras.
+Максимальные остатки, делённые на квадрат собственного characteristic L2
+масштаба поля: 1.90e-17 для Pythagoras и 7.66e-18 для ортогональности.
+
+| Компонента | Доля интеграла квадрата ошибки вне p24, % | В общем пространстве, % |
+|---|---:|---:|
+| u | 20.484 | 79.516 |
+| w | 6.216 | 93.784 |
+| theta | 2.545 | 97.455 |
+| c | 9.584 | 90.416 |
+| u_t | 34.934 | 65.066 |
+| w_t | 17.285 | 82.715 |
+| theta_t | 1.007 | 98.993 |
+| c_t | 9.358 | 90.642 |
+
+На первых 0.1T1 tail fractions u,c,u_t,c_t≈46%,52%,60%,52%.
+Таким образом, есть и недостаток spatial detail, и разность эволюции общих
+компонент. Второе слагаемое не доказано исключительно фазовой ошибкой.
+Это L2 approximation diagnostic, не энергетическая классификация или modal
+reduction. Представительные physical Legendre coefficients сохранены;
+коэффициенты решателя не фильтровались и не отбрасывались.
+
+### Непрерывная начальная совместность
+
+Из защищённого `V_le4` независимо получен axial flux второго порядка
+при u=c=0 и planar bending:
+
+$$ F_u^{[2]}=(C-S)\theta w_s+(S-C/2)\theta^2. $$
+
+Проверка точными Fraction polynomials совпадает с derivative action.
+На fixed endpoint theta=0, поэтому
+
+$$ (F_u^{[2]})_s=(C-S)\theta_s w_s,\qquad
+   u_{tt}\big|_{\partial}=(C-S)\theta_s w_s/m. $$
+
+Вычисление использует continuous analytic Timoshenko state basis и его
+пространственные производные, а не Galerkin acceleration, которая по
+конструкции равна нулю на концах. Residual convention: m*q_tt+r=0.
+Четыре endpoint body residuals при точных clamp values:
+
+| Поле | r при начальных данных у конца | Вывод |
+|---|---|---|
+| u | -(C-S)*theta_s*w_s | ненулевой trace порядка A² |
+| w | S*(theta_s-w_ss) | 0 по linear eigenpair identity |
+| theta | -S*w_s-Bp*theta_ss | 0 по linear eigenpair identity |
+| c | 0 | 0 |
+
+Для A=.0025: w_s=(+2.067790439e-4,-2.067790439e-4),
+theta_s=(.06845755316,.06845755316), w_ss с теми же значениями,
+theta_ss=(-.3181216061,+.3181216061). Axial acceleration traces:
+(+1.101854330e-5,-1.101854330e-5). Половинная amplitude даёт четверть этих
+значений; это проверка A² expression без новой малой-amplitude траектории.
+Другие traces и linear controls равны нулю с roundoff порядка1e-15;
+continuous state consistency max3.55e-15. Значения и скорости совместны.
+
+Статус **CONFIRMED_LOW_ORDER_MISMATCH** относится к требованию гладкости
+по времени до второго порядка вплоть до неподвижного конца. Он не означает
+недопустимость weak initial-boundary problem, ошибку кода, отсутствие slope
+constraints или необходимость исправить initial fields. Реакции заделки,
+слабая постановка и предельное внутреннее strong equation различаются.
+Совместность не является единственной доказанной причиной всех разностей;
+более высокие compatibility orders здесь не исследованы. Static correction
+или дополнительное w_s=0 не вводились.
+
+### Profiling и минимальная оптимизация
+
+Baseline helper сохранён до изменения отдельно, SHA256
+`fa03369ea8aed8f6475679c319b4026eec169d7cad5ea39237f07354d6f37e90`,
+совпадает с historical manifest. Выявлено вычисление potential Hessian при
+обычном RHS. Теперь energy-only, gradient и Hessian paths разделены;
+cache повышает уровень запроса для того же q и инвалидируется при его смене.
+Неподвижные monomial selectors подготовлены один раз. Variable M(q), его
+factorization при изменившемся c, inertial terms, analytic Jacobian, safety,
+quadrature и Radau/tolerances сохранены.
+
+16 разных реальных p32 states, warmup и медиана трёх повторов,
+BLAS threads=1 во всех сравнениях:
+
+| Операция | До, ms | После, ms | Ускорение |
+|---|---:|---:|---:|
+| RHS | .32557 | .23196 | 1.40× |
+| potential gradient | .20018 | .12268 | 1.63× |
+| potential energy | .17961 | .08318 | 2.16× |
+| Hessian request | .59473 | .54012 | 1.10× |
+| mass assembly | .03789 | .03713 | 1.02× |
+| mass solve including assembly | .05712 | .05470 | 1.04× |
+| inertial terms | .01764 | .01743 | 1.01× |
+| safety | .04698 | .04578 | 1.03× |
+| Jacobian | 1.12449 | 1.08351 | 1.04× |
+| physical reconstruction | .01178 | .01167 | 1.01× |
+
+Компоненты timing не складываются как независимые: многие paths включают
+другие операции/cache. Отдельный32-state profiler даёт RHS1.32× и gradient1.81×;
+это разброс измерений, не гарантированный factor полного расчёта.
+
+На реальных snapshots и малых deterministic states gradient/Hessian/M/inertia,
+acceleration/RHS/Jacobian/energy rate/weak residual до и после совпадают
+побитово. В fresh16-state измерении V имеет absolute difference≤2.07e-24,
+relative≤3.39e-15; неизменный equivalence gate2e-12 пройден. Weak/action
+absolute residual≈1.37e-15 проходит2e-12. Отношение к уже компенсированной
+итоговой силе≈1.11e-11 одинаково до/после и отдельно сохранено; tests также
+проверяют relative identity на масштабе нескомпенсированных local work terms.
+Cache controls включают energy→gradient→Hessian, repeat/new q и velocity-only
+change. Не используется устаревшая mass factorization при изменённом c.
+
+Старый full p32 tight:140786 accepted steps, dt_min≈.0005580,
+dt_max≈.0007029 при max_step≈.0036047; ceiling шага фактически не активен.
+nfev985510≈7.00006/step, njev2, Radau nlu4, variable-mass factorizations985507.
+Полная последовательность внутренних dt и rejected steps не сохранялась:
+median dt или точное число rejected steps не объявляются. Редкий refresh
+Jacobian и Radau LU не равен редкому вычислению variable mass/RHS.
+
+### Три коротких контроля и решение о p48
+
+| Контроль 0…0.1T1 | Время, s | Steps | RHS | Jacobian / Radau LU | Drift |
+|---|---:|---:|---:|---:|---:|
+| old p32 tight | 9.02096 | 2816 | 19720 | 2 / 4 | 3.38052e-12 |
+| new p32 tight | 7.13321 | 2816 | 19720 | 2 / 4 | 3.38063e-12 |
+| p48 stricter | 13.81326 | 4211 | 29485 | 2 / 4 | 5.64770e-13 |
+
+Old/new p32 на одной общей сетке имеют нулевые L2/max differences для всех
+четырёх полей и скоростей; integration speedup1.2646×. Roundoff difference
+energy drift не меняет energy gate1e-6. P48 имеет97 quadrature nodes,
+исходную форму/амплитуду и stricter `allowed_extra` prescription, не новую
+физическую задачу. Safety/mass controls пройдены на этих коротких интервалах.
+
+| Компонента | p32 tight→p48 stricter, short relative L2 | short relative max |
+|---|---:|---:|
+| u | 2.723316e-3 | 3.024127e-3 |
+| w | 1.719204e-7 | 2.248942e-7 |
+| theta | 1.094882e-6 | 1.872709e-6 |
+| c | 2.731908e-2 | 3.209896e-2 |
+| u_t | 3.140829e-2 | 3.654294e-2 |
+| w_t | 3.726305e-5 | 4.950172e-5 |
+| theta_t | 2.441589e-4 | 4.181399e-4 |
+| c_t | 5.168276e-2 | 6.078865e-2 |
+
+Это **SHORT_ONLY** на0…0.1T1: разные p и time prescriptions, отдельные
+short-horizon denominators. Таблица не заменяет full spatial comparison и
+не доказывает p48 temporal convergence; её нельзя непосредственно трактовать
+как улучшение/ухудшение относительно full5T1 таблицы. Полного p48 нет.
+
+Заранее установлены900s profiling+integration, максимум3 short и1 full.
+Учтено40.41217s, включая10s консервативного учёта первоначального profiler.
+Full forecast=13.8132551×50×1.25=863.32844s превышает остаток859.58783s.
+Поэтому **REFINEMENT_DEFERRED_BY_BUDGET**: margin/budget не изменялись,
+единственный кандидат full p48 не запускался. Наличие mismatch само по себе
+не использовалось как запрет p48. Дополнительный p48 tight/strict temporal
+pair отсутствует; smaller-amplitude соседний p-контроль остаётся прежним PARTIAL.
+
+Для p48 fastest retained linear omega≈818.6625 старые output times дают
+около5.50 samples/period. Предусмотрена union точных старых times и fine grid
+с12 samples/period (dt≈.000639576), без интерполяции исторических данных.
+Эта сетка использована в shorts; полная union из225706 samples только
+подготовлена, full trajectory на ней не получена.
+
+### Bundle, воспроизведение и фактическая остановка
+
+Final diagnostic bundle:
+`results/weakly_nonlinear_planar_recovery/054874a4a4c9c9ff/`.
+Исходная новая numerical execution сохранена как `db47d4efb6941bed`.
+Final cache содержит те же данные и explicit execution identity, archived
+executed CLI, exact code diff и `cache_revision.json`: исправлены три plot
+lookup keys и две safety/partial-timestamp проверки неисполненного full path.
+Это post-execution revision с0 новых integrations, не повтор старой серии.
+Historical `c97287772bc461ef` не изменён. Cache identity содержит оба helper
+hashes, CLI, frozen action, исходный config и dependency versions.
+
+Сохранены manifests/hash checks, обе пары старых spatial diagnostics,
+нормы/зоны/profiles, projection/Pythagoras, continuous compatibility,
+component timings/equivalence,3short histories, cost decision и SHORT_ONLY
+comparison. Две диагностические figures, PDF+PNG:
+`figures/contraction_projection` и `figures/contraction_localization`.
+Они показывают физические differences, не energy classes.
+
+```powershell
+python scripts/analysis/diagnose_weakly_nonlinear_planar_rod.py --report-only results/weakly_nonlinear_planar_recovery/054874a4a4c9c9ff
+python scripts/analysis/diagnose_weakly_nonlinear_planar_rod.py --plot-only results/weakly_nonlinear_planar_recovery/054874a4a4c9c9ff
+```
+
+Matching `--compute` reuse, report-only и plot-only проверены с0 integrations,
+0 profiling,0 roots,0 symbolic derivations. `--diagnose` читает старые данные
+и выполняет algebra/compatibility diagnostic, без ODE. Первый uncached
+`--compute` требует preserved `--baseline-helper`; он является отдельной
+bounded numerical программой, не способом просто перерисовать graphs.
+Исходный старый CLI после изменения numerical hash может иметь другой cache
+identity: повтор его `--compute` в этом задании не выполнялся.
+
+| Статус | Итог |
+|---|---|
+| NLSP_PLANAR_ERROR_DIAGNOSTIC | PASS: диагностика выполнена; spatial differences сохраняются |
+| NLSP_PLANAR_INITIAL_COMPATIBILITY | CONFIRMED_LOW_ORDER_MISMATCH |
+| NLSP_PLANAR_RHS_EQUIVALENCE | PASS |
+| NLSP_PLANAR_PERFORMANCE | PASS: умеренный измеренный выигрыш |
+| NLSP_PLANAR_P48_SPATIAL_CHECK | REFINEMENT_DEFERRED_BY_BUDGET |
+| NLSP_PLANAR_SOLVER_RECOVERY | PARTIAL |
+
+Небольшая оптимизация улучшила стоимость вычислений без изменения trajectory,
+но не установила full four-field spatial convergence. Дальнейшее решение
+требует отдельного выбора пользователя; замена basis, FEM/local grid, modal
+reduction, initial correction, новая amplitude/angle/out-of-plane/Floquet
+программа не начинались. LONG CLOSED, EB/RLB-KV PAUSED и angular out-of-plane
+same-clamp reference UNAVAILABLE сохранены. История memory дополнена
+[NLSP-D03](../memory/decisions.md#nlsp-d03)/[NLSP-K03](../memory/knowledge.md#nlsp-k03),
+старые D02/K02 не переписаны.
+
+
+### Проверки продолжения
+
+31 новых targeted tests входят в165 прошедших combined checks для planar helper,
+protected spatial action, finite M-H/Timoshenko rod и Bishop literature. Три
+старых tests с solve_ivp намеренно deselected: они добавили бы скрытые
+integrations сверх разрешённых3short controls. Ещё3 targeted rectangular
+Timoshenko coefficient/convention checks прошли; итог168 уникальных PASS.
+Новая CLI cache/report/plot проверяется с запрещёнными ODE/profiling/derivation
+paths; full-path fail-gate и partial actual-time metadata проверены без ODE.
+README/CHANGELOG/navigation обновлены; assumptions/equations/source indices
+не менялись, поскольку новые physical assumptions/formulas не вводились.
+
+
+Дополнительная обработка трёх сохранённых short histories не интегрирует ODE:
+`short_safety.json` подтверждает min(1+c)≥.9999827897, relative mass eigenvalue
+lower bound≥.9999655797 и condition upper bound≤1.000052435. Sparse explicit
+mass eigensolves и исходные small-neighborhood limits пройдены. Эти bounds
+относятся только к рассчитанному0…0.1T1, не к отсутствующей full p48 history.

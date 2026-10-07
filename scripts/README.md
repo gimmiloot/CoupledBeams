@@ -1,5 +1,32 @@
 # Scripts guide
 
+## Targeted planar solver diagnosis and recovery
+
+`analysis/diagnose_weakly_nonlinear_planar_rod.py` reads the historical pilot
+with its own manifest, localizes physical field/velocity differences and
+checks L2 projection and continuous initial compatibility. It reuses the
+existing action-discretization helper; there is no second physics solver.
+
+```powershell
+python scripts/analysis/diagnose_weakly_nonlinear_planar_rod.py --diagnose
+python scripts/analysis/diagnose_weakly_nonlinear_planar_rod.py --compute
+python scripts/analysis/diagnose_weakly_nonlinear_planar_rod.py --report-only results/weakly_nonlinear_planar_recovery/054874a4a4c9c9ff
+python scripts/analysis/diagnose_weakly_nonlinear_planar_rod.py --plot-only results/weakly_nonlinear_planar_recovery/054874a4a4c9c9ff
+python -m pytest tests/test_weakly_nonlinear_planar_recovery.py -q
+```
+
+`--diagnose` performs no integration. Matching `--compute` reads the completed
+cache; a first compute requires `--baseline-helper <preserved-original-helper>`
+whose SHA matches the historical execution. `--historical-bundle` and
+`--output-dir` are explicit. New profiling/integration has a fixed900s budget,
+at most three short controls and one conditional full p48 run. The completed
+continuation deferred that full run by its guarded cost estimate and remains
+PARTIAL; the old small-amplitude prefix is unchanged. Report/plot-only perform
+zero integrations, roots and symbolic derivations. Read the
+[numerical note](../docs/theory/weakly_nonlinear_planar_time_pilot.md) for the
+actual stop and initial-smoothness qualification; this command does not
+recompute the historical forty-minute pilot.
+
 ## Four-field planar free-motion pilot
 
 `analysis/simulate_weakly_nonlinear_planar_rod.py` adds the distinct

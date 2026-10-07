@@ -1,5 +1,23 @@
 # Текущий контекст
 
+## Planar numerical recovery — PARTIAL, 2026-10-07
+
+[NLSP-D03](decisions.md#nlsp-d03), [NLSP-K03](knowledge.md#nlsp-k03),
+[continuation report](../theory/weakly_nonlinear_planar_time_pilot.md#14-адресная-диагностика-и-восстановление-вычислительного-пути-2026-10-07).
+Исходные trajectories/criteria и cubic/quartic model сохранены. Physical L2
+projection подтверждает и tail, и эволюционную разность общих компонент;
+ненулевой initial axial acceleration trace порядка A² подтверждён как
+ограничение гладкой совместности, не code/model failure или единственная причина.
+Lazy energy/gradient/Hessian optimization эквивалентна исходному RHS/Jacobian;
+короткий old/new p32 совпадает, ускорение integration≈1.26×. Ровно3 short
+controls выполнены, полный p48 отложен по неизменному900s cost rule:
+REFINEMENT_DEFERRED_BY_BUDGET. Full spatial four-field convergence и малый
+neighboring-p control unresolved; NLSP_PLANAR_SOLVER_RECOVERY=PARTIAL.
+Short p48 до0.1T1 не заменяет full5T1 evidence. Следующее numerical/physical
+решение не выбрано; basis/IC/V0/BC не заменялись. История NLSP-D02/K02 ниже
+сохранена, её прежняя остановка не является запретом уже выполненного D03.
+
+
 ## Нелинейная пространственная ветвь — первый planar time pilot PARTIAL, 2026-10-07
 
 [NLSP-D02](decisions.md#nlsp-d02), [NLSP-K02](knowledge.md#nlsp-k02),
@@ -166,3 +184,13 @@ EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION сохраняется. Упругос
 уже реализованы в прежней ветви, не перенесены сюда. Angular same-clamp
 out-of-plane reference остаётся UNAVAILABLE; прямой planar pilot его не
 закрывает. Следующее научное направление после этого pilot не выбрано.
+
+
+## Текущая остановка после адресной диагностики
+
+NLSP planar solver recovery PARTIAL; initial low-order smoothness mismatch
+подтверждён, умеренное ускорение получено, full p48 DEFERRED_BY_BUDGET.
+Небольшое изменение реализации не установило полный four-field PASS.
+Новые интегрирования или смена задачи автоматически не разрешены.
+LONG — CLOSED; EB/RLB-KV — PAUSED_FOR_SUPERVISOR_DIRECTION; angular out-of-plane
+same-clamp reference — UNAVAILABLE. Следующее направление отдельно не выбрано.

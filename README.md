@@ -4,6 +4,14 @@ CoupledBeams is a research repository for frequency models and computations for 
 
 ## Project Layout
 
+- [Targeted planar solver diagnosis and recovery](docs/theory/weakly_nonlinear_planar_time_pilot.md)
+  -- historical field-error localization, initial-compatibility audit and
+  equivalent lazy energy/gradient/Hessian evaluation. Recovery remains
+  PARTIAL: the guarded full p48 estimate exceeds the remaining fixed budget.
+  Use `python scripts/analysis/diagnose_weakly_nonlinear_planar_rod.py --diagnose`
+  for diagnosis without integration; `--report-only <bundle>` and
+  `--plot-only <bundle>` read saved evidence. The previous pilot is retained.
+
 - [Four-field planar nonlinear time pilot](docs/theory/weakly_nonlinear_planar_time_pilot.md)
   -- bounded free-motion calculation of the audited quartic action, two
   amplitudes, spatial/time controls and preserved per-case histories.
