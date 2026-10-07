@@ -1,6 +1,7 @@
 """Diagnostic planar M-H/Timoshenko source blocks for one isotropic rectangle.
 
-No production coefficient defaults. c is independent and dimensionless;
+Source factors stay explicit; the separate project preset uses the frozen
+rectangular Timoshenko K=5/6 contract. c is independent and dimensionless;
 q=(u,c,w,theta). Source I is I_y=b*h**3/12, never the polar I_p.
 Rucka (2)--(13), Jang (1),(5),(6),(A1)--(A9); see the canonical theory note.
 The existing rectangular helper supplies all Timoshenko section coefficients.
@@ -17,6 +18,9 @@ from scripts.lib.isotropic_rectangular_timoshenko_coupled_beams import (
 )
 
 EQUATIONS_VERSION = "planar-mh-tim-source-energy-v1"
+FINITE_ROD_VERSION = "jang-project-cc-bounded-basis-qr-v1"
+PROJECT_RECTANGULAR_KAPPA = 5/6
+PROJECT_VARIANT = "project_jang_reduced_rectangular"
 DOF_ORDER = ("u", "c", "w", "theta")
 STRAIN_ORDER = ("u_x", "c", "c_x", "w_x-theta", "theta_x")
 COEFFICIENT_UNITS = {
@@ -74,6 +78,18 @@ def source_model(parameters, *, mh_shear_factor, mh_inertia_factor,
         K=tim_shear_factor)
     return SourceModel(section, mh_shear_factor, mh_inertia_factor,
                        tim_rotary_factor, variant)
+
+
+def project_jang_reduced_rectangular(section):
+    """Selected Jang closure, not a recovered Jang source numeric input.
+
+    K is the accepted RLB-1C-ISO rectangular contract (5/6), independently
+    recorded in rectangular_isotropic_models_vs_beta_note.md. Keep the
+    existing section and hence bending coefficients unchanged. No Ng factors.
+    """
+    if section.K != PROJECT_RECTANGULAR_KAPPA:
+        raise ValueError("Project preset requires the accepted rectangular K=5/6")
+    return SourceModel(section, section.K, 1., 1., PROJECT_VARIANT)
 
 
 def strain_operator(k):
@@ -201,3 +217,231 @@ def limits(model):
         "bending_omega_over_k2_m2_s": math.sqrt(p["B"]/p["m"]),
         "mh_high_k_speeds_m_s": sorted([math.sqrt(p["C"]/p["m"]), math.sqrt(p["H"]/p["j"])]),
         "tim_high_k_speeds_m_s": sorted([math.sqrt(p["S"]/p["m"]), math.sqrt(p["B"]/p["r"])])}
+
+
+def harmonic_state_matrix(model, omega, block="mh"):
+    """exp(i*omega*t), states (u,c,N,R) or (w,theta,Q,M).
+
+    From Hamilton variation and resultants; see the finite-rod note.
+    SourceModel supplies coefficients, not an angular-joint contract.
+    """
+    p, nu = model.coefficients, model.section.nu
+    lam = _positive(omega, "omega")**2
+    if block == "mh":
+        return np.array([[0, -nu, 1/p["C"], 0], [0, 0, 0, 1/p["H"]],
+            [-p["m"]*lam, 0, 0, 0], [0, p["C"]*(1-nu**2)-p["j"]*lam, nu, 0]])
+    if block == "timoshenko":
+        return np.array([[0, 1, 1/p["S"], 0], [0, 0, 0, 1/p["B"]],
+            [-p["m"]*lam, 0, 0, 0], [0, -p["r"]*lam, -1, 0]])
+    raise ValueError("Unknown single-rod block")
+
+
+def full_harmonic_state_matrix(model, omega):
+    """Ordering (u,c,w,theta,N,R,Q,M), derived source energy blocks."""
+    matrix = np.zeros((8, 8))
+    matrix[np.ix_((0, 1, 4, 5), (0, 1, 4, 5))] = harmonic_state_matrix(model, omega)
+    matrix[np.ix_((2, 3, 6, 7), (2, 3, 6, 7))] = harmonic_state_matrix(model, omega, "timoshenko")
+    return matrix
+
+
+def finite_state_basis(model, length, omega, x, block="mh", derivative=0):
+    """Bounded analytic basis below the optical cutoff, no sinh/cosh.
+
+    Spatial roots come from the PDE dispersion polynomial. Mode amplitudes
+    come from the first second-order PDE, independently of state expm.
+    Columns: acoustic cos/sin, left/right anchored evanescent exponentials.
+    No claim to a general above-cutoff finite-spectrum solver.
+    """
+    length = _positive(length, "length")
+    if derivative not in (0, 1):
+        raise ValueError("State derivative must be 0 or 1")
+    if block not in ("mh", "timoshenko"):
+        raise ValueError("Unknown single-rod block")
+    omega = _positive(omega, "omega")
+    dispersion = blocks(model)[block == "timoshenko"]
+    if omega >= 2*math.pi*dispersion.cutoff_hz:
+        raise ValueError("Finite bounded basis is restricted below optical cutoff")
+    roots = dispersion.spatial(omega/(2*math.pi))
+    k = roots[0]["wavenumber_per_m"]
+    alpha = roots[1]["attenuation_per_m"]
+    if k <= 0 or alpha <= 0:
+        raise ArithmeticError("Expected one acoustic and one evanescent root")
+    points = np.atleast_1d(np.asarray(x, dtype=float))
+    if not np.all(np.isfinite(points)) or np.any(points < 0) or np.any(points > length):
+        raise ValueError("Basis coordinates must lie on the finite rod")
+    p, nu = model.coefficients, model.section.nu
+    decoupled = block == "mh" and nu == 0
+    a = p["C"] if block == "mh" else p["S"]
+    sign = 1 if block == "mh" else -1
+    coupling = nu*p["C"] if block == "mh" else p["S"]
+    if not decoupled:
+        trig_ratio = (a*k*k-p["m"]*omega**2)/(sign*coupling*k)
+        exp_ratio = (a*alpha*alpha+p["m"]*omega**2)/(sign*coupling*alpha)
+        scales = np.array([1/math.hypot(1, length*trig_ratio)]*2 +
+                          [1/math.hypot(1, length*exp_ratio)]*2)
+    else:
+        scales = np.array([1., 1., 1/length, 1/length])
+    def displacements(order):
+        cosine, sine = np.cos(k*points), np.sin(k*points)
+        cycle = ((cosine, sine), (-sine, cosine), (-cosine, -sine))
+        co, si = cycle[order]
+        left = (-alpha)**order*np.exp(-alpha*points)
+        right = alpha**order*np.exp(-alpha*(length-points))
+        first = np.column_stack((k**order*co, k**order*si, left, right))
+        if decoupled:
+            first[:, 2:] = 0
+            second = np.column_stack((points*0, points*0, left, right))
+        else:
+            second = np.column_stack((trig_ratio*k**order*si,
+                -trig_ratio*k**order*co, exp_ratio*left, -exp_ratio*right))
+        return first*scales, second*scales
+    first, second = displacements(derivative)
+    first_prime, second_prime = displacements(derivative+1)
+    force = p["C"]*(first_prime+nu*second) if block == "mh" else p["S"]*(first_prime-second)
+    moment = (p["H"] if block == "mh" else p["B"])*second_prime
+    values = np.stack((first, second, force, moment), axis=1)
+    return values[0] if np.ndim(x) == 0 else values
+
+
+def finite_boundary_matrix(model, length, omega, block="mh"):
+    endpoints = finite_state_basis(model, length, omega, [0., length], block)
+    matrix = np.concatenate((endpoints[0, :2], endpoints[1, :2]))
+    matrix[[1, 3]] *= length  # c/theta dimensionless, compare L*c with u/w
+    row_norm = np.linalg.norm(matrix, axis=1)
+    if np.any(row_norm == 0):
+        raise ArithmeticError("Zero essential-boundary row")
+    return matrix/row_norm[:, None]
+
+
+def transfer_boundary_matrix(model, length, omega, block="mh", exponent_cap=1., max_steps=512):
+    """Independent state shooting with exact short-step expm and QR.
+
+    No product of exponentially ill-conditioned full transfer matrices.
+    Positive QR diagonal factors preserve zeros and determinant signs.
+    Impedance scaling balances displacement and force units.
+    """
+    from scipy.linalg import expm
+    length = _positive(length, "length")
+    matrix = harmonic_state_matrix(model, omega, block)
+    rate = float(np.max(np.abs(np.linalg.eigvals(matrix))))
+    p = model.coefficients
+    elastic = p["C"] if block == "mh" else p["S"]
+    gradient = p["H"] if block == "mh" else p["B"]
+    scales = np.array([1., length, 1/(elastic*rate), length/(gradient*rate)])
+    balanced = matrix*scales[:, None]/scales[None, :]
+    steps = max(1, math.ceil(rate*length/_positive(exponent_cap, "exponent_cap")))
+    if steps > max_steps:
+        raise ArithmeticError("Independent shooting step budget exceeded")
+    step = expm(balanced*(length/steps))
+    frame = np.vstack((np.zeros((2, 2)), np.eye(2)))
+    for _ in range(steps):
+        frame, triangular = np.linalg.qr(step@frame, mode="reduced")
+        signs = np.where(np.diag(triangular) >= 0, 1., -1.)
+        frame *= signs[None, :]
+    return frame[:2], {"steps": steps, "max_step_exponent": rate*length/steps,
+        "step_condition": float(np.linalg.cond(step)), "state_scales": scales.tolist(),
+        "method": "independent harmonic-state expm/positive-diagonal QR"}
+
+
+def finite_roots(model, length, block, omega_min, omega_max, policy):
+    """Bounded determinant sign search; completeness is certified separately."""
+    from scipy.optimize import brentq
+    evaluations = 0
+    def determinant(omega):
+        nonlocal evaluations
+        evaluations += 1
+        return float(np.linalg.det(finite_boundary_matrix(model, length, omega, block)))
+    intervals = policy["scan_intervals"]
+    nodes = np.linspace(omega_min, omega_max, intervals+1)
+    samples = [determinant(w) for w in nodes]
+    records = []
+    for left, right, fl, fr in zip(nodes[:-1], nodes[1:], samples[:-1], samples[1:]):
+        if fl*fr > 0:
+            continue
+        before = evaluations
+        root, info = brentq(determinant, left, right, xtol=policy["root_xtol"],
+            rtol=policy["root_rtol"], full_output=True)
+        if records and abs(root-records[-1]["omega"]) <= 10*policy["root_xtol"]:
+            continue
+        matrix = finite_boundary_matrix(model, length, root, block)
+        singular = np.linalg.svd(matrix, compute_uv=False)
+        records.append({"omega": root, "frequency_hz": root/(2*math.pi),
+            "bracket_omega": [float(left), float(right)], "bracket_determinants": [fl, fr],
+            "evaluations": evaluations-before, "iterations": info.iterations,
+            "converged": info.converged, "determinant": float(np.linalg.det(matrix)),
+            "singular_ratio": float(singular[-1]/singular[0]),
+            "nonzero_singular_condition": float(singular[0]/singular[-2])})
+    return records, {"range_omega": [omega_min, omega_max], "scan_intervals": intervals,
+        "evaluations": evaluations, "brackets_found": len(records), "failed_intervals": []}
+
+
+def finite_count_upper_bound(model, length, omega, block, young_eta=.18):
+    """Min-max certificate: at most this many CC eigenvalues <= omega.
+
+    MH: a Young-inequality lower quadratic form, exact scalar Dirichlet
+    spectra. Timoshenko: relax theta end constraints; exact simply-supported
+    spectrum (including the uniform-rotation optical mode) is a lower bound.
+    Found independent modes saturating this bound establish completeness;
+    a sign scan alone is never used as a completeness claim.
+    """
+    p, nu = model.coefficients, model.section.nu
+    if block == "mh":
+        if not nu**2 < young_eta < 1:
+            raise ValueError("Young certificate requires nu^2 < eta < 1")
+        axial = p["C"]*(1-young_eta)/p["m"]
+        normal = p["C"]*(1-nu**2/young_eta)
+        axial_count = math.floor(omega*length/(math.pi*math.sqrt(axial)))
+        excess = p["j"]*omega**2-normal
+        contraction_count = 0 if excess < 0 else math.floor(length/math.pi*math.sqrt(excess/p["H"]))
+        return {"upper_count": axial_count+contraction_count,
+            "method": "Young lower form + exact two scalar Dirichlet spectra",
+            "young_eta": young_eta, "axial_count": axial_count,
+            "contraction_count": contraction_count, "lower_contraction_cutoff_hz": math.sqrt(normal/p["j"])/(2*math.pi)}
+    if block != "timoshenko":
+        raise ValueError("Unknown single-rod block")
+    dispersion = blocks(model)[1]
+    count = int(omega >= 2*math.pi*dispersion.cutoff_hz)  # uniform theta mode
+    rows = []
+    for n in range(1, 10001):
+        branches = dispersion.temporal(n*math.pi/length)
+        local_count = sum(r["omega_squared"] <= omega**2 for r in branches)
+        if local_count == 0:
+            break
+        count += local_count
+        rows.append({"n": n, "frequencies_hz": [r["frequency_hz"] for r in branches]})
+    else:
+        raise ArithmeticError("Simply-supported count budget exceeded")
+    return {"upper_count": count, "method": "relaxed rotation BC / exact simply-supported spectrum",
+        "uniform_rotation_cutoff_hz": dispersion.cutoff_hz, "lower_modes": rows}
+
+
+def finite_mode(model, length, omega, block, order=200):
+    """Mass-normalized analytical shape and scaled ODE/energy/BC diagnostics."""
+    matrix = finite_boundary_matrix(model, length, omega, block)
+    _, _, right = np.linalg.svd(matrix)
+    coefficients = right[-1]
+    nodes, weights = np.polynomial.legendre.leggauss(order)
+    points, weights = (nodes+1)*length/2, weights*length/2
+    values = finite_state_basis(model, length, omega, points, block)@coefficients
+    gradients = finite_state_basis(model, length, omega, points, block, 1)@coefficients
+    p = model.coefficients
+    second_mass = p["j"] if block == "mh" else p["r"]
+    mass = float(weights@(p["m"]*values[:, 0]**2+second_mass*values[:, 1]**2))
+    if block == "mh":
+        strain = p["C"]*(gradients[:, 0]**2+2*model.section.nu*gradients[:, 0]*values[:, 1]+values[:, 1]**2)+p["H"]*gradients[:, 1]**2
+    else:
+        strain = p["B"]*gradients[:, 1]**2+p["S"]*(gradients[:, 0]-values[:, 1])**2
+    energy = float(weights@strain)
+    endpoint = finite_state_basis(model, length, omega, [0., length], block)@coefficients
+    qscale = np.array([1., length])
+    boundary = float(np.max(np.abs(endpoint[:, :2]*qscale)))/float(np.max(np.abs(values[:, :2]*qscale)))
+    state_matrix = harmonic_state_matrix(model, omega, block)
+    rhs = values@state_matrix.T
+    scale = np.maximum(np.max(np.abs(rhs), axis=0)+np.max(np.abs(gradients), axis=0), 1e-30)
+    residual = float(np.max(np.abs(gradients-rhs)/scale))
+    return {"coefficients": coefficients/math.sqrt(mass), "points": points,
+        "weights": weights, "values": values/math.sqrt(mass),
+        "diagnostics": {"boundary_scaled_residual": boundary,
+            "equation_scaled_residual": residual,
+            "energy_omega_squared": energy/mass,
+            "energy_relative_error": abs(energy/mass/omega**2-1), "mass_before_normalization": mass}}

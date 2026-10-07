@@ -230,6 +230,80 @@ def test_modified_si_input_cannot_keep_source_reproduction_label(fixture, tmp_pa
         cli.source_check()
 
 
+def test_rectangular_candidate_cannot_bypass_two_source_and_convention_gate(fixture):
+    prescription = fixture["production_prescription"]
+    assert prescription["adopted"] is False
+    assert prescription["code_preset"] is None
+    assert prescription["status"] == "PRODUCTION_MH_COEFFICIENTS_UNRESOLVED"
+    assert prescription["mapping_status"] == "RECTANGULAR_MH_PRESET_MAPPING_UNRESOLVED"
+    assert prescription["direct_rectangular_factor_confirmations"] == ["ng"]
+    assert fixture["source_variants"]["fernandes_2022_rectangular"]["source"] is None
+    assert "NOT_A_SECOND_RECTANGULAR" in fixture["sources"]["elishakoff_tharu"]["prescription_status"]
+
+
+def test_ng_printed_factors_map_to_stiffness_and_inertia_without_squaring(fixture):
+    entry = fixture["sources"]["ng"]
+    printed = entry["source_expressions"]
+    assert printed["S1"] == "12/pi^2"
+    assert printed["S2_j"] == "S1*((1+nu_j)/(0.87+1.12*nu_j))^2"
+    assert "mu_j*I_j*S1*phi_j,xx" in printed["pde_contraction"]
+    assert "rho_j*I_j*S2,j*phi_j,tt" in printed["pde_contraction"]
+    assert entry["factor_mapping"]["S1"]["project_symbol"] == "K_MH1"
+    assert entry["factor_mapping"]["S2_j"]["project_symbol"] == "K_MH2"
+    # Arithmetic of a printed candidate, not an adopted project helper/default.
+    for nu in (0., .3, .49):
+        s1 = 12/math.pi**2
+        ratio = (1+F(str(nu)))/(F('0.87')+F('1.12')*F(str(nu)))
+        s2 = s1*((1+nu)/(.87+1.12*nu))**2
+        assert s1 > 0 and math.isfinite(s2) and s2 > 0
+        assert s2/s1 == pytest.approx(float(ratio**2), rel=5e-15)
+
+
+def test_ng_lame_normal_block_is_not_current_reduced_energy(fixture):
+    assert "NOT_EQUIVALENT" in fixture["sources"]["ng"]["normal_block"]["project_normal_mapping"]
+    for nu in (F(0), F(3, 10), F(49, 100)):
+        # E=A=1; direct reconstruction from Ng (2) and printed Lame definitions.
+        mu = 1/(2*(1+nu))
+        lame = nu/((1+nu)*(1-2*nu))
+        d, cross = 2*mu+lame, lame
+        current_c = 1/(1-nu**2)
+        assert cross/d == nu/(1-nu)
+        assert d-cross**2/d == current_c
+        assert current_c-(nu*current_c)**2/current_c == 1
+        assert ((d, cross) == (current_c, nu*current_c)) == (nu == 0)
+        # Normalized coupling is invariant under independent DOF scalings.
+        su, sc = F(7, 3), F(5, 2)
+        scaled_cross_squared = (cross*su*sc)**2/((d*su**2)*(d*sc**2))
+        assert scaled_cross_squared == (cross/d)**2
+        if nu:
+            assert scaled_cross_squared != nu**2
+
+
+def test_new_source_identity_hashes_and_citation_chain(fixture):
+    _, checked = cli.source_check()
+    for name, count in (("ng", 41), ("elishakoff_tharu", 100)):
+        entry = fixture["sources"][name]
+        assert checked[name]["sha256"] == cli.sha(cli.ROOT/entry["path"])
+        assert entry["pdf_page_count"] == count
+    assert fixture["sources"]["ng"]["citation_chain"][0]["reference"] == 37
+    preprint = fixture["sources"]["elishakoff_tharu"]
+    assert preprint["year"] is None and preprint["doi"] is None
+    assert "not peer reviewed" in preprint["version"]
+    assert [r["reference"] for r in preprint["citation_chain"]] == [10, 15]
+
+
+def test_unadopted_candidate_does_not_override_rucka_or_guess_jang(fixture):
+    rucka = cli.make_model(fixture, "rucka_2010")
+    assert (rucka.mh_shear_factor, rucka.mh_inertia_factor,
+            rucka.section.K, rucka.tim_rotary_factor) == (1.1, 2.1, .95, 12*.95/math.pi**2)
+    with pytest.raises(ValueError, match="not established"):
+        cli.make_model(fixture, "jang_2014_bare_isotropic")
+    jang = cli.make_model(fixture, "jang_2014_bare_isotropic", 5/6)
+    assert (jang.mh_shear_factor, jang.mh_inertia_factor,
+            jang.section.K, jang.tim_rotary_factor) == (5/6, 1., 5/6, 1.)
+    assert jang.coefficients["r"] == jang.section.rhoI
+
+
 @pytest.mark.parametrize("factor", [0, -1, float('nan')])
 def test_invalid_correction_factors_rejected(fixture, factor):
     with pytest.raises(ValueError):

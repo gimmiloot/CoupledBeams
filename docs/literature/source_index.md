@@ -29,6 +29,128 @@ constitutive reductions и ограничения](mindlin_herrmann_timoshenko_s
 Mindlin–Herrmann и Martin–Gopalakrishnan–Doyle локально не найдены;
 их статус — cited / full text unavailable, без новых BibTeX-записей.
 
+## Subsequent Fernandes registration and Jang project decision, 2026-10-06
+
+После предыдущего finite source audit пользователь добавил настоящий
+Fernandes PDF. Прежний `RECTANGULAR_MH_PRESET_MAPPING_UNRESOLVED` ниже
+сохраняется как результат отдельного вопроса о переносе Ng-type normal
+block к текущей energy convention. Новый источник подтверждает повторное
+использование correction formula, не равенство normal blocks. Отдельно
+выбран [Jang-type project closure и finite single-rod gate](../theory/mindlin_herrmann_timoshenko_single_rod.md#14-production-formulation-decision).
+
+### `fernandes_2022_spectral_tower_cable`
+
+- [PDF](pdf/energies-15-07725-v2.pdf), publisher article, 26 страниц;
+  SHA256 `27cb6de0c2038fd849ed153c8e78ffc773bfaea5ef362ef6bed217943c35a2fc`.
+  File suffix v2 сохранён; дата специальной revised version не выведена
+  из имени файла.
+- Yanne Marcela Soares Fernandes; Marcela Rodrigues Machado; Maciej
+  Dutkiewicz, *The Spectral Approach of Love and Mindlin-Herrmann Theory
+  in the Dynamical Simulations of the Tower-Cable Interactions under the
+  Wind and Rain Loads*. Energies 15(20) (2022), article 7725;
+  DOI `10.3390/en15207725`. PDF 1: received 2022-08-18, accepted 2022-10-17,
+  published 2022-10-19. Issue 20 адресно подтверждён
+  [издателем](https://www.mdpi.com/1996-1073/15/20/7725); остальные metadata
+  — PDF. Широкого литературного web-поиска не было.
+- Прочитаны abstract p.1, §2.4 pp.6–8 в части полей, (19)–(23),
+  описание роли rod в §5.1 p.13 и ref.32 p.25. Визуально сверены PDF
+  1,6,7,25. Source psi — transverse contraction, independent field.
+  I назван inertia of the cross-section; в этих местах нет `I=bh³/12`,
+  polar Ip или aspect ratio. Для tower заданы A=.01 m², без b,h.
+  Поэтому статью не объявляем проверкой конкретной rectangular geometry.
+- (21), p.7: `K_r1=12/pi²`,
+  `K_r2=K_r1*((1+nu)/(.87+1.12nu))²`. (19),(20),(23) помещают первый
+  factor в GI-gradient stiffness, второй — в rhoI inertia. Это прямое
+  повторное использование формул Ng, не square/root/reciprocal mapping.
+  Factors заданы formula, specimen fit этих factors не описан.
+- Normal block сохраняет `(2mu+lambda)A,lambda*A`,
+  `lambda=nu*E/[(1+nu)(1−2nu)]`, `mu=G`. Следовательно, это отдельный
+  Ng/Fernandes-type literature variant, **не** selected Jang normal closure
+  `C=EA/(1−nu²),nu*C`. Prescription 12/pi² не стала production default.
+  Два harmonic expressions (19) напечатаны без `=0`; (23) явно задаёт
+  homogeneous zero system. PDF не исправлен; solver этой статьи не добавлен.
+- Ref. **32**, p.25 — Doyle 1997. Книга не прочитана/проверена независимо.
+  Source problem: M-H axial spectral elements tower, cable и их response
+  на wind/rain. Tower-cable calculations, damping, loading, FEM comparisons
+  и source FRF benchmarks не воспроизводились. Не источник наших joint BC.
+
+## Rectangular M-H prescription audit, 2026-10-06
+
+Проверены два фактически новых PDF. Первый — Ng 2014, второй — препринт
+Elishakoff–Tharu, **не** ожидаемый Fernandes–Machado–Dutkiewicz 2022,
+DOI из задания `10.3390/en15207725`. Поиск по титульным страницам и
+содержимому 92 локальных PDF проекта, включая untracked/ignored, не нашёл
+эту статью Energies. Её полный текст не прочитан, metadata/key/hash не
+выдуманы. [Mapping и hard gate](../theory/mindlin_herrmann_timoshenko_single_rod.md#13-production-rectangular-m-h-correction-prescription)
+остаются unresolved; повторное употребление prescription двумя доступными
+rectangular sources не подтверждено. Имена и байты PDF сохранены.
+
+### `ng_2014_bayesian_guided_wave_damage`
+
+- [PDF](pdf/hdl_85788.pdf), **accepted version** с листом репозитория,
+  41 PDF-страница; SHA256
+  `d755a482f4e9b1760ba7385dc423324b0aedaa9694a6db452808cdf7f95ae8ae`.
+- Ching-Tai Ng, *Bayesian model updating approach for experimental
+  identification of damage in beams using guided waves*. Structural Health
+  Monitoring 13(4) (2014), 359–373; DOI `10.1177/1475921714532990`.
+  Metadata — PDF 1–2. Дата листа репозитория 2014-10-02 не является
+  установленной online-first/accepted date. Строка copyright Taylor &
+  Francis на листе соседствует с SAGE permissions; издатель по этой строке
+  не переопределяется. Для формул используются **PDF pages**, без
+  приписывания accepted manuscript журнальной пагинации.
+- Прочитано: PDF 9–11, подразделы Mindlin–Herrmann и начало frequency-domain
+  formulation, (1)–(7); PDF 33, ref. 37. Визуально проверены PDF 1–2,9–11,33.
+  (1): `u_j≈bar(u_j)(x,t)`, `v_j≈y*bar(phi_j)(x,t)`; phi здесь contraction
+  scaling, не Timoshenko rotation, несмотря на словесное rotational angle.
+  `A_j=b_j*h_j`, `I_j=b_j*h_j^3/12`: прямоугольник, planar I, не polar Ip.
+- PDF 10, (2) и следующий абзац прямо содержат `S1=12/pi^2` и
+  `S2,j=S1*((1+nu_j)/(0.87+1.12*nu_j))^2`. S1 умножает `mu_j*I_j*phi_j,xx`,
+  S2,j — `rho_j*I_j*phi_j,tt`; `mu_j=G_j`. Следовательно, роли
+  `H=S1*GI` и `j=S2*rhoI` совпадают с project convention **без** корня,
+  квадрата или обращения самих S. b/h в этих формулах отсутствует; S2
+  зависит только от nu. Они заданы как model formula перед inverse
+  specimen identification; fit этих MH factors не описан. Constants .87
+  и 1.12 — напечатанные decimal constants, не точные физические рационалы.
+- **Constitutive warning:** в (2) normal diagonal — `(2mu+lambda)A`,
+  internal cross coefficient — `lambda*A`; напечатано
+  `lambda=nu*E/((1+nu)*(1-2nu))`. Это не текущие `C=EA/(1-nu^2)` и `nu*C`.
+  Совпадение correction-factor roles не доказывает равенства полной
+  энергии/низкочастотного предела при тех же физических E,nu.
+  Эти строки не исправлены на plane-stress reduction и не реализованы.
+- Дополнительное печатное предупреждение: PDF 11, нижняя правая запись
+  (6) содержит `-mu_j*I_j*S1` без k_j², хотя (2),(4) имеют вторую
+  производную. Для mapping использована (2); characteristic matrix (6)
+  в новый solver не переносилась.
+- Citation chain: ref. **37**, PDF 33 — Doyle, *Wave propagation in
+  structures spectral analysis using fast discrete Fourier transforms*,
+  2nd ed., Springer, 1997. Книга отдельно не прочитана и prescription
+  по ней независимо не проверена. Эксперименты/Bayesian damage fit Ng
+  не воспроизводились, article-wide correctness не утверждается.
+
+### `elishakoff_tharu_ssrn_5985611`
+
+- [PDF](pdf/ssrn-5985611.pdf), 100 страниц, **SSRN preprint / not peer
+  reviewed**; SHA256
+  `49336ea7b0eeaad7062e9251a9bf41f2fb10a6c81f19374669d7ccacb6f3a48d`.
+- Isaac Elishakoff; Janak Kumar Tharu, *Sixteen Refined Theories of
+  Longitudinal Vibration of Rods: A Review, From Lord Rayleigh to Modernity*.
+  Title/authors/identifier 5985611 — PDF 1. Журнал, volume/issue,
+  publication year и DOI не установлены по локальному PDF; BibTeX `misc`
+  не выдумывает эти поля. File creation 2025-12-23 не является publication
+  date. Это **другая публикация**, не статья Fernandes et al.
+- Ограниченное чтение: §2.2, PDF 14–21, и references PDF 95. Визуально
+  проверены PDF 1,17,19–21. Осесимметричный круглый rod: radius a, radial r,
+  longitudinal z; source u — radial surface displacement, w — axial.
+  (37),(38), PDF 20, вводят `kappa^2` и `kappa_1^2` в stress-displacement
+  relations; это не прямое rectangular S1/S2 inertia mapping. Извлечённый
+  полный текст не содержит требуемую формулу `.87+1.12nu`; прочитанная
+  M-H постановка не даёт второго подтверждения этой prescription.
+- Ref. **10**, PDF 95, цитирует Graff, *Wave Motion in Elastic Solids*,
+  1976 (как напечатано); ref. **15** — Doyle, *Wave Propagation in
+  Structures*, 1997. Книги независимо не проверены. Circular derivation,
+  все шестнадцать теорий и численные comparisons препринта не валидированы
+  в этом этапе; никаких production coefficients из него не принято.
+
 ## Junction sources, 2026-10-05
 
 Семь локальных публикаций ниже зарегистрированы при документационном

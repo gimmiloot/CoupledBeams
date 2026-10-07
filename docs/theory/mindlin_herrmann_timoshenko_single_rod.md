@@ -1,5 +1,21 @@
 # Mindlin–Herrmann + Timoshenko: source audit одного прямого стержня
 
+Последующий [reduced joint и beta0 transparency gate](mindlin_herrmann_timoshenko_rigid_joint.md)
+отдельно принимает published common-DOF closure и подтверждает artificial
+interface для того же G20 rod. Source audit и single-rod solver ниже не
+менялись; nonzero-angle spectrum/3D joint closure этим не валидированы.
+
+**Текущий отдельный production decision (2026-10-06):**
+`PRODUCTION_MHTIM_FORMULATION_SELECTED=PASS`, formulation
+`JANG_BARE_ISOTROPIC_REDUCED_MH_TIMOSHENKO`;
+`PRODUCTION_MHTIM_KAPPA_RESOLVED` (project rectangular κ=5/6).
+`MHTIM_SINGLE_ROD_FINITE_SPECTRUM=PASS`,
+`HIERARCHY_SINGLE_ROD=PARTIAL_PASS`: numerical comparison passes, но
+пониженные axial models не разрешают отдельную contraction constraint
+полной четырёхполевой заделки. [Новый этап, §14–20](#14-production-formulation-decision).
+Прежние source/preset audits ниже относятся к своим historical questions
+и не переписаны как один общий PASS.
+
 Дата: 2026-10-06. Diagnostic-only, один однородный изотропный прямоугольный
 стержень, малая линейная кинематика и одна плоскость изгиба. Литературные
 проверки здесь — dispersion/group velocity; конечный собственный спектр
@@ -11,6 +27,13 @@
 `MH_SOURCE_VARIANTS_NOT_EQUIVALENT`. Коэффициенты будущей основной модели:
 **`PRODUCTION_MH_COEFFICIENTS_UNRESOLVED`**. M-H + Timoshenko остаётся
 кандидатом, не новой production baseline CoupledBeams.
+
+Дополнение 2026-10-06: проверка новых локальных PDF завершилась
+**`RECTANGULAR_MH_PRESET_MAPPING_UNRESOLVED`**. Ng прямо подтверждает роли
+двух обсуждаемых factors, но его normal block отличается от текущего;
+ожидаемый Fernandes et al. не найден, второй PDF — circular-theory SSRN
+preprint. **`PRODUCTION_MH_COEFFICIENTS_UNRESOLVED` сохранён**, preset не
+добавлен. Полная транскрипция и hard gate — в [§13](#13-production-rectangular-m-h-correction-prescription).
 
 ## 1. Вопрос и сохранённый Bishop gate
 
@@ -433,3 +456,363 @@ calculations yet.** Два стержня, L-joint production model, nonlinear
 equations, другие плоскости, torsion, anisotropy, damping и 3D FEM не
 реализованы/не запускались. Прежние scientific solvers, Bishop benchmarks,
 article results, viscosity/Yartsev/nonlinear branches не изменены.
+
+## 13. Production rectangular M-H correction prescription
+
+### 13.1. Фактические источники и scope нового gate
+
+Начальный main/HEAD `0f961acb227b504439408d3484b13a72a7acf3be`, tracked
+diff пуст; untracked `hdl_85788.pdf` и `ssrn-5985611.pdf` сохранены.
+Ng 2014 [accepted PDF](../literature/pdf/hdl_85788.pdf), 41 страница,
+соответствует заданию. Второй файл — [Elishakoff–Tharu SSRN preprint](../literature/pdf/ssrn-5985611.pdf),
+100 страниц, не Fernandes–Machado–Dutkiewicz 2022. Поиск по локальным
+PDF проекта (92, включая ignored/untracked, title/DOI/content matching)
+не нашёл DOI `10.3390/en15207725` или ожидаемое название Energies.
+Этот источник не считается прочитанным или зарегистрированным по PDF.
+Metadata, SHA256, объём чтения и предупреждения — в [source index](../literature/source_index.md#rectangular-m-h-prescription-audit-2026-10-06).
+
+Ng: PDF 9, (1), `u_j≈bar(u_j)(x,t)`, `v_j≈y*bar(phi_j)(x,t)`.
+Source bar(phi_j) соответствует независимой c, несмотря на словесное
+rotational angle: это множитель поперечной координаты, не Timoshenko
+rotation. На PDF 10 в (2) и непосредственно следующем абзаце напечатано:
+
+```
+(2*mu_j+lambda_j)*A_j*u_j,xx + lambda_j*A_j*phi_j,x = rho_j*A_j*u_j,tt
+mu_j*I_j*S1*phi_j,xx - (2*mu_j+lambda_j)*A_j*phi_j
+                     - lambda_j*A_j*u_j,x = rho_j*I_j*S2,j*phi_j,tt
+mu_j=E_j/(2*(1+nu_j)), lambda_j=nu_j*E_j/((1+nu_j)*(1-2*nu_j))
+A_j=b_j*h_j, I_j=b_j*h_j^3/12
+S1=12/pi^2
+S2,j=S1*((1+nu_j)/(0.87+1.12*nu_j))^2
+```
+
+Визуально проверены PDF 1–2,9–11,33. В (6), PDF 11, contraction-gradient
+entry напечатан без k_j², в отличие от второй производной (2),(4).
+Новый characteristic solver Ng не строится; mapping опирается на (2).
+Численные эксперименты и Bayesian identification этой статьи не повторены.
+
+### 13.2. Exact mapping factors и отдельное constitutive различие
+
+| Source | Symbol / source expression | Section / place in equation | Project energy coefficient | Mapping / status |
+| --- | --- | --- | --- | --- |
+| Ng, PDF 10 (2) + following paragraph | S1=12/π² | Rectangle, I=bh³/12; μIS1 c_xx | H=K_MH1 GI | K_MH1=S1 directly because μ=G; **factor-role confirmed** |
+| Ng, same page | S2=S1[(1+ν)/(.87+1.12ν)]² | Rectangle; ρIS2 c_tt | j=K_MH2 ρI | K_MH2=S2 directly; **factor-role confirmed** |
+| Ng, (2) | D=(2μ+λ)A; F=λA | Normal diagonal / internal u_x c coupling | Current D=C, F=νC | **Different normal block** at fixed physical E,ν |
+| Elishakoff–Tharu, PDF 20 (37),(38) | κ², κ₁² in circular stress-displacement relations | Circular axisymmetric r,z,a; u radial, w axial | No direct rectangular H/j mapping established | **Not a second confirmation**; do not identify squared symbols with S1/S2 |
+| Expected Fernandes et al. 2022 | Not inspected | Local full text absent | Not established | **Unavailable**, no source substitution |
+
+Таким образом, у Ng S1 и S2 не являются sqrt(K), K², 1/K или только
+нормированными frequency factors. Их места в PDE устанавливают
+соответствующие H,j в энергии. Но для всей normal energy из (2) следует:
+
+```
+T_Ng = 1/2 integral [rho*A*u_t^2 + rho*I*S2*c_t^2] dx
+V_Ng = 1/2 integral [D*(u_x^2+c^2) + 2*F*u_x*c + G*I*S1*c_x^2] dx
+D=(2*mu+lambda)*A, F=lambda*A
+```
+
+Это восстановление из напечатанных PDE, не цитата напечатанной энергии.
+`D/EA=(1−ν)/[(1+ν)(1−2ν)]`, `F/EA=ν/[(1+ν)(1−2ν)]`.
+Ratio `F/D=ν/(1−ν)` отличается от project `ν`. Нормированный mixed
+coefficient `F/sqrt(D*D)` инвариантен при отдельном масштабировании u,c,
+поэтому простое переименование/масштабирование DOF не устраняет различие.
+При stationary contraction `c=−F*u_x/D`:
+
+```
+Ng:      D-F^2/D = EA/(1-nu^2)
+project: C-(nu*C)^2/C = EA
+```
+
+Следовательно, source equation (2) как напечатана даёт acoustic speed
+`sqrt(E/[rho*(1−nu²)])`, а текущая reduced model — `sqrt(E/rho)`.
+Это algebraic convention audit, не обвинение статьи в ошибочности и не
+новый dispersion benchmark. Различие исчезает при ν=0, но не при общем ν.
+Точные Fraction checks подтверждают ratios и stationary reduction.
+Lamé λ источника не заменён молча reduced plane-stress коэффициентом;
+physical E,ν не перенормированы. Frozen equations.tex/analytic baseline,
+current energy core и signs/unknown ordering сохранены.
+
+### 13.3. Происхождение, статус и нерешённое условие переноса
+
+Ng задаёт S1,S2 как published rectangular model formula, до specimen
+damage identification; fit этих factors не описан. S1 не содержит b/h,
+S2 содержит только ν. Это отличается от fitted Rucka factors. Два
+напечатанных decimal constants .87 и 1.12 не объявляются точными
+рациональными физическими константами. Prescription не названа уникально
+правильной или оптимальной. Повторное употребление именно этой formula
+двумя новыми доступными rectangular publications пока не установлено.
+
+Ng PDF 33 ref. **37** цитирует Doyle 1997, 2nd ed. Elishakoff–Tharu PDF 95
+ref. **10** цитирует Graff 1976 (как напечатано), ref. **15** — Doyle 1997.
+Книги отдельно не проверены; circular review не заменяет ни оригинал книги,
+ни отсутствующий Fernandes PDF. Его §2.2 использует другие геометрию и
+систему squared corrections; все результаты препринта не валидированы.
+
+**Итог нового этапа: `RECTANGULAR_MH_PRESET_MAPPING_UNRESOLVED`;
+`PRODUCTION_MH_COEFFICIENTS_UNRESOLVED`.**
+Candidate name `rectangular_literature_default` записан только в fixtures
+как **unadopted candidate**, `adopted=false`, `code_preset=null`. Helper/
+production constructor не добавлен. Требуются второй непосредственно
+проверенный rectangular full source и явно обоснованный перенос к
+текущему normal reduced block; совпадение H/j roles отдельно не доказывает
+всей source-consistent energy. Никакой новой constitutive теории не выбрано.
+
+Печатные формулы candidate при ν=.3 дают вычисляемые arithmetic sanity
+values; они сохраняются в local audit, не становятся model defaults или
+physical precision claims. Production cutoff/low-k sanity run **не
+выполнен**, поскольку preset не принят. Существующие low-k и Timoshenko
+regressions проверяются targeted tests без нового parameter study.
+При ν=.3 arithmetic output: S1=1.2158542037080533,
+S2=1.4127769143961029, вычислены из formula, не hard-coded в model.
+
+M-H corrections остаются отделены от project Timoshenko κ и rotary
+factor=1. Source Rucka/Jang cases, Jang `kappa_b_numeric=null` и тест
+`test_jang_kappa_is_never_guessed` сохранены. Никакой coefficient fit,
+two-beam assembly, contraction angular-joint BC, nonlinear derivation,
+FEM или возврат к Bishop hybrid не выполнялись. Старые results не
+пересчитываются; source-check проверяет также hashes новых records.
+
+Новое локальное evidence находится в
+`results/mindlin_herrmann_timoshenko_literature/rectangular_preset_audit/`:
+page snapshots, source inventory/manifest и audit/sanity/verification JSON.
+Это source audit, не ещё один numerical benchmark. README и script guides
+не требуют нового workflow: CLI и helper API не изменены.
+
+Проверки нового gate: **82 tests PASS** (31 M-H source/audit, 48 прежних
+Bishop literature/kinematics, 3 существующих rectangular Timoshenko).
+Fixed-point Rucka/Jang temporal/spatial outputs и model coefficients
+совпали точно в JSON representation; прежние source records, cases и
+numeric contract не изменены. Первый технический snapshot comparison
+сравнивал Python tuple units с JSON list; после одинаковой сериализации
+различий нет, numerical tolerances не вводились. Source hash-check passed;
+защищённые PDF/baseline/CLI файлы побайтово сохранены. Git HEAD/staging
+не изменены. Нет нового numerical benchmark или production sanity model.
+
+## 14. Production formulation decision
+
+Пользователь явно выбрал published Jang bare isotropic reduced closure
+как основу последующей внутриплоскостной модели. Named preset
+`project_jang_reduced_rectangular` отделён от `jang_2014_bare_isotropic`.
+Это не установление численного source κ Jang, не fit и не утверждение
+единственности/оптимальности теории. Rucka/Jang source cases и standalone
+Bishop остаются прежними. `MHTIM_VARIANT_DEPENDENT` и
+`MH_SOURCE_VARIANTS_NOT_EQUIVALENT` остаются истинными для source comparison.
+
+Новый [Fernandes full text](../literature/source_index.md#fernandes_2022_spectral_tower_cable),
+DOI 10.3390/en15207725, PDF/p.6–7 (19)–(23), повторяет Ng factors 12/π²
+и ν-formula, но использует `(2mu+lambda)A,lambda*A`. Он поддерживает
+provenance альтернативной ветви, не выбранный project normal block.
+В этих местах I назван cross-section inertia, без rectangular b,h
+prescription для source specimen; tower case не является нашим rectangle.
+Ref.32 p.25 цитирует Doyle1997, книга не проверена. Historical
+`RECTANGULAR_MH_PRESET_MAPPING_UNRESOLVED` сохраняется для переноса всего
+Ng-type block. Unadopted candidate в старых fixtures не становится новым
+production preset; общий production status прежнего этапа был historical.
+Направление Ng/Fernandes/Liu-type сохраняется как отдельная literature
+alternative. Здесь Liu означает зарегистрированный Liu2022 по longitudinal
+DS (rectangular M-H вынесен в Appendix), не Liu2021 multibody framework.
+Его Appendix не используется для выбора нового production closure и не
+объявляется заново независимо воспроизведённым; в этом этапе прямое
+подтверждение correction expressions получено по Ng/Fernandes.
+
+## 15. Project kappa provenance и вариационные уравнения
+
+Frozen [G20 contract](../../tests/data/reddy_four_ply_isotropic_limit_cases.json),
+material.K=5/6, используется existing rectangular Timoshenko comparator.
+Accepted provenance зафиксирована в
+[RLB-2B note §2–3](../laminated_beams/rectangular_isotropic_models_vs_beta_note.md)
+и проверяется `test_canonical_contract_and_four_equal_isotropic_plies` в
+`test_rectangular_isotropic_models_vs_beta.py` (точное K=5/6).
+Библиографический precedent: Kramer–Gfrerer2024, local `A2-1.pdf`, p.2
+§2.1 после (4): κ=5/6 для rectangle, (5) γ=w′−Θ. Страница дополнительно
+сверена визуально. Project helper сохраняет `Q=KGA*(w′−psi)` и
+`KGA=K*G*A`; его API/rotary inertia не меняются. κ установлен **проектным
+contract**, не догадкой о Jang. Один κ=5/6 входит в S=κGA и H=κGI;
+`j=r=ρI` точно, `C=EA/(1−ν²)`. Section с иным K не принимается preset.
+
+Для q=(u,c,w,θ), A=bh, I=I_y=bh³/12, production energy — §6 с
+`K_MH1=K_Tim1=κ_project`, `K_MH2=K_Tim2=1`. Independent exact
+quadratic differentiation (Fraction tests) даёт:
+
+| Variation | Potential boundary coefficient | Volume coefficient in δV |
+| --- | --- | --- |
+| δu | N=C(u′+νc) | −N′ |
+| δc | R=Hc′ | C(c+νu′)−R′ |
+| δw | Q=S(w′−θ) | −Q′ |
+| δθ | M=Bθ′ | −Q−M′ |
+
+δT после интегрирования по времени даёт −m u_tt, −j c_tt, −m w_tt,
+−r θ_tt. Из Hamilton variation получены:
+
+```
+m*u_tt = C*u_xx + nu*C*c_x
+j*c_tt = H*c_xx - C*c - nu*C*u_x
+m*w_tt = S*(w_xx-theta_x)
+r*theta_tt = B*theta_xx + S*(w_x-theta)
+N=C*(u_x+nu*c), R=H*c_x, Q=S*(w_x-theta), M=B*theta_x
+```
+
+Энд-член δV: `[Nδu+Rδc+Qδw+Mδθ]`; outward sign слева минус, справа плюс.
+Mass/potential mixed blocks между (u,c) и (w,θ) нулевые из выбранной
+source energy и centroid symmetry (§6), до spectrum union. Quasistatic
+`c=−νu′` возвращает EA, acoustic speed √(E/ρ). Frozen equations.tex и
+analytic baseline не содержат M-H и не меняются.
+
+## 16. Finite single-rod boundary problem и hierarchy caveat
+
+Один existing normalized G20 input: E=ρ=1, ν=.3, b=.20, h=.05,
+L=L_ref=1; A=.01, I=.000002083333333333334. Это mathematical benchmark,
+не измеренный материал и не HMS-DX209 specimen. L_total=2/two-arm assembly
+не используется. f=ω/(2π) относится к formal model time units contract;
+dimensionless `f*=f*L/√(E/ρ)`, здесь f*=f численно. Geometry не подбиралась.
+
+На обоих концах **u=c=w=θ=0**. Source (1), PDF2 p.249:
+`Ux=u−zθ`, `Uz=w+zc`; vanishing displacement при двух различных z
+однозначно даёт все четыре conditions. Это full clamp **в planar
+four-field approximation**, не утверждение о полном 3D Dirichlet model.
+Jang (12), PDF3 p.250, явно включает essential δψ_b=0 как alternative
+natural R_b pair; (28), PDF5 p.252, задаёт ψ_b1/ψ_b2 как end DOF.
+Fig.5 PDF7 p.254 содержит clamped cantilever precedent. Новый bare CC
+control не является воспроизведением composite Table1 или source bare CC
+таблицы. Contraction constraint resolved: независимая c подавлена торцом;
+это **не u′=0** в M-H. Natural free pairs — N=R=Q=M=0, без нового free run.
+
+В hierarchy elementary/Rayleigh–Love берут те же section/material и
+Timoshenko block. Planar Rayleigh–Love получается из thickness contraction
+c≈−νu′: gradient energy MH опущена, lateral inertia сохранена;
+`J_RL=ν²ρI_y`, `H=0`. Это **planar Rayleigh–Love approximation**, не
+full polar/two-transverse contraction circular reference. Elementary
+H=J=0; H не заменён epsilon. RL equation/effort:
+`m u_tt−J_RL u_xxtt−EAu_xx=0`, `N_RL=(EA−J_RLω²)u′`.
+Axial endpoint condition reduced models — только u=0 на каждом конце.
+
+**Hierarchy physical qualification:** reduced theories не имеют independent
+c, поэтому suppression c=0 full-clamp boundary layer не разрешается.
+Перенос c=−νu′ к торцу дал бы u=u′=0, overconstrained для второго порядка;
+он не выполняется. Numerical hierarchy использует model-specific
+representations fixed-end fixture с теми же centroidal/bending clamps.
+Exact одинаковая four-field/3D clamp kinematics A/B/C не доказана:
+`HIERARCHY_SINGLE_ROD=PARTIAL_PASS`, хотя numerical gates проходят.
+Это не мешает PASS finite M-H problem и не выбирает angular-joint BC.
+
+## 17. State equations и exact bounded solution
+
+При exp(iωt), y_MH=(u,c,N,R), y_T=(w,θ,Q,M):
+
+```
+u′ = N/C - nu*c              w′ = theta + Q/S
+c′ = R/H                    theta′ = M/B
+N′ = -m*omega²*u            Q′ = -m*omega²*w
+R′ = (EA-j*omega²)*c+nu*N   M′ = -r*omega²*theta-Q
+```
+
+R′ следует из C(c+νu′)−jω²c, затем u′ definition; EA=C(1−ν²).
+Общий order (u,c,w,θ,N,R,Q,M) даёт два blocks после energy derivation.
+Baseline unknown ordering не меняется.
+
+Primary: exact spatial polynomial §8, independent PDE amplitudes,
+acoustic cos/sin и **bounded anchored exponentials** `exp(−αx)`,
+`exp(−α(L−x))`. Positive length/row/column scaling — essential matrix4×4.
+Нет неограниченных sinh/cosh или больших transfer products. Finite solver
+намеренно ниже optical cutoff; ν=0 имеет отдельные decoupled columns.
+Independent: first-order state из resultants, initial essential q=0 и
+два независимых efforts; short-step `scipy.linalg.expm`, impedance scaling
+и positive-diagonal QR продвигают двумерное пространство. Step exponent≤1,
+budget512steps, projected boundary matrix2×2. Два представления одной 1D
+theory, не две обёртки общей boundary matrix или experimental validation.
+
+## 18. Root completeness и numerical verification
+
+[Config](../../data/input/mindlin_herrmann_timoshenko_single_rod.json) задан
+до расчёта: bounded interval/block, 400 scan intervals, root xtol1e−11 /
+rtol1e−12; independent rel2e−8, scaled BC/ODE1e−9, energy5e−8,
+mass orthogonality5e−7, nonzero singular condition≤1e8. Один doubled scan
+только при count failure, без range/tolerance expansion; не потребовался.
+
+Полнота не выводится из sign scan. Young inequality при η=.18>ν²:
+
+```
+C(u′²+2nu*u′c+c²)+Hc′²
+ >= C(1-eta)u′² + C(1-nu²/eta)c² + Hc′².
+```
+
+Правый lower form имеет две exact scalar Dirichlet spectra. Min-max
+upper eigenvalue count до search ceiling=7 (contraction lower count0);
+verified MH roots=7, включая guard. Для Timoshenko ослабление θ essential
+до natural M=0 даёт exact simply-supported lower spectrum: k=nπ/L,
+две dispersion branches и uniform θ shear mode. Upper count=11, verified
+CC roots=11 с guard. Search starts ниже lower first roots (count0).
+Насыщение upper counts исключает пропущенные roots в заявленных ranges.
+Это небольшой model-specific min-max gate, не WW/general framework.
+Guard coverage подтверждает combined first12 prefix.
+
+Max MH / Timo scaled BC residual: 1.55e−13 /1.75e−12;
+ODE: 1.49e−15 /1.07e−14; energy relative: 2.00e−13 /2.18e−12;
+mass Gram: 2.77e−13 /1.06e−12; primary/independent frequency difference:
+1.06e−13 /1.71e−12. Nonzero singular condition≤1.990 /1.681.
+Это actual diagnostics, не ужесточённые после расчёта tolerances.
+Exact reductions проверены Fraction; SymPy/Lean отсутствуют, без installs.
+
+## 19. Hierarchy comparison и spectral family inventory
+
+| Family n | Elementary axial f* | Planar Rayleigh–Love f* | M-H f* | Common Timoshenko bending f* |
+| --- | --- | --- | --- | --- |
+| 1 | .500000000 | .499953743 | .500706144 | .050527603 |
+| 2 | 1.000000000 | .999630095 | 1.001229213 | .136325767 |
+| 3 | 1.500000000 | 1.498752436 | 1.501381967 | .260072546 |
+| 4 | 2.000000000 | 1.997045678 | 2.000968673 | .416258846 |
+| 5 | 2.500000000 | 2.494237017 | 2.499780436 | .599831008 |
+| 6 | 3.000000000 | 2.990056680 | 2.997590005 | .806045922 |
+
+Bending вычисляется один раз и переиспользуется во всех A/B/C; self terms
+и existing-basis roots checked. Combined boundary determinant в общих
+bounded bases имеет block factorization; zeros равны union **после**
+energy decomposition. Равенство с иными нормировками determinants не заявлено.
+
+First12 MH combined positions: B1,B2,B3,B4,A1,B5,B6,A2,B7,B8,A3,B9;
+верхний f*=1.522253495. Family index отделён от sorted position.
+Contraction **wave cutoff** f*=11.558994422, shear wave cutoff6.242570465,
+оба выше bounded low inventory. Independent propagating contraction/shear
+optical branches в нём отсутствуют. MH shapes содержат evanescent
+contraction boundary contribution: c не ноль внутри rod. Wave cutoff
+не называется первой finite CC optical eigenfrequency; upper finite
+spectrum не рассчитывался. Contraction lower count scale8.173443340
+тоже выше MH search ceiling. Более полная theory не обязана понижать
+все frequencies; resolved clamp effect виден в первых MH roots, без fit.
+
+## 20. Reproduction и remaining joint question
+
+[Один finite CLI](../../scripts/analysis/verify_mindlin_herrmann_timoshenko_single_rod.py)
+имеет новый finite-boundary/count contract, поэтому отделён от source
+CLI. Reuses existing MH helper, rectangular section, exact Bishop H=0
+boundary machinery и atomic writers. Source Jang требует explicit κ.
+
+```powershell
+python scripts/analysis/verify_mindlin_herrmann_timoshenko_single_rod.py --check-sources
+python scripts/analysis/verify_mindlin_herrmann_timoshenko_single_rod.py --compute
+python -m pytest tests/test_mindlin_herrmann_timoshenko_finite_rod.py tests/test_mindlin_herrmann_timoshenko_literature.py tests/test_bishop_literature.py tests/test_timoshenko_bishop_single_rod.py -q
+```
+
+Проверенный interpreter D:/python/Pycharm/pythonProject/.venv/Scripts/python.exe,
+Python3.12.4, existing NumPy/SciPy environment. Result root
+`results/mindlin_herrmann_timoshenko_single_rod/<fingerprint>/`: manifest,
+exact config/hashes/versions/Git, full result/count/diagnostics JSON,
+hierarchy и mass-normalized profiles CSV. current.json указатель;
+reuse проверяет identity/artifact hashes, zero root evaluations.
+Page snapshots отдельно source_audit/. Новых plots/maps нет.
+
+Финальные targeted checks: 19 новых finite +31 source MH +48 прежних
+Bishop literature/kinematics =98 PASS; ещё4 existing rectangular Timo
+regressions (включая exact G20 κ contract) PASS, итого102. Smoke source/
+finite check/compute и matching-cache reuse прошли. Rucka/Jang fixed-point
+outputs и прежние cases/source records/numeric contract сохранены точно;
+13 protected initial files, включая три пользовательских PDF, baseline
+helpers и source CLI, побайтово сохранены. Initial user diff сохранён
+во временной папке ОС; прежние незакоммиченные source audit edits не удалены.
+
+Production closure/project κ выбраны для дальнейшей работы; finite MH
+gate passes, hierarchy qualified PARTIAL_PASS по clamp interpretation.
+**Angular-joint conditions для c/R не выбраны.** Two-beam M-H assembly,
+β, nonlinear equations, out-of-plane/torsion, coefficient fitting и
+3D FEM не выполнялись. Ng/Fernandes variant, Rucka/Jang semantics и
+закрытый Bishop gate сохранены. Автоматического coupled этапа нет.

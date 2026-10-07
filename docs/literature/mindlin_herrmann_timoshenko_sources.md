@@ -6,6 +6,21 @@
 Метаданные, версии, пути, SHA256 и объём чтения — в
 [source index](source_index.md); ключи — в [bibliography.bib](bibliography.bib).
 
+Последующий этап 2026-10-06: [Jang-type project selection и finite single rod](../theory/mindlin_herrmann_timoshenko_single_rod.md#14-production-formulation-decision)
+выбирает отдельный `project_jang_reduced_rectangular` preset с project
+rectangular κ=5/6. Source Jang numeric κ по-прежнему не установлен.
+Настоящий [Fernandes PDF](source_index.md#fernandes_2022_spectral_tower_cable)
+теперь найден: (19)–(21), pp.6–7 повторяют Ng factors с Lamé normal block;
+они сохранены только как alternative literature variant. Исторический
+unresolved mapping audit ниже не заменён новым PASS.
+
+Дополнение 2026-10-06: последующий [вычислительный source audit](../theory/mindlin_herrmann_timoshenko_single_rod.md)
+выполнен отдельно (`MHTIM_VARIANT_DEPENDENT`); исходная регистрация ниже
+сохраняет свой объём чтения. Новый [rectangular prescription gate](../theory/mindlin_herrmann_timoshenko_single_rod.md#13-production-rectangular-m-h-correction-prescription)
+зарегистрировал Ng и фактически найденный Elishakoff–Tharu preprint:
+`RECTANGULAR_MH_PRESET_MAPPING_UNRESOLVED`; на том этапе production
+coefficients были unresolved, ожидаемый Fernandes PDF ещё не был найден.
+
 ## Статус направления
 
 - [Standalone Bishop reproduction](../theory/bishop_literature_reproduction.md)
@@ -20,8 +35,9 @@
 - Bishop больше не является предпочтительным кандидатом основной
   продольной части будущей combined in-plane model. Текущий **кандидат** —
   **Mindlin–Herrmann axial + Timoshenko bending**, с независимой переменной
-  поперечного сокращения. Реализация и валидация этой комбинации в проекте
-  **не выполнены**; наличие литературных formulations не меняет этот статус.
+  поперечного сокращения. При исходной регистрации реализация не была
+  выполнена; последующий single-rod diagnostic source audit реализован
+  отдельно. Production combination и angular-joint validation **не выполнены**.
 - Новые источники показывают конкретные способы редуцированного сочетания
   теорий. Они не отменяют предыдущий Bishop audit и не подтверждают модель
   для нашей геометрии. Условия нашего углового узла не выбраны.
@@ -38,6 +54,35 @@
 | [Jang–Park–Lee 2014](source_index.md#jang_2014_timoshenko_composite_patch_guided_waves) | M-H по толщине | Timoshenko | Да, source ψ_b | Bare isotropic base: раздельные axial/bending contributions; patched system: coupled | Displacement fields + **разные reduced constitutive blocks**; frequency-domain SEM | Прямоугольная металлическая основа, односторонняя composite patch | Частоты, FRF, guided waves, debonding | Собственный 1D FEM и ANSYS 2D plane-stress; численная проверка | κ_b, κ_c — source shear corrections; численный default здесь не установлен | Основной источник для понимания reduced closure и четырёх полей | Patch coupling не доказывает обязательной связи bare beam; не единый неизменённый полный 3D law |
 | [Banerjee–Ananthapuvirajah 2019](source_index.md#banerjee_2019_rayleigh_love_timoshenko) | Rayleigh–Love | Timoshenko | Нет самостоятельного M-H DOF | Приняты uncoupled, выводятся независимо | Отдельные DSM, simple superposition, 6×6 plane-frame DSM | Изотропные стержни; рама задана жёсткостями и инерциями | Свободные колебания rods/frame | Аналитический rod control, опубликованный stepped-bar пример, сравнение теорий для рамы | В frame example k=2/3; source input, не M-H fit | Published precedent for modular assembly of refined 1D theories | Не M-H equations и не Bishop + Timoshenko validation |
 | [Liu et al. 2021](source_index.md#liu_2021_multibody_beams_rigid_bodies) | В demonstration: classical / Rayleigh–Love | В demonstration: Euler–Bernoulli / Timoshenko | Нет в показанном элементе | Uncoupled local demonstration; global coupling при сборке | Beam DS, coordinate transformations, перенос к центрам rigid bodies, assembly | Изотропные beams, включая круглые, и rigid bodies | Свободные колебания multibody structures | Conventional DSM, опубликованные результаты, ANSYS FEM | Например k=1 в §3.1; заданный source input | Различие local block structure и structural coupling | Bishop только упомянут в обзоре; нет прямой M-H или Bishop + Timoshenko validation |
+| [Ng 2014](source_index.md#ng_2014_bayesian_guided_wave_damage) | M-H с напечатанными 3D Lamé normal coefficients | В применённой inverse model не включена | Да, bar(phi) | Combined bending block в прочитанной постановке отсутствует | Two-field frequency-domain spectral element | Rectangular isotropic beam, A=bh, I=bh³/12 | Longitudinal guided waves / Bayesian step-damage identification | Авторы сопоставляют экспериментальные signals; здесь не воспроизводились | S1=12/π², S2=S1[(1+ν)/(.87+1.12ν)]², prescribed formula, не fitted MH factors | Прямое подтверждение stiffness/inertia ролей prescription | Normal block не равен текущему reduced block; один источник не проходит two-source gate |
+| [Elishakoff–Tharu, SSRN 5985611](source_index.md#elishakoff_tharu_ssrn_5985611) | Обзор refined rods; прочитана circular M-H часть | Не combined Timoshenko formulation | Да, radial field в circular M-H | Не проверяется planar combined element | Circular stress/displacement equations с κ²,κ₁² | Axisymmetric circular rod | Review, dispersion / Pochhammer–Chree comparisons | Численные comparisons не воспроизводились | Squared circular corrections; не Ng S1/S2 prescription | Устанавливает фактическую идентичность второго PDF | Not peer reviewed; не Fernandes, не второе rectangular подтверждение |
+| [Fernandes–Machado–Dutkiewicz 2022](source_index.md#fernandes_2022_spectral_tower_cable) | Ng-type M-H / Love alternatives | Cable EB under tension, не Jang combined block | Да, source psi | Не bare M-H/Timoshenko formulation | Axial rod spectral elements tower, assembly с cable | Generic A,I; tower A=.01 m², b,h не заданы | Wind/rain tower-cable response | Source comparisons не воспроизводились | K_r1=12/π², K_r2=ν-formula, prescribed; прямое повторение Ng | Provenance alternative literature branch | Lamé normal block не принят; не production defaults или наши joint BC |
+
+## Rectangular prescription: Ng и фактический второй PDF (2026-10-06)
+
+Ng accepted manuscript, PDF 9–10, (1),(2): contraction field
+`v_j=y*bar(phi_j)`, `A=bh`, `I=bh³/12`; correction formulas находятся
+сразу после (2), PDF 10. По PDE `H=mu*I*S1`, `j=rho*I*S2`, `mu=G`:
+factor mapping к project K_MH1/K_MH2 прямой, без square/root/reciprocal.
+S1 не зависит от aspect ratio, S2 зависит только от nu; fit самих
+correction factors для specimen не описан. Это prescription, отличная
+от source-specific Rucka fit, но пока **не** принята как project default.
+
+В том же (2) source normal block использует `(2mu+lambda)A,lambda*A`,
+где `lambda=nu*E/[(1+nu)(1−2nu)]` как напечатано. Current reduced block
+использует `C,nu*C`, `C=EA/(1−nu²)`. Exact stationary reductions дают
+разные effective axial moduli: `E/(1−nu²)` и `E`. Совпадение correction
+roles отдельно не устанавливает одинаковую полную energy convention.
+Транскрипция, mapping table, печатное предупреждение к (6) и exact
+algebra приведены в [canonical note §13](../theory/mindlin_herrmann_timoshenko_single_rod.md#13-production-rectangular-m-h-correction-prescription).
+
+Ng ref. **37**, PDF 33, ссылается на Doyle 1997 (2nd ed.). Второй новый
+PDF — Elishakoff–Tharu SSRN review, 100 страниц, not peer reviewed;
+§2.2, PDF 14–21, использует circular geometry и κ²,κ₁² в (37),(38),
+PDF 20. Он не подменяет отсутствующий Fernandes PDF. Его ref. **10**
+(Graff 1976, как напечатано) и **15** (Doyle 1997), PDF 95, — только
+citation chain. Книги независимо не прочитаны/проверены. Широкого web
+поиска, fit, нового solver или изменения production defaults не было.
 
 ## Rucka 2010: что именно объединено
 

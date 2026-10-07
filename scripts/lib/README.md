@@ -2,19 +2,57 @@
 
 This directory contains reusable helper modules that are not meant to be run directly.
 
+The [production Lambda geometry check](../../docs/theory/mindlin_herrmann_timoshenko_lambda_beta_large_checks.md)
+composes `mindlin_herrmann_timoshenko_joint.arm_basis`, `arm_state`,
+`arm_dynamic_stiffness` and the same `joint_matrix` for two separate section
+objects. Physics helpers/APIs remain unchanged; section pairing and numeric
+count-certified bracket prediction stay in the diagnostic CLI. No new
+per-geometry solver/module is introduced.
+
+- `coupled_longitudinal_comparators.py` is a bounded diagnostic comparator
+  layer: existing H=0 elementary/planar Love axial basis plus identical
+  verified Tim basis, six-DOF arms, six invariant joint rows and independent
+  energy/Schur count with explicit pole-query conditioning. Love uses
+  J=nu^2 rho Iy and N=(EA-J omega^2)u_x. No MH arm/joint API is changed.
+  Geometric overlap and contraction norms support only the fixed-beta
+  [screening contract](../../docs/theory/coupled_longitudinal_theory_hierarchy_screening.md).
+  The subsequent [thickness screening](../../docs/theory/coupled_longitudinal_theory_thickness_screening.md)
+  reuses this helper and the unchanged MH/Tim modules at each section;
+  no separate thickness physics module or altered solver API was added.
+
 Project-wide branch identity and diagnostic-tracking rules are summarized in
 `../../docs/project_rules.md`.
+
+- `mindlin_herrmann_timoshenko_joint.py` is the separate published reduced
+  common-DOF rigid-joint helper: physical frame maps, endpoint signs, invariant
+  eight-row residual and dual virtual work. Common `frame_boundary_matrix`
+  supports project general beta and explicit swap/reflection frames; frozen
+  beta0 API is a guard/wrapper of that same assembly. Local physics remains
+  unchanged, global geometry mixes translations at nonzero beta. Exact
+  arm Dirichlet-to-Neumann and nodal Schur matrices support the fixed pilot's
+  energy count; bounded roots, full local modes/diagnostics and previous
+  beta0/segmented-QR utilities stay here. No angle map or 3D joint theorem.
+  Single/source modules do not
+  import this helper. See [canonical joint note](../../docs/theory/mindlin_herrmann_timoshenko_rigid_joint.md).
 
 - `mindlin_herrmann_longitudinal.py` is the isolated planar one-rectangle
   source-energy helper for M-H/Timoshenko diagnostics. Independent c,
   corrected source mass/stiffness, explicit factor inputs, natural boundary
   quantities, stable two-branch dispersion and analytic group velocities.
   It reuses the rectangular Timoshenko section coefficients and leaves that
-  helper/API unchanged. No production defaults, frame assembly or joint BC.
+  helper/API unchanged. Source factories have no implicit production defaults;
+  no frame assembly or joint BC.
   Source fixtures: `data/input/mindlin_herrmann_timoshenko_sources.json`;
   [canonical audit](../../docs/theory/mindlin_herrmann_timoshenko_single_rod.md)
-  records variant-dependent source prescriptions and unresolved production
-  coefficients. Jang requires explicit numeric kappa; Rucka factors are fitted.
+  retains variant-dependent source prescriptions and their historical
+  unresolved coefficient audit. Source Jang requires explicit numeric kappa;
+  Rucka factors are fitted.
+  Subsequent selected project preset `project_jang_reduced_rectangular`
+  uses the accepted rectangular K=5/6 in both shear-gradient terms, with
+  unit contraction/rotary inertia. Source variants remain explicit and
+  unchanged. Finite CC functions use bounded analytic columns, independent
+  state-expm/QR, min-max count bounds and modal energy/mass checks; only the
+  declared below-cutoff range is supported. No coupled-beam/joint solver.
 
 - `bishop_longitudinal.py` is the isolated diagnostic longitudinal kernel:
   bounded analytic exponential/trigonometric bases, C/F/UP boundary and

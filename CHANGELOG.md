@@ -1,6 +1,89 @@
 # CHANGELOG
 
+## 2026-10-07
+
+- Completed the production-only M-H/Timoshenko Lambda(beta) large checks:
+  fixed canonical reference, length asymmetry and mass-preserving section
+  contrast,37 angles,185 unique map points +20 sparse swap controls.
+  Added one paired-arm composition/accelerated diagnostic CLI/config,
+  36 tests and one note, preserving all physics helpers and prior bundles.
+  All10 gates PASS; direct/stepped/baseline/signed swap/root/Gram checks pass.
+  5 seed scans +200 numerical predictors, zero fallback;68 curvature flags
+  independently verified by same-angle state-expm/QR.273 relevant tests pass.
+  Two matched PDF/PNG figures, sorted positions only; cache/plot-only zero
+  roots. README/navigation updated; no theory comparison, mode tracking,
+  physical sensitivity/applicability claim, fit, FEM or nonlinear work.
+
+- Completed the bounded h/h0=1–2 coupled-theory thickness screening at
+  beta0/45/90 with unchanged hierarchy/arm solvers and one new CLI/config.
+  Exact coefficient/width scaling,45 certified12+guard13 inventories and
+  15 direct beta0 profile/interface checks pass. Max E/MH0.27081%,
+  RL/MH0.47929%; all fixed-case correspondences diagonal. Growth differs
+  from h^2; close beta90,s_h1.25 positions9–10 documented without veering
+  claims. Sub-cutoff prefixes retain old tolerances and physics. Added
+  35 tests and canonical note;237 relevant checks pass. Updated navigation,
+  README and three saved-data figures. Preserved prior edits/bundles and
+  source/Bishop/MH/Tim code/tests. No classification, continuation, fitted
+  law/threshold, h>2 range, unequal-arm study, FEM or nonlinear work.
+
+- Completed one bounded coupled longitudinal-theory screening on G20 and
+  eight fixed angles. Added one small elementary/planar Love comparator layer,
+  one CLI/config, 32 targeted tests and one canonical note. Both comparator
+  gates and 24 sorted12+guard13 inventories pass; all fixed-beta geometric
+  best correspondences are diagonal. Maximum E/MH and RL/MH differences are
+  0.14103% and0.17514%; MH is a reference, not exact truth. Contraction norms,
+  null-field handling, adjacent gaps and three saved-data figures retained.
+  202 relevant tests pass, including unchanged source/Bishop/MH/Timoshenko
+  regressions. Original arm/joint physics, sources and bundles preserved.
+  Updated README/navigation for the new command. No energy classification,
+  across-beta tracking, root reassignment, applicability threshold, beta
+  refinement, additional geometry study, fit, FEM or nonlinear work.
+
 ## 2026-10-06
+
+- Extended the existing reduced M-H/Timoshenko joint helper with one general
+  project-beta assembly and dual geometry/reflection maps. Frozen beta0
+  wrapper/CLI, arm physics and source variants remain unchanged. Added one
+  structural/pilot CLI and37 tests; all10 general gates PASS. Exact frozen
+  beta0 recovery, rank8/duality/zero-limit/right-angle/swap/reflection and
+  fixed5/45/90 pilot pass, with energy/Schur certified23/24/24 inventories
+  covering12+guard13. 170 targeted/regression tests pass. Expanded the
+  canonical joint note and navigation/README; old bundles/source files and
+  user changes preserved. No angle sweep, hierarchy/applicability study,
+  tracking, coefficient fit, FEM/nonlinear work or finite3D joint claim.
+
+- Adopted the qualified published reduced M-H/Timoshenko common-DOF rigid
+  closure and verified beta0 artificial-interface transparency with one
+  separate joint helper/CLI, 31 tests and a canonical joint note. Three splits
+  reproduce the unchanged direct G20 CC rod: 7 MH/11 bending roots, 12+guard13,
+  c/R transmission, full mass-MAC/L2 forms and arm reflection. Seven gates
+  PASS; 133 targeted/regression tests pass. Preserved existing user edits,
+  arm/source/Bishop/Timoshenko code/tests/data/results and frozen formulas.
+  Updated README/navigation; no source-index/BibTeX or other-branch memory
+  edits. No nonzero-angle spectrum/validation, 3D joint claim or parameter fit.
+
+- Selected the separate project Jang bare-isotropic reduced M-H/Timoshenko
+  closure with the existing accepted rectangular K=5/6 in both GI/GA terms
+  and unit inertia factors; source Jang's numeric kappa remains unstated.
+  Registered the newly supplied Fernandes publisher PDF as an alternative
+  Ng-type Lamé formulation, preserving the historical unresolved mapping gate.
+  Added bounded analytical finite-CC functions, independent state-expm/QR,
+  saturated min-max root-count certificates, one CLI/config and 19 tests.
+  Finite spectrum PASS; hierarchy PARTIAL_PASS qualifies the unresolved
+  contraction clamp in reduced axial models. 102 targeted/regression tests
+  pass. Preserved user changes, Rucka/Jang outputs, Bishop/Timoshenko baselines
+  and old results. Updated README/navigation for the new single-rod command;
+  no M-H coupled-beam model, angular-joint selection, nonlinear work or FEM.
+
+- Registered Ng's accepted rectangular M-H paper and the actual second PDF,
+  Elishakoff--Tharu's non-peer-reviewed circular-rod SSRN review. Preserved
+  printed correction expressions and direct GI/rhoI factor mapping, recorded
+  Ng's different Lamé normal block and the absent expected Fernandes PDF.
+  Kept RECTANGULAR_MH_PRESET_MAPPING_UNRESOLVED and unresolved production
+  coefficients; no preset/helper or solver change. Extended existing fixtures,
+  source/theory notes and targeted gates: 82 relevant tests pass. Rucka/Jang
+  outputs, Jang's unstated kappa, Bishop/Timoshenko baselines and existing
+  results preserved. README unchanged: no new command or production workflow.
 
 - Added the isolated planar rectangular M-H/Timoshenko source-energy audit:
   one explicit-factor helper/CLI, audited source fixtures, targeted tests

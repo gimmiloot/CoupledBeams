@@ -20,6 +20,58 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
+## Completed general-angle reduced M-H/Timoshenko joint gate
+
+Subsequent `verify_mindlin_herrmann_timoshenko_lambda_beta_large_checks.py`
+is `completed`: all10 requested implementation statuses PASS. Fixed canonical
+Lambda, unequal lengths/sections,185 unique main points +20 swap controls,
+direct/stepped beta0 references and all certified sorted12+guard13.
+5 seed scans +200 numeric predictors; no fallback. Two PDF/PNG maps and
+68 same-angle independent QR anomaly reviews, no branch tracking or physical
+sensitivity/applicability conclusion. [Large-check note](../docs/theory/mindlin_herrmann_timoshenko_lambda_beta_large_checks.md).
+
+Subsequent `screen_coupled_longitudinal_theory_thickness.py` is `completed`:
+COUPLED_THICKNESS_SCALING_AUDIT and ROOT_INVENTORY PASS; FIXED_CASE_OVERLAP
+and SCREENING COMPLETE. Five equal thicknesses, three angles, three theories,
+15 direct beta0 profile checks and45 certified prefixes. All geometry/arm
+physics reused unchanged; no energy classification/tracking or h>2 extension.
+[Thickness report](../docs/theory/coupled_longitudinal_theory_thickness_screening.md).
+
+Subsequent `screen_coupled_longitudinal_theory_hierarchy.py` is `completed`:
+both comparator gates and all24 inventories PASS; fixed-beta overlaps and
+screening COMPLETE. One G20/eight-angle sorted12+guard13 comparison,
+MH reference retained, no energy classification/across-beta tracking or
+applicability threshold. [Screening report](../docs/theory/coupled_longitudinal_theory_hierarchy_screening.md).
+The general-angle gate below retains its original separate scope.
+
+`verify_mindlin_herrmann_timoshenko_general_beta_joint.py` is `completed`:
+all10 MHTIM_GENERAL_BETA gates PASS. Common production assembly, unchanged
+arms, exact frozen beta0 recovery, rank/duality/symmetry and one fixed
+5/45/90 pilot12+guard13. Exact energy-count/residual inventory passes;
+no angle map, hierarchy or tracking. Source c-continuity is qualified
+reduced closure, not a finite3D elasticity proof. See
+[general stage §§9--16](../docs/theory/mindlin_herrmann_timoshenko_rigid_joint.md#9-general-angle-geometry-действующий-project-contract).
+
+## Completed reduced M-H/Timoshenko joint beta0 gate
+
+The separate subsequent `verify_mindlin_herrmann_timoshenko_beta0_joint.py`
+is `completed`: MHTIM_BETA0_JOINT_GATE=PASS for the unchanged G20 rod and
+three artificial splits. Qualified published reduced c/rotation closure,
+virtual work, frequencies/counts, full forms and reflection pass; no beta!=0
+spectra/validation. See [joint note](../docs/theory/mindlin_herrmann_timoshenko_rigid_joint.md).
+The single-rod stage below retains its original scope and hierarchy caveat.
+
+## Completed finite single-rod Jang project gate
+
+`verify_mindlin_herrmann_timoshenko_single_rod.py` implements the selected
+project Jang closure with accepted rectangular K=5/6, not recovered source
+Jang parameters. Finite MH/Timoshenko CC roots pass independent QR-expm,
+energy/BC and saturated min-max count bounds. Hierarchy PARTIAL_PASS records
+the additional resolved MH contraction clamp omitted by reduced models;
+numerical comparison passes. No MH angular-joint condition or coupled model.
+Source CLI and historical source statuses remain separate; see
+[canonical note §14--20](../docs/theory/mindlin_herrmann_timoshenko_single_rod.md#14-production-formulation-decision).
+
 ## Completed single-rod M-H/Timoshenko source audit
 
 The subsequent [M-H/Timoshenko source workflow](analysis/reproduce_mindlin_herrmann_timoshenko_literature.py)

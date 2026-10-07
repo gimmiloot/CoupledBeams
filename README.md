@@ -18,13 +18,47 @@ CoupledBeams is a research repository for frequency models and computations for 
   -- current candidate for the combined in-plane model, with source-specific
   correction factors and reduced constitutive assumptions. The subsequent
   [single-rod source audit](docs/theory/mindlin_herrmann_timoshenko_single_rod.md)
-  records `MHTIM_VARIANT_DEPENDENT`; production coefficients remain unresolved.
+  retains `MHTIM_VARIANT_DEPENDENT` for source variants. The separate
+  [finite single-rod gate](docs/theory/mindlin_herrmann_timoshenko_single_rod.md#14-production-formulation-decision)
+  selects the Jang reduced project closure and existing rectangular K=5/6;
+  finite spectrum passes, hierarchy is qualified PARTIAL_PASS for contraction
+  clamp interpretation. Source Jang kappa remains unstated.
+  Run the finite gate with `python scripts/analysis/verify_mindlin_herrmann_timoshenko_single_rod.py --compute`.
   Reproduce with `python scripts/analysis/reproduce_mindlin_herrmann_timoshenko_literature.py --compute --case all --jang-kappa 5/6`;
-  5/6 is an explicit conditional control, not a recovered Jang/default value.
+  Here 5/6 is an explicit source-control input, not a recovered Jang value;
+  the project preset belongs to the separate finite command.
   Bishop stays a standalone reference and retains its closed kinematics gate.
 - [Scoped research memory](docs/memory/README.md) -- RLB-2I/RLB-2J and the EB/RLB rotational-spring theory stage, sources, and decisions.
+- [M-H–Timoshenko reduced-joint beta0 gate](docs/theory/mindlin_herrmann_timoshenko_rigid_joint.md)
+  -- qualified published common-DOF closure, three artificial splits reproduce
+  one direct fixed--fixed rod including c/R and modal forms. Run
+  `python scripts/analysis/verify_mindlin_herrmann_timoshenko_beta0_joint.py --compute`.
+  No nonzero-angle spectrum or direct 3D joint derivation is claimed.
+- [General-angle M-H–Timoshenko joint gate](docs/theory/mindlin_herrmann_timoshenko_rigid_joint.md#9-general-angle-geometry-действующий-project-contract)
+  -- common project geometry/duality assembly, frozen beta0 and symmetry gates,
+  then one fixed5/45/90 pilot with certified12+guard13. Run
+  `python scripts/analysis/verify_mindlin_herrmann_timoshenko_general_beta_joint.py --compute`.
+  Reduced contraction closure is retained; no 3D joint proof, angle map,
+  applicability/hierarchy study or mode tracking.
 - [Archive policy](docs/archive_policy.md) -- preservation and soft/hard archive rules.
+- [Production M-H/Timoshenko Lambda(beta) checks](docs/theory/mindlin_herrmann_timoshenko_lambda_beta_large_checks.md)
+  -- length asymmetry and section contrast, one fixed canonical Lambda
+  reference,37 angles and certified sorted12+guard13. Run
+  `python scripts/analysis/verify_mindlin_herrmann_timoshenko_lambda_beta_large_checks.py --compute`.
+  Two PDF/PNG figures; no mode tracking or new physical model.
+- [Coupled longitudinal-theory screening](docs/theory/coupled_longitudinal_theory_hierarchy_screening.md)
+  -- one G20 control, eight fixed angles, elementary/planar Love/M-H with
+  identical Timoshenko arms; independently sorted12+guard13 and fixed-beta
+  geometric overlaps. Run
+  `python scripts/analysis/screen_coupled_longitudinal_theory_hierarchy.py --compute`.
+  No energy classification, mode continuation or applicability threshold.
 - [Refactoring status](docs/refactoring/README.md) -- verified inventory and staged refactoring status.
+- [Bounded thickness screening](docs/theory/coupled_longitudinal_theory_thickness_screening.md)
+  -- five h/h0 values1–2, beta0/45/90 and three unchanged axial theories;
+  coefficient scaling, certified12+guard13, direct beta0 profiles and
+  fixed-case geometric overlaps. Run
+  `python scripts/analysis/screen_coupled_longitudinal_theory_thickness.py --compute`.
+  No fitted law, applicability threshold or across-thickness tracking.
 - [Script status](scripts/STATUS.md) -- preferred, active, completed, historical, and
   compatibility workflows.
 - `docs/project_rules.md` -- global project rules for branch identity,

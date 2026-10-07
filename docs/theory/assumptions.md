@@ -7,8 +7,141 @@ diagnostic workflow, and model-extension checks, see `../project_rules.md`.
 
 ## Working Notes
 
+## Production Lambda(beta) implementation checks
+
+- The [large geometry check](mindlin_herrmann_timoshenko_lambda_beta_large_checks.md)
+  uses canonical Lambda^4=rho*A_ref*omega^2*l_ref^4/(E*I_ref), with fixed
+  l_ref=.5,b_ref=.20,h_ref=.05,E=rho=1 for every curve. The RLB-2B local
+  frequency label is canonical Lambda^2; its old formula/data are untouched.
+- Length mu0/.25/.5 preserves L1+L2=1 and identical section. Descriptive
+  thickness_contrast delta_h0/.2/.4 gives h1/h2=h0(1∓delta_h) at equal
+  lengths, preserving total mass. This local delta_h is not another eta/tau.
+- Both arms retain project_jang_reduced_rectangular, kappa5/6 and all
+  boundary/joint rules. Two existing arm bases/Dirichlet maps are composed
+  with the same joint operator; no new wave law is introduced. Straight
+  stepped reference uses literal positive-X state transmission.
+-37 fixed beta values0:2.5:90 have independently sorted spectra. Prior
+  frequencies seed brackets only; count/quality gates apply at each point.
+  Same-system swap controls reflect the angle bisector: c/R invariant,
+  w/theta/Q/M change sign. No across-beta forms/branch assignment.
+- All map/reference/swap/root gates PASS. Curvature flags are numerical
+  diagnostics independently checked at the same points, not physics or
+  smoothness thresholds. c1=c2 remains reduced variational closure rather
+  than finite-joint3D elasticity; no applicability/sensitivity/veering claim.
+
+## Bounded homogeneous thickness screening
+
+- The [2026-10-07 thickness diagnostic](coupled_longitudinal_theory_thickness_screening.md)
+  changes h=h0*s_h at s_h=1/1.25/1.5/1.75/2, beta0/45/90 only; b=.20,
+  h0=.05,E=rho=1,nu=.3,L1=L2=.5,kappa5/6 fixed. No mass preservation;
+  m grows with h, I/J/j/r with h^3. Same Tim coefficients at each h for A/B/C.
+- q_h=I/(A L_arm^2) and lambda_h=L_arm/h are derived reporting quantities;
+  lambda_h is not the project's frequency Lambda. Normalized refined
+  coefficient ratios contain h^2, while static MH layer length sqrt(H/EA)
+  scales as h. Neither establishes a spectral power law. Common b cancels
+  in this homogeneous planar 1D model, not necessarily in 3D elasticity.
+- The unchanged finite basis supports sub-optical windows. Certificates
+  cover first12+guard13 inside them; unsupported ceiling tails are not
+  asserted complete. Same accepted residual/conditioning tolerances.
+  Full beta0 direct-profile/interface checks pass at all five thicknesses.
+- Increasing h reduces slenderness to L_arm/h=5,b/h=2. Only comparison
+  among adopted 1D theories is claimed, not physical 2D/3D validation.
+  MH clamp/contraction closure qualifications remain unchanged. Fixed-case
+  overlaps and D_c give diagnostics; no energy classes, across-h/beta
+  tracking, root reordering, threshold search or range extension is implied.
+
+## Bounded coupled longitudinal-theory screening
+
+- The [2026-10-07 screening](coupled_longitudinal_theory_hierarchy_screening.md)
+  compares elementary, planar Rayleigh–Love and unchanged Jang-project MH
+  for one equal-arm G20 rectangle on eight declared angles. Same material,
+  Timoshenko basis, kappa=5/6 and physical centroid/bending clamps.
+- Planar Love uses J=nu^2 rho Iy, H=0 and the variational harmonic force
+  N=(EA-J omega^2)u_x. No polar Ip, independent c/R or u_x clamp is appended.
+  A/B omit the resolved contraction clamp/joint constraint of MH; this
+  boundary limitation is retained. MH c-continuity remains reduced-frame
+  closure, not finite-joint 3D elasticity.
+- Each theory/angle is independently sorted. MH is a reference model;
+  fixed-beta geometric displacement/rotation overlaps only diagnose
+  correspondence and never reorder roots. D_c compares c with−nu u_x,
+  with machine-scale null-field handling. No modal energy labels, across-beta
+  continuation, applicability thresholds or extrapolation are authorized.
+
+## General-angle reduced M-H--Timoshenko joint
+
+- The [general stage §§9--16](mindlin_herrmann_timoshenko_rigid_joint.md#9-general-angle-geometry-действующий-project-contract)
+  extends the same reduced point-joint closure and unchanged production arms.
+  Geometry is imported from the project physical t/n contract: positive beta
+  turns the joint-to-right-clamp ray upward, both local x point clamp-to-joint.
+  Proper frame rotations leave c/theta scalar DOFs unchanged; displacement
+  and nodal-force transforms are dual. Endpoint signs are still minus at0,
+  plus atL; all eight invariant joint rows have rank8.
+- Under an improper EX reflection, keep the same signed planar rotation axis:
+  t*=S t,n*=-S n, (u,c,w,theta,N,R,Q,M)*=(u,c,-w,-theta,N,R,-Q,-M).
+  Thus c/R are scalar but theta/M are pseudoscalar for physical reflection.
+  This is not a sign fit or a change of the local energy/PDE convention.
+- MHTIM_GENERAL_BETA_JOINT_GATE=PASS: frozen beta0 regression, small-angle
+  limits, rank/duality/right angle, same-geometry swap/reflection and one
+  equal-arm G20 pilot5/45/90 pass. First12+guard13 are covered by exact
+  energy/Schur count using certified fixed-arm poles. No beta map, tracking,
+  applicability hierarchy or new coefficient prescription is adopted.
+- c1=c2 remains published variational reduced-frame closure, not a direct
+  finite3D welded-joint derivation. The historical beta0/single/source
+  qualifications below remain attached to their original stages.
+
+## Reduced M-H--Timoshenko rigid-joint beta0 gate
+
+- The [joint note](mindlin_herrmann_timoshenko_rigid_joint.md) adopts common
+  translations, theta and c from Rucka's reduced common-DOF frame assembly.
+  Additional c compatibility is variational 1D closure, not a direct 3D
+  elasticity derivation for the finite welded joint. The massless rigid point
+  contributes no energy/inertia; all eight balances follow from endpoint work.
+- Arm/source physics and the production Jang preset remain unchanged.
+  Both positive local coordinates run outer clamp to joint; at beta0,
+  t1=(1,0),n1=(0,-1),t2=(-1,0),n2=(0,1),theta rotation about k=-EZ.
+  Outward endpoint sign is - at local0, + at localL; both joint signs are +.
+  Hence c1=c2 and R1+R2=0; reflection to global X makes R continuous.
+- Only homogeneous G20,total L=1,splits .5/.35/.65 are verified: energy-domain
+  transparency, saturated min-max inventories7 MH/11 Timo, combined12+guard13,
+  mass-overlap/component L2 including c, interface work and arm swap pass.
+  MHTIM_BETA0_JOINT_GATE=PASS; beta!=0 spectrum/closure is not validated.
+  No fitting, sweeps, nonlinear/FEM work or promotion of Ng coefficients.
+
 ## Isolated Mindlin--Herrmann / Timoshenko source audit
 
+- Subsequent explicit project decision: PRODUCTION_MHTIM_FORMULATION_SELECTED
+  selects JANG_BARE_ISOTROPIC_REDUCED_MH_TIMOSHENKO, independently of the
+  historical source statuses below. project_jang_reduced_rectangular uses
+  the accepted G20 rectangular K=5/6 in both H=K*GI and S=K*GA, j=r=rhoI,
+  C=EA/(1-nu^2); PRODUCTION_MHTIM_KAPPA_RESOLVED. Numeric source Jang kappa
+  remains unstated, source CLI still requires explicit input. Fernandes's
+  newly available (19)--(21) confirms Ng-factor reuse only; neither the
+  factors 12/pi^2 nor its Lame normal block are adopted for production.
+- Finite control is one normalized G20 rod, E=rho=1, nu=.3, b=.2,h=.05,
+  L=L_ref=1. Source fields and Jang (12) support u=c=w=theta=0 at both
+  ends as full clamp within the planar four-field theory. c is independent,
+  so c=0 does not impose u_x=0. That single-rod stage chose no joint closure;
+  the subsequent qualified reduced closure/beta0 gate is recorded above.
+  MHTIM_SINGLE_ROD_FINITE_SPECTRUM=PASS. Elementary and planar Rayleigh--Love
+  use only u=0 per end and unchanged bending clamps; planar RL J=nu^2*rhoI,
+  H=0 exactly. Their unresolved contraction boundary layer qualifies
+  HIERARCHY_SINGLE_ROD=PARTIAL_PASS despite all numerical gates passing.
+- Root completeness in this fixed case uses a Young lower quadratic form
+  for MH and exact simply-supported lower spectrum for Timoshenko. Saturated
+  min-max count bounds (7 MH,11 bending, including guards), not sign scans
+  alone, certify the bounded inventories. Above-cutoff finite branches and
+  any new geometry/parameter map are outside this gate.
+- Rectangular prescription gate (2026-10-06): Ng PDF 10 (2) directly maps
+  S1=12/pi^2 to H=S1*GI and S2=S1*((1+nu)/(.87+1.12nu))^2 to j=S2*rhoI.
+  These are printed decimal constants, not exact rational physical constants.
+  However its printed 3D Lame normal block D=(2mu+lambda)A,F=lambda*A is
+  different from the current C,nu*C reduced block at the same E,nu.
+  The second new PDF is a circular SSRN review; the expected Fernandes
+  full text was not found. RECTANGULAR_MH_PRESET_MAPPING_UNRESOLVED and
+  PRODUCTION_MH_COEFFICIENTS_UNRESOLVED are retained. The named fixture
+  candidate rectangular_literature_default is unadopted; no helper/default,
+  constitutive change or transfer assumption is introduced. Source Rucka/
+  Jang, unstated Jang kappa, Bishop and project Timoshenko kappa are preserved.
 - The [one-rectangle source audit](mindlin_herrmann_timoshenko_single_rod.md)
   uses planar, homogeneous isotropic, unstressed linear source energies.
   Local q=(u,c,w,theta); c is independent dimensionless contraction along z,

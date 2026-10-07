@@ -22,6 +22,138 @@ root-calculation path.
 For active, completed, historical, superseded, and compatibility workflow
 status, see [Script and Workflow Status](STATUS.md).
 
+## Production M-H/Timoshenko Lambda(beta) geometry checks
+
+```powershell
+python scripts/analysis/verify_mindlin_herrmann_timoshenko_lambda_beta_large_checks.py --check-sources
+python scripts/analysis/verify_mindlin_herrmann_timoshenko_lambda_beta_large_checks.py --compute
+python scripts/analysis/verify_mindlin_herrmann_timoshenko_lambda_beta_large_checks.py --plot-only results/mindlin_herrmann_timoshenko_lambda_beta_large_checks/356c3be4953268f2
+```
+
+The single config `data/input/mindlin_herrmann_timoshenko_lambda_beta_large_checks.json`
+declares the fixed reference Lambda,37 angles and length/section families.
+This new paired-section/reflection/reference/accelerated-map output contract
+cannot safely be another preset of the frozen homogeneous one-model gate.
+It composes the existing production arm and joint helpers and retains the
+root-count architecture; no physics module/API is changed. Diagnostic-only,
+not article-facing or a universal solver. Predictors are numeric brackets,
+not mode tracking; every point has count/quality certification. Read the
+[canonical note](../docs/theory/mindlin_herrmann_timoshenko_lambda_beta_large_checks.md)
+for the scoped RLB-2B Lambda naming distinction and all closure qualifications.
+
+## Bounded coupled longitudinal-theory screening
+
+The separate subsequent thickness command is:
+
+```powershell
+python scripts/analysis/screen_coupled_longitudinal_theory_thickness.py --check-sources
+python scripts/analysis/screen_coupled_longitudinal_theory_thickness.py --compute
+python scripts/analysis/screen_coupled_longitudinal_theory_thickness.py --plot-only results/coupled_longitudinal_theory_thickness_screening/7be0fce968fd2b35
+```
+
+One fixed config `data/input/coupled_longitudinal_theory_thickness_screening.json`
+declares five h/h0 values and beta0/45/90. The new output contract adds exact
+scaling, per-thickness direct profiles and descriptive growth ratios; root
+solvers/physics are reused unchanged. Baseline cases are hash-verified and
+read-only. This diagnostic is not article-facing or a new general solver;
+it does not add beta/width/asymmetry grids or modal continuation. See the
+[canonical thickness note](../docs/theory/coupled_longitudinal_theory_thickness_screening.md)
+for the sub-cutoff prefix certificate and thicker-1D-model qualification.
+The preceding fixed-h workflow below retains its original scope.
+
+```powershell
+python scripts/analysis/screen_coupled_longitudinal_theory_hierarchy.py --check-sources
+python scripts/analysis/screen_coupled_longitudinal_theory_hierarchy.py --compute
+python scripts/analysis/screen_coupled_longitudinal_theory_hierarchy.py --plot-only results/coupled_longitudinal_theory_hierarchy_screening/9a35ff23c3f43c66
+```
+
+One diagnostic input `data/input/coupled_longitudinal_theory_hierarchy_screening.json`
+declares G20, the eight angles, 12+guard13, bounded counts/residuals and
+one allowed guard-driven ceiling expansion. Comparator gates precede the
+comparison. Reuses Bishop H=0, exact MH/Timoshenko arms and common project
+geometry; elementary/RL have no c/R. Immutable MH data are checked/reused.
+Fingerprint includes input/source/code/dependency/reference hashes;
+same-input rerun performs zero roots, plot-only uses saved tables.
+This is a new three-theory comparison/overlap output contract, rather than
+another parameter preset of the prior single-model joint gate. It is not
+article-facing or a general sweep runner. See the
+[canonical note](../docs/theory/coupled_longitudinal_theory_hierarchy_screening.md).
+
+## General-angle reduced M-H/Timoshenko joint gate
+
+[`analysis/verify_mindlin_herrmann_timoshenko_general_beta_joint.py`](analysis/verify_mindlin_herrmann_timoshenko_general_beta_joint.py)
+extends the [same joint note/helper](../docs/theory/mindlin_herrmann_timoshenko_rigid_joint.md#9-general-angle-geometry-действующий-project-contract),
+without changing arm/source physics. One common16x16 API uses the existing
+project geometry, dual force map and eight invariant closure rows.
+Frozen beta0 regression, geometry/duality/rank/small-angle/right-angle and
+same-geometry swap/reflection gates precede the fixed5/45/90 spectral pilot.
+
+```powershell
+python scripts/analysis/verify_mindlin_herrmann_timoshenko_general_beta_joint.py --check-sources
+python scripts/analysis/verify_mindlin_herrmann_timoshenko_general_beta_joint.py --compute
+python -m pytest tests/test_mindlin_herrmann_timoshenko_general_beta_joint.py -q
+```
+
+Different structural/coupled-count contract warrants this new diagnostic
+entry point; frozen beta0 CLI stays unchanged. It reuses that orchestration,
+the unchanged single-rod basis/state, existing geometry and artifact writers.
+Requires the verified local frozen beta0 bundle3059d70b1b50ea2e; source-check
+does no root calculations. `--compute` enforces gates and has no beta-map
+argument. Results default to `results/mindlin_herrmann_timoshenko_general_beta_joint/`;
+optional `--output-dir`. Matching cache validates all hashes with zero roots.
+Existing NumPy/SciPy suffice. Count uses exact arm Dirichlet-to-Neumann maps,
+certified fixed-arm poles and nodal energy inertia; bounded subdivision only.
+Source c closure remains reduced1D, not a finite3D joint proof. No hierarchy,
+applicability conclusions or across-beta mode tracking.
+
+## Reduced M-H/Timoshenko joint beta0 gate
+
+The subsequent [beta0 reduced-joint gate](../docs/theory/mindlin_herrmann_timoshenko_rigid_joint.md)
+uses a separate [analysis CLI](analysis/verify_mindlin_herrmann_timoshenko_beta0_joint.py):
+
+```powershell
+python scripts/analysis/verify_mindlin_herrmann_timoshenko_beta0_joint.py --check-sources
+python scripts/analysis/verify_mindlin_herrmann_timoshenko_beta0_joint.py --compute
+python -m pytest tests/test_mindlin_herrmann_timoshenko_beta0_joint.py -q
+```
+
+This new joint/interface contract warrants a separate entry point; it reuses
+the unchanged arm basis/state, direct finite reference and atomic writers.
+Only beta0 and three fixed splits .5/.35/.65, total L=1 are accepted.
+No angle argument/map/tracker. Common c/theta is published reduced assembly
+closure, not a 3D elasticity proof. Checks 7 MH/11 bending roots, first12+guard,
+all state profiles/c/R balances, mass MAC/L2 and reflection. Results default
+to `results/mindlin_herrmann_timoshenko_beta0_joint/<fingerprint>/`; optional
+`--output-dir`. Matching cache checks identity/artifacts without root search.
+If no direct bundle exists, `--compute` invokes the unchanged single-rod CLI;
+`--check-sources` requires a saved reference and never calculates roots.
+Existing NumPy/SciPy environment suffices; source CLI semantics remain unchanged.
+
+## Finite single-rod Jang project gate
+
+[`analysis/verify_mindlin_herrmann_timoshenko_single_rod.py`](analysis/verify_mindlin_herrmann_timoshenko_single_rod.py)
+uses the explicitly selected Jang reduced closure and accepted project
+rectangular K=5/6. One G20 straight rod with u=c=w=theta=0 at both ends;
+no frame/joint. New finite-boundary/eigenvalue-count contract warrants this
+entry point rather than silently changing the source-reproduction CLI.
+It reuses the M-H helper, existing rectangular section and Bishop H=0
+boundary machinery/atomic writers. See [canonical §14--20](../docs/theory/mindlin_herrmann_timoshenko_single_rod.md#14-production-formulation-decision).
+
+```powershell
+python scripts/analysis/verify_mindlin_herrmann_timoshenko_single_rod.py --check-sources
+python scripts/analysis/verify_mindlin_herrmann_timoshenko_single_rod.py --compute
+python -m pytest tests/test_mindlin_herrmann_timoshenko_finite_rod.py -q
+```
+
+Results: `results/mindlin_herrmann_timoshenko_single_rod/<fingerprint>/`;
+`--output-dir` changes the root. Matching cache verifies artifact hashes and
+performs zero root evaluations. Stores frequencies, brackets, min-max count
+certificates, primary/state-expm checks and mass-normalized profiles.
+Finite spectrum PASS; numerical hierarchy PASS with overall PARTIAL_PASS
+qualification because elementary/planar RL do not resolve c-clamp effects.
+No source Jang numeric kappa is inferred; the source CLI below is unchanged.
+Existing NumPy/SciPy environment suffices; no new dependency.
+
 ## Single-rod Mindlin--Herrmann / Timoshenko source reproduction
 
 [`analysis/reproduce_mindlin_herrmann_timoshenko_literature.py`](analysis/reproduce_mindlin_herrmann_timoshenko_literature.py)
@@ -49,8 +181,9 @@ Results default to `results/mindlin_herrmann_timoshenko_literature/`;
 bundles, checked artifact hashes guard reuse. Plot-only reads saved CSV.
 Group velocities are analytic, with independent variational/HF checks;
 labels are source dispersion branches, not descendant mode IDs. Overall
-`MHTIM_VARIANT_DEPENDENT`; production coefficients and angular-joint BC
-remain unresolved. No coupled rods, patch model, damping or FEM.
+`MHTIM_VARIANT_DEPENDENT`; that source audit did not select production
+coefficients. The subsequent separate project preset is documented above;
+angular-joint BC remain unresolved. No coupled rods, patch model or FEM.
 
 ## Circular EB SPRING/RIGID reviewer diagnostic
 

@@ -15,13 +15,72 @@ index should be run without first reviewing its cost and output contract.
 
 ## Result directories
 
+`results/mindlin_herrmann_timoshenko_lambda_beta_large_checks/356c3be4953268f2/`
+contains the completed [production geometry checks](theory/mindlin_herrmann_timoshenko_lambda_beta_large_checks.md):
+fixed Lambda reference,37-angle spectra, shared baseline, paired-section
+counts/brackets/quality/Gram coefficients, direct/stepped/swap controls,
+68 independent QR reviews, performance and long CSV. Two3-panel figures,
+PDF+PNG, use independently sorted positions1–12; guard13 is saved only.
+Run `python scripts/analysis/verify_mindlin_herrmann_timoshenko_lambda_beta_large_checks.py --compute`;
+redraw via `--plot-only results/mindlin_herrmann_timoshenko_lambda_beta_large_checks/356c3be4953268f2`.
+Matching cache/plot-only performs zero roots. All previous bundles remain
+unchanged; prototype132358083da36937 is retained, final bundle adds Gram
+and independent anomaly reviews. No theory comparison/tracking/third figure.
+
+`results/coupled_longitudinal_theory_thickness_screening/7be0fce968fd2b35/`
+contains the completed [thickness screening](theory/coupled_longitudinal_theory_thickness_screening.md):
+exact five-thickness/three-angle input and scaling audit, all45 inventories,
+15 direct beta0 frequency/profile checks,180 comparison rows, full geometric
+overlaps, contraction norms, gaps, profiles/counts/brackets/diagnostics and
+three figures. Sub-cutoff certificates cover12+guard13; configured3.75
+ceiling does not assert coverage of unsupported optical tails. Run
+`python scripts/analysis/screen_coupled_longitudinal_theory_thickness.py --compute`;
+redraw with `--plot-only results/coupled_longitudinal_theory_thickness_screening/7be0fce968fd2b35`.
+Fingerprint/artifact checks give zero-root matching reuse; the previous
+hierarchy/MH bundles remain immutable. No energy classes or across-case tracking.
+
+`results/coupled_longitudinal_theory_hierarchy_screening/9a35ff23c3f43c66/`
+contains the completed [bounded hierarchy screening](theory/coupled_longitudinal_theory_hierarchy_screening.md):
+24 certified model/angle cases, comparator gates, 12+guard13 profiles,
+96-row frequency/difference table, all fixed-beta 12x12 geometric overlaps,
+theta small-norm records, contraction norms/D_c, adjacent gaps, diagnostics
+and three saved-data plots. Run
+`python scripts/analysis/screen_coupled_longitudinal_theory_hierarchy.py --compute`;
+matching identity/artifact hashes reuse data with zero roots. Redraw with
+`--plot-only results/coupled_longitudinal_theory_hierarchy_screening/9a35ff23c3f43c66`.
+Old MH references are immutable. Earlier local implementation attempts remain
+under the same result root for provenance; the named bundle is canonical.
+No energy classification, tracking or applicability certification.
+
+`results/mindlin_herrmann_timoshenko_general_beta_joint/<fingerprint>/`
+contains the completed [general-frame gate](theory/mindlin_herrmann_timoshenko_rigid_joint.md#9-general-angle-geometry-действующий-project-contract):
+transforms/ranks/duality, frozen beta0/zero-limit/swap/reflection metrics,
+certified arm-pole catalogs and Schur counts, full coupled brackets/SVD,
+frequency and full local-state profiles. The fixed5/45/90 equal-arm G20
+pilot reports12+guard13; bounded complete inventories23/24/24. Run
+`python scripts/analysis/verify_mindlin_herrmann_timoshenko_general_beta_joint.py --compute`.
+Manifest checks input/code/source/frozen/artifact hashes; matching reuse
+performs zero root evaluations. No parameter map, hierarchy or tracking;
+old beta0 bundle3059d70b1b50ea2e is retained unchanged.
+
+`results/mindlin_herrmann_timoshenko_beta0_joint/<fingerprint>/` is the
+completed [reduced joint transparency gate](theory/mindlin_herrmann_timoshenko_rigid_joint.md):
+beta0 only, three fixed splits of G20,total L=1, immutable direct reference
+reuse, inventories/brackets/counts, matrices, virtual work, frequencies and
+all eight state profiles, MAC/L2/c/R/interface/arm-swap diagnostics. Run
+`python scripts/analysis/verify_mindlin_herrmann_timoshenko_beta0_joint.py --compute`.
+Manifest validates inputs/source/code/reference/artifact hashes; matching
+reuse performs zero root evaluations. Source page snapshots are in sibling
+`source_audit/`. All separate gates PASS; no nonzero-angle evidence implied.
+
 All 23 immediate ignored result directories present in the pre-refactor
 snapshot are included here, together with later registered diagnostic result
 families.
 
 | Result directory | Scientific workflow | Status | Canonical report or documentation | Reproduction entry point | Local archive class |
 | --- | --- | --- | --- | --- | --- |
-| `results/mindlin_herrmann_timoshenko_literature/` | One-rectangle Rucka/Jang source dispersion and one controlled comparison | `completed` diagnostic — `MHTIM_VARIANT_DEPENDENT`; production coefficients unresolved | [canonical audit](theory/mindlin_herrmann_timoshenko_single_rod.md) | `scripts/analysis/reproduce_mindlin_herrmann_timoshenko_literature.py --compute --case all --jang-kappa 5/6`; plot-only reads saved data | Preserve source pages, hashes, input-qualified bundles and stale namespaces; current.json identifies the current bundle. Jang kappa is explicit conditional input, not source/default. |
+| `results/mindlin_herrmann_timoshenko_single_rod/` | One finite G20 straight CC rod, selected Jang project closure, elementary/planar RL/MH hierarchy | finite spectrum `PASS`; hierarchy `PARTIAL_PASS` for resolved-contraction clamp interpretation | [canonical §14--20](theory/mindlin_herrmann_timoshenko_single_rod.md#14-production-formulation-decision) | `scripts/analysis/verify_mindlin_herrmann_timoshenko_single_rod.py --compute`; matching hash-validated reuse | Exact parameters, source/input/code hashes, roots/brackets/conditioning/count certificates, independent QR-expm checks, mass-normalized profiles and hierarchy CSV; source_audit/ holds page images. No map or coupled model. |
+| `results/mindlin_herrmann_timoshenko_literature/` | One-rectangle Rucka/Jang source dispersion and one controlled comparison; separate `rectangular_preset_audit/` page/provenance evidence | `completed` diagnostic — `MHTIM_VARIANT_DEPENDENT`; new preset gate `RECTANGULAR_MH_PRESET_MAPPING_UNRESOLVED`; production coefficients unresolved | [canonical audit](theory/mindlin_herrmann_timoshenko_single_rod.md) and §13 | `scripts/analysis/reproduce_mindlin_herrmann_timoshenko_literature.py --compute --case all --jang-kappa 5/6`; plot-only reads saved data. New gate requires only source-check/tests, no scientific compute or plot | Old bundles retained. New evidence records Ng normal-block difference and missing Fernandes PDF; no production dispersion run. Jang kappa remains explicit conditional input, not source/default. |
 | `results/joint_review/circular_eb_spring_general_spectrum/` | Circular EB low spectrum, forms and bounded kappa continuation | `completed`; 6/6 local descendants, 6+guard prefix only | [durable scientific note](laminated_beams/circular_eb_rotational_spring_rigid_limit.md) | `scripts/analysis/joint_review/check_circular_eb_spring_spectrum.py`; spectrum / shapes / kappa-continuation modes in [script inventory](../scripts/README.md#circular-eb-springrigid-reviewer-diagnostic) | Preserve original endpoints/direct failures, continuation evidence and higher-spectrum qualification. Generated local evidence may be absent in a fresh clone. |
 | `results/joint_review/rotational_spring_rigid_trend_pilot/` | Earlier close-candidate audit and predeclared geometry retries | `historical`; stopped unresolved, not current preferred workflow | [history and limitations](laminated_beams/circular_eb_rotational_spring_rigid_limit.md#история-остановок-и-спектральный-результат), [K01/K02](memory/knowledge.md#eb-joint-k01) | Historical one-shot provenance in local diagnostics; no permanent runner | Preserve candidates and audit/retry reports; no physical-multiplicity conclusion. Ignored local evidence may be absent in a fresh clone. |
 | `results/timoshenko_bishop_single_rod/` | Exact displacement/energy audit of one rectangular rod | `completed`; `COMBINED_KINEMATICS_NOT_UNIQUELY_DEFINED` | [candidate fields, mixed terms and hard gate](theory/timoshenko_bishop_single_rod.md) | `scripts/analysis/audit_timoshenko_bishop_single_rod.py --compute` | Preserve source images/text, content-addressed audit/manifest and targeted-test XML. Algebra only; no spectrum, cache reads or figures. |

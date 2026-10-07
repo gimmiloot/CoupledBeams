@@ -2,7 +2,252 @@
 
 Здесь ведётся рабочий журнал проекта: этапы, решения и важные исследовательские заметки.
 
+## 2026-10-07
+
+- Завершены [production Lambda(beta) large checks](../theory/mindlin_herrmann_timoshenko_lambda_beta_large_checks.md)
+  по отдельному implementation-only заданию. Initial main/HEAD
+  0f961acb227b504439408d3484b13a72a7acf3be:16modified/21untracked.
+  Diff/status/source и old-bundle hashes сохранены в OS temp; изменения
+  пользователя сохранены. Physics helpers/API/source fixtures не менялись.
+- Canonical Lambda подтверждена equations.tex/project_rules/main_note:
+  Lambda^4=rho*A_ref*omega^2*l_ref^4/(E*I_ref),fixed .5/.20/.05 reference,
+  factor300. RLB-2B использует локально square parameter, RLB-2C явно
+  восстанавливает canonical mapping; старые notation/formulas не переписаны.
+- Один новый CLI/config использует два existing arm kernels и тот же
+  invariant joint operator. Length mu0/.25/.5 и contrast delta_h0/.2/.4,
+  beta0:2.5:90. Shared baseline даёт185 unique main cases,222 logical CSV
+  cases плюс20 sparse negative-parameter symmetry controls. Total mass .01.
+  Independent stepped beta0 reference uses literal positive-X state continuity.
+- Все10 statuses PASS. Length direct collapse6.01e-12 relative frequency;
+  stepped-reference1.12e-15. Swap length6.15e-12/section6.06e-12; full
+  kinematic/resultant L2 <=4.49e-11. Baseline frequency3.99e-12,
+  Lambda1.992e-12. Every first12+guard13 count/quality passes.
+- 5 full seed scans и200 sorted-frequency bracket predictors, no fallback,
+  74 bounded frequency subdivisions;0 ceiling expansion. Determinant32196,
+  count4879,catalog7862,reference583,independent-flag975 evaluations;
+  final compute137.27s. Это numerical acceleration,не modal continuation.
+  68 curvature flags retained/reviewed at same beta by independent state QR,
+  max frequency difference7.21e-12; no smoothing or beta refinement.
+- Max clamp6.79e-12,PDE1.48e-11,force1.95e-11,moment6.70e-13,c2.30e-14,
+  R1.25e-14,Gram5.17e-11. Nonzero SVD condition2.848--10639.1, unchanged
+  tolerances.36 new +233 prior +4 rectangular Tim=273PASS,7 unrelated
+  deselected. Two3-panel PDF/PNG figures saved in canonical bundle
+  results/mindlin_herrmann_timoshenko_lambda_beta_large_checks/356c3be4953268f2/.
+  Prototype retained; final version adds Gram/independent anomaly checks.
+- README/CHANGELOG и navigation updated. Literature/BibTeX/other memory,
+  old solvers/tests/results preserved. Independent sorted positions only,
+  no energy classification/across-beta MAC/branch identity, sensitivity or
+  applicability analysis, coefficient fit, damping/FEM/nonlinear work.
+  c1=c2 remains reduced variational closure,не direct finite3D joint derivation.
+  Эти geometry checks достаточны для implementation gate в заявленном
+  диапазоне; дальнейший scientific parameter study автоматически не запускался.
+
+- По новому заданию завершён [bounded thickness screening](../theory/coupled_longitudinal_theory_thickness_screening.md):
+  пять s_h=1/1.25/1.5/1.75/2, beta0/45/90, три прежние theories.
+  Initial main/HEAD0f961acb227b504439408d3484b13a72a7acf3be:16modified и
+  17untracked prior-stage files. Snapshot diff/status/hashes сохранён в
+  OS temp; прежние edits/source/solver/test/results сохранены, Git mutations нет.
+- Exact Fraction/scaling audit PASS: A,m,C,S~h; I,J,j,H,B,r~h^3;
+  ratios contain I/A=h^2/12, common b cancels. Static MH layer sqrt(H/EA)~h;
+  full spectral h^2 law не утверждается. Масса растёт, κ=5/6 не меняется.
+  Начальный ceiling3.75 сохранён; unchanged bounded basis требует prefix
+  certificates below Tim optical cutoff. Реальные windows для s_h1.75/2:
+  3.2942708/2.8010653, всё ещё покрывают13 roots. Above-cutoff tail не считался.
+- Все45 inventories PASS, без ceiling expansion/catalog retry/failed intervals.
+  15 direct beta0 checks PASS по first13 frequencies/full kinematic forms:
+  max relative frequency6.35e-12,L2 profile8.41e-12. Artificial joint remains
+  transparent, c/R variational closure не переинтерпретирован как3Delasticity.
+- Global E/MH0.2708143% (beta0,s_h2,k4), RL/MH0.4792888%
+  (beta0,s_h2,k12), против0.14103/0.17514% baseline. Рост maxima имеет
+  geometry/position dependence и не равен s_h^2. Максимальное отличие RL от
+  MH больше отличия E во всех15 cases; все best overlaps diagonal. Max D_c0.1124794
+  (beta90,s_h2,k5), без energy fractions/classes и без across-case tracking.
+- Close pair beta90,s_h1.25,k9->10: MH gap3.67266e-5, nonzero SVD
+  condition52194.6. Residuals и Gram проходят unchanged tolerances;
+  это diagnostic context, не crossing/veering/resonance conclusion.
+  Max clamp5.06e-12, force6.39e-12, joint rotation6.14e-12, Gram1.48e-10.
+- 35 new +198 prior hierarchy/MH/Bishop +4 rectangular Tim checks =237PASS;
+  7 unrelated tests deselected. Added only CLI/config/tests/theory note;
+  source index/BibTeX и branch memory unchanged. README/CHANGELOG/navigation
+  обновлены. Canonical local bundle7be0fce968fd2b35 под
+  results/coupled_longitudinal_theory_thickness_screening/ содержит scaling,
+  roots/counts/brackets/profiles/overlaps/D_c/direct checks и3 figures.
+  Нет fitting/power-law fit/applicability threshold, h>2, beta refinement,
+  unequal-arm/section/material sweeps, FEM/3D truth или nonlinear equations.
+  Дальнейший thickness range автоматически не расширялся.
+
+- Завершён [bounded hierarchy screening](../theory/coupled_longitudinal_theory_hierarchy_screening.md)
+  по актуальному прикреплённому заданию. Initial main/HEAD
+  0f961acb227b504439408d3484b13a72a7acf3be:16 modified tracked +12 untracked
+  prior-stage files. Snapshot initial diff/status/hashes сохранён в OS temp;
+  пользовательские изменения сохранены, Git mutations не выполнялись.
+- Переиспользованы Bishop H=0 axial kernel, неизменённые MH/Tim arms и
+  geometry/joint maps. Новый comparator-layer имеет только u,w,theta,N,Q,M;
+  planar Love J=nu^2 rho Iy и variational N=(EA-J omega^2)u_x, без c/R и
+  дополнительных slope constraints. Common centroid/bending clamps не
+  отождествляются с independently resolved MH contraction clamp.
+- Оба comparator gates PASS до screening: beta0 direct CC recovery на
+  splits .5/.35, duality/rank6, beta45 swap/reflection eigenpair remapping.
+  Relative frequency recovery <=7.00e-12; kinematic remap <=2.83e-14.
+  Energy/Schur count корректно сохраняет global roots, совпадающие с arm
+  poles; effective count queries записаны отдельно, частоты не сдвигались.
+- Один G20 equal-arm case, beta0/5/15/30/45/60/75/90. Все24 inventories
+  certifiable12+guard13; MH5/45/90/beta0 reference roots переиспользованы
+  read-only, MH15/30/60/75 computed неизменённым solver. Нет ceiling
+  expansion, unresolved/failed numerical intervals. Max force residual
+  3.01e-11, clamp1.49e-12, nonzero singular condition1060; old tolerances.
+- Max spectral difference E/MH0.1410296% (beta0,k5), RL/MH0.1751407%
+  (beta0,k11). Все geometric row/column best matches diagonal; нет
+  position-exchange cases. Minimum gap около1.2637% (MH,beta75,k9->10)
+  только diagnostic context. MH reference не объявлялся truth.
+- D_c с тремя отдельными norms, без modal classification:0.04162--0.08575
+  для defined fields;9 beta0 positions NOT_DEFINED_SMALL_FIELD. Theta
+  overlaps используют machine-scale SMALL_NORM. Gauss200->300 checks
+  beta0/45/90 pass. Нет energy fractions/types, across-beta tracking,
+  автоматической перестановки roots или arbitrary overlap threshold.
+- 32 new +166 unchanged +4 rectangular Tim tests =202PASS;7 unrelated
+  deselected. Source index/BibTeX/fixtures, previous solvers/tests/bundles,
+  other-branch memory unchanged. README/CHANGELOG и navigation обновлены.
+  Canonical local bundle9a35ff23c3f43c66 под
+  results/coupled_longitudinal_theory_hierarchy_screening/: full tables,
+  brackets/counts, profiles, overlaps, D_c, diagnostics и3 figures.
+  Earlier smoke/draft attempts retained; corrected dictionary-key and
+  direct-catalog ceiling bookkeeping errors без изменения physics/tolerance.
+  Нет beta refinement, applicability/safe-prefix conclusions, mu/tau/thickness
+  scans, коэффициентного fit, FEM/nonlinear work. Следующий этап не запускался.
+
 ## 2026-10-06
+
+- General-beta continuation принят по отдельному заданию после beta0PASS:
+  [canonical joint note §§9–16](../theory/mindlin_herrmann_timoshenko_rigid_joint.md#9-general-angle-geometry-действующий-project-contract).
+  Current main/HEAD0f961acb227b504439408d3484b13a72a7acf3be содержит16modified
+  tracked/10untracked prior-stage files; initial diff/status/hashes сохранены
+  в OS temp, прежние изменения сохранены. Projectβ восстановлен из
+  RLB physical coordinate contract/helper, не введён новый angle definition.
+- Existing joint-helper расширен общей frame_boundary_matrix; old beta0 API
+  guard делегирует той же сборке. Source/single-arm physics,κ,variants,
+  frozen equations, old CLI/tests и beta0bundle3059d70b1b50ea2e не изменены.
+  c остаётся scalar reduced DOF;θ/M меняют знак при physical reflection,
+  оставаясь invariant при proper rotations. Force map выведен из dual work.
+- All8 structural gates PASS: rank8/JJᵀ=2I, work max6.67e−16, beta90
+  axis error6.13e−17, frozen beta0 matrix/frequency/profile differences0
+  на3splits/54 modes. Small-angle first3 frequency relative differences:
+  6.67e−15/3.76e−11/3.76e−7 для1e−6/1e−4/1e−2deg. Swap/reflection
+  6 low eigenpair controls доf*=.7 — same geometry remapping, не tracking.
+- После structuralPASS выполнен один equal-arm G20 pilotβ5/45/90,totalL1.
+  Derived exact energy/Schur count использует independently verified4MH/9Tim
+  fixed-arm pole catalogs и negative nodal inertia. Complete inventories
+  23/24/24 доfixed ceilingf*=3.75 покрывают12+guard13; subdivisions0/0/2,
+  failed intervals0. Все71 normalized full modes/resultants сохранены.
+  Max joint residual1.37e−11, mass Gram3.64e−11, nonzero condition461.22;
+  unchanged tolerances соблюдены. Коэффициенты/знаки не подбирались.
+- MHTIM_GENERAL_BETA_JOINT_GATE=PASS,37 new +129 unchanged MH/Bishop/beta0
+  +4 rectangularTimo regressions=170PASS. Expanded canonical note,
+  assumptions/research/results/scripts navigation,README/CHANGELOG updated.
+  Source index/BibTeX/fixtures/memory не менялись; source closure остаётся
+  variational reduced1D,не3Delasticity welded-region proof. Нет scientific
+  angle sweep, hierarchy/applicability study, across-beta MAC/tracking,
+  nonlinear/FEM work. Existing reduced-limit checks только regression tests.
+  Result root results/mindlin_herrmann_timoshenko_general_beta_joint/;
+  здесь остановка, следующий parameter study не запускался.
+
+- По текущему заданию принят [published reduced rigid-joint closure](../theory/mindlin_herrmann_timoshenko_rigid_joint.md)
+  с общими d,theta,c и dual nodal balances. Rucka PDF4–5 (14),(15),(26)–(28)
+  повторно сверены по изображениям: c continuity inferred from common scalar
+  DOF assembly, не отдельная напечатанная формула. Jang PDF3,5 (12),(28)–(30),
+  (36) подтверждает end DOF/natural pair. Это variational reduced1D closure,
+  не direct3D elasticity proof сварного finite joint; не названо ошибочным.
+- Initial main/HEAD 0f961acb227b504439408d3484b13a72a7acf3be содержал16 modified
+  tracked и6 untracked previous-stage files. Initial diff/status/hashes
+  сохранены во временной папке ОС; старые edits не удалены. Production preset,
+  single/source solvers, source fixtures/PDFs, old tests, baseline equations,
+  source index/BibTeX и memory другой ветви сохранены побайтово.
+- Endpoint signs независимо получены из energy [p delta q]_0^L. Both local
+  x run positive outer clamp->joint; beta0 t1=(1,0),n1=(0,-1),t2=(-1,0),
+  n2=(0,1),joint signs++. Global R transparency соответствует R1+R2=0
+  в этих координатах. 8 conditions/rank8 и arbitrary-state dual work PASS.
+- Unchanged direct single bundle342ce44bff81c36f переиспользован с hash
+  checks; reference roots не пересчитывались. Bounded independent joint
+  matrices на splits .5,.35,.65 дают7MH/11Tim, saturated min-max counts,
+  first12+guard13. Max relative frequency difference4.56e-13; c L2 error
+  4.81e-13, min massMAC>.9999999999999995, max joint residual1.78e-12.
+  Reflection .35<->.65 и independent segmented expm/QR passes. Retried/failed
+  intervals0; никаких signed fitting/tolerance/physics changes.
+- Все7 gates включая MHTIM_BETA0_JOINT_GATE=PASS. 31 new tests +98 unchanged
+  single/source/Bishop +4 existing rectangular Timo regressions=133PASS;
+  import/smoke/provenance/cache checks проходят. One new joint helper/CLI
+  and canonical note, navigation/README/CHANGELOG updated. Generated bundle
+  в results/mindlin_herrmann_timoshenko_beta0_joint/. Старые результаты не
+  изменены. beta!=0 spectrum/closure не валидированы; коэффициенты не
+  подбирались, nonlinear equations/FEM truth не вводились. Здесь остановка.
+
+- По явному выбору пользователя принят отдельный project closure
+  [Jang bare isotropic reduced M-H + Timoshenko](../theory/mindlin_herrmann_timoshenko_single_rod.md#14-production-formulation-decision):
+  PRODUCTION_MHTIM_FORMULATION_SELECTED=PASS. Project κ=5/6 найден в
+  frozen G20 rectangular contract и существующем comparator/test; его
+  GI/GA convention проверена, κ один для MH и Tim, j=r=rhoI.
+  PRODUCTION_MHTIM_KAPPA_RESOLVED. Это не установленный source κ Jang.
+- Настоящий Fernandes PDF energies-15-07725-v2.pdf зарегистрирован:
+  publisher article, 26 pp., DOI10.3390/en15207725, SHA25627cb6de0...c35a2fc.
+  PDF6–7 (19)–(21) подтверждает повторное использование Ng factors, но
+  Lamé normal block не заменяет выбранный reduced C,nu*C. Source I не
+  превращён в polar Ip или выдуманный rectangular specimen. Ref32 Doyle
+  зарегистрирован как citation chain, книга не проверена. Предыдущий
+  unresolved mapping audit сохранён, 12/pi² не принят в production.
+- Один finite straight G20 rod E=rho=1,nu=.3,b=.2,h=.05,L=L_ref=1:
+  source (1),(12),(28) подтверждает essential u=c=w=theta=0 как full clamp
+  within planar 4-field kinematics. Получены variation/PDE/resultants/state,
+  bounded exact cos/sin+anchored exponentials и независимый short-step
+  state expm/QR. Min-max upper counts насыщены: 7 MH и11 bending roots с
+  guards, без нового WW/map/transfer-products framework. Finite spectrum
+  PASS. First6 MH f*=.500706144,1.001229213,1.501381967,2.000968673,
+  2.499780436,2.997590005; contraction wave cutoff11.558994422 выше low
+  inventory. Это normalized control, не experimental/source-table fit.
+- Numerical hierarchy elementary/planar Rayleigh–Love/MH passes, bending
+  один и тот же. Overall HIERARCHY_SINGLE_ROD=PARTIAL_PASS: reduced axial
+  theories не имеют independent c и не описывают её clamp boundary layer;
+  u′=0 к second-order equation не добавлено. Planar RL J=nu²rhoIy,H=0,
+  не polar standalone Bishop. Angular-joint contraction condition открыт.
+- Добавлены named preset/finite functions в existing MH helper, один finite
+  CLI/config и19 tests. Итого98 targeted +4 existing rectangular Timo
+  regressions=102 PASS; source-check, smoke и hash-validated zero-root reuse
+  проходят. Rucka/Jang outputs/records/cases/tolerances точно сохранены,
+  source Jang numeric κ остаётся null. Initial diff/status main/HEAD
+  0f961acb227b504439408d3484b13a72a7acf3be сохранены во временной папке;
+  13 protected files byte-identical. Все предыдущие user changes сохранены.
+  README/CHANGELOG/navigation обновлены для нового finite command.
+  Memory, frozen baseline, Bishop, anisotropic/viscous/nonlinear workflows
+  не менялись. Новая two-beam MH system, joint BC, nonlinear derivation и
+  3D FEM не выполнялись.
+
+- Выполнен [rectangular M-H prescription gate](../theory/mindlin_herrmann_timoshenko_single_rod.md#13-production-rectangular-m-h-correction-prescription).
+  Начальный main/HEAD 0f961acb227b504439408d3484b13a72a7acf3be: tracked diff
+  пуст, два untracked PDF сохранены. hdl_85788.pdf — Ng 2014 accepted
+  version; ssrn-5985611.pdf — Elishakoff–Tharu review, not peer reviewed,
+  не ожидаемый Fernandes et al. 2022. Последний не найден среди 92 PDF
+  проекта; по заданию ему не присвоены выдуманные metadata/key/hash.
+- Ng PDF 10 (2) прямо содержит S1=12/pi², S2=S1[(1+nu)/(.87+1.12nu)]²;
+  H=S1*GI и j=S2*rhoI — прямой factor-role mapping. Normal block источника
+  использует напечатанный 3D Lamé lambda и отличается от текущего reduced
+  C,nu*C. Exact stationary reduction даёт EA/(1−nu²), не EA. Circular
+  squared corrections препринта не служат вторым rectangular подтверждением.
+  Doyle/Graff зарегистрированы только как citation chain, книги не проверены.
+- Итог RECTANGULAR_MH_PRESET_MAPPING_UNRESOLVED и
+  PRODUCTION_MH_COEFFICIENTS_UNRESOLVED. Fixtures разделяют source variants
+  и unadopted candidate rectangular_literature_default; helper/preset не
+  добавлен. При nu=.3 только arithmetic candidate output:
+  1.2158542037080533 / 1.4127769143961029. Production model/cutoff run не
+  выполнен. Старые Rucka/Jang records/cases/tolerances и fixed-point outputs
+  сохранены; техническое tuple/list различие snapshot устранено одинаковой
+  JSON representation, без numeric tolerance. 79 targeted tests + 3 existing
+  rectangular Timoshenko regressions PASS; source hash-check PASS.
+- Source index/BibTeX, существующие literature/theory notes, assumptions,
+  research/results navigation, journal и CHANGELOG обновлены. Local audit
+  хранит page snapshots/provenance; прежние results не пересчитывались.
+  README и script guides оставлены: пользовательский CLI/API не меняется,
+  unresolved status остаётся актуальным. Memory другой ветви, Bishop,
+  Timoshenko kappa, source CLI и frozen baseline сохранены. Coupled model,
+  angular-joint BC, nonlinear equations, FEM и coefficient fit не выполнялись.
 
 - Выполнен [single-rod M-H + Timoshenko source audit](../theory/mindlin_herrmann_timoshenko_single_rod.md).
   Начальный main/HEAD 7ef59a5d8340d46735363d789ec557cca5144422 содержит

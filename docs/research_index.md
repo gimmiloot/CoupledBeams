@@ -4,7 +4,77 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
+## Production M-H/Timoshenko Lambda(beta) implementation checks (2026-10-07)
+
+The [large geometry check](theory/mindlin_herrmann_timoshenko_lambda_beta_large_checks.md)
+is `completed`, MHTIM_LAMBDA_BETA_LARGE_CHECKS=PASS. One fixed canonical
+Lambda scale,3 length cases and3 thickness-contrast cases on37 angles,
+with shared baseline:185 unique map cases +20 sparse swap controls.
+All sorted12+guard13, beta0 direct/stepped references, baseline regression
+and signed force/rotation/c/R checks pass.200 numerical bracket predictors,
+5 seed scans, no fallback;68 curvature flags pass independent same-angle QR.
+Two figures are implementation evidence, not tracked branches, physical
+sensitivity/applicability or3D joint validation. Source/physics unchanged.
+
+## Coupled longitudinal-theory screening (2026-10-07)
+
+Subsequent [bounded thickness screening](theory/coupled_longitudinal_theory_thickness_screening.md)
+is `completed`: scaling audit and all45 inventories PASS, fixed-case overlaps
+and screening COMPLETE. h/h0=1/1.25/1.5/1.75/2, beta0/45/90 only, same
+material/width/length/kappa. Max E/MH0.27081%, RL/MH0.47929%; all best
+correspondences diagonal. Growth is not a universal h^2 spectral law;
+end layers and changing sorted prefix matter. The close beta90,s_h1.25
+positions9–10 pair is diagnostic context, not a veering claim. MH remains
+a reference; no range extension/applicability threshold/tracking/FEM.
+
+The [bounded screening](theory/coupled_longitudinal_theory_hierarchy_screening.md)
+is `completed`: elementary and planar Love comparator gates PASS;
+unchanged production MH references reused with hashes. Eight fixed G20
+angles cover independently sorted12+guard13. Max model differences are
+0.14103% E/MH and0.17514% RL/MH, all best geometric overlaps diagonal.
+MH is a reference, not exact truth; cross-sectional contraction clamps
+are not identical across theories. No energy classification, across-beta
+tracking, applicability threshold, angle refinement or broader study.
+
 ## Single-rod M-H/Timoshenko source audit (2026-10-06)
+
+Current [general-frame structural gate and fixed pilot](theory/mindlin_herrmann_timoshenko_rigid_joint.md#9-general-angle-geometry-действующий-project-contract):
+**MHTIM_GENERAL_BETA_JOINT_GATE=PASS**. One common assembly recovers the
+frozen beta0 gate exactly and passes project geometry, duality, rank8,
+zero-limit/right-angle/swap/reflection checks. Only one G20 equal-arm
+5/45/90 pilot is computed: exact energy-count inventories23/24/24 cover
+first12+guard13 with full mode/resultant residuals. Reduced c-continuity
+remains a model closure, not 3D elasticity. No angle map, hierarchy,
+applicability claim or across-beta tracking follows from this result.
+
+Subsequent [reduced rigid-joint beta0 gate](theory/mindlin_herrmann_timoshenko_rigid_joint.md):
+**MHTIM_BETA0_JOINT_GATE=PASS**. Published common nodal contraction/rotation
+closure is qualified as a variational reduced 1D model, not a direct finite
+3D joint derivation. Three artificial splits reproduce the unchanged direct
+G20 fixed--fixed rod: 7 MH/11 bending roots, combined12+guard13, c/R
+transmission, mass-normalized shapes and reflection. Nonzero-angle spectra
+and nonzero-angle validation were outside that beta0 stage; the subsequent
+limited general-angle stage is separately recorded above.
+
+Current separate decision: **PRODUCTION_MHTIM_FORMULATION_SELECTED**,
+JANG_BARE_ISOTROPIC_REDUCED_MH_TIMOSHENKO, project rectangular K=5/6
+(PRODUCTION_MHTIM_KAPPA_RESOLVED). The [finite single-rod gate](theory/mindlin_herrmann_timoshenko_single_rod.md#14-production-formulation-decision)
+passes primary/independent roots, BC/energy and saturated min-max count
+checks on the existing normalized G20 input. Numerical hierarchy passes;
+HIERARCHY_SINGLE_ROD=PARTIAL_PASS records that reduced axial theories omit
+the separately resolved contraction clamp. Fernandes now confirms the
+alternative Ng factors; that normal block/preset is not production.
+The single-rod stage selected no joint; the subsequent beta0-only assembly
+above preserves its arm theory and qualifies the adopted reduced closure.
+Earlier source-audit statuses below are historical answers to different questions.
+
+The subsequent [rectangular prescription gate](theory/mindlin_herrmann_timoshenko_single_rod.md#13-production-rectangular-m-h-correction-prescription)
+is `completed` as a finite source audit, with
+`RECTANGULAR_MH_PRESET_MAPPING_UNRESOLVED`. Ng directly confirms the S1/S2
+stiffness/inertia roles, but its normal Lamé coefficients differ from the
+current reduced block. The second new PDF is Elishakoff--Tharu's circular
+SSRN review, not the expected Fernandes 2022 full text, which was not found.
+No production preset was adopted; this does not alter the earlier results.
 
 The [canonical audit](theory/mindlin_herrmann_timoshenko_single_rod.md) is
 `completed` as a diagnostic: `MHTIM_VARIANT_DEPENDENT`. Source energies,
@@ -68,7 +138,9 @@ damping, anisotropic-rod and other research statuses below are unchanged.
 
 | Research direction | Status | Main question | Canonical documentation | Main implementation | Current conclusion |
 | --- | --- | --- | --- | --- | --- |
-| Single rectangular rod: M-H axial + Timoshenko bending | `completed` source diagnostic — `MHTIM_VARIANT_DEPENDENT` | Are the Rucka/Jang source blocks equivalent and source dispersion reproducible? | [energy, mapping, limits and benchmarks](theory/mindlin_herrmann_timoshenko_single_rod.md) | [one source CLI](../scripts/analysis/reproduce_mindlin_herrmann_timoshenko_literature.py), [M-H helper](../scripts/lib/mindlin_herrmann_longitudinal.py) | Exact family mapping; different published correction prescriptions. Rucka statements pass, Jang numeric kappa and production coefficients unresolved. No coupled rods or joint selection. |
+| General-angle M-H/Timoshenko reduced joint | `completed` finite diagnostic | Does the project angle realization preserve duality/symmetries and a bounded finite inventory? | [general joint gate](theory/mindlin_herrmann_timoshenko_rigid_joint.md#9-general-angle-geometry-действующий-project-contract) | [general CLI](../scripts/analysis/verify_mindlin_herrmann_timoshenko_general_beta_joint.py), [common helper](../scripts/lib/mindlin_herrmann_timoshenko_joint.py) | All10 gates PASS; exact beta0, rank8, small angles/right angle and swap/reflection; fixed5/45/90 pilot12+guard13. No 3D joint proof, applicability/hierarchy study, sweep or tracking. |
+| M-H/Timoshenko reduced rigid joint: beta0 transparency | `completed` finite diagnostic | Does published common-DOF assembly preserve one homogeneous direct rod? | [joint theory and gate](theory/mindlin_herrmann_timoshenko_rigid_joint.md) | [beta0 CLI](../scripts/analysis/verify_mindlin_herrmann_timoshenko_beta0_joint.py), [joint helper](../scripts/lib/mindlin_herrmann_timoshenko_joint.py) | Seven separate gates PASS; splits .5/.35/.65, 12+guard13 and full c/R form checks. Reduced closure adopted, not derived from 3D elasticity; beta!=0 not computed or validated. |
+| Single rectangular rod: M-H axial + Timoshenko bending | `completed` finite diagnostic; production Jang closure/K selected | Verify a finite CC rod and elementary/planar RL/MH hierarchy | [source audit and finite gate](theory/mindlin_herrmann_timoshenko_single_rod.md) | [finite CLI](../scripts/analysis/verify_mindlin_herrmann_timoshenko_single_rod.py), [unchanged source CLI](../scripts/analysis/reproduce_mindlin_herrmann_timoshenko_literature.py), [M-H helper](../scripts/lib/mindlin_herrmann_longitudinal.py) | Finite MH spectrum PASS; hierarchy PARTIAL_PASS for contraction-clamp interpretation. Source variants remain different, source Jang kappa unstated. Ng/Fernandes is alternative only; no M-H coupled rods/joint selection. |
 | Rotational-joint continuation: circular EB reviewer diagnostic | `completed` finite diagnostic | Do six low modes approach exact RIGID as rotational stiffness grows? | [scientific note and qualifications](laminated_beams/circular_eb_rotational_spring_rigid_limit.md) | [existing-kernel/generic-solver orchestration](../scripts/analysis/joint_review/check_circular_eb_spring_spectrum.py) | Six local descendants confirmed; rigid equivalence only for 6+guard 7. Positions 11–12 and seed-06 nonmonotonic rotation remain qualified. Transmission/equilibrium and thin-joint asymptotic justification remain an open theoretical question; no real-joint calibration. |
 | Single rectangular rod: Timoshenko + Rayleigh–Bishop kinematics | `completed` finite audit; diagnostic-only | Does a common displacement/energy field yield the two unchanged linear subsystems? | [kinematics and energy audit](theory/timoshenko_bishop_single_rod.md) | [exact algebra CLI](../scripts/analysis/audit_timoshenko_bishop_single_rod.py), [targeted tests](../tests/test_timoshenko_bishop_single_rod.py) | `COMBINED_KINEMATICS_NOT_UNIQUELY_DEFINED`: centered cross coefficients vanish in two candidates, but raw self terms fail the unchanged Timoshenko limit. A relaxed hybrid needs explicit extra closure; no combined spectrum or joint conditions. |
 | Local longitudinal Rayleigh–Bishop literature controls | `completed` finite study; diagnostic-only | Reproduce Marais section 4 and Popov–Sadovsky (5),(6),(9)–(15) | [canonical report](theory/bishop_literature_reproduction.md) | [bounded CLI](../scripts/analysis/reproduce_bishop_literature.py), [module](../scripts/lib/bishop_longitudinal.py) | Source audit, energy/orthogonality, independent 50/70 dps pass. Marais print match 1/5; Popov rounded-table ranking Rayleigh–Love/Bishop/wave, with figure/reference qualifications. No angular joint or rectangular-system conclusions. |
