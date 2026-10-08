@@ -2,6 +2,17 @@
 
 This directory contains reusable helper modules that are not meant to be run directly.
 
+- `planar_second_order_axial_response.py` is a focused diagnostic companion
+  for the leading forced u2,c2 response of the audited quartic action. It
+  extracts the source terms, reuses the full linear M-H Shen space and evaluates
+  stable exact-time kernels with analytic velocities/accelerations, including
+  small-time and close-frequency limits. All 2(p−1) coordinates are retained;
+  mass whitening and a full generalized eigendecomposition introduce no
+  filtering or modal reduction. The prescribed continuous bending background
+  is common to every p. This helper does not advance or change the existing
+  nonlinear RHS, initial data or physical model.
+  [Diagnostic contract](../../docs/theory/planar_second_order_axial_response.md).
+
 - `weakly_nonlinear_planar_dynamics.py` restricts the audited quartic action
   to independent u,w,theta,c and discretizes it in an essential-BC Shen basis.
   Exact-degree quadrature, variable theta mass, both inertial terms and its

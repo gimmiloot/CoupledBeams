@@ -769,3 +769,42 @@ same-clamp reference UNAVAILABLE сохраняются. Spring/KV уже сущ
 2026-10-07; main HEAD `1510d75c106a28a4da899c7eea1a337f11791ce6`, Version0.6.0,
 initial clean checkout/staging. Это новое разрешение конкретных numerical checks,
 не supervisor approval и не расширение physical claims.
+
+
+## NLSP-D04
+
+**Разрешён аналитический по времени leading axial diagnostic**, 2026-10-08.
+После [NLSP-D03](#nlsp-d03)/[NLSP-K03](knowledge.md#nlsp-k03) пользователь сохраняет
+принятый cubic/quartic model, four independent fields, Shen–Legendre space,
+G20 IC/BC/V0/coefficients. Новое задание:
+[second-order note](../theory/planar_second_order_axial_response.md).
+
+**Почему / область:** проверить ведущий u2,c2 response без time-integration error.
+Common continuous Timoshenko first pair задаёт w1,theta1; εa=A/h0, physical
+axial/contraction=εa²*(u2,c2). Sources независимо извлекаются из audited action,
+сохраняют constant и2ω1 terms, включая inertial source. Это специализация
+конкретного решения, не новое production closure или исключение u/c/w/theta
+из полной модели. Не вводятся static correction, slopes или c=-νu_s.
+
+**Разрешённый контроль / ограничения:** independent MH coefficients retained;
+p16/24/32/48/64 и один условныйp96 при неясной достаточности final primary pair.
+Одна primary MH eigendecomposition на p, все2(p−1) columns, stable analytical
+matrix function и independent augmented expm; ноль Radau/solve_ivp/ODE/PDE
+integrations. Actual numerical budget1200s, результаты сохраняются по мере
+получения; нет отказа лишь из-за нескольких секунд ориентировочного прогноза.
+Старые trajectories/manifests сравниваются на фактических timestamps, без
+новых nonlinear solves, interpolation, phase fitting или energy classes.
+
+**Результат / остановка:** [NLSP-K04](knowledge.md#nlsp-k04) — diagnostic COMPLETE,
+spatial convergence PARTIAL. Условныйp96 выполнен из-за немонотонного p32→48
+и неполного p48→64 gate. Послеp96 остановка; p128+, basis replacement, FEM,
+modal reduction/filter, IC correction, nonlinear p48, angular/Floquet/threshold
+и новые amplitudes автоматически не разрешены. Старые D02/K02 иD03/K03
+сохраняются, full nonlinear spatial convergence unresolved.
+
+**Не отменяет / provenance:** explicit user request
+`acc0efc6-6bfe-4749-a675-23b4871522e1/Pasted text.txt`, 2026-10-08;
+main HEAD `b608aa118247819dfd118ddafb2a0a6155512c80`, Version0.6.1, clean/staging
+preserved. LONG CLOSED, EB/RLB-KV PAUSED и angular same-clamp out-of-plane
+reference UNAVAILABLE сохраняются. Supervisor approval и physical validation
+не предполагаются; новая scientific direction после bounded report не выбрана.

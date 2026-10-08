@@ -15,6 +15,25 @@ index should be run without first reviewing its cost and output contract.
 
 ## Result directories
 
+`results/planar_second_order_axial_response/b3ea4eb6ac95d6e1/` contains the
+[exact-time leading axial diagnostic](theory/planar_second_order_axial_response.md):
+audited forcing expressions, common continuous bending background, complete
+M-H spectral states, independent assembly/quadrature/exponential controls,
+physical convergence and L2 projection data, historical nonlinear comparisons,
+actual timestamps, sampling qualifications and three PDF/PNG figures.
+Primary p16/24/32/48/64 coverage and one conditional p96 refinement are retained.
+Charged numerical work was 373.599s within1200s: six primary M-H spectral
+decompositions, two checkpoint restorations and zero ODE integrations.
+The interrupted extension's spectral checkpoint is reused without a second p96
+eigendecomposition; its metadata failure and resume provenance remain visible.
+
+The diagnostic is COMPLETE, spatial convergence PARTIAL. Full-interval norms
+cover 0...5T1; resolved leading-response traces use 0...0.1T1. Historical
+small-amplitude p24 and nonlinear p48 comparisons retain their actual shorter
+prefixes. Neither historical nonlinear bundle below is recomputed or promoted
+to PASS. Matching compute and report/plot-only perform zero eigendecompositions,
+exact-time response evaluations, symbolic derivations and ODE integrations.
+
 `results/weakly_nonlinear_planar_recovery/054874a4a4c9c9ff/` contains the
 [targeted continuation](theory/weakly_nonlinear_planar_time_pilot.md): validated
 historical manifests, physical error localization and L2 projection/tail

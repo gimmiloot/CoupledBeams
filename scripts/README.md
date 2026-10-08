@@ -1,5 +1,32 @@
 # Scripts guide
 
+## Exact-time second-order axial response
+
+`analysis/verify_planar_second_order_axial_response.py` computes the leading
+forced u2,c2 diagnostic from the audited action and one continuous first
+bending eigenpair. It retains all 2(p−1) Shen coefficients, evaluates the
+finite-dimensional solution and its derivatives analytically, and reads old
+nonlinear trajectories with their own historical manifests. It never calls
+an ODE integrator.
+
+```powershell
+python scripts/analysis/verify_planar_second_order_axial_response.py --compute
+python scripts/analysis/verify_planar_second_order_axial_response.py --report-only results/planar_second_order_axial_response/b3ea4eb6ac95d6e1
+python scripts/analysis/verify_planar_second_order_axial_response.py --plot-only results/planar_second_order_axial_response/b3ea4eb6ac95d6e1
+python -m pytest tests/test_planar_second_order_axial_response.py -q
+```
+
+The [focused note](../docs/theory/planar_second_order_axial_response.md)
+distinguishes exact-time verification, sampled spatial convergence and
+asymptotic/full-nonlinear comparison. Main p16/24/32/48/64 coverage has a
+fixed1200s actual numerical budget. `--extend-p96 <parent-bundle>` supports
+one explicitly justified extension; `--p96-spectral-checkpoint <checkpoint>`
+restores already saved spectral work after an interrupted extension.
+`--config` and `--output-dir` are explicit. Matching `--compute` can reuse
+accepted conditional coverage; report/plot-only do zero eigen solves,
+response evaluations, derivations and integrations. Previous nonlinear
+PARTIAL statuses and their saved incomplete prefixes remain unchanged.
+
 ## Targeted planar solver diagnosis and recovery
 
 `analysis/diagnose_weakly_nonlinear_planar_rod.py` reads the historical pilot

@@ -1,5 +1,23 @@
 # Текущий контекст
 
+## Leading second-order axial diagnostic — COMPLETE / spatial PARTIAL, 2026-10-08
+
+[NLSP-D04](decisions.md#nlsp-d04), [NLSP-K04](knowledge.md#nlsp-k04),
+[canonical report](../theory/planar_second_order_axial_response.md).
+Ведущий u2,c2 response принятой cubic модели вычислен аналитически по времени
+с common continuous bending background и всеми Shen coordinates p16…96.
+Derivation/forcing/exact-time checks PASS; диагностическая программа COMPLETE,
+но spatial convergence PARTIAL: в64→96 толькоu2 проходит обе1e−3 нормы,
+c2 и обе speeds — нет. Sampling refinement и independent expm прошли.
+Трудность старогоp24→32 уже присутствует во втором порядке без ODE error;
+initialA² boundary mismatch сохраняется, единственная причинность не доказана.
+Старые nonlinear comparisons используют только actual saved timestamps;
+second-order response не exact full cubic trajectory и не новая production theory.
+Полный nonlinear p48 не считался; initial fields/V0/RHS/BC/basis сохранены.
+Новых time integrations0; после разрешённогоp96 остановка, p128+ не выбран.
+
+
+
 ## Planar numerical recovery — PARTIAL, 2026-10-07
 
 [NLSP-D03](decisions.md#nlsp-d03), [NLSP-K03](knowledge.md#nlsp-k03),
@@ -194,3 +212,13 @@ NLSP planar solver recovery PARTIAL; initial low-order smoothness mismatch
 Новые интегрирования или смена задачи автоматически не разрешены.
 LONG — CLOSED; EB/RLB-KV — PAUSED_FOR_SUPERVISOR_DIRECTION; angular out-of-plane
 same-clamp reference — UNAVAILABLE. Следующее направление отдельно не выбрано.
+
+
+## Текущая остановка после exact-time leading контроля
+
+NLSP second-order diagnostic COMPLETE / spatial PARTIAL; full nonlinear spatial
+convergence unresolved. Дальнейшая замена basis, numerical scheme или initial
+data не выбрана; новые nonlinear integrations/angles/Floquet/thresholds не разрешены
+автоматически. LONG CLOSED; EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION;
+angular same-clamp out-of-plane reference UNAVAILABLE. Предыдущие PARTIAL
+и исторические остановки выше сохранены, следующий этап не выбран.

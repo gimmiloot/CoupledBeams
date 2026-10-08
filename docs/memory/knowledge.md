@@ -1398,3 +1398,53 @@ LONG CLOSED, RLB/KV PAUSED и angular same-clamp reference UNAVAILABLE сохр�
 User request2026-10-07, current main HEAD1510d75c106a28a4da899c7eea1a337f11791ce6;
 no fitting, new literature, nonlinear physical validation или higher-order
 compatibility claim. Исходные model/reference/results/staging сохранены.
+
+
+## NLSP-K04
+
+**NLSP_SECOND_ORDER_AXIAL_DIAGNOSTIC=COMPLETE**, 2026-10-08;
+**NLSP_SECOND_ORDER_SPATIAL_CONVERGENCE=PARTIAL**, по
+[NLSP-D04](decisions.md#nlsp-d04):
+[canonical note](../theory/planar_second_order_axial_response.md).
+
+**Установлено:** exact Fraction A/B extraction и independent action variation
+подтверждают leading forced MH equations; w2/theta2 sources нулевые при этих
+initial data. Constant/2ω sources и +jp*theta1_t² retained; strong/weak assembly,
+M/K match, positive/symmetric matrices, eigen identities, zeroIC/acceleration,
+stable resonant/small-time kernels, augmented expm и forced power identity PASS.
+Сохранены все2(p−1) coordinates приp16/24/32/48/64/96, common continuousω1.
+Нет time integrator, удаления contraction/high-frequency coordinates или
+замены полной четырёхполевой кубической задачи этой asymptotic specialization.
+
+**Spatial evidence:** прежние p24→32 differences уже воспроизводятся в leading
+response без ODE error. Уточнение32→48 немонотонно;48→64 и64→96 проходят
+оба fixed1e−3 gates только поu2. c2 и обе velocities остаются выше gates.
+Final sampling refinement проходит, tail/common physical L2 identities exact
+до arithmetic scale; общая часть разности преобладает, не доказана phase-only.
+Результат диагностической программы COMPLETE не является spatial PASS.
+
+**Old nonlinear evidence:** leading solution вычислен точно на сохранённых
+временах обоих исходных amplitudes, включая partial small p24 и short p48
+только до их реального конца. Difference-of-p24/32 space-time correlations
+очень близки1, но весь nonlinear remainder этим не объясняется. Same-p
+normalized cubic-vs-leading discrepancy включает следующие amplitude orders;
+меньшая исходная amplitude ближе к leading response, без universal power-law
+claim. Background projection/frequency differences малы и отдельно qualified,
+continuous forcing не объявлен тождественным historical semidiscrete coefficient.
+
+**Compatibility / implications:** старый ненулевой internal axial initial
+acceleration trace порядкаA² сохраняется. Galerkin endpoints=0 его не снимают.
+Это не invalid weak IVP/code error и не единственная доказанная причина
+пространственной трудности. p48/p64 не подтверждены как достаточные для всех
+leading fields/velocities; последнийp96 не exact continuum. Для full cubic
+задачи необходимое разрешение не установлено, её прежние PARTIAL не повышены.
+Дальнейшее решение отдельно; новые grids/bases/ICs/angles/stability не выбраны.
+
+**Стоимость / provenance:** bounded actual work около374s/1200s;6primaryMH eig
+(one per p),0 ODE/PDE integrations. Primary cases не повторялись; сохранённый
+p96 spectrum восстановлен после relative-path metadata error без новогоeigh.
+Archives/current cache/protected historical manifests различены; cached compute,
+report/plot-only дают0 новых eig/evaluations/derivations/integrations. Tracked
+note содержит таблицы/квалификации независимо от ignored raw bundle. V0/core/RHS/
+Jacobian/coefficients/BC/initial fields/старые results сохранены. LONG CLOSED,
+EB/RLB-KV PAUSED и angular same-clamp reference UNAVAILABLE остаются истинными.

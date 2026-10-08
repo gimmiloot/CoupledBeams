@@ -4,6 +4,31 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
+## Exact-time leading axial response diagnostic (2026-10-08)
+
+The [second-order axial note](theory/planar_second_order_axial_response.md)
+extracts the leading forced u2,c2 response from the audited quartic action,
+using the same continuous first Timoshenko eigenpair at every Shen resolution.
+The amplitude convention is epsilon_a=A/h0, W=h0*w_hat and
+Theta=h0*theta_hat; physical axial fields are epsilon_a² times this response.
+All 2(p−1) discrete M-H coordinates are retained in the exact-time matrix
+function. No new ODE integration, nonlinear feedback or production closure
+is introduced, and the initial compatibility mismatch remains present.
+
+Derivation, forcing/quadrature and exact-time controls pass. The bounded
+p16/24/32/48/64 program and one conditional p96 clarification complete the
+diagnostic, while **NLSP_SECOND_ORDER_SPATIAL_CONVERGENCE=PARTIAL** remains
+separate from **NLSP_SECOND_ORDER_AXIAL_DIAGNOSTIC=COMPLETE**. Comparisons
+with historical nonlinear trajectories use their actual complete intervals
+or saved prefixes. Exact-time refers to the finite-dimensional forced system;
+it does not establish a continuum or full nonlinear exact solution.
+On the refined p64→96 pair only u2 meets both 1e−3 norm gates; c2 and both
+velocities remain unresolved. The velocity difficulty is therefore already
+present without time-integration error, and this does not assign its sole cause.
+Both previous nonlinear PARTIAL statuses remain unchanged; full nonlinear
+spatial convergence is unresolved. LONG remains closed, EB/RLB-KV paused,
+and the angular same-clamp reference unavailable. No further stage is selected.
+
 ## Targeted planar solver diagnosis and recovery (2026-10-07)
 
 The [diagnostic continuation](theory/weakly_nonlinear_planar_time_pilot.md)

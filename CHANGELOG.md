@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 2026-10-08
+
+- Completed the bounded exact-time leading axial/contraction diagnostic of the
+  preserved cubic action. Exact A/B/action extraction, constant/2omega forcing,
+  independent MH matrices, all finite-dimensional coordinates, stable kernels,
+  augmented matrix exponential, quadrature and forced-power checks pass.
+  p16/24/32/48/64 plus one conditional p96 were checked without ODE integration;
+  sampled spatial convergence remains PARTIAL for c and both velocities.
+  Old nonlinear difference patterns are strongly reproduced at leading order;
+  their PARTIAL statuses and original IC/BC/model/RHS/results remain unchanged.
+  Added one companion/CLI/config/test/note, three PDF/PNG figures and NLSP-D04/K04
+  memory. Cache restores retain prior spectra without repeat eigensolves;
+  report/plot and matching compute perform zero new numerical evaluations.
+  220 unique targeted/relevant checks pass; three old time-integration tests
+  are explicitly deselected. Historical source and staging hashes are preserved.
+  No full nonlinear p48, further p escalation, modal reduction, initial correction,
+  angular/Floquet study, threshold, fitting or production-theory replacement.
+
 ## 2026-10-07
 
 - Diagnosed the preserved PARTIAL planar pilot through physical L2 projection,

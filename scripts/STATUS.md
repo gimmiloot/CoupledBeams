@@ -20,6 +20,19 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
+## Exact-time leading axial diagnostic
+
+`verify_planar_second_order_axial_response.py` completes the bounded
+leading-response diagnostic with **NLSP_SECOND_ORDER_AXIAL_DIAGNOSTIC=COMPLETE**
+and separate **NLSP_SECOND_ORDER_SPATIAL_CONVERGENCE=PARTIAL**. Derivation,
+forcing/quadrature and exact-time evaluator controls pass. All coordinates
+at p16/24/32/48/64 and conditional p96 are retained; analytic matrix functions
+introduce no time integration or nonlinear feedback. Old-history comparisons
+are COMPLETE_WITH_ACTUAL_PREFIX_QUALIFICATIONS. The [focused note](../docs/theory/planar_second_order_axial_response.md)
+records sampled-maxima and projected-background limitations. Previous pilot/
+recovery remain PARTIAL; full nonlinear spatial convergence is unresolved.
+No further p, basis change or physical stage is selected automatically.
+
 ## Targeted planar solver recovery
 
 `diagnose_weakly_nonlinear_planar_rod.py` completed the addressed diagnostic

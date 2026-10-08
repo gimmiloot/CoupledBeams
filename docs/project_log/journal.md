@@ -2,6 +2,53 @@
 
 Здесь ведётся рабочий журнал проекта: этапы, решения и важные исследовательские заметки.
 
+## 2026-10-08
+
+- Final verification:220 unique checks PASS (215combined+3Timoshenko+2source-cache);
+  три старых ODE tests намеренно deselected. Finalcacheb3ea4eb6ac95d6e1
+  имеет прямые audit/reference hashes; numerical AST/data не изменены.
+  Links и protected file/source/staging preservation PASS.
+
+
+- По отдельному заданию выполнен [контроль ведущего продольного отклика
+  второго порядка](../theory/planar_second_order_axial_response.md).
+  Initial main HEADb608aa118247819dfd118ddafb2a0a6155512c80, Version0.6.1;
+  protected action/RHS/Jacobian/IC/BC и historical bundles сохранены.
+  Это диагностическая asymptotic specialization исходной задачи, не новая
+  production-модель и не сокращение четырёх независимых nonlinear fields.
+- При epsilon_a=A/h0 общий continuous background W=h0*w_hat,
+  Theta=h0*theta_hat использует прежние omega1/T1 при всех p. Forcing
+  независимо извлечён из quartic action/cubic residuals: constant и2omega1,
+  включая положительный inertia source. Все2(p−1) M-H координаты retained;
+  exact-time matrix function и аналитические скорости/ускорения без ODE.
+  Forced energy проверяется по power identity, не как постоянная энергия.
+- Primary p16/24/32/48/64 и один conditional p96 выполнены в fixed1200s
+  actual-cost scope. Ошибка relative-parent metadata после сохранения p96
+  spectral state устранена адресным resume без повторной eigendecomposition;
+  исходные primary bundle и checkpoint сохранены. Spatial convergence PARTIAL
+  отделена от NLSP_SECOND_ORDER_AXIAL_DIAGNOSTIC=COMPLETE; eigen/forcing/
+  quadrature/exact-time controls PASS. Неравномерное изменение differences
+  с p не превращается в утверждение об ошибке физической модели.
+- На refined p64→96 толькоu2 проходит обе нормы1e-3; c2,u2_t,c2_t
+  остаются выше gate. Finite-dimensional exact-time control проходит,
+  но velocity difficulty присутствует уже без time-integration error.
+  Sampling799581→1599159: изменение sampled maxima2.71e-5, контрольPASS;
+  это не continuous supremum certificate. Whole-time common-space evolution
+  преобладает над хвостом, без phase-only или sole-cause утверждения.
+  Charged numerical work373.599s/1200s;6primary M-H eigh,2cached restores,
+  0ODE/root solves. Final bundleb3ea4eb6ac95d6e1; p>96 не рассчитывался.
+- Historical nonlinear comparisons сохраняют actual timestamps: p24/p32
+  large-amplitude до5T1, p32 small до5T1, p24 small только сохранённый prefix,
+  nonlinear p48 только0.1T1. Общий continuous фон диагностического forcing
+  не объявлен абсолютно идентичным projected semidiscrete background.
+  Three PDF/PNG figures; response traces показывают разрешённый0...0.1T1,
+  convergence norms покрывают5T1. Новых time integrations0.
+- Начальная incompatibility не устранялась; leading response не заменяет
+  полную cubic trajectory и не включает nonlinear feedback. Старые pilot/
+  recovery PARTIAL сохранены, full nonlinear spatial convergence unresolved.
+  LONG closed, EB/RLB-KV paused, angular same-clamp reference UNAVAILABLE.
+  Новый basis, IC, physical model, amplitude или следующий этап не выбраны.
+
 ## 2026-10-07
 
 - По отдельному явному заданию выполнена

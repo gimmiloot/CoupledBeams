@@ -1,0 +1,82 @@
+{
+  "schema": "nlsp-second-order-axial-diagnostic-v1",
+  "pilot_config": "data/input/weakly_nonlinear_planar_time_pilot.json",
+  "historical_bundles": {
+    "pilot": "results/weakly_nonlinear_planar_time_pilot/c97287772bc461ef",
+    "recovery": "results/weakly_nonlinear_planar_recovery/054874a4a4c9c9ff"
+  },
+  "degrees": [
+    16,
+    24,
+    32,
+    48,
+    64
+  ],
+  "optional_degree": 96,
+  "optional_degree_policy": "Not automatic; only a logged explicit diagnostic decision if p48-to64 does not settle the current leading-response question. Never p>96.",
+  "periods": 5.0,
+  "short_periods": 0.1,
+  "amplitude_over_h": [
+    0.05,
+    0.025
+  ],
+  "amplitude_convention": "epsilon_a=A/h0; W=h0*w_hat, Theta=h0*theta_hat; physical axial/contraction=epsilon_a**2*second_order",
+  "basis": "P_n-P_(n+2), n=0,...,p-2; independent u2,c2; essential-only clamps",
+  "quadrature": {
+    "initial": "2*p+1",
+    "verification": "3*p+3 and 4*p+5",
+    "forcing_relative_tolerance": 2e-11,
+    "strong_weak_relative_tolerance": 2e-11
+  },
+  "sampling": {
+    "samples_per_fastest_retained_period": 16,
+    "final_pair_refinement_factor": 2,
+    "maxima_refinement_relative_target": 0.01,
+    "comparison_Gauss_points": 100,
+    "block_size": 2048,
+    "observation_samples": 2001,
+    "observation_points": [
+      0.25,
+      0.5
+    ],
+    "snapshots_periods": [
+      0.0,
+      0.001,
+      0.01,
+      0.1,
+      0.25,
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0
+    ],
+    "maximum_qualification": "sampled times and historical100 Gauss spatial nodes, not a continuous supremum certificate"
+  },
+  "gates": {
+    "u_c_relative": 0.001,
+    "relative_numerical_floor": 1e-10,
+    "matrix_match_relative": 2e-11,
+    "eigenpair_scaled": 2e-11,
+    "exact_time_equation_scaled": 2e-11,
+    "expm_relative": 2e-09,
+    "power_scaled": 2e-11,
+    "projection_scaled": 2e-11
+  },
+  "budget": {
+    "numerical_wall_seconds": 1200,
+    "prior_numerical_work_charge_seconds": 20,
+    "policy": "actual wall limit; save completed work, never ODE; no cancellation solely by small forecast difference; primary p16...64 first"
+  },
+  "semantics": {
+    "diagnostic_only": true,
+    "common_continuous_background": true,
+    "all_discrete_coordinates_retained": true,
+    "static_correction": false,
+    "phase_alignment": false,
+    "energy_classification": false,
+    "new_ODE_integrations": 0,
+    "full_nonlinear_feedback": false,
+    "reopen_LONG": false
+  }
+}

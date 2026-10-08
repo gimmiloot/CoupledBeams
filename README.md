@@ -4,6 +4,14 @@ CoupledBeams is a research repository for frequency models and computations for 
 
 ## Project Layout
 
+- [Exact-time leading axial response diagnostic](docs/theory/planar_second_order_axial_response.md)
+  -- leading u2,c2 forced by the same continuous first bending mode, with all
+  Shen coefficients retained and no ODE integration. The bounded diagnostic
+  is COMPLETE; spatial convergence remains PARTIAL and the old nonlinear
+  pilot/recovery statuses are preserved. Run
+  `python scripts/analysis/verify_planar_second_order_axial_response.py --compute`;
+  `--report-only <bundle>` and `--plot-only <bundle>` reuse saved evidence.
+
 - [Targeted planar solver diagnosis and recovery](docs/theory/weakly_nonlinear_planar_time_pilot.md)
   -- historical field-error localization, initial-compatibility audit and
   equivalent lazy energy/gradient/Hessian evaluation. Recovery remains
