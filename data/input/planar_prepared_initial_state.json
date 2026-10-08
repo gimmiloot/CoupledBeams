@@ -1,0 +1,73 @@
+{
+  "schema": "nlsp-prepared-initial-state-v1",
+  "case": "prepared_axial_O2_with_cubic_endpoint_compatibility",
+  "historical_case": "linear_bending_zero_axial_ic",
+  "pilot_config": "data/input/weakly_nonlinear_planar_time_pilot.json",
+  "spectral_bundle": "results/planar_second_order_axial_response/b3ea4eb6ac95d6e1",
+  "historical_bundles": {
+    "pilot": "results/weakly_nonlinear_planar_time_pilot/c97287772bc461ef",
+    "recovery": "results/weakly_nonlinear_planar_recovery/054874a4a4c9c9ff"
+  },
+  "degrees": [
+    16,
+    24,
+    32,
+    48,
+    64,
+    96
+  ],
+  "amplitude_over_h": 0.05,
+  "algebraic_amplitudes": [
+    0.05,
+    0.025,
+    0.0125
+  ],
+  "profile_policy": {
+    "declared_before_results": true,
+    "relative_tolerance": 1e-06,
+    "endpoint_tolerance": 1e-06,
+    "spatial_derivatives": [
+      0,
+      1,
+      2
+    ],
+    "fixed_profile_scales": "u: h0/L^d; c: 1/L^d; L2 scales multiplied by sqrt(L)",
+    "own_profile_scales": "nonzero high-p L2/max, floor=1e-10 times fixed dimensional scale",
+    "fixed_endpoint_force_scales": "u: C*h0/L^2; c: C; w: S*h0/L^2; theta: S*h0/L",
+    "maximum_sampling": "100 historical Gauss nodes plus separate endpoint jets",
+    "final_pair": [
+      64,
+      96
+    ],
+    "failure_policy": "PROFILE_PREPARATION_PARTIAL: no common reference promotion, no nonlinear integrations"
+  },
+  "theta3_rule": "w3=0; unique degree<=5 Hermite polynomial in s/L with value/first/second jets derived from frozen endpoint residuals",
+  "nonlinear_policy": {
+    "primary_pair": [
+      32,
+      48
+    ],
+    "allowed_pre_run_replacement": [
+      48,
+      64
+    ],
+    "short_periods": 0.1,
+    "time_level": "tight",
+    "temporal_check_level": "allowed_extra",
+    "maximum_integrations": 3,
+    "requires_all_preparation_gates": true
+  },
+  "budget": {
+    "numerical_wall_seconds": 900
+  },
+  "semantics": {
+    "old_cases_unchanged": true,
+    "new_physics": false,
+    "new_eigendecompositions": 0,
+    "all_coordinates_retained": true,
+    "phase_alignment": false,
+    "energy_matching": false,
+    "energy_classification": false,
+    "initial_rule_is_not_boundary_condition": true
+  }
+}

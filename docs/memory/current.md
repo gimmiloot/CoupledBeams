@@ -1,5 +1,24 @@
 # Текущий контекст
 
+## Prepared initial-state gate — PARTIAL, 2026-10-08
+
+[NLSP-D05](decisions.md#nlsp-d05), [NLSP-K05](knowledge.md#nlsp-k05),
+[canonical report](../theory/planar_prepared_initial_state.md).
+Stat/harm profiles и derivative jets сходятся на64→96. Общий отдельный
+initial state сO2 u,c и одной quinticTheta3 приw3=0 имеет проверенную
+acceleration compatibility through cubic order; конечные более высокие
+остатки сохраняются, periodic orbit не заявлена.
+
+Полный initial projection PARTIAL: ни32/48, ни48/64 не проходят обеими
+сторонамиpreset1e-6. O2 u/cp64PASS не равен four-field projection PASS;
+p64 сохраняет theta_ss endpoint error. Дополнительный relative strong/weak
+numerical check приp48/p64 также unresolved, fixedgate2e-12 не ослаблен.
+New short temporal/spatial NOT_RUN,0 ODE; improvement nonlinear convergence
+не установлен. Старые nonlinear PARTIAL и zero-u/c task сохранены.
+Следующая numerical/scientific strategy не выбрана, автоматического
+p64/96, full5T1, заменыbasis/BC/V0, angular/Floquet исследования нет.
+LONG CLOSED; EB/RLB-KV PAUSED; angular same-clamp reference UNAVAILABLE.
+
 ## Leading second-order axial diagnostic — COMPLETE / spatial PARTIAL, 2026-10-08
 
 [NLSP-D04](decisions.md#nlsp-d04), [NLSP-K04](knowledge.md#nlsp-k04),
@@ -214,7 +233,7 @@ LONG — CLOSED; EB/RLB-KV — PAUSED_FOR_SUPERVISOR_DIRECTION; angular out-of-p
 same-clamp reference — UNAVAILABLE. Следующее направление отдельно не выбрано.
 
 
-## Текущая остановка после exact-time leading контроля
+## Историческая остановка после exact-time leading контроля
 
 NLSP second-order diagnostic COMPLETE / spatial PARTIAL; full nonlinear spatial
 convergence unresolved. Дальнейшая замена basis, numerical scheme или initial
@@ -222,3 +241,14 @@ data не выбрана; новые nonlinear integrations/angles/Floquet/thres
 автоматически. LONG CLOSED; EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION;
 angular same-clamp out-of-plane reference UNAVAILABLE. Предыдущие PARTIAL
 и исторические остановки выше сохранены, следующий этап не выбран.
+
+
+## Текущая остановка после prepared initial-state gate
+
+Подготовка общего numerical candidate завершена; разрешённые spatial pairs
+не допущены к nonlinear trajectories. Overall pilot PARTIAL, new temporal/
+spatial NOT_RUN; old nonlinear PARTIAL остаются. Ни новые IC/basis варианты,
+ни более высокие nonlinear p автоматически не выбираются. LONG CLOSED,
+EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp out-of-plane
+reference UNAVAILABLE сохраняются. Следующее направление требует отдельного
+явного решения пользователя.

@@ -1448,3 +1448,45 @@ report/plot-only дают0 новых eig/evaluations/derivations/integrations. 
 note содержит таблицы/квалификации независимо от ignored raw bundle. V0/core/RHS/
 Jacobian/coefficients/BC/initial fields/старые results сохранены. LONG CLOSED,
 EB/RLB-KV PAUSED и angular same-clamp reference UNAVAILABLE остаются истинными.
+
+
+## NLSP-K05
+
+**Prepared initial-state audit — PARTIAL**, 2026-10-08,
+[NLSP-D05](decisions.md#nlsp-d05),
+[canonical report](../theory/planar_prepared_initial_state.md).
+
+**Установлено:** сохранённые полные M-H spectra p16…96 дают stat/harm и
+необходимую free часть прежней zero-axial задачи. Ни eigenvectors, ни
+координаты не фильтруются. Spectral/direct solve и per+free identities проходят;
+новых M-H/Timoshenko eigensolves и time integrations0. Stat/harm physical
+profiles/derivatives/endpoint jets в64→96 проходятpreset1e-6 (worstrelative
+около2e-8). Referencep96 — numerical approximation, не continuum truth.
+
+Восемь A/B endpoint force identities точно совпадают с frozen cubic action.
+Один общий U_star,C_star и quinticTheta3 приw3=0 дают formal acceleration
+compatibility through cubic order; actualreference cancellation проходит
+отдельный1e-6 jet gate. L/L² Hermite scaling, uniqueness и first-mode reflection
+проверены. Finite amplitude epsilon4/5 и numerical profile residuals остаются:
+не заявлены exact compatibility, все temporal orders или periodic orbit.
+
+**Остановка:** полный initial projection PARTIAL. P32/P48 не разрешают нужные
+u/c derivatives; p64 O2 u/c проходит, но полный four-field projection сохраняет
+theta_ss endpoint error≈3e-6>1e-6. Ни32/48, ни48/64 не допускают чистый short
+comparison. New temporal/spatial NOT_RUN, nonlinear improvement NOT_ESTABLISHED.
+OLD eight-component norms воспроизведены наactual0…0.1T1; oldp32tight иp48extra
+имеют разные time prescriptions, что явно qualified.
+
+**Additional numerical qualification:** absolute strong/weak2e-12 проходит,
+но прежний relativework2e-12 не проходит приp48/p64 (≈1.14e-11/4.31e-11),
+а reference-onlyp96 также unresolved. Energy-power identity проходит.
+Relative criterion сохранён; strict XFAIL не объявляется PASS. Точные coefficient
+identities и frozen RHS сохранены; единственная причина spatial difficulty
+или ошибка physical model этим дополнительным check не установлена.
+
+**Следствие:** задача старых zero-u/c initial data не решена; historical
+nonlinear PARTIAL остаются. Новая подготовка не изменила V0, mass/inertia,
+BC/basis/coefficients и не наложила externalforcing/quasistaticc constraints.
+Matching compute/report/plot используютcache без BVP/eigen/history/ODE work.
+Нет automatic continuation. LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION,
+angular same-clamp out-of-plane reference UNAVAILABLE сохраняются.

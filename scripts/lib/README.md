@@ -2,6 +2,14 @@
 
 This directory contains reusable helper modules that are not meant to be run directly.
 
+- `planar_prepared_initial_state.py` restores constant/second-harmonic parts
+  from saved full spectra and provides physical Legendre profiles, exact
+  endpoint-trace checks and one quintic Hermite correction/common initial
+  evaluator. An admission flag separates an algebraic candidate from an
+  accepted initial state. It performs no eigensolve or time integration and
+  does not modify the old dynamics helper or initial-condition workflow.
+  [Preparation contract](../../docs/theory/planar_prepared_initial_state.md).
+
 - `planar_second_order_axial_response.py` is a focused diagnostic companion
   for the leading forced u2,c2 response of the audited quartic action. It
   extracts the source terms, reuses the full linear M-H Shen space and evaluates

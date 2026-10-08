@@ -1,5 +1,30 @@
 # Scripts guide
 
+## Prepared planar initial state
+
+`analysis/prepare_planar_initial_state.py` implements a distinct initial-data
+preparation contract. It restores the six saved second-order spectra, separates
+constant/second-harmonic and free response, checks physical derivatives and
+endpoint compatibility, and projects one common initial evaluator. It reuses
+all existing physics and the old autonomous runner. This is not another PDE
+solver or a replacement for the historical zero-axial initial condition.
+
+```powershell
+python scripts/analysis/prepare_planar_initial_state.py --compute
+python scripts/analysis/prepare_planar_initial_state.py --report-only <bundle>
+python scripts/analysis/prepare_planar_initial_state.py --plot-only <bundle>
+python -m pytest tests/test_planar_prepared_initial_state.py -q
+```
+
+`--config` and `--output-dir` are explicit. The default requires the immutable
+local spectral/pilot/recovery bundles; it never rebuilds missing historical
+trajectories or eigensystems. Read the [focused note](../docs/theory/planar_prepared_initial_state.md)
+for the preset 1e-6 preparation/jet criteria and unchanged trajectory gates.
+Neither p32/p48 nor p48/p64 passes both initial projection checks in this case;
+new nonlinear controls therefore remain NOT_RUN. The budget stays900s and
+at most3 short controls, with no automatic extension. Matching compute,
+report-only and plot-only perform zero BVP/eigen/history/ODE evaluations.
+
 ## Exact-time second-order axial response
 
 `analysis/verify_planar_second_order_axial_response.py` computes the leading

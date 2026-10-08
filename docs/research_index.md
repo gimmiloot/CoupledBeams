@@ -4,6 +4,25 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
+## Prepared planar initial-state gate (2026-10-08)
+
+The [focused preparation note](theory/planar_prepared_initial_state.md)
+separates constant/second-harmonic and free parts of the saved leading axial
+response. Stat/harm profiles, physical derivatives and endpoint jets converge
+on p64/p96; one common numerical reference produces a distinct O2 initial
+state and a quintic theta correction with acceleration compatibility through
+cubic order. Finite-amplitude higher-order residuals are retained.
+
+**NLSP_PREPARED_INITIAL_STATE_PILOT=PARTIAL.** Neither permitted pair
+p32/p48 or p48/p64 admits the common four-field initial state under the preset
+1e-6 projection/jet policy. Both new short checks are NOT_RUN, with0 new ODE
+and0 M-H/Timoshenko eigensolves. Additional floating strong/weak checks retain
+an unresolved relative2e-12 qualification at p48/p64; no gate is weakened.
+The old zero-axial case, its histories and nonlinear PARTIAL statuses remain.
+No improvement of nonlinear convergence is established. V0/RHS/BC/basis and
+coefficients are unchanged; LONG stays closed, EB/RLB-KV paused and the angular
+same-clamp out-of-plane reference unavailable. No further strategy is selected.
+
 ## Exact-time leading axial response diagnostic (2026-10-08)
 
 The [second-order axial note](theory/planar_second_order_axial_response.md)

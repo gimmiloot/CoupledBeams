@@ -7,6 +7,30 @@ diagnostic workflow, and model-extension checks, see `../project_rules.md`.
 
 ## Working Notes
 
+## Separate prepared planar initial-data control (NLSP)
+
+- The [prepared-state audit](planar_prepared_initial_state.md) defines the
+  distinct case `prepared_axial_O2_with_cubic_endpoint_compatibility`;
+  the historical zero-u/c pilot and its PARTIAL remain unchanged.
+- epsilon_a=A/h0, W=h0*w_hat and Theta=h0*theta_hat retain the original
+  continuous analytic pair and one common normalization. A single verified
+  existing numerical profile represents U_star,C_star, the sum of constant
+  and second-harmonic leading responses; it is not continuum truth.
+- Initial u=epsilon_a^2 U_star, c=epsilon_a^2 C_star, w=epsilon_a W and
+  theta=epsilon_a Theta+epsilon_a^3 Theta3 have zero velocities. The selected
+  rule is w3=0 and the unique degree<=5 Hermite polynomial Theta3 in s/L,
+  with endpoint value/first/second jets obtained from the frozen cubic action.
+  This interpolation rule is neither a new boundary condition nor a claim
+  of a unique physical preparation, nonlinear normal mode or periodic orbit.
+- u,c remain independent during autonomous evolution. No forcing is added,
+  no quasistatic c closure, phase/amplitude adjustment or energy matching.
+  V0, quartic action, cubic residuals, material/kappa, basis and essential-only
+  clamps are unchanged. Higher finite-amplitude residuals are retained.
+- Preparation accuracy1e-6 is a separate numerical admission rule, declared
+  before the audit; old trajectory1e-3/1e-4 and energy1e-6 gates are unchanged.
+  Failed projection of either participant forbids a short convergence run.
+  No new physical applicability threshold or scientific direction is selected.
+
 ## Four-field planar free-motion pilot (NLSP)
 
 - The [numerical pilot](weakly_nonlinear_planar_time_pilot.md) restricts the

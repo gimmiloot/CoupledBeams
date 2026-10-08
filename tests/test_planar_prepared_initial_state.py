@@ -1,0 +1,744 @@
+"""Prepared IC checks using saved spectra; no ODE/eigensolves in tests.
+
+Synthetic Hermite/endpoint states test algebra only. They are not admitted
+production initial data and do not alter the historical zero-axial IVP.
+"""
+from __future__ import annotations
+import ast
+import hashlib
+import json
+from pathlib import Path
+
+import numpy as np
+from numpy.polynomial import legendre as leg
+from numpy.polynomial import polynomial as power
+import pytest
+
+from scripts.lib import planar_prepared_initial_state as prep
+from scripts.lib import planar_second_order_axial_response as leading
+from scripts.lib import weakly_nonlinear_planar_dynamics as planar
+from scripts.lib import weakly_nonlinear_spatial_rod as rod
+
+ROOT = Path(__file__).resolve().parents[1]
+SPECTRAL = ROOT/"results/planar_second_order_axial_response/b3ea4eb6ac95d6e1"
+PILOT = ROOT/"results/weakly_nonlinear_planar_time_pilot/c97287772bc461ef"
+RECOVERY = ROOT/"results/weakly_nonlinear_planar_recovery/054874a4a4c9c9ff"
+FROZEN = {
+    "scripts/lib/weakly_nonlinear_spatial_rod.py": "aabc5a8657e56061df3d1c86f70801ad8fc0f1f355bc1f659f24ee62950a71f2",
+    "scripts/analysis/simulate_weakly_nonlinear_planar_rod.py": "333beed99948d8336dc4bdb5683d9991de684f9f1ba53ed9a1484a523b453759",
+}
+ROUND_OFF = 2e-11
+
+
+def _read(path):
+    return json.loads(Path(path).read_text(encoding="utf8"))
+
+
+def _sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def _scaled_close(actual, expected, tolerance=ROUND_OFF):
+    expected = np.asarray(expected)
+    scale = max(float(np.max(abs(expected), initial=0)), 1e-30)
+    np.testing.assert_allclose(actual, expected, rtol=tolerance, atol=tolerance*scale)
+
+
+@pytest.fixture(autouse=True)
+def no_hidden_integrators_or_eigensolves(monkeypatch):
+    import scipy.integrate
+    import scipy.linalg
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Prepared-state tests must not integrate or solve a new eigensystem")
+    for module, names in ((scipy.integrate, ("solve_ivp", "Radau")),
+                          (scipy.linalg, ("eigh", "eig")),
+                          (np.linalg, ("eigh", "eig", "eigvals")),
+                          (leading, ("eigh",)), (planar, ("eigh",))):
+        for name in names:
+            monkeypatch.setattr(module, name, forbidden)
+
+
+@pytest.fixture(scope="module")
+def pilot_config():
+    return _read(ROOT/"data/input/weakly_nonlinear_planar_time_pilot.json")
+
+
+@pytest.fixture(scope="module")
+def model():
+    return rod.derive_polynomials()
+
+
+@pytest.fixture(scope="module")
+def coefficients(pilot_config):
+    path = ROOT/pilot_config["audit_bundle"]/"result.json"
+    manifest = _read(path.parent/"manifest.json")
+    assert _sha(path) == manifest.get("artifact_hashes", manifest.get("artifacts", {}))["result.json"]
+    return rod.RodCoefficients(**_read(path)["coefficients"])
+
+
+@pytest.fixture(scope="module")
+def background(pilot_config):
+    return leading.background_from_pilot(pilot_config, ROOT)
+
+
+@pytest.fixture(scope="module", params=(16, 96))
+def cached_model(request, coefficients, background, model):
+    p = request.param
+    path = SPECTRAL/"models"/f"p{p}.npz"
+    if not path.is_file():
+        pytest.skip("Historical spectral arrays unavailable; no reproduction is launched")
+    manifest = _read(SPECTRAL/"manifest.json")
+    hashes = {key.replace(chr(92), "/"): value for key, value in manifest["artifact_hashes"].items()}
+    assert _sha(path) == hashes[f"models/p{p}.npz"]
+    return leading.SecondOrderAxial.from_saved(coefficients, p, background, path, model=model)
+
+
+@pytest.fixture(scope="module")
+def parts(cached_model):
+    return prep.periodic_parts(cached_model)
+
+
+def test_saved_restoration_retains_every_coordinate_without_new_eigh(cached_model):
+    assert cached_model.eigen_decompositions == 0
+    assert cached_model.vectors.shape == (2*(cached_model.p-1),)*2
+    assert cached_model.b0.shape == cached_model.b2.shape == (cached_model.ndof,)
+    assert cached_model.counters()["modal_reduction"] is False
+
+
+def test_static_profile_satisfies_independent_matrix_equation(cached_model, parts):
+    m = cached_model
+    residual = m.K@parts["stat"]-m.f0
+    scale = np.linalg.norm(m.K@parts["stat"])+np.linalg.norm(m.f0)
+    assert np.linalg.norm(residual) <= ROUND_OFF*scale
+
+
+def test_harmonic_profile_keeps_contraction_inertia(cached_model, parts):
+    m = cached_model
+    dynamic = m.K-m.driving_omega**2*m.M
+    residual = dynamic@parts["harm"]-m.f2
+    scale = np.linalg.norm(dynamic@parts["harm"])+np.linalg.norm(m.f2)
+    assert np.linalg.norm(residual) <= ROUND_OFF*scale
+    assert np.linalg.norm(m.K@parts["harm"]-m.f2) > 1e-8*np.linalg.norm(m.f2)
+
+
+def test_spectral_profiles_match_independent_direct_linear_solves(cached_model, parts):
+    m = cached_model
+    _scaled_close(parts["stat"], np.linalg.solve(m.K, m.f0))
+    _scaled_close(parts["harm"], np.linalg.solve(m.K-m.driving_omega**2*m.M, m.f2))
+
+
+@pytest.mark.parametrize("fraction", (0., .001, .1, .25, 1., 5.))
+def test_periodic_plus_free_reconstructs_historical_zero_ic_solution(cached_model, parts, fraction):
+    m = cached_model
+    t = fraction*m.background.T1
+    periodic = parts["stat"]+parts["harm"]*np.cos(m.driving_omega*t)
+    amplitudes = m.b0/m.omega**2+m.b2/(m.omega**2-m.driving_omega**2)
+    free = -m.vectors@(np.cos(m.omega*t)*amplitudes)
+    scale = max(np.linalg.norm(periodic)+np.linalg.norm(free), 1e-30)
+    assert np.linalg.norm(periodic+free-m.evaluate([t])[0]) <= ROUND_OFF*scale
+
+
+def test_free_part_is_required_for_old_zero_initial_conditions(cached_model, parts):
+    m = cached_model
+    amplitudes = m.b0/m.omega**2+m.b2/(m.omega**2-m.driving_omega**2)
+    _scaled_close(parts["stat"]+parts["harm"], m.vectors@amplitudes)
+    assert np.linalg.norm(parts["stat"]+parts["harm"]) > 0
+    np.testing.assert_array_equal(m.evaluate([0.]), 0.)
+
+
+@pytest.mark.parametrize("part", ("stat", "harm"))
+@pytest.mark.parametrize("derivative", (0, 1, 2))
+def test_physical_legendre_derivatives_match_reversible_shen_basis(cached_model, parts, part, derivative):
+    m = cached_model
+    physical = prep.physical_legendre_coefficients(m, parts[part])
+    assert physical.shape == (2, m.p+1)
+    profiles = prep.LegendreProfiles(physical, m.length)
+    points = np.linspace(0., m.length, 71)
+    expected = m.reconstruct(parts[part], points, derivative)
+    actual = profiles.evaluate(points, derivative)
+    scale = max(float(np.max(abs(expected))), 1e-30)
+    np.testing.assert_allclose(actual, expected, rtol=2e-10, atol=2e-10*scale)
+
+
+@pytest.mark.parametrize("part", ("stat", "harm"))
+def test_periodic_profiles_enforce_values_not_derivative_clamps(cached_model, parts, part):
+    m = cached_model
+    profiles = prep.LegendreProfiles(prep.physical_legendre_coefficients(m, parts[part]), m.length)
+    scale = np.max(abs(profiles.evaluate(np.linspace(0., m.length, 101))))
+    assert np.max(abs(profiles.evaluate([0., m.length]))) <= ROUND_OFF*scale
+    assert np.linalg.norm(profiles.evaluate([0., m.length], 1)) > 0
+
+
+def test_common_amplitude_and_mode_normalization_are_not_refitted(background):
+    values = background.evaluate([0., .25, .5, .75, 1.])
+    np.testing.assert_allclose(values[2, 0], background.h0, rtol=2e-13, atol=0)
+    np.testing.assert_array_equal(.05**2*values, 4*(.025**2*values))
+    np.testing.assert_allclose(.05*values[:, 0], .0025*(values[:, 0]/background.h0), rtol=2e-15, atol=0)
+
+
+def test_old_physics_and_initial_case_are_preserved():
+    for relative, digest in FROZEN.items():
+        assert _sha(ROOT/relative) == digest
+    config = _read(ROOT/"data/input/weakly_nonlinear_planar_time_pilot.json")
+    assert config["semantics"]["static_initial_correction"] is False
+    assert config["boundary_conditions"].endswith("no slope constraints")
+
+
+def test_actual_old_short_times_and_distinct_time_prescriptions():
+    lo, hi = RECOVERY/"controls/new_p32", RECOVERY/"controls/p48_strict_short"
+    if not (lo/"trajectory.npz").exists():
+        pytest.skip("Historical short data unavailable")
+    ma, mb = _read(lo/"case.json"), _read(hi/"case.json")
+    with np.load(lo/"trajectory.npz") as a, np.load(hi/"trajectory.npz") as b:
+        np.testing.assert_array_equal(a["time"], b["time"])
+        assert a["time"][-1] == ma["time_end"] == mb["time_end"]
+        assert len(a["time"]) == ma["samples"] == mb["samples"]
+        assert np.all(np.diff(a["time"]) > 0)
+    assert ma["p"] == 32 and mb["p"] == 48
+    assert ma["time_level"] == "tight" and mb["time_level"] == "allowed_extra"
+
+
+def test_old_partial_case_is_not_extended_by_duplicate_snapshots():
+    case = PILOT/"cases/p24_Aoverh0p025_tight"
+    if not (case/"trajectory.npz").exists():
+        pytest.skip("Historical partial data unavailable")
+    metadata = _read(case/"case.json")
+    with np.load(case/"trajectory.npz") as data:
+        assert data["time"][-1] == metadata["time_end"] < metadata["target_time_end"]
+        assert data["time"][data["snapshot_indices"]].max() == data["time"][-1]
+        assert len(np.unique(data["snapshot_indices"])) < len(data["snapshot_indices"])
+    assert metadata["status"] == "PARTIAL"
+
+
+
+def test_profile_gate_distinguishes_small_values_from_unresolved_endpoint_jets():
+    from scripts.analysis import prepare_planar_initial_state as cli
+    low = np.zeros((2, 97))
+    low[:, 0] = [.02, .10]
+    low[:, 2] = -low[:, 0]
+    high = low.copy()
+    high[0, 94] += 1e-12
+    high[0, 96] -= 1e-12
+    policy = {"relative_tolerance": 1e-6, "endpoint_tolerance": 1e-6,
+              "spatial_derivatives": [0, 1, 2]}
+    result = cli.profile_comparison(low, high, 1., .05, policy)
+    values = next(row for row in result["rows"] if row["field"] == "u" and row["derivative"] == 0)
+    jets = next(row for row in result["rows"] if row["field"] == "u" and row["derivative"] == 2)
+    assert values["relative_L2"] < policy["relative_tolerance"]
+    assert jets["endpoint_fixed_scaled_difference"] > policy["endpoint_tolerance"]
+    assert result["pass"] is False
+    assert result["derivatives_from_Legendre_not_PDE"] is True
+
+
+def _synthetic_cache(folder, identity):
+    """Small data-cache fixture, never an accepted prepared-state result."""
+    from scripts.analysis import prepare_planar_initial_state as cli
+    folder.mkdir(parents=True)
+    summary = {"synthetic_fixture": True,
+               "statuses": {"NLSP_COMMON_INITIAL_PROJECTION": "PARTIAL",
+                            "NLSP_PREPARED_SHORT_SPATIAL_CHECK": "NOT_RUN",
+                            "NLSP_PREPARED_SHORT_TEMPORAL_CHECK": "NOT_RUN"},
+               "new_ODE_integrations": 0}
+    cli.write_json(folder/"summary.json", summary)
+    points = np.linspace(0., 1., 13)
+    values = np.column_stack((points*(1-points)*1e-3,
+                              points*(1-points)*2e-3))
+    cli.save_npz(folder/"profiles.npz", s=points, p96_stat=values, p96_harm=-values*.3)
+    rows = [{"field": field, "derivative": d, "relative_L2": 1e-8,
+             "endpoint_fixed_scaled_difference": 1e-8}
+            for field in ("u", "c") for d in (0, 1, 2)]
+    cli.write_json(folder/"profile_convergence.json",
+                   {"pairs": [{"low_p": 64, "high_p": 96, "stat": {"rows": rows},
+                               "harm": {"rows": rows}}]})
+    files = {str(path.relative_to(folder)): _sha(path) for path in folder.rglob("*") if path.is_file()}
+    cli.write_json(folder/"manifest.json", {"identity": identity, "artifact_hashes": files})
+    return summary
+
+
+@pytest.mark.parametrize("action", ("compute", "report-only", "plot-only"))
+def test_cached_entrypoints_perform_zero_preparation_and_zero_eigen_or_time_solves(
+        tmp_path, monkeypatch, capsys, action):
+    from scripts.analysis import prepare_planar_initial_state as cli
+    identity = {"synthetic_cache": "prepared-state-v1"}
+    output = tmp_path/"results"
+    bundle = output/"fixture"
+    expected = _synthetic_cache(bundle, identity)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Cached workflow attempted preparation, BVP, history or integration")
+
+    monkeypatch.setattr(cli, "run_compute", forbidden)
+    monkeypatch.setattr(prep, "periodic_parts", forbidden)
+    monkeypatch.setattr(prep, "quintic_theta3", forbidden)
+    monkeypatch.setattr(prep.PreparedInitialState, "evaluate", forbidden)
+    monkeypatch.setattr(leading.SecondOrderAxial, "from_saved", forbidden)
+    monkeypatch.setattr(rod, "derive_polynomials", forbidden)
+    monkeypatch.setattr(cli, "identity", lambda *args: ("fixture", identity))
+    args = (["--compute", "--output-dir", str(output)] if action == "compute"
+            else ["--"+action, str(bundle)])
+    returned = cli.main(args)
+    reported = json.loads(capsys.readouterr().out)
+    assert returned == expected
+    assert all(value == 0 for value in reported["this_run_counters"].values())
+    assert cli.validate_cache(bundle) == expected
+
+
+def test_repeat_plot_preserves_figure_hashes_and_immutable_cache(tmp_path):
+    from scripts.analysis import prepare_planar_initial_state as cli
+    identity = {"synthetic_cache": "deterministic-figures"}
+    bundle = tmp_path/"bundle"
+    expected = _synthetic_cache(bundle, identity)
+    cli.plot_only(bundle)
+    cli.write_json(bundle/"manifest.json", cli.manifest_for(bundle, identity))
+    before = {str(path.relative_to(bundle)): _sha(path) for path in (bundle/"figures").iterdir()}
+    cli.plot_only(bundle)
+    after = {str(path.relative_to(bundle)): _sha(path) for path in (bundle/"figures").iterdir()}
+    assert before == after
+    assert cli.validate_cache(bundle, identity) == expected
+
+
+def test_cache_rejects_corrupt_data_and_wrong_identity(tmp_path):
+    from scripts.analysis import prepare_planar_initial_state as cli
+    bundle = tmp_path/"bundle"
+    identity = {"synthetic_cache": "immutable"}
+    _synthetic_cache(bundle, identity)
+    with pytest.raises(ValueError, match="identity mismatch"):
+        cli.validate_cache(bundle, {"synthetic_cache": "changed"})
+    (bundle/"summary.json").write_text('{"synthetic_fixture":"corrupt"}', encoding="utf8")
+    with pytest.raises(ValueError, match="artifact hash mismatch"):
+        cli.validate_cache(bundle)
+
+
+@pytest.mark.parametrize("changed", ("amplitude", "theta3", "reference", "projection"))
+def test_cache_identity_changes_with_common_state_and_numerical_policy(tmp_path, changed):
+    from scripts.analysis import prepare_planar_initial_state as cli
+    original = _read(cli.CONFIG)
+    source = tmp_path/"config.json"
+    cli.write_json(source, original)
+    base, _ = cli.identity(source)
+    config = json.loads(json.dumps(original))
+    if changed == "amplitude":
+        config["amplitude_over_h"] = .025
+    elif changed == "theta3":
+        config["theta3_rule"] += " synthetic test change"
+    elif changed == "reference":
+        config["profile_policy"]["final_pair"] = [48, 64]
+    else:
+        config["nonlinear_policy"]["primary_pair"] = [48, 64]
+    cli.write_json(source, config)
+    altered, _ = cli.identity(source)
+    assert altered != base
+
+
+def test_profile_policy_preserves_old_trajectory_acceptance(pilot_config):
+    from scripts.analysis import prepare_planar_initial_state as cli
+    config = _read(cli.CONFIG)
+    assert config["profile_policy"]["relative_tolerance"] == 1e-6
+    assert config["profile_policy"]["endpoint_tolerance"] == 1e-6
+    assert pilot_config["gates"]["u_c_relative"] == 1e-3
+    assert pilot_config["gates"]["w_theta_relative"] == 1e-4
+    assert pilot_config["gates"]["energy_relative_drift"] == 1e-6
+    assert config["nonlinear_policy"]["primary_pair"] == [32, 48]
+    assert config["nonlinear_policy"]["allowed_pre_run_replacement"] == [48, 64]
+    assert config["nonlinear_policy"]["maximum_integrations"] == 3
+
+
+def test_test_module_does_not_call_any_integrator_or_eigendecomposition():
+    tree = ast.parse(Path(__file__).read_text(encoding="utf8"))
+    forbidden = {"solve_ivp", "Radau", "integrate_case", "eigh", "eig", "eigvals"}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            name = node.func.id if isinstance(node.func, ast.Name) else (
+                node.func.attr if isinstance(node.func, ast.Attribute) else None)
+            assert name not in forbidden
+
+
+
+@pytest.fixture(scope="module")
+def candidate(background, coefficients, model):
+    """ONE common p96 source profile; p96 is not a nonlinear pilot space."""
+    path = SPECTRAL/"models/p96.npz"
+    if not path.is_file():
+        pytest.skip("Common historical source profile unavailable")
+    hashes = {key.replace(chr(92), "/"): value
+              for key, value in _read(SPECTRAL/"manifest.json")["artifact_hashes"].items()}
+    assert _sha(path) == hashes["models/p96.npz"]
+    source = leading.SecondOrderAxial.from_saved(coefficients, 96, background, path, model=model)
+    split = prep.periodic_parts(source)
+    profiles = prep.LegendreProfiles(
+        prep.physical_legendre_coefficients(source, split["stat"])
+        +prep.physical_legendre_coefficients(source, split["harm"]),
+        background.length)
+    endpoint = np.array([0., background.length])
+    uc_first = profiles.evaluate(endpoint, 1)
+    bending_first = background.evaluate(endpoint, 1)
+    correction = prep.quintic_theta3(uc_first[:, 0], bending_first[:, 1],
+                                    bending_first[:, 0], coefficients, background.length)
+    return prep.PreparedInitialState(background, profiles, correction, admitted=False)
+
+
+@pytest.fixture(scope="module")
+def allowed_nonlinear_spaces(coefficients, background, model):
+    """Allowed audit spaces only; no time trajectories or eigenproblems."""
+    return {p: planar.PlanarGalerkin(coefficients, p, length=background.length, model=model)
+            for p in (32, 48, 64)}
+
+
+def test_endpoint_trace_identities_match_independent_frozen_a_and_b_residuals(model):
+    p = model.symbols
+    expected = {
+        "u": p["C"]*p["u_ss"]+p["nu"]*p["C"]*p["c_s"]+(p["C"]-p["S"])*p["theta_s"]*p["w_s"],
+        "w": p["S"]*(p["w_ss"]-p["theta_s"])+(p["C"]-p["S"])*p["u_s"]*p["theta_s"],
+        "theta": p["Bp"]*p["theta_ss"]+p["S"]*p["w_s"]-(p["C"]-p["S"])*p["u_s"]*p["w_s"],
+        "c": p["H"]*p["c_ss"]-p["nu"]*p["C"]*p["u_s"],
+    }
+    zero = {name+suffix: 0 for name in rod.FIELD_ORDER
+            for suffix in ("", "_t", "_st", "_tt")}
+    zero.update({name+suffix: 0 for name in ("v", "Phi", "psi")
+                 for suffix in ("_s", "_ss")})
+    audit = prep.endpoint_trace_audit(model)
+    assert audit["status"] == "PASS"
+    for field, index in zip(("u", "w", "theta", "c"), (0, 1, 5, 6)):
+        assert rod.Polynomial.deserialize(audit["trace_polynomials"][field]) == expected[field]
+        assert -model.residual_a[index].substitute(zero) == expected[field]
+        assert -model.residual_b[index].substitute(zero) == expected[field]
+    assert all(row["difference_terms"] == [] for row in audit["checks"].values())
+
+
+def _synthetic_compatible_jets(coefficients):
+    """Endpoint algebra fixture, not a continuous production BVP solution."""
+    p = coefficients
+    ws, ts = np.array([.08, -.08]), np.array([.11, .11])
+    us, cs = np.array([.012, .018]), np.array([.002, -.004])
+    background_jets = {"value": np.zeros((2, 2)),
+                       "first": np.column_stack((ws, ts)),
+                       "second": np.column_stack((ts, -p.S/p.Bp*ws))}
+    profiles_jets = {"value": np.zeros((2, 2)),
+                     "first": np.column_stack((us, cs)),
+                     "second": np.column_stack((-p.nu*cs-(p.C-p.S)/p.C*ts*ws,
+                                                p.nu*p.C/p.H*us))}
+    correction = prep.quintic_theta3(us, ts, ws, p)
+    return background_jets, profiles_jets, correction
+
+
+def test_o2_preparation_cancels_axial_and_contraction_but_leaves_cubic_bending(coefficients):
+    b, uc, correction = _synthetic_compatible_jets(coefficients)
+    no_correction = {name: np.zeros(2) for name in ("value", "first", "second")}
+    formal = prep.formal_endpoint_coefficients(b, uc, no_correction, coefficients)
+    for field in ("u", "c"):
+        assert np.max(abs(formal[2][field])) < 2e-16
+    assert np.linalg.norm(formal[3]["w"]) > 0
+    assert np.linalg.norm(formal[3]["theta"]) > 0
+    original_uc = {name: np.zeros((2, 2)) for name in ("value", "first", "second")}
+    old = prep.formal_endpoint_coefficients(b, original_uc, no_correction, coefficients)
+    assert np.linalg.norm(old[2]["u"]) > 0  # Historical mismatch is retained.
+
+
+@pytest.mark.parametrize("length", (1., .73, 2.))
+def test_quintic_meets_six_independent_endpoint_jet_conditions(coefficients, length):
+    us, ts, ws = np.array([.012, .018]), np.array([.11, .14]), np.array([.08, -.06])
+    q = prep.quintic_theta3(us, ts, ws, coefficients, length)
+    target_first = (coefficients.C-coefficients.S)/coefficients.S*us*ts
+    target_second = (coefficients.C-coefficients.S)/coefficients.Bp*us*ws
+    endpoints = np.array([0., length])
+    np.testing.assert_allclose(q.evaluate(endpoints), 0., atol=2e-14, rtol=0)
+    _scaled_close(q.evaluate(endpoints, 1), target_first)
+    _scaled_close(q.evaluate(endpoints, 2), target_second)
+    # Direct six-by-six Hermite solve in s/L provides an independent polynomial.
+    rows = []
+    for location in (0., 1.):
+        for derivative in (0, 1, 2):
+            rows.append([power.polyval(location, power.polyder(np.eye(6)[k], m=derivative))
+                         for k in range(6)])
+    direct = np.linalg.solve(np.array(rows), np.array(
+        [0., length*target_first[0], length**2*target_second[0],
+         0., length*target_first[1], length**2*target_second[1]]))
+    _scaled_close(q.eta_power_coefficients, direct)
+    for derivative in (0, 1, 2):
+        x = np.linspace(0, length, 43)
+        expected = power.polyval(x/length, power.polyder(direct, m=derivative))/length**derivative
+        _scaled_close(q.evaluate(x, derivative), expected)
+
+
+def test_quintic_hermite_basis_is_unique_and_exact_in_rational_arithmetic():
+    result = prep.hermite_basis_audit()
+    assert result["status"] == "PASS" and result["identities"] == 24
+    assert result["full_six_condition_system_determinant"] != 0
+
+
+def test_symmetric_first_mode_theta3_has_signed_reflection_parity(coefficients):
+    q = prep.quintic_theta3([.012, .012], [.11, .11], [.08, -.08], coefficients)
+    points = np.linspace(0., 1., 57)
+    scale = max(float(np.max(abs(q.evaluate(points)))), 1e-30)
+    np.testing.assert_allclose(q.evaluate(1-points), -q.evaluate(points),
+                               rtol=ROUND_OFF, atol=ROUND_OFF*scale)
+    assert q.parity_metrics()["coefficient_scaled_defect"] < ROUND_OFF
+
+
+def test_theta3_cancels_through_cubic_order_without_erasing_orders_four_and_five(coefficients):
+    b, uc, correction = _synthetic_compatible_jets(coefficients)
+    formal = prep.formal_endpoint_coefficients(b, uc, correction.endpoint_jets(), coefficients)
+    for order in (1, 2, 3):
+        assert max(np.max(abs(value)) for value in formal[order].values()) < 2e-16
+    assert np.linalg.norm(formal[4]["u"]) > 0
+    assert np.linalg.norm(formal[5]["w"]) > 0
+    np.testing.assert_array_equal(formal[4]["theta"], 0.)
+    np.testing.assert_array_equal(formal[5]["c"], 0.)
+
+
+@pytest.mark.parametrize("epsilon", (.05, .025, .0125))
+def test_finite_amplitude_endpoint_residual_matches_full_cubic_action_not_o3_truncation(
+        coefficients, model, epsilon):
+    b, uc, correction = _synthetic_compatible_jets(coefficients)
+    jets = correction.endpoint_jets()
+    formal = prep.formal_endpoint_coefficients(b, uc, jets, coefficients)
+    force = []
+    for endpoint in range(2):
+        values = {name: 0. for name in rod.SYMBOL_ORDER}
+        values.update(coefficients.values())
+        for field, i in (("u", 0), ("c", 1)):
+            values[field+"_s"] = epsilon**2*uc["first"][endpoint, i]
+            values[field+"_ss"] = epsilon**2*uc["second"][endpoint, i]
+        values["w_s"], values["w_ss"] = epsilon*b["first"][endpoint, 0], epsilon*b["second"][endpoint, 0]
+        values["theta_s"] = epsilon*b["first"][endpoint, 1]+epsilon**3*jets["first"][endpoint]
+        values["theta_ss"] = epsilon*b["second"][endpoint, 1]+epsilon**3*jets["second"][endpoint]
+        force.append([-model.residual_a[index].evaluate(values) for index in (0, 1, 5, 6)])
+    force = np.asarray(force)
+    expected = np.column_stack([sum(epsilon**order*formal[order][field] for order in formal)
+                                for field in ("u", "w", "theta", "c")])
+    np.testing.assert_allclose(force, expected, rtol=ROUND_OFF, atol=2e-18)
+    assert np.max(abs(force[:, 0])) > 1e-14
+    assert np.max(abs(expected[:, 1])) > 1e-18
+    assert np.linalg.norm(force) > 0
+
+
+def test_unadmitted_candidate_cannot_be_used_as_dynamical_initial_state(candidate):
+    with pytest.raises(RuntimeError, match="not admitted"):
+        candidate.evaluate(np.array([.25, .5]), .05)
+    diagnostic = candidate.evaluate(np.array([.25, .5]), .05, require_admitted=False)
+    assert diagnostic.shape == (2, 4) and np.all(np.isfinite(diagnostic))
+
+
+@pytest.mark.parametrize("derivative", (0, 1, 2))
+def test_one_common_initial_evaluator_retains_independent_fields_and_amplitude_orders(candidate, derivative):
+    points = np.linspace(0., candidate.length, 47)
+    eps = .05
+    fields = candidate.evaluate(points, eps, derivative, require_admitted=False)
+    uc, bending = candidate.profiles.evaluate(points, derivative), candidate.background.evaluate(points, derivative)
+    theta3 = candidate.correction.evaluate(points, derivative)
+    _scaled_close(fields[:, 0], eps**2*uc[:, 0])
+    _scaled_close(fields[:, 3], eps**2*uc[:, 1])
+    _scaled_close(fields[:, 1], eps*bending[:, 0])
+    _scaled_close(fields[:, 2], eps*bending[:, 1]+eps**3*theta3)
+    np.testing.assert_array_equal(candidate.initial_velocities(points), 0.)
+    np.testing.assert_array_equal(candidate.evaluate(points, 0., derivative, require_admitted=False), 0.)
+
+
+def test_physical_profiles_are_copied_and_readonly_not_mutated_to_fit_projection():
+    values = np.array([[.1, 0., -.1], [.2, 0., -.2]])
+    profiles = prep.LegendreProfiles(values)
+    values[0, 0] = 10.
+    assert profiles.coefficients[0, 0] == .1
+    with pytest.raises(ValueError):
+        profiles.coefficients[0, 0] = 10.
+
+
+def test_current_result_blocks_both_allowed_pairs_when_any_field_jet_is_unresolved():
+    folder = ROOT/"results/planar_prepared_initial_state"
+    candidates = sorted(folder.glob("*/summary.json"), key=lambda path: path.stat().st_mtime, reverse=True)
+    if not candidates:
+        pytest.skip("Prepared admission result is not locally available")
+    summary = _read(candidates[0])
+    if "projection" not in summary:
+        pytest.skip("Profile preparation stopped before projection stage")
+    projection, decision = summary["projection"], summary["pre_run_decision"]
+    chosen = decision["selected_pair"]
+    for pair in (decision["primary_pair"], decision["allowed_replacement"]):
+        if not all(projection[str(p)]["pass"] for p in pair):
+            assert chosen != pair
+    if chosen is None:
+        assert summary["new_ODE_integrations"] == 0
+        assert summary["actual_short_runs"] == []
+        assert summary["statuses"]["NLSP_PREPARED_SHORT_TEMPORAL_CHECK"] == "NOT_RUN"
+        assert summary["statuses"]["NLSP_PREPARED_SHORT_SPATIAL_CHECK"] == "NOT_RUN"
+        assert summary["old_task_status"] == summary["old_recovery_status"] == "PARTIAL"
+    # Passing O2 u/c traces does not override a failed bending derivative gate.
+    for p, result in projection.items():
+        if not all(row["pass"] for row in result["rows"]):
+            assert result["pass"] is False
+
+
+@pytest.mark.parametrize("p", (32, 48, 64))
+def test_initial_energy_and_mass_bounds_use_preserved_quartic_model(candidate, allowed_nonlinear_spaces, pilot_config, monkeypatch, p):
+    from scripts.analysis import prepare_planar_initial_state as cli
+    from scripts.analysis import simulate_weakly_nonlinear_planar_rod as old
+    disc = allowed_nonlinear_spaces[p]
+    fields = candidate.evaluate(disc.x, .05, require_admitted=False)
+    q = disc.project(fields)
+    velocity = np.zeros(disc.ndof)
+    energy = disc.energy(q, velocity)
+    bounds = cli.mass_safety_bounds(disc, q)
+    assert energy > 0 and np.isfinite(energy)
+    assert bounds["mass_positive"] and bounds["relative_mass_eigenvalue_lower_bound"] > 0
+    assert bounds["relative_mass_condition_upper_bound"] >= 1
+    monkeypatch.setattr(old, "np", np, raising=False)
+    old.safety_check(disc, q, pilot_config["safety"])
+    independent = 0.
+    values = disc.reconstruct(q)
+    first = disc.reconstruct(q, derivative=1)
+    second = disc.reconstruct(q, derivative=2)
+    for i, weight in enumerate(disc.weights):
+        data = np.zeros((6, 7))
+        data[0, [0, 1, 5, 6]] = values[i]
+        data[1, [0, 1, 5, 6]] = first[i]
+        data[3, [0, 1, 5, 6]] = second[i]
+        evaluated = rod.polynomial_evaluate(rod.FieldJet(*data), disc.coefficients, disc.model)
+        independent += weight*evaluated["V"]
+    _scaled_close(energy, independent)
+
+
+
+@pytest.fixture(scope="module")
+def common_weak_diagnostics(candidate, allowed_nonlinear_spaces):
+    """Keep absolute/scaled evidence separate on one shared initial evaluator."""
+    rows = {}
+    for p, d in allowed_nonlinear_spaces.items():
+        q = d.project(candidate.evaluate(d.x, .05, require_admitted=False))
+        # Synthetic velocity tests inertia algebra; the real initial velocity is zero.
+        velocity = d.project(np.column_stack((d.x*(1-d.x)*1e-8,
+                                              d.x*(1-d.x)*1e-7,
+                                              d.x*(1-d.x)*1e-8,
+                                              d.x*(1-d.x)*1e-9)))
+        acceleration = d.acceleration(q, velocity)
+        gradient = d.potential(q)["gradient"]
+        mass_term = d.mass_matrix(q)@acceleration
+        inertia = d.inertial_terms(q, velocity)
+        action = mass_term+inertia+gradient
+        weak = d.weak_residual(q, velocity, acceleration)
+        local = d._local_potential(q)[1]
+        work = (sum(np.linalg.norm(matrix.T@(d.weights*values))
+                    for matrix, values in zip(d._potential_matrices, local))
+                +np.linalg.norm(mass_term)+np.linalg.norm(inertia))
+        rows[p] = {"difference": weak-action, "work": work,
+                   "energy_rate": d.energy_rate(q, velocity, acceleration),
+                   "power_scale": np.linalg.norm(velocity)*work}
+    return rows
+
+
+@pytest.mark.parametrize("p", (32, 48, 64))
+def test_common_state_absolute_action_weak_and_energy_power_gates(
+        common_weak_diagnostics, pilot_config, p):
+    row = common_weak_diagnostics[p]
+    assert np.max(abs(row["difference"])) <= 2e-12
+    assert abs(row["energy_rate"]) <= pilot_config["gates"]["identity_scaled"]*max(row["power_scale"], 1e-30)
+
+
+@pytest.mark.parametrize("p", (
+    32,
+    pytest.param(48, marks=pytest.mark.xfail(
+        strict=True, raises=AssertionError,
+        reason="Recorded common-p96 projected p48 relative weak/action numerical check unresolved; unchanged 2e-12 gate")),
+    pytest.param(64, marks=pytest.mark.xfail(
+        strict=True, raises=AssertionError,
+        reason="Recorded common-p96 projected p64 relative weak/action numerical check unresolved; unchanged 2e-12 gate")),
+))
+def test_common_state_relative_action_weak_gate_remains_unresolved_when_recorded(
+        common_weak_diagnostics, p):
+    row = common_weak_diagnostics[p]
+    assert np.linalg.norm(row["difference"]) <= 2e-12*max(row["work"], 1e-30)
+
+
+def test_recorded_auxiliary_p96_failure_is_preserved_as_a_qualification():
+    folder = ROOT/"results/planar_prepared_initial_state"
+    paths = sorted(folder.glob("*/auxiliary_weak_identity.json"),
+                   key=lambda path: path.stat().st_mtime, reverse=True)
+    if not paths:
+        pytest.skip("Read-only auxiliary numerical check not available")
+    record = _read(paths[0])
+    assert record["same_common_p96_initial_evaluator"] is True
+    assert record["ODE_integrations"] == record["mh_timoshenko_eigensolves"] == 0
+    rows = {row["p"]: row for row in record["rows"]}
+    for p in (32, 48, 64, 96):
+        row = rows[p]
+        assert row["absolute_gate"] == row["relative_gate"] == 2e-12
+        assert row["absolute_pass"] is True
+    assert rows[32]["relative_pass"] is True
+    for p in (48, 64, 96):
+        assert rows[p]["relative_pass"] is False
+        assert rows[p]["relative_work_residual"] > rows[p]["relative_gate"]
+    assert record["nonlinear_p96_not_authorized"] is True
+
+
+@pytest.mark.parametrize("frequencies", ([1.], [1., 3.]))
+def test_resonant_periodic_preparation_is_explicitly_unresolved_and_json_safe(
+        frequencies, monkeypatch):
+    from types import SimpleNamespace
+    omega = np.array(frequencies)
+    saved = SimpleNamespace(omega=omega.copy(), vectors=np.eye(len(omega)),
+                            driving_omega=1., M=np.eye(len(omega)), K=np.diag(omega**2),
+                            b0=np.ones(len(omega)), b2=np.ones(len(omega)),
+                            f0=np.ones(len(omega)), f2=np.ones(len(omega)))
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("A singular preparation must not be regularized or solved")
+
+    monkeypatch.setattr(np.linalg, "solve", forbidden)
+    with np.errstate(over="raise", invalid="raise", divide="raise"):
+        result = prep.periodic_parts(saved, direct_check=True)
+    assert result["status"] == "PREPARATION_UNRESOLVED"
+    assert "stat" not in result and "harm" not in result
+    assert result["checks"]["dynamic_operator_singular_or_unresolved"] is True
+    assert result["checks"]["modal_dynamic_condition"] is None
+    assert result["checks"]["minimum_absolute_detuning"] == 0.
+    np.testing.assert_array_equal(saved.omega, omega)
+    json.dumps(result, allow_nan=False)
+
+
+def test_missing_mandatory_source_stops_before_any_preparation_or_history(
+        tmp_path, monkeypatch):
+    from scripts.analysis import prepare_planar_initial_state as cli
+    from scripts.analysis import simulate_weakly_nonlinear_planar_rod as old
+    config = _read(cli.CONFIG)
+    config["spectral_bundle"] = str(tmp_path/"missing_spectral")
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Missing mandatory source must stop before numerical preparation")
+
+    monkeypatch.setattr(old, "load_runtime", lambda: None)
+    monkeypatch.setattr(leading.SecondOrderAxial, "from_saved", forbidden)
+    monkeypatch.setattr(rod, "derive_polynomials", forbidden)
+    monkeypatch.setattr(cli.previous, "historical_provenance", forbidden)
+    summary = cli.run_compute(config, tmp_path/"stopped")
+    assert summary["stop_reason"].startswith("DATA_UNAVAILABLE: mandatory")
+    assert summary["new_ODE_integrations"] == summary["new_eigendecompositions"] == 0
+    assert summary["statuses"]["NLSP_PREPARED_SHORT_SPATIAL_CHECK"] == "NOT_RUN"
+    assert summary["statuses"]["NLSP_PREPARED_SHORT_TEMPORAL_CHECK"] == "NOT_RUN"
+    assert _read(tmp_path/"stopped/summary.json") == summary
+
+
+def test_expired_preparation_budget_saves_partial_before_restoring_models(
+        tmp_path, monkeypatch, model, background):
+    from types import SimpleNamespace
+    from scripts.analysis import prepare_planar_initial_state as cli
+    from scripts.analysis import simulate_weakly_nonlinear_planar_rod as old
+    config = _read(cli.CONFIG)
+    values = iter([0., 1000., 1000.])
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Expired budget must not restore spectra or evaluate histories")
+
+    monkeypatch.setattr(cli, "time", SimpleNamespace(perf_counter=lambda: next(values)))
+    monkeypatch.setattr(old, "load_runtime", lambda: None)
+    monkeypatch.setattr(cli.previous, "historical_provenance", lambda *args: {})
+    monkeypatch.setattr(cli.previous, "validate_cache", lambda *args: {})
+    monkeypatch.setattr(leading, "background_from_pilot", lambda *args: background)
+    monkeypatch.setattr(rod, "derive_polynomials", lambda: model)
+    monkeypatch.setattr(leading.SecondOrderAxial, "from_saved", forbidden)
+    summary = cli.run_compute(config, tmp_path/"budget_stop")
+    assert summary["stop_reason"] == "PREPARATION_BUDGET_EXHAUSTED"
+    assert summary["details"]["completed_degrees"] == []
+    assert summary["new_ODE_integrations"] == summary["new_eigendecompositions"] == 0
+    assert summary["statuses"]["NLSP_PREPARED_INITIAL_STATE_PILOT"] == "PARTIAL"
+    assert summary["statuses"]["NLSP_PREPARED_SHORT_TEMPORAL_CHECK"] == "NOT_RUN"
+    assert (tmp_path/"budget_stop/periodic_checks.json").is_file()
+

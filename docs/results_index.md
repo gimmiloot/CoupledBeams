@@ -15,6 +15,24 @@ index should be run without first reviewing its cost and output contract.
 
 ## Result directories
 
+`results/planar_prepared_initial_state/5ea8d41faf8ede54/` contains the
+[prepared initial-state gate](theory/planar_prepared_initial_state.md): source
+hashes, all saved-mode stat/harm coordinates and physical profiles, derivative
+convergence, exact A/B endpoint audit, common U_star/C_star and quintic Theta3,
+finite-amplitude residuals, projections32/48/64, initial energy/mass bounds,
+old eight-component short norms on actual timestamps and two PDF/PNG figures.
+
+Preparation/through-cubic-order compatibility PASS; common projection PARTIAL;
+new temporal/spatial short checks NOT_RUN; overall pilot PARTIAL. Additional
+relative strong/weak numerical checks remain qualified at p48/p64, with fixed
+2e-12 gates and strict XFAIL tests. Primary audit3.857s,6 spectrum restorations,
+4 direct validation solves,0 M-H/Timoshenko eigensolves and0 ODE integrations.
+Matching compute/report/plot do zero BVP/eigen/history/ODE evaluations; report
+never extends missing old prefixes or promotes old PARTIAL. No new trajectory
+or full5T1 result exists. Early development preparation bundles f6c06a90f979185c
+and b392d104d3391942 are retained separately, without overwriting any historical
+source bundle.
+
 `results/planar_second_order_axial_response/b3ea4eb6ac95d6e1/` contains the
 [exact-time leading axial diagnostic](theory/planar_second_order_axial_response.md):
 audited forcing expressions, common continuous bending background, complete

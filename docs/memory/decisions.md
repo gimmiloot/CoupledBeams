@@ -808,3 +808,40 @@ main HEAD `b608aa118247819dfd118ddafb2a0a6155512c80`, Version0.6.1, clean/stagin
 preserved. LONG CLOSED, EB/RLB-KV PAUSED и angular same-clamp out-of-plane
 reference UNAVAILABLE сохраняются. Supervisor approval и physical validation
 не предполагаются; новая scientific direction после bounded report не выбрана.
+
+
+## NLSP-D05
+
+**Принято:** отдельный контроль `prepared_axial_O2_with_cubic_endpoint_compatibility`:
+выделить stat/harm из сохранённого ведущего отклика, выбрать одно общее
+проверенное numerical profile representation, задать u,c порядкаepsilon_a²
+и проверить начальные acceleration traces четырёх полей доepsilon_a³.
+Приw3=0 принять единственную quintic Hermite Theta3 из endpoint value/first/
+second jets. Это interpolation rule начальных данных, не новый BC, physical
+closure, nonlinear normal mode или точная periodic orbit.
+
+**Почему:** periodic/free decomposition проверяет, возможно ли подготовить
+гладкое начало без изменения принятой модели; free response старой zero-u/c
+задачи физически необходима и не объявляется численным шумом.
+**Scope:** один прежний G20 fixed-fixed rod, четыре независимых поля,
+Shen–Legendre basis, V0/quartic action/cubic residuals, κ5/6, essential-only
+clamps и original analytic bending normalization. Старые initial u=c=0,
+trajectories и NLSP-D02/K02/D03/K03/D04/K04 PARTIAL не переписываются.
+
+**Numerical admission:** profile/projection/endpoint target1e-6 объявлен
+до результатов; старые trajectory1e-3/1e-4 и energy1e-6 gates неизменны.
+Новые short controls разрешены только после обеих projections пары32/48;
+одна замена48/64 допустима до trajectories. Фактически обе пары не прошли:
+projection PARTIAL, short checks NOT_RUN,0 новых ODE. Дополнительный relative
+strong/weak2e-12 check приp48/p64 также остаётся нерешённым; gate не ослаблен.
+
+**Основание:** [canonical note](../theory/planar_prepared_initial_state.md),
+[config](../../data/input/planar_prepared_initial_state.json),
+[исторический leading report](../theory/planar_second_order_axial_response.md).
+**Происхождение:** явное новое задание пользователя и подтверждение «разрешаю»,
+2026-10-08; сведения о согласовании с руководителем не утверждаются.
+**Остановка/пересмотр:** дальнейшая numerical strategy требует отдельного
+решения. Не переходить автоматически к nonlinear64/96, новым amplitudes,
+изменению basis/IC rule/V0/BC, full5T1, угловой динамике или Floquet.
+LONG CLOSED, EB/RLB-KV PAUSED и angular same-clamp reference UNAVAILABLE
+сохраняются; следующий научный этап данным результатом не выбран.

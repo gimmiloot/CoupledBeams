@@ -20,6 +20,18 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
+## Prepared planar initial-state audit
+
+`prepare_planar_initial_state.py` completes the profile/compatibility audit,
+with separate **NLSP_PREPARED_INITIAL_STATE_PILOT=PARTIAL**. The constant and
+second-harmonic physical profiles converge, and the common initial state
+has endpoint acceleration compatibility through cubic order within the
+verified profile accuracy. Initial projection does not admit both members
+of either permitted short pair. Short temporal/spatial checks are NOT_RUN;
+no new ODE or eigensolve occurred. The [canonical note](../docs/theory/planar_prepared_initial_state.md)
+records the remaining finite-amplitude residuals and actual stop. Original
+nonlinear PARTIAL statuses and frozen action/RHS/BC/basis remain unchanged.
+
 ## Exact-time leading axial diagnostic
 
 `verify_planar_second_order_axial_response.py` completes the bounded

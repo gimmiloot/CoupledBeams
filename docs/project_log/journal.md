@@ -4,6 +4,30 @@
 
 ## 2026-10-08
 
+- Prepared-state final verification:190 PASS,2 strict XFAIL,8 deselected;
+  zero ODE/model eigensolves. The failed relative weak/action checks remain
+  explicit qualifications; frozen files, staging and D/K append-only history
+  are preserved. Cache/report/plot, link checks and git diff --check pass.
+
+- Завершён [prepared initial-state gate](../theory/planar_prepared_initial_state.md)
+  после явного задания пользователя. Исходный main HEAD0b2f31a77814340c32ce77eac85c2ef6ea3aa910,
+  staging и все frozen scientific files/historical bundles сохранены.
+  Stat/harm p64/p96 и endpoint jets PASS; общий O2 state и единственная
+  degree<=5 Theta3 приw3=0 дают compatibility through cubic order.
+  Finite epsilon4/5 residuals сохранены, periodic orbit не заявлена.
+- Full four-field initial projection PARTIAL: p48 сохраняет c_ss endpoint
+  error1.94e-5 и O2 force coefficient residual1.77e-6; p64 O2 u/c проходит,
+  но theta_ss endpoint error3.03e-6 не проходит1e-6. Обе разрешённые пары
+  заблокированы до trajectories. New short temporal/spatial NOT_RUN;
+  NLSP_PREPARED_INITIAL_STATE_PILOT=PARTIAL. Улучшение nonlinear convergence
+  не установлено; old eight-component norms восстановлены без ODE.
+- Дополнительный strong/weak floating check проходитabsolute2e-12, но
+  неrelative2e-12 приp48/p64 (1.14e-11/4.31e-11); energy power PASS.
+  Эти проверки сохраняются strict XFAIL, без правки frozen RHS или gate.
+  Finalbundle5ea8d41faf8ede54: primary3.857s,0 ODE/model eigensolves,
+  two PDF/PNG figures, cache/report/plot zero evaluations. LONG CLOSED,
+  EB/RLB-KV PAUSED, angular same-clamp reference UNAVAILABLE; новых этапов нет.
+
 - Final verification:220 unique checks PASS (215combined+3Timoshenko+2source-cache);
   три старых ODE tests намеренно deselected. Finalcacheb3ea4eb6ac95d6e1
   имеет прямые audit/reference hashes; numerical AST/data не изменены.

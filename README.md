@@ -4,6 +4,15 @@ CoupledBeams is a research repository for frequency models and computations for 
 
 ## Project Layout
 
+- [Prepared planar initial-state audit](docs/theory/planar_prepared_initial_state.md)
+  -- constant/second-harmonic profiles from saved spectra, a common O2 initial
+  state and a checked cubic endpoint correction. The original zero-axial
+  case remains separate. Preparation passes; the permitted nonlinear pairs
+  fail initial-projection admission, so the bounded pilot is PARTIAL with
+  zero new integrations. Run
+  `python scripts/analysis/prepare_planar_initial_state.py --compute`;
+  matching compute and report/plot-only reuse the saved cache.
+
 - [Exact-time leading axial response diagnostic](docs/theory/planar_second_order_axial_response.md)
   -- leading u2,c2 forced by the same continuous first bending mode, with all
   Shen coefficients retained and no ODE integration. The bounded diagnostic

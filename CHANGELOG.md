@@ -2,6 +2,23 @@
 
 ## 2026-10-08
 
+- Prepared-state final verification:190 PASS,2 strict XFAIL,8 deselected;
+  zero ODE/model eigensolves. The failed relative weak/action checks remain
+  explicit qualifications; frozen files, staging and D/K append-only history
+  are preserved. Cache/report/plot, link checks and git diff --check pass.
+
+- Added a separate prepared-planar-IC audit using immutable saved spectra:
+  periodic/free decomposition, converged stat/harm profiles and derivative jets,
+  exact frozen-action endpoint traces and a unique quintic theta correction.
+  Common preparation/through-cubic-order checks pass, but neither permitted
+  nonlinear pair passes all-field projection admission; short checks NOT_RUN,
+  overall NLSP_PREPARED_INITIAL_STATE_PILOT=PARTIAL, zero new ODE/model eigensolves.
+  Preserved the separate zero-axial task, old PARTIALs, physics/RHS/BC/basis.
+  Added one helper/CLI/config/test/note, two PDF/PNG figures, cache/provenance,
+  scoped NLSP-D05/K05 and numerical admission assumptions. Additional p48/p64
+  relative strong/weak2e-12 checks remain explicit strict XFAIL; no tolerance
+  was relaxed. Matching compute/report/plot perform zero numerical preparation.
+
 - Completed the bounded exact-time leading axial/contraction diagnostic of the
   preserved cubic action. Exact A/B/action extraction, constant/2omega forcing,
   independent MH matrices, all finite-dimensional coordinates, stable kernels,
