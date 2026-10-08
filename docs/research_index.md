@@ -4,7 +4,28 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
-## Prepared planar initial-state gate (2026-10-08)
+## Prepared-state precision / short feasibility continuation (2026-10-08)
+
+The [continuation evidence](theory/planar_prepared_initial_state.md#prepared-precision-feasibility)
+separates strict verification from explicitly authorized exploratory execution.
+Exact Gram/analytic moments and one initial-only endpoint-constrained L2 policy
+preserve the frozen common physical state and full independent four-field space.
+Both p48/p64 projections pass the original1e-6 gate. Independent MP45/70 checks
+localize float64 relative strong/weak discrepancy to stored Gauss data; its
+original2e-12 gate remains FAIL, so strict verification is PARTIAL.
+
+**NLSP_PREPARED_FEASIBILITY_RUN=COMPLETED_EXPLORATORY_NOT_CERTIFIED.** All three
+p48/p64 short controls reach0.1T1 with positive mass and accepted safety/energy.
+Temporal comparison passes all8 components; spatial comparison remains PARTIAL:
+7/8 pass, theta_t relative max1.405e-4 exceeds1e-4. Charged numerical work53.49s,
+including17.34s of integration, zero new BVP/model eigensolves. This establishes
+bounded finite-dimensional computability, not strict continuous-PDE accuracy.
+Historical prepared/zero-u-c PARTIAL reports and LONG closed / KV paused /
+angular same-clamp reference unavailable remain. No longer run or new stage
+is selected. Use the explicit `--compute --feasibility` mode; default strict
+workflow and cached report/plot behavior are preserved.
+
+## Historical prepared planar initial-state gate (2026-10-08)
 
 The [focused preparation note](theory/planar_prepared_initial_state.md)
 separates constant/second-harmonic and free parts of the saved leading axial

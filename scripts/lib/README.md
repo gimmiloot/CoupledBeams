@@ -2,6 +2,15 @@
 
 This directory contains reusable helper modules that are not meant to be run directly.
 
+- `planar_prepared_initial_state.py` additionally loads the immutable saved
+  common state without new BVP/eigenpair/Theta3, computes exact Gram/analytic
+  moments at local high precision, includes quintic Theta3 directly and supplies
+  a shared initial-only endpoint-constrained L2 representation. It retains the
+  full later trial/test space and never changes the admission flag to bypass
+  strict checks. The existing autonomous runner accepts explicit full q0
+  coordinates as an optional input; its default initial projection is preserved.
+  [Precision/feasibility scope](../../docs/theory/planar_prepared_initial_state.md#prepared-precision-feasibility).
+
 - `planar_prepared_initial_state.py` restores constant/second-harmonic parts
   from saved full spectra and provides physical Legendre profiles, exact
   endpoint-trace checks and one quintic Hermite correction/common initial

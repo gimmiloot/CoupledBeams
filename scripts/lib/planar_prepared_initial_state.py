@@ -271,3 +271,258 @@ class PreparedInitialState:
                             'formal_force_through_degree5':formal_force,'essential_value_roundoff_difference':forces-formal_force})
         return {'symbolic_status':proof['status'],'formal_force_coefficients':formal,'numerical_jets':jets,'finite_amplitude':numeric,
                 'qualification':'Conditional BVP identities and numeric jets remain separate; finite amplitudes retained'}
+# Numerical representation only: fixed saved common state, no new BVP/eigenpair.
+PROJECTION_VERSION = "saved-state-exact-gram-analytic-moments-mp-v1"
+UNCONSTRAINED_PROJECTION = "exact_gram_L2"
+CONSTRAINED_PROJECTION = "common_endpoint_constrained_L2"
+
+
+def load_frozen_prepared_state(bundle):
+    """Return (state, coefficients, provenance) from its own immutable manifest.
+
+    Binary64 stored inputs define the target. Loading does not regenerate the
+    bending eigenpair, periodic axial profiles, or quintic correction.
+    """
+    import hashlib
+    import json
+    from pathlib import Path
+    from types import SimpleNamespace
+    from scripts.lib.planar_second_order_axial_response import AnalyticBackground
+    path = Path(bundle)
+    manifest = json.loads((path/"manifest.json").read_text(encoding="utf8"))
+    hashes = {}
+    for name in ("summary.json", "common_initial_state.npz"):
+        actual = hashlib.sha256((path/name).read_bytes()).hexdigest()
+        if actual != manifest["artifact_hashes"][name]:
+            raise ValueError("Frozen prepared-state artifact hash mismatch: "+name)
+        hashes[name] = actual
+    summary = json.loads((path/"summary.json").read_text(encoding="utf8"))
+    coefficients = rod.RodCoefficients(**summary["coefficients"])
+    bg = summary["background"]
+    # This adapter preserves the saved coefficient values directly. The
+    # existing finite displacement evaluator only needs coefficients and nu.
+    source = SimpleNamespace(coefficients={"C":coefficients.C,"H":coefficients.H,
+        "m":coefficients.m,"j":coefficients.jp,"B":coefficients.Bp,
+        "S":coefficients.S,"r":coefficients.jp},section=SimpleNamespace(nu=coefficients.nu))
+    background = AnalyticBackground(source,float(bg["L"]),float(bg["omega1"]),float(bg["h0"]),
+        np.asarray(bg["normalized_analytic_coefficients"],dtype=float),bg["source_bundle"],bg["normalization"])
+    with np.load(path/"common_initial_state.npz",allow_pickle=False) as saved:
+        profiles = LegendreProfiles(saved["U_C_legendre"],background.length,"immutable saved p96 physical Legendre inputs")
+        tc = saved["theta3_eta_power"].copy()
+    theta = summary["theta3"]
+    if not np.array_equal(tc,np.asarray(theta["eta_power_coefficients"])):
+        raise ValueError("Saved Theta3 representations disagree")
+    correction = Theta3Correction(tc,background.length,np.asarray(theta["first_targets"]),np.asarray(theta["second_targets"]))
+    state = PreparedInitialState(background,profiles,correction,False)
+    return state,coefficients,{"bundle":str(path),"artifact_hashes":hashes,
+        "manifest_sha256":hashlib.sha256((path/"manifest.json").read_bytes()).hexdigest(),
+        "target":"exact real values of saved binary64 coefficients; not continuum truth",
+        "regenerated_profiles":False,"regenerated_Theta3":False,"new_eigendecompositions":0}
+
+
+def _mp_background_data(state,mp):
+    """Reevaluate the saved analytic basis algebra at the requested precision."""
+    b = state.background; p = b.source_model.coefficients
+    L,omega = mp.mpf(b.length),mp.mpf(b.omega)
+    S,B,m,r = (mp.mpf(p[key]) for key in ("S","B","m","r"))
+    a,d0,d1 = S/m,S/r,B/r
+    qa,qb,qc = a*d1,-(a+d1)*omega**2,omega**2*(omega**2-d0)
+    positive = (-qb+mp.sqrt(qb*qb-4*qa*qc))/(2*qa)
+    negative = qc/(qa*positive)
+    if positive <= 0 or negative >= 0:raise ValueError("Saved bending basis must remain below its optical cutoff")
+    k,alpha = mp.sqrt(positive),mp.sqrt(-negative)
+    tr,er = (S*k*k-m*omega**2)/(-S*k),(S*alpha*alpha+m*omega**2)/(-S*alpha)
+    st,se = 1/mp.sqrt(1+(L*tr)**2),1/mp.sqrt(1+(L*er)**2)
+    return L,k,alpha,tr,er,st,se,[mp.mpf(x) for x in b.normalized_coefficients],mp.mpf(b.h0)
+
+
+def _mp_legendre_jets(coefficients,length,mp):
+    result = [[mp.mpf(0) for _ in range(2)] for _ in range(3)]
+    for n,value in enumerate(coefficients):
+        a = mp.mpf(value)
+        first = mp.mpf(n*(n+1))/2
+        second = mp.mpf(n*(n-1)*(n+1)*(n+2))/8
+        for endpoint,sign in ((0,-1),(1,1)):
+            result[0][endpoint] += a*sign**n
+            result[1][endpoint] += a*sign**(n+1)*first*2/length
+            result[2][endpoint] += a*sign**n*second*4/length**2
+    return result
+
+
+def _mp_source_jets(state,epsilon,mp):
+    L,k,alpha,tr,er,st,se,co,h = _mp_background_data(state,mp)
+    e = mp.mpf(epsilon)
+    uc = [_mp_legendre_jets(row,L,mp) for row in state.profiles.coefficients]
+    power = [mp.mpf(x) for x in state.correction.coefficients]
+    jets = []
+    for derivative in range(3):
+        ends = []
+        for endpoint in range(2):
+            x = L*endpoint
+            cosine,sine = mp.cos(k*x+derivative*mp.pi/2),mp.sin(k*x+derivative*mp.pi/2)
+            left,right = (-alpha)**derivative*mp.exp(-alpha*x),alpha**derivative*mp.exp(-alpha*(L-x))
+            w = h*(st*k**derivative*(co[0]*cosine+co[1]*sine)+se*(co[2]*left+co[3]*right))
+            theta = h*(st*tr*k**derivative*(co[0]*sine-co[1]*cosine)+se*er*(co[2]*left-co[3]*right))
+            t3 = sum(a*mp.factorial(j)/mp.factorial(j-derivative)*mp.mpf(endpoint)**(j-derivative)
+                     for j,a in enumerate(power) if j>=derivative)/L**derivative
+            ends.append([e**2*uc[0][derivative][endpoint],e*w,e*theta+e**3*t3,e**2*uc[1][derivative][endpoint]])
+        jets.append(ends)
+    return jets
+
+
+def high_precision_source_jets(state,epsilon,dps=70):
+    """Independent analytic/poly endpoint derivatives; no PDE reconstruction."""
+    import mpmath as mp
+    with mp.workdps(int(dps)):
+        jets = _mp_source_jets(state,epsilon,mp)
+        return {"values":np.asarray(jets,dtype=float),
+                "decimal_values":[[[mp.nstr(x,int(dps)) for x in row] for row in ends] for ends in jets],
+                "dps":int(dps),"definition":"saved binary64 source representations reevaluated at high precision"}
+
+
+def _mp_spherical_i(n,z,mp):
+    # Power series avoids unstable upward recurrence for high n and small z.
+    pref = z**n/mp.fac2(2*n+1)
+    term,total = mp.mpf(1),mp.mpf(1)
+    for j in range(500):
+        term *= z*z/(2*(j+1)*(2*n+2*j+3))
+        total += term
+        if abs(term) <= mp.eps*max(abs(total),mp.mpf(1)):return pref*total
+    raise ArithmeticError("Analytic Legendre moment series did not converge")
+
+
+def _mp_initial_moments(state,epsilon,p,mp):
+    L,k,alpha,tr,er,st,se,co,h = _mp_background_data(state,mp)
+    e = mp.mpf(epsilon); rows = [[],[],[],[]]
+    for n in range(p+1):
+        trig = L*mp.exp(1j*k*L/2)*_mp_spherical_i(n,1j*k*L/2,mp)
+        expmoment = L*mp.exp(-alpha*L/2)*_mp_spherical_i(n,alpha*L/2,mp)
+        left,right = (-1)**n*expmoment,expmoment
+        wm = h*(st*(co[0]*mp.re(trig)+co[1]*mp.im(trig))+se*(co[2]*left+co[3]*right))
+        tm = h*(st*tr*(co[0]*mp.im(trig)-co[1]*mp.re(trig))+se*er*(co[2]*left-co[3]*right))
+        t3 = sum(mp.mpf(a)*L*mp.factorial(j)**2/(mp.factorial(j-n)*mp.factorial(j+n+1))
+                 for j,a in enumerate(state.correction.coefficients) if j>=n)
+        rows[0].append(e**2*mp.mpf(state.profiles.coefficients[0,n])*L/(2*n+1) if n<=state.profiles.degree else mp.mpf(0))
+        rows[1].append(e*wm)
+        rows[2].append(e*tm+e**3*t3)
+        rows[3].append(e**2*mp.mpf(state.profiles.coefficients[1,n])*L/(2*n+1) if n<=state.profiles.degree else mp.mpf(0))
+    return rows
+
+
+def _mp_gram_solve(rhs,length,mp):
+    n = len(rhs); result = [mp.mpf(0)]*n
+    for parity in (0,1):
+        ids = list(range(parity,n,2)); diag = []; values = []
+        for j,index in enumerate(ids):
+            d = length/(2*index+1)+length/(2*index+5); v = rhs[index]
+            if j:
+                below = -length/(2*index+1); upper_prev = -length/(2*ids[j-1]+5)
+                d -= below*upper_prev/diag[-1]; v -= below*values[-1]/diag[-1]
+            diag.append(d); values.append(v)
+        for j in reversed(range(len(ids))):
+            index=ids[j]; value=values[j]
+            if j+1<len(ids):value += length/(2*index+5)*result[ids[j+1]]
+            result[index] = value/diag[j]
+    return result
+
+
+def _mp_shen_endpoint_matrix(n,L,mp):
+    return mp.matrix([[(-1)**i*2*(2*i+3)/L for i in range(n)],
+                      [-2*(2*i+3)/L for i in range(n)],
+                      [(-1)**i*-2*(i+1)*(i+2)*(2*i+3)/L**2 for i in range(n)],
+                      [-2*(i+1)*(i+2)*(2*i+3)/L**2 for i in range(n)]])
+
+
+def _mp_project_moments(moments,jets,length,mp,constrained=False):
+    n = len(moments)-2
+    raw = mp.matrix(_mp_gram_solve([moments[i]-moments[i+2] for i in range(n)],length,mp))
+    if constrained:
+        if n<4:raise ValueError("Endpoint-constrained initial projection requires p>=5")
+        A = _mp_shen_endpoint_matrix(n,length,mp)
+        cols = [_mp_gram_solve([A[j,i] for i in range(n)],length,mp) for j in range(4)]
+        D = mp.matrix([[cols[j][i] for j in range(4)] for i in range(n)])
+        target = mp.matrix([jets[1][0],jets[1][1],jets[2][0],jets[2][1]])
+        raw += D*mp.lu_solve(A*D,target-A*raw)
+    return [raw[i] for i in range(n)]
+
+
+def stable_initial_projection(state,disc,epsilon,policy=UNCONSTRAINED_PROJECTION,dps=70):
+    """Return physical raw coefficients and the frozen solver's coordinates.
+
+    The constrained option is a single L2 initial-representation rule for all
+    four fields: preserve their common-source first/second endpoint jets.
+    It does not constrain subsequent trial/test spaces or change clamp BC.
+    """
+    import mpmath as mp
+    import time
+    if policy not in (UNCONSTRAINED_PROJECTION,CONSTRAINED_PROJECTION):raise ValueError("Explicit recognized initial projection policy required")
+    if disc.length != state.length:raise ValueError("Common physical length required")
+    started = time.perf_counter()
+    with mp.workdps(int(dps)):
+        L = mp.mpf(state.length)
+        moments = _mp_initial_moments(state,epsilon,disc.p,mp)
+        source = _mp_source_jets(state,epsilon,mp)
+        raws = [_mp_project_moments(row,[[ends[f] for ends in order] for order in source],L,mp,
+                    policy==CONSTRAINED_PROJECTION) for f,row in enumerate(moments)]
+        # Convert Shen to physical Legendre before evaluating jets.
+        physical = []
+        for row in raws:
+            co = [mp.mpf(0)]*(disc.p+1)
+            for j,a in enumerate(row):co[j]+=a;co[j+2]-=a
+            physical.append(co)
+        exact_jets = [_mp_legendre_jets(row,L,mp) for row in physical]
+        endpoint_error_mp = [[[exact_jets[f][d][i]-source[d][i][f] for f in range(4)] for i in range(2)] for d in range(3)]
+        raw = np.asarray(raws,dtype=float).reshape(-1)
+        source_jets=np.asarray(source,dtype=float)
+        raw_decimal=[[mp.nstr(x,int(dps)) for x in row] for row in raws]
+        source_decimal=[[[mp.nstr(x,int(dps)) for x in row] for row in ends] for ends in source]
+    q = disc.from_raw_coefficients(raw)
+    restored = disc.raw_coefficients(q)
+    endpoint_restored = np.stack([disc.reconstruct(q,[0.,disc.length],d) for d in range(3)])
+    nodes,weights = np.polynomial.legendre.leggauss(100)
+    points=(nodes+1)*state.length/2; weights=weights*state.length/2
+    rows=[]
+    for d in range(3):
+        truth=state.evaluate(points,epsilon,d,require_admitted=False)
+        actual=disc.reconstruct(q,points,d)
+        error=actual-truth
+        for f,field in enumerate(FIELDS):
+            own_L2=float(np.sqrt(weights@truth[:,f]**2));own_max=float(np.max(abs(truth[:,f])))
+            fixed=(epsilon**2 if field=="c" else epsilon**2*state.background.h0 if field=="u" else epsilon*state.background.h0)/state.length**d
+            abs_L2=float(np.sqrt(weights@error[:,f]**2));abs_max=float(np.max(abs(error[:,f])))
+            rows.append({"field":field,"derivative":d,"absolute_L2":abs_L2,"absolute_max":abs_max,
+                "relative_L2":abs_L2/max(own_L2,1e-10*fixed*math.sqrt(state.length)),
+                "relative_max":abs_max/max(own_max,1e-10*fixed),
+                "endpoint_fixed_scaled_error":float(np.max(abs(endpoint_restored[d,:,f]-source_jets[d,:,f]))/fixed)})
+    return {"policy":policy,"version":PROJECTION_VERSION,"p":disc.p,"dps":int(dps),"q":q,"raw":raw,
+            "raw_roundtrip":restored,"raw_decimal":raw_decimal,"source_jets":source_jets,
+            "source_jets_decimal":source_decimal,"mp_endpoint_error":np.asarray(endpoint_error_mp,dtype=float),
+            "float64_endpoint_error":endpoint_restored-source_jets,"rows":rows,
+            "raw_roundtrip_relative":float(np.linalg.norm(restored-raw)/max(np.linalg.norm(raw),1e-30)),
+            "wall_seconds":time.perf_counter()-started,"quadrature":"exact Gram and analytic Legendre moments; 100 Gauss nodes only for historical profile diagnostics",
+            "new_eigendecompositions":0,"new_ODE_integrations":0,"same_trial_test_space":True,
+            "source_essential_values":source_jets[0],"qualification":"Numerical representation of one frozen saved state; source rounding is not continuum truth"}
+
+def project_saved_legendre(coefficients,p,length=1.,policy=UNCONSTRAINED_PROJECTION,dps=70):
+    """Exact-input polynomial counterpart for representation regression tests.
+
+    No profile refitting or degree filtering: moments use every available
+    source coefficient and derivatives of the complete polynomial.
+    """
+    import mpmath as mp
+    source=np.asarray(coefficients,dtype=float)
+    if source.ndim!=1 or not np.all(np.isfinite(source)) or p<2 or length<=0:
+        raise ValueError("Finite 1D saved Legendre coefficients, p>=2 and positive length required")
+    if policy not in (UNCONSTRAINED_PROJECTION,CONSTRAINED_PROJECTION):raise ValueError("Unknown projection policy")
+    with mp.workdps(int(dps)):
+        L=mp.mpf(length)
+        moments=[mp.mpf(source[n])*L/(2*n+1) if n<len(source) else mp.mpf(0) for n in range(p+1)]
+        jets=_mp_legendre_jets(source,L,mp)
+        raw=_mp_project_moments(moments,jets,L,mp,policy==CONSTRAINED_PROJECTION)
+        output=[mp.mpf(0)]*(p+1)
+        for n,a in enumerate(raw):output[n]+=a;output[n+2]-=a
+        projected_jets=_mp_legendre_jets(output,L,mp)
+        return {"raw":np.asarray(raw,dtype=float),"legendre":np.asarray(output,dtype=float),
+                "source_jets":np.asarray(jets,dtype=float),"projected_jets":np.asarray(projected_jets,dtype=float),
+                "mp_endpoint_error":np.asarray([[projected_jets[d][i]-jets[d][i] for i in range(2)] for d in range(3)],dtype=float),
+                "raw_decimal":[mp.nstr(x,int(dps)) for x in raw],"policy":policy,"p":int(p),"dps":int(dps)}

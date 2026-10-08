@@ -1,6 +1,27 @@
 # Scripts guide
 
-## Prepared planar initial state
+## Prepared-state short feasibility mode
+
+```powershell
+python scripts/analysis/prepare_planar_initial_state.py --compute --feasibility
+python scripts/analysis/prepare_planar_initial_state.py --report-only results/planar_prepared_feasibility/284a4039177391d1
+python scripts/analysis/prepare_planar_initial_state.py --plot-only results/planar_prepared_feasibility/284a4039177391d1
+```
+
+This explicit mode reads the frozen prepared state and saved independent local
+precision evidence; it does not refit Theta3 or regenerate BVP/eigensystems.
+The [continuation contract](../docs/theory/planar_prepared_initial_state.md#prepared-precision-feasibility)
+uses the same endpoint-constrained L2 rule at p48/p64 for INITIAL coordinates
+only. All4(p-1) dynamic coordinates and original Dirichlet BC remain unchanged.
+An unchanged strict2e-12 strong/weak failure stays visible; exploratory execution
+is separately authorized and never sets the state's admission flag. Exactly3
+bounded short runs reach0.1T1; temporal8/8 PASS, spatial7/8 PARTIAL. No automatic
+longer horizon, new p or physics. The explicit
+[data/input/planar_prepared_feasibility.json](../data/input/planar_prepared_feasibility.json)
+config caps numerical work900s / local precision180s. Missing generated sources
+are reported rather than recomputed. Matching compute/report/plot is zero-ODE.
+
+## Historical strict prepared planar initial state
 
 `analysis/prepare_planar_initial_state.py` implements a distinct initial-data
 preparation contract. It restores the six saved second-order spectra, separates

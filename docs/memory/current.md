@@ -1,6 +1,30 @@
 # Текущий контекст
 
-## Prepared initial-state gate — PARTIAL, 2026-10-08
+## Prepared-state precision/feasibility — exploratory, spatial PARTIAL, 2026-10-08
+
+[NLSP-D06](decisions.md#nlsp-d06), [NLSP-K06](knowledge.md#nlsp-k06),
+[canonical continuation](../theory/planar_prepared_initial_state.md#prepared-precision-feasibility).
+Сохранён один общий frozen initial evaluator; новая initial-only
+`common_endpoint_constrained_L2` representation проходит критерии 1e-6 для всех полей,
+их derivatives 0…2 и endpoint jets при p48/p64. Basis, будущие BC, physics,
+V0/mass/RHS, coefficients и сохранённая Theta3 не менялись.
+
+Strict float-Gauss relative action2e-12 остаётся unresolved; independent
+MP quadrature evidence локализует numerical storage/moment sensitivity.
+`state.admitted=False`; выполненный маршрут явно
+`COMPLETED_EXPLORATORY_NOT_CERTIFIED`, а не strict verified PASS.
+Ровно 3 short controls достигли 0.1T1: temporal 8/8 PASS, spatial 7/8 PASS,
+но theta_t max≈1.4053e-4 превышает1e-4; spatial PARTIAL. Energy/mass/safety PASS.
+Короткая finite-dimensional feasibility установлена; full 5T1 и continuous-PDE
+validation не заявлены. Старые zero-u/c PARTIAL и D05/K05 history сохранены.
+
+После bounded task остановка; новое refinement/scientific direction не выбрано.
+LONG CLOSED; EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION; angular same-clamp
+out-of-plane reference UNAVAILABLE. Исторические разделы ниже описывают прежние
+задания и не снимаются задним числом новой явно разрешённой работой.
+
+
+## Исторический prepared initial-state gate — PARTIAL, 2026-10-08
 
 [NLSP-D05](decisions.md#nlsp-d05), [NLSP-K05](knowledge.md#nlsp-k05),
 [canonical report](../theory/planar_prepared_initial_state.md).
@@ -243,7 +267,7 @@ angular same-clamp out-of-plane reference UNAVAILABLE. Предыдущие PART
 и исторические остановки выше сохранены, следующий этап не выбран.
 
 
-## Текущая остановка после prepared initial-state gate
+## Историческая остановка после prepared initial-state gate
 
 Подготовка общего numerical candidate завершена; разрешённые spatial pairs
 не допущены к nonlinear trajectories. Overall pilot PARTIAL, new temporal/
@@ -252,3 +276,12 @@ spatial NOT_RUN; old nonlinear PARTIAL остаются. Ни новые IC/basi
 EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp out-of-plane
 reference UNAVAILABLE сохраняются. Следующее направление требует отдельного
 явного решения пользователя.
+
+## Текущая остановка после bounded precision/feasibility
+
+Projection recovery PASS, strict initial verification PARTIAL; exploratory
+short temporal PASS / spatial PARTIAL. Новая 0.1T1 prepared trajectory не заменяет
+историческую zero-u/c задачу и не завершает первоначальный 5T1 pilot.
+LONG — CLOSED; EB/RLB-KV — PAUSED_FOR_SUPERVISOR_DIRECTION; angular same-clamp
+reference — UNAVAILABLE. Ни full-period/p-refinement, ни новая модель/IC/basis,
+ни новый scientific stage автоматически не выбраны или не разрешены.

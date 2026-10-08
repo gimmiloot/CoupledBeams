@@ -4,6 +4,19 @@
 
 ## 2026-10-08
 
+- Completed a separate bounded prepared-state precision/feasibility continuation.
+  Exact Gram/analytic moments and one initial-only endpoint-constrained L2 policy
+  represent the same frozen target at p48/p64; initial1e-6 checks pass. Independent
+  MP45/70 quadrature evidence explains stored-float strong/weak discrepancy; the
+  unchanged relative2e-12 gate remains FAIL, strict verification PARTIAL.
+  Explicit EXPLORATORY_NOT_CERTIFIED mode completes exactly3 short0.1T1 runs:
+  temporal8/8 PASS, spatial7/8 PARTIAL (theta_t max1.405e-4>1e-4). Energy/safety/mass
+  pass;17.34s integration,53.49s charged numerical work. Added explicit-q0 runner
+  input/prefix metadata while preserving default numerical path/frozen action.
+  Historical reports/results/D-K records retained; appended NLSP-D06/K06.
+  Cache/report/plot perform zero new ODE/BVP/eigen/history evaluations. No full5T1,
+  new p/amplitude, physical correction or next research stage.
+
 - Prepared-state final verification:190 PASS,2 strict XFAIL,8 deselected;
   zero ODE/model eigensolves. The failed relative weak/action checks remain
   explicit qualifications; frozen files, staging and D/K append-only history

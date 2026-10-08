@@ -198,14 +198,23 @@ def safety_check(disc, q, policy):
         raise ArithmeticError(f"Declared small-neighborhood safety gate: {conditions}")
 
 
-def integrate_case(disc, shape, initial, config, amplitude_ratio, level, times, deadline):
+def integrate_case(disc, shape, initial, config, amplitude_ratio, level, times, deadline, *, initial_coordinates=None):
     amplitude=amplitude_ratio*config["material_geometry"]["h"]
-    q0=disc.project(amplitude*shape(disc.x)); v0=np.zeros(disc.ndof)
+    if initial_coordinates is None:
+        q0=disc.project(amplitude*shape(disc.x))
+    else:
+        q0=np.asarray(initial_coordinates,dtype=float)
+        if q0.shape!=(disc.ndof,) or not np.all(np.isfinite(q0)):
+            raise ValueError("Explicit initial coordinates must be a finite full-sized vector")
+        q0=q0.copy()
+    v0=np.zeros(disc.ndof)
     settings=time_settings(disc,amplitude,level,config)
     history=np.empty((len(times),2*disc.ndof));history[0]=np.r_[q0,v0]
     cursor=1
     started=time.perf_counter(); disc.reset_counters()
     def rhs(t,y):
+        if not np.all(np.isfinite(y)):
+            raise ArithmeticError("NONFINITE_STATE")
         safety_check(disc,y[:disc.ndof],config["safety"])
         return disc.rhs(t,y)
     solver=Radau(rhs,0,np.r_[q0,v0],float(times[-1]),jac=disc.jacobian,
@@ -216,7 +225,11 @@ def integrate_case(disc, shape, initial, config, amplitude_ratio, level, times, 
             failure="PREDECLARED_COMPUTATIONAL_BUDGET_EXHAUSTED"
             break
         old=solver.t
-        message=solver.step()
+        try:
+            message=solver.step()
+        except (ArithmeticError,ValueError,np.linalg.LinAlgError) as error:
+            failure=type(error).__name__+": "+str(error)
+            break
         if solver.status=="failed":
             failure=message or "RADAU_FAILED";break
         steps.append(solver.t-old)
@@ -231,7 +244,7 @@ def integrate_case(disc, shape, initial, config, amplitude_ratio, level, times, 
            "rtol":settings["rtol"],"atol":settings["atol"].tolist(),"max_step":settings["max_step"],
            "atol_coordinate_scales":settings["coordinate_scales"],"velocity_scale_multiplier":settings["velocity_scale_multiplier"],
            "time_end":float(times[cursor-1]),"target_time_end":float(times[-1]),"samples":cursor,
-           "accepted_internal_steps":len(steps),"min_internal_step":min(steps,default=0),"max_internal_step":max(steps,default=0),
+           "accepted_internal_steps":len(steps),"internal_time_steps":steps,"min_internal_step":min(steps,default=0),"max_internal_step":max(steps,default=0),
            "nfev":solver.nfev,"njev":solver.njev,"nlu":solver.nlu,"counters":disc.counters(),"integration_seconds":elapsed}
     return history[:cursor],stats
 

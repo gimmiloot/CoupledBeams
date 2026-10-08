@@ -1,0 +1,78 @@
+{
+  "schema": "nlsp-prepared-feasibility-v1",
+  "prepared_bundle": "results/planar_prepared_initial_state/5ea8d41faf8ede54",
+  "pilot_config": "data/input/weakly_nonlinear_planar_time_pilot.json",
+  "spectral_bundle": "results/planar_second_order_axial_response/b3ea4eb6ac95d6e1",
+  "historical_bundles": {
+    "pilot": "results/weakly_nonlinear_planar_time_pilot/c97287772bc461ef",
+    "recovery": "results/weakly_nonlinear_planar_recovery/054874a4a4c9c9ff"
+  },
+  "precision_evidence": "results/planar_prepared_feasibility/precision_evidence/77d6a6db28bf677c",
+  "degrees": [
+    48,
+    64
+  ],
+  "amplitude_over_h": 0.05,
+  "projection_policy": "common_endpoint_constrained_L2",
+  "projection_dps": [
+    40,
+    70
+  ],
+  "profile_policy": {
+    "declared_before_results": true,
+    "relative_tolerance": 1e-06,
+    "endpoint_tolerance": 1e-06,
+    "spatial_derivatives": [
+      0,
+      1,
+      2
+    ],
+    "fixed_profile_scales": "u: h0/L^d; c: 1/L^d; L2 scales multiplied by sqrt(L)",
+    "own_profile_scales": "nonzero high-p L2/max, floor=1e-10 times fixed dimensional scale",
+    "fixed_endpoint_force_scales": "u: C*h0/L^2; c: C; w: S*h0/L^2; theta: S*h0/L",
+    "maximum_sampling": "100 historical Gauss nodes plus separate endpoint jets",
+    "final_pair": [
+      64,
+      96
+    ],
+    "failure_policy": "PROFILE_PREPARATION_PARTIAL: no common reference promotion, no nonlinear integrations"
+  },
+  "strict_identity_relative": 2e-12,
+  "short_periods": 0.1,
+  "cases": [
+    [
+      48,
+      "tight"
+    ],
+    [
+      64,
+      "tight"
+    ],
+    [
+      64,
+      "allowed_extra"
+    ]
+  ],
+  "budget": {
+    "numerical_wall_seconds": 900,
+    "local_precision_seconds": 180,
+    "maximum_integrations": 3,
+    "previous_precision_seconds": 17.7940297
+  },
+  "execution_policy": "strict_admitted_if_all_strict_checks_pass_else_explicit_exploratory_with_independent_precision_evidence",
+  "semantics": {
+    "old_cases_unchanged": true,
+    "new_physics": false,
+    "new_eigendecompositions": 0,
+    "all_coordinates_retained": true,
+    "phase_alignment": false,
+    "energy_matching": false,
+    "energy_classification": false,
+    "initial_rule_is_not_boundary_condition": true,
+    "common_initial_evaluator": true,
+    "initial_endpoint_derivatives_not_dynamic_constraints": true,
+    "no_new_physics": true,
+    "no_across_p_mode_tracking": true,
+    "no_periodic_orbit_claim": true
+  }
+}

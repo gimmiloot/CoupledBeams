@@ -450,3 +450,266 @@ cache/preservation/link checks. Report/plot и повторный matching compu
 model/RHS/Jacobian/generated expansion и baseline equations не изменены.
 README/CHANGELOG и соответствующая navigation обновлены; добавлены только
 NLSP-D05/K05, прежние D/K prefixes остаются неизменными. На этом остановка.
+
+
+<a id="prepared-precision-feasibility"></a>
+## 16. Precision и bounded feasibility continuation, 2026-10-08
+
+Этот раздел фиксирует отдельное решение пользователя после исторического
+preparation gate выше: сначала ограниченно проверить практическую вычислимость
+того же подготовленного состояния. Исторические §13–15 и bundle `5ea8d41faf8ede54`
+не переоценены задним числом. Строгие thresholds, нормы, floors и default admission
+сохранены. `EXPLORATORY_NOT_CERTIFIED` обозначает отдельно разрешённое выполнение,
+а не изменение `PreparedInitialState.admitted` или объявление numerical certification.
+
+Получены **три полные короткие траектории** до `0.1T1`; `p48→p64` даёт семь
+проходящих компонентов из восьми. Временной контроль проходит. Это практическое
+подтверждение вычислимости данной конечномерной задачи в заявленном коротком scope.
+Требуемая строгая точность пока не установлена: float64 relative strong/weak FAIL
+и max-критерий пространственного сравнения `theta_t` FAIL остаются видимыми.
+
+### 16.1. Frozen inputs и ограниченная arithmetic diagnosis
+
+Повторно проверены **собственные** manifests четырёх immutable historical sources:
+prepared `5ea8d41faf8ede54`, second-order `b3ea4eb6ac95d6e1`, recovery
+`054874a4a4c9c9ff`, pilot `c97287772bc461ef`. Старые BVP, eigensystems,
+Theta3 и trajectories не пересчитывались из-за нового code hash.
+
+Один target сохраняет `epsilon_a=.05`, `A=.0025`, numerical p96 U_star/C_star,
+сохранённую непрерывную analytic W/Theta pair и прежний quintic Theta3. Входные
+binary64 coefficients трактуются как фиксированные числа; более точные операции
+над ними не превращают saved numerical reference в точное континуальное решение.
+Параметры G20, V0, quartic action, четыре поля, cubic PDE, заделки, variable mass,
+все inertial terms и полный Shen trial/test space неизменны.
+
+`mpmath` уже установлен; зависимости не устанавливались. В данной Windows-среде
+`np.longdouble` имеет ту же epsilon, что float64. Сверка выполнялась при40/70
+decimal digits для проекции и45/70 для independent strong/weak control.
+
+**Проекция.** Exact physical Gram и analytic Legendre moments отделяют ошибку
+интегралов/решения коэффициентов от конечного p. Сохранённые U/C coefficients
+используются полностью, Theta3 включается напрямую через degree5 moments.
+Последующее raw↔whitened преобразование и восстановление проверены уже в том
+float64 пути, который использует временной решатель.
+
+* p48: ошибка `c_ss` у unconstrained L2-проекции сохраняется после MP пересчёта
+  (endpoint fixed-scaled около `1.938e-5`): здесь есть настоящая finite-p
+  approximation error.
+* p64: ошибка `theta_ss` около `3.029e-6` сохраняется даже при MP moments.
+  Сохранённая аналитическая пара имеет essential-value roundoff порядка
+  `5.5e-16` для w и `2.6e-15` для theta; endpoint differentiation L2-проекции
+  усиливает эту малую несовместность с точно нулевым Shen trace. Только как
+  diagnostic control вычитание linear endpoint lift уменьшает second-jet error
+  до `1e-66` и ниже. Этот lift **не применяется** к target или solver input.
+* Exact-input dyadic quintic воспроизводится с MP-погрешностью порядка `1e-73`
+  в коэффициентах и `1e-66` в jets. Perturbation одного старшего B94 coefficient
+  на `1e-12` обнаруживается; source tails не отбрасываются.
+
+**Strong/weak.** Проверены одно saved p48/p64 initial state и прежний synthetic
+velocity state при одинаковых q,v,a и whitening transforms. MP sums над прежними
+stored arrays и переоценка basis при старых float64 Gauss nodes/weights сохраняют
+relative discrepancy. Только refinement узлов/весов вместе с exact polynomial
+basis снижает разность:
+
+| Arithmetic path | p48 relative difference | p64 relative difference |
+| --- | ---: | ---: |
+| MP45, stored arrays | ≈1.136e-11 | ≈4.305e-11 |
+| MP45, analytic basis / old Gauss data | ≈1.135e-11 | ≈4.304e-11 |
+| MP45, refined Gauss data | ≈6.68e-44 | ≈8.79e-43 |
+| MP70, refined Gauss data | ≈3.79e-68 | ≈8.92e-68 |
+
+Таким образом, в проверенных states локализована quadrature-storage/cancellation
+ошибка float64, а не установленный дефект знаков, field ordering или inertial
+assembly. Frozen-action independent checks не заменены совпадением symbolic A/B.
+Все сравнения используют прежний uncancelled-work scale. Условие2e-12 не ослаблено.
+Решение `M(q) delta_a = residual_difference` даёт point-state оценки theta
+L2/max около `5.73e-12/7.27e-11` (p48) и `2.17e-11/3.46e-10` (p64).
+Это не error bound траектории; никакая такая разность не вычитается из RHS.
+
+### 16.2. Одно initial-only numerical representation rule
+
+До всех ODE выбрано **`common_endpoint_constrained_L2`**, одинаковое для p48/p64
+и всех четырёх полей: ближайшее L2-представление того же frozen target в прежнем
+Shen-пространстве, сохраняющее его известные первые и вторые derivatives на
+обоих концах. Null values уже задаются базисом. Решение использует exact Gram
+и небольшой Schur complement, без penalty. Это разрешённый способ initial
+approximation после измеренной finite-p ошибки, не новая физическая поправка.
+
+Математически он задаётся `a = a_L2 + G^-1 A^T (A G^-1 A^T)^-1 (g-A a_L2)`;
+A здесь — матрица endpoint jets, а не площадь сечения. Во время движения
+дополнительные derivative constraints отсутствуют; все4(p−1) coordinates
+независимы. Theta3 не подбирается заново и не зависит от p. Float64 coefficients
+после MP40/70 подготовки совпадают; никакой filtering/truncation не используется.
+
+Исторические comparison quadrature `max(100,2p+1)`, собственные нормы,
+fixed scales `[A,A,A/L,A/L]/L^d`, floor1e-10 и tolerance1e-6 сохранены.
+Helper-only diagnostics с отдельными O2 physical scales не используются
+для переопределения старых admission gates.
+
+| Initial representation check | p48 | p64 | Criterion/status |
+| --- | ---: | ---: | --- |
+| max own relative L2/max, all fields and d=0,1,2 | 4.912e-8 | 3.951e-9 | ≤1e-6, PASS |
+| max endpoint fixed-scaled error | 1.053e-12 | 1.053e-12 | ≤1e-6, PASS |
+| formal through-cubic endpoint coefficient | 2.934e-8 | 2.934e-8 | ≤1e-6, PASS |
+| float64 strong/weak absolute max | 3.366e-15 | 1.318e-14 | ≤2e-12, PASS |
+| float64 strong/weak relative, both states | 1.136e-11 | 4.305e-11 | ≤2e-12, FAIL |
+
+Basic finite q/RHS, exact essential BC, zero initial velocities, positive mass
+and original safety bounds pass. Independent precision evidence объясняет
+непройденную проверку. Поэтому каждый run имеет явный execution mode
+**`EXPLORATORY_NOT_CERTIFIED`**, а state.admitted остаётся False. Strict
+initial verification имеет PARTIAL; разрешение exploratory не становится
+default strict admission и не позволяет обходить необъяснённый assembly defect.
+
+### 16.3. Три коротких автономных trajectories
+
+`T1=19.791162590151373`, target end `1.9791162590151374=0.1T1`, nq=2p+1.
+Output grid общая:13568 actual timestamps, включая прежние recovery times
+и16 samples на период conservative retained-frequency bound от K/M0 Gershgorin
+и принятого variable-mass lower bound. Это output sampling, не time-error proof.
+Dense output не заменяется грубой интерполяцией прежних snapshots. Max/L2 extrema
+по времени и spatial max остаются sampled quantities; вся общая сетка сохранена.
+
+| Run | rtol / relative atol | max_step | accepted steps | nfev/njev/nlu | integration seconds |
+| --- | --- | ---: | ---: | --- | ---: |
+| p48 tight | 1e-10 / 1e-10 | 0.00360469649 | 550 | 3852/1/314 | 3.382 |
+| p64 tight | 1e-10 / 1e-10 | 0.00360469649 | 550 | 3852/1/322 | 5.546 |
+| p64 allowed_extra | 2e-11 / 2e-11 | 0.00240313100 | 824 | 5770/1/484 | 8.415 |
+
+Все3 достигли target end; finite values/safety сохранялись. Точный вектор atol,
+internal dt, RHS/Jacobian/mass-factorization counters и actual times находятся
+в каждом case.json/trajectory.npz/internal_steps.npz. Мало Jacobian refresh и
+одинаковое число шагов у двух p согласуются с max_step; это не доказательство
+ошибки. Число rejected steps не выдумывается.
+
+Сравнение **p48 tight → p64 tight**, без phase/period/amplitude alignment:
+
+| Component | absolute max-time L2 | absolute max-space-time | relative L2 | relative max | Gate |
+| --- | ---: | ---: | ---: | ---: | --- |
+| u | 2.3925e-13 | 5.5180e-13 | 2.8260e-07 | 4.0261e-07 | PASS |
+| w | 3.8335e-11 | 1.1683e-10 | 2.4286e-08 | 4.6758e-08 | PASS |
+| theta | 1.4173e-09 | 3.4297e-09 | 2.6422e-07 | 4.5836e-07 | PASS |
+| c | 2.5768e-12 | 5.8657e-12 | 5.7320e-07 | 1.2746e-06 | PASS |
+| u_t | 1.2175e-11 | 2.9175e-11 | 4.7424e-05 | 7.0192e-05 | PASS |
+| w_t | 2.0684e-09 | 6.4487e-09 | 7.0120e-06 | 1.3815e-05 | PASS |
+| theta_t | 7.6360e-08 | 1.9599e-07 | 7.6447e-05 | 1.4053e-04 | FAIL |
+| c_t | 1.5899e-10 | 3.7632e-10 | 1.1682e-04 | 2.7029e-04 | PASS |
+
+Семь компонентов проходят. `theta_t` проходит L2, но relative max=1.4053e-4
+превышает1e-4: **SHORT_SPATIAL_CHECK=PARTIAL**. u,c и их скорости проверяются
+по1e-3; w,theta и их скорости по1e-4. Малые поля не исключены, floor не повышен.
+Полные таблицы содержат absolute, own-scale relative и fixed-physical-scale
+differences для всех8 components; initial projection uncertainty сохранена отдельно.
+
+Временной контроль **p64 tight → p64 allowed_extra**:
+
+| Component | relative L2 | relative max | Gate |
+| --- | ---: | ---: | --- |
+| u | 4.5441e-11 | 2.4073e-10 | PASS |
+| w | 8.9988e-13 | 5.9688e-12 | PASS |
+| theta | 5.9839e-11 | 6.4189e-11 | PASS |
+| c | 4.1609e-10 | 1.0028e-09 | PASS |
+| u_t | 6.4052e-08 | 3.5498e-07 | PASS |
+| w_t | 1.4266e-09 | 1.1260e-08 | PASS |
+| theta_t | 1.8013e-08 | 9.4839e-08 | PASS |
+| c_t | 1.7072e-07 | 1.8392e-06 | PASS |
+
+Все8 проходят; это temporal evidence только для данного short interval и
+выбранной задачи. Spatial theta_t difference заметно больше temporal uncertainty.
+Ни один short result не объявляется full5T1 convergence или доказательством
+сходимости непрерывной PDE.
+
+Для каждого run используется собственная initial semidiscrete quartic-action
+energy, около1.25973835e-9; old energy не выравнивается. Max relative energy
+ drift:3.129e-13 /3.065e-13 /4.728e-14, против criterion1e-6. Общий lower bound
+relative mass≥0.9999907955, min(1+c)≥0.9999953978, condition upper bound≤1.0000092046.
+Прежние bounds для c,theta,u_s,w_s,curvature соблюдены; max|c|≈4.603e-6,
+max|theta|≈0.007484, max L|theta_s|≈0.06844. Mass positivity подтверждается
+weighted-Gram Loewner bounds без новых eigensolves. Energy не используется
+для классификации или correction траектории и не доказывает spatial convergence.
+
+### 16.4. Practical assessment, результаты и остановка
+
+Метод практически рассчитывает это подготовленное short движение:3/3 complete
+runs, содержательные two-p/time comparisons и невысокая стоимость. Само по себе
+это не обосновывает замену базиса или physical model. Оно даёт практическое
+основание рассматривать этот метод далее, **если будет отдельно выбрана новая
+задача**, но требуемая strict accuracy сейчас не заявляется.
+
+До/после изменён только numerical initial representation и optional explicit-q0
+API прежнего runner; его default projection сохранена. Добавлено сохранение
+actual prefix при numerical/safety failure и внутренних dt. Model/RHS/Jacobian,
+V0, inertia, BC, quadrature и time prescriptions неизменны. Это не очередная
+RHS-оптимизация и не корректировка measured residual. Old/new comparisons здесь
+не объявляются quantitative speedup или isolated proof одного механизма:
+старый recovery использовал другую initial задачу, spatial pair и time settings.
+
+Charged numerical work≈53.49s из900s; local precision/preparation≈21.90s из180s;
+три интегрирования суммарно17.342s. Повторный compute, report-only и plot-only
+используют сохранённый cache и выполняют0 ODE/BVP/eigen/history evaluations.
+Новых integrations в tests нет; real integration evidence исходит ровно из3 runs.
+
+Новый bundle: `results/planar_prepared_feasibility/284a4039177391d1/`.
+В нём: manifests/hashes, immutable-source links, precision ladder и reproducible
+read-only local probes, до/после projection rows, decimal/raw/whitened coefficients,
+pre-run policy/strict table, общий physical target, actual short histories,
+internal dt/counters, all8 spatial/temporal CSV/JSON, energy/safety, execution
+source snapshots и3 diagnostic PDF/PNG figures:
+`initial_projection_before_after`, `prepared_short_trajectories`, `prepared_short_energy`.
+
+```powershell
+python scripts/analysis/prepare_planar_initial_state.py --compute --feasibility
+python scripts/analysis/prepare_planar_initial_state.py --report-only results/planar_prepared_feasibility/284a4039177391d1
+python scripts/analysis/prepare_planar_initial_state.py --plot-only results/planar_prepared_feasibility/284a4039177391d1
+```
+
+Новый [config](../../data/input/planar_prepared_feasibility.json) отделён от
+старого strict preparation config. Local precision evidence — generated input;
+его отсутствие не запускает повтор старых BVP/spectra/histories. Primary claims
+фиксируются в этой tracked note, а не только в ignored results.
+
+| Continuation status | Result |
+| --- | --- |
+| NLSP_PROJECTION_ARITHMETIC_AUDIT | COMPLETED |
+| NLSP_NUMERICAL_REPRESENTATION_FIX | PASS |
+| NLSP_STRICT_INITIAL_VERIFICATION | PARTIAL |
+| NLSP_PREPARED_FEASIBILITY_RUN | COMPLETED_EXPLORATORY_NOT_CERTIFIED |
+| NLSP_PREPARED_SHORT_SPATIAL_CHECK | PARTIAL |
+| NLSP_PREPARED_SHORT_TEMPORAL_CHECK | PASS |
+
+Нерешены strict float64 identity gate и требуемый spatial max-критерий theta_t;
+продолжение на больших временах/других p этим этапом не выбрано. Не объявлена
+exact periodic orbit или out-of-plane stability. Исторический zero-u/c PARTIAL,
+LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION и angular same-clamp
+reference UNAVAILABLE сохранены. Нет новых amplitudes, full5T1, slope constraints,
+physical corrections, filtering, FEM, joint/Floquet study или нового V0. Остановка.
+
+
+### 16.5. Verification и preservation этого continuation
+
+Адресный combined regression: **202 PASS,2 historical strict XFAIL,7 intentionally
+ deselected**,16.24s. Три прежних real ODE tests,3 family-frequency recomputations
+и1 mixed runtime/eigen control исключены; realODE entry points заблокированы
+во всём test run. Новые tests также отдельно проверяют exact-input polynomial
+projection/jets, frozen evaluator/Theta3, explicit-q0/default AST equivalence,
+policy только для initial coefficients, separate strict/exploratory admission,
+own precision manifests и actual3-run metadata. Historical relative XFAIL
+остаётся FAIL на неизменённых float64 данных; искусственный PASS не поставлен.
+Тестовый prepared helper suite дополнительно имеет49 PASS в новом lightweight
+subset; повторных integration controls в tests нет.
+
+Проверены matching feasibility compute, report-only и plot-only с forbidden
+ODE/BVP/eigen/preparation routes: все имеют нулевые numerical counters,
+deterministic figure hashes сохранены. Уникальное coverage обеих precision
+levels, обоих p и двух states проверено независимо. Пройдены731 relative links
+и281 fragments изменённых документов; новые NLSP-D06/K06 anchors уникальны.
+`git diff --check` проходит.
+
+HEAD `f60f14370713f84b9ada09ce83dae2d1357ec24f` и staging index сохранены.
+Проверены683 исходных tracked hashes;666 файлов неизменны,17 изменённых файлов
+находятся в разрешённой numerical/documentation области; добавлен один новый
+feasibility config. Frozen model/RHS/Jacobian/old inputs/reference bundles и
+старые D/K/text prefixes canonical note сохранены. README/CHANGELOG обновлены
+из-за нового explicit user mode; source index/BibTeX и assumptions не менялись:
+новой физической assumption нет. Обновлённые memory entries только NLSP-D06/K06;
+новый научный этап не выбран.

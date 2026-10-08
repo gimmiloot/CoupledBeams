@@ -4,7 +4,14 @@ CoupledBeams is a research repository for frequency models and computations for 
 
 ## Project Layout
 
-- [Prepared planar initial-state audit](docs/theory/planar_prepared_initial_state.md)
+- [Prepared-state short feasibility](docs/theory/planar_prepared_initial_state.md#prepared-precision-feasibility)
+  -- explicit `python scripts/analysis/prepare_planar_initial_state.py --compute --feasibility`
+  completes three0.1T1 controls using the same frozen physical initial state.
+  Initial representation passes; strict strong/weak remains PARTIAL. Runs are
+  EXPLORATORY_NOT_CERTIFIED, temporal comparison PASS, spatial comparison PARTIAL.
+  Report/plot-only and matching compute read cached evidence without new ODE.
+
+- [Historical prepared planar initial-state audit](docs/theory/planar_prepared_initial_state.md)
   -- constant/second-harmonic profiles from saved spectra, a common O2 initial
   state and a checked cubic endpoint correction. The original zero-axial
   case remains separate. Preparation passes; the permitted nonlinear pairs

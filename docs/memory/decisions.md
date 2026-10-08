@@ -845,3 +845,41 @@ strong/weak2e-12 check приp48/p64 также остаётся нерешён�
 изменению basis/IC rule/V0/BC, full5T1, угловой динамике или Floquet.
 LONG CLOSED, EB/RLB-KV PAUSED и angular same-clamp reference UNAVAILABLE
 сохраняются; следующий научный этап данным результатом не выбран.
+
+## NLSP-D06
+
+**Разрешён bounded precision/feasibility control**, 2026-10-08, после
+[NLSP-D05](#nlsp-d05)/[NLSP-K05](knowledge.md#nlsp-k05). Пользователь отдельно
+разрешил проверить numerical representation и выполнить не более трёх
+short nonlinear controls p48/p64 на 0…0.1T1; прежняя остановка D05 сохраняется
+как история, а не запрет нового явно выбранного задания.
+
+**Почему / scope:** отделить projection arithmetic от approximation error
+и проверить практическую реализуемость короткого расчёта. Общая physical
+initial function заморожена по сохранённым p96 U_star,C_star, analytic bending
+omega/eigenpair и одной Theta3 из прежнего prepared bundle. Новые BVP/eigenpair,
+Theta3 на каждом p, V0/model/mass/RHS/coefficients, basis и external BC не вводятся.
+Старая zero-u/c задача и её PARTIAL не подменяются другим initial case.
+
+**Принято до ODE:** одна `common_endpoint_constrained_L2` projection для всех
+четырёх полей и обоих p. Это ближайшее L2 initial representation с сохранением
+first/second endpoint jets общего frozen evaluator; последующие trial/test
+spaces и dynamics не получают slope/derivative constraints. Точность проверяется
+по исходным1e-6 norms/jets, с 40/70-digit analytic/poly reevaluation.
+
+**Ограничения / qualification:** общий numerical wall budget 900s, local
+precision budget 180s, максимум 3 short integrations: p48 tight, p64 tight,
+p64 allowed_extra; unchanged trajectory/energy gates. При unresolved strict
+relative action identity разрешён только явно exploratory feasibility route
+с независимым precision evidence, без `state.admitted=True` и без полного
+verification PASS. Фактический результат — [NLSP-K06](knowledge.md#nlsp-k06).
+
+**Основание / provenance:** новое прямое задание пользователя, 2026-10-08;
+main HEAD `f60f14370713f84b9ada09ce83dae2d1357ec24f`, без supervisor approval.
+[Canonical continuation](../theory/planar_prepared_initial_state.md#prepared-precision-feasibility),
+[configuration](../../data/input/planar_prepared_feasibility.json).
+**Остановка / пересмотр:** после bounded report остановиться. Не выбирать
+автоматически full 5T1, другой p/basis/IC/model, angular/Floquet/out-of-plane
+динамику, новые amplitudes или иное scientific direction. LONG CLOSED,
+EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION и angular same-clamp reference
+UNAVAILABLE сохраняются; исторические D/K записи не переписываются.

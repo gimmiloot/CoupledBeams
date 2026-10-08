@@ -20,7 +20,20 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
-## Prepared planar initial-state audit
+## Prepared-state precision / numerical feasibility
+
+Explicit `prepare_planar_initial_state.py --compute --feasibility` completes
+three0.1T1 short trajectories of one frozen common target with the existing
+Radau/variable-mass solver. Common initial-only endpoint-L2 representation
+passes1e-6 at p48/p64; float64 relative strong/weak2e-12 remains FAIL despite
+independent MP quadrature explanation. Strict verification PARTIAL is distinct
+from **COMPLETED_EXPLORATORY_NOT_CERTIFIED**. Temporal8/8 PASS; spatial7/8
+PARTIAL, theta_t max1.405e-4>1e-4. See the
+[tracked continuation](../docs/theory/planar_prepared_initial_state.md#prepared-precision-feasibility).
+The prior historical audit and old zero-u/c PARTIAL remain unchanged; no new
+scientific extension is selected. Cached compute/report/plot runs zero-ODE.
+
+## Historical prepared planar initial-state audit
 
 `prepare_planar_initial_state.py` completes the profile/compatibility audit,
 with separate **NLSP_PREPARED_INITIAL_STATE_PILOT=PARTIAL**. The constant and

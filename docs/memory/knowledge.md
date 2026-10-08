@@ -1490,3 +1490,50 @@ BC/basis/coefficients и не наложила externalforcing/quasistaticc cons
 Matching compute/report/plot используютcache без BVP/eigen/history/ODE work.
 Нет automatic continuation. LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION,
 angular same-clamp out-of-plane reference UNAVAILABLE сохраняются.
+
+## NLSP-K06
+
+**Bounded prepared-state feasibility — exploratory, spatial PARTIAL**,
+2026-10-08, по [NLSP-D06](decisions.md#nlsp-d06),
+[canonical continuation](../theory/planar_prepared_initial_state.md#prepared-precision-feasibility).
+`NLSP_NUMERICAL_REPRESENTATION_FIX=PASS`;
+`NLSP_STRICT_INITIAL_VERIFICATION=PARTIAL`;
+`NLSP_PREPARED_FEASIBILITY_RUN=COMPLETED_EXPLORATORY_NOT_CERTIFIED`.
+
+**Projection evidence:** high-precision reevaluation сохранённых analytic/
+polynomial inputs с exact Gram отделяет arithmetic от approximation. P48
+сохраняет настоящий unconstrained endpoint approximation error; p64 bending
+jet amplification связано с малыми essential-value residuals сохранённого
+analytic eigenpair, а не устраняется одной точностью Gram sums. Один общий
+initial-only constrained L2 rule сохраняет immutable physical evaluator и
+Theta3; all four fields, derivatives 0/1/2 и endpoint jets проходят 1e-6
+при p48 и p64. Ни filtering, ни дополнительные динамические BC не вводились.
+
+**Action qualification:** прежний float-Gauss relative strong/weak criterion
+2e-12 остаётся FAIL (около1.14e-11/4.31e-11), absolute criterion PASS.
+MP45/70 переоценка quadrature nodes/weights даёт roundoff-scale identities,
+локализуя numerical moment/storage sensitivity. Frozen RHS и его квадратура
+не изменены, strict threshold не ослаблен; `state.admitted=False` и явная
+exploratory label сохранены. Это не доказанная ошибка physical action.
+
+**Фактические trajectories:** все 3 разрешённых short controls достигли
+0.1T1, около1.979116259. Temporal comparison проходит все 8 component gates.
+Spatial p48→p64:7 из8 components проходят; theta_t max relative difference
+около1.4053e-4 выше1e-4, хотя её L2 gate проходит. Energy drift и mass/safety
+проходят; temporal PASS не заменяет spatial PASS. Нормы используются без
+phase/amplitude matching; maxima sampled, output spacing не является
+независимым доказательством time accuracy.
+
+**Следствие / предел claim:** короткая практическая finite-dimensional
+feasibility подтверждена, полная strict numerical verification и short spatial
+convergence не установлены. Это не full 5T1 evidence, continuous-PDE validation,
+periodic orbit или out-of-plane/stability результат. Prepared case не решает
+исходную zero-u/c задачу и не повышает её nonlinear PARTIAL; единственная причина
+всей spatial difficulty не доказана. Дальнейшее решение отдельно.
+
+**Стоимость / preservation:** около 53.49s charged numerical work из 900s,
+из них 17.34s ODE, local precision около 21.90s из 180s; 3 ODE, 0 eig/BVP.
+Исторические bundles/manifests и D05/K05 сохранены; первичное изложение — tracked
+canonical note, raw bundle служит дополнительным основанием. LONG CLOSED,
+EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp reference UNAVAILABLE;
+никакой следующий этап автоматически не выбран.

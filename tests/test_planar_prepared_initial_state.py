@@ -7,6 +7,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -23,9 +24,11 @@ ROOT = Path(__file__).resolve().parents[1]
 SPECTRAL = ROOT/"results/planar_second_order_axial_response/b3ea4eb6ac95d6e1"
 PILOT = ROOT/"results/weakly_nonlinear_planar_time_pilot/c97287772bc461ef"
 RECOVERY = ROOT/"results/weakly_nonlinear_planar_recovery/054874a4a4c9c9ff"
+PREPARED = ROOT/"results/planar_prepared_initial_state/5ea8d41faf8ede54"
+BASELINE_HEAD = "f60f14370713f84b9ada09ce83dae2d1357ec24f"
 FROZEN = {
     "scripts/lib/weakly_nonlinear_spatial_rod.py": "aabc5a8657e56061df3d1c86f70801ad8fc0f1f355bc1f659f24ee62950a71f2",
-    "scripts/analysis/simulate_weakly_nonlinear_planar_rod.py": "333beed99948d8336dc4bdb5683d9991de684f9f1ba53ed9a1484a523b453759",
+    "scripts/lib/weakly_nonlinear_planar_dynamics.py": "eea98b77babcb4ed840e325efb270f37a68c32cff1d20ededf43c9989defc548",
 }
 ROUND_OFF = 2e-11
 
@@ -343,14 +346,21 @@ def test_profile_policy_preserves_old_trajectory_acceptance(pilot_config):
     assert config["nonlinear_policy"]["maximum_integrations"] == 3
 
 
-def test_test_module_does_not_call_any_integrator_or_eigendecomposition():
+def test_test_module_has_only_documented_zero_duration_mock_initializer_call():
     tree = ast.parse(Path(__file__).read_text(encoding="utf8"))
-    forbidden = {"solve_ivp", "Radau", "integrate_case", "eigh", "eig", "eigvals"}
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Call):
-            name = node.func.id if isinstance(node.func, ast.Name) else (
-                node.func.attr if isinstance(node.func, ast.Attribute) else None)
-            assert name not in forbidden
+    forbidden = {"solve_ivp", "Radau", "eigh", "eig", "eigvals"}
+    calls = []
+    for outer in tree.body:
+        for node in ast.walk(outer):
+            if isinstance(node, ast.Call):
+                name = node.func.id if isinstance(node.func, ast.Name) else (
+                    node.func.attr if isinstance(node.func, ast.Attribute) else None)
+                assert name not in forbidden
+                if name == "integrate_case":
+                    calls.append(getattr(outer, "name", None))
+    # One forwarding unit test adapter calls a patched, already-finished
+    # initializer at t0=t_end=0. It never advances or evaluates an ODE.
+    assert calls == ["_mock_initializer_call"]
 
 
 
@@ -544,11 +554,11 @@ def test_physical_profiles_are_copied_and_readonly_not_mutated_to_fit_projection
 
 
 def test_current_result_blocks_both_allowed_pairs_when_any_field_jet_is_unresolved():
-    folder = ROOT/"results/planar_prepared_initial_state"
-    candidates = sorted(folder.glob("*/summary.json"), key=lambda path: path.stat().st_mtime, reverse=True)
-    if not candidates:
-        pytest.skip("Prepared admission result is not locally available")
-    summary = _read(candidates[0])
+    path = PREPARED/"summary.json"
+    if not path.is_file():
+        pytest.skip("Historical prepared admission result is not locally available")
+    assert _sha(path) == _read(PREPARED/"manifest.json")["artifact_hashes"]["summary.json"]
+    summary = _read(path)
     if "projection" not in summary:
         pytest.skip("Profile preparation stopped before projection stage")
     projection, decision = summary["projection"], summary["pre_run_decision"]
@@ -649,12 +659,11 @@ def test_common_state_relative_action_weak_gate_remains_unresolved_when_recorded
 
 
 def test_recorded_auxiliary_p96_failure_is_preserved_as_a_qualification():
-    folder = ROOT/"results/planar_prepared_initial_state"
-    paths = sorted(folder.glob("*/auxiliary_weak_identity.json"),
-                   key=lambda path: path.stat().st_mtime, reverse=True)
-    if not paths:
-        pytest.skip("Read-only auxiliary numerical check not available")
-    record = _read(paths[0])
+    path = PREPARED/"auxiliary_weak_identity.json"
+    if not path.is_file():
+        pytest.skip("Historical auxiliary numerical check not available")
+    assert _sha(path) == _read(PREPARED/"manifest.json")["artifact_hashes"]["auxiliary_weak_identity.json"]
+    record = _read(path)
     assert record["same_common_p96_initial_evaluator"] is True
     assert record["ODE_integrations"] == record["mh_timoshenko_eigensolves"] == 0
     rows = {row["p"]: row for row in record["rows"]}
@@ -742,3 +751,623 @@ def test_expired_preparation_budget_saves_partial_before_restoring_models(
     assert summary["statuses"]["NLSP_PREPARED_SHORT_TEMPORAL_CHECK"] == "NOT_RUN"
     assert (tmp_path/"budget_stop/periodic_checks.json").is_file()
 
+
+
+# Bounded precision / exploratory short-control continuation.  The historical
+# 5ea relative weak/action XFAILs above remain tied to that earlier DP projection.
+@pytest.fixture(scope="module")
+def frozen_prepared_state():
+    if not (PREPARED/"manifest.json").is_file():
+        pytest.skip("Frozen prepared target is absent; no target is regenerated")
+    return prep.load_frozen_prepared_state(PREPARED)
+
+
+def test_frozen_target_loader_does_not_refit_profiles_theta3_or_source_eigenpair(monkeypatch):
+    if not (PREPARED/"manifest.json").is_file():
+        pytest.skip("Frozen physical target absent")
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Target loading must not solve or refit anything")
+    monkeypatch.setattr(prep, "periodic_parts", forbidden)
+    monkeypatch.setattr(prep, "quintic_theta3", forbidden)
+    monkeypatch.setattr(leading, "background_from_pilot", forbidden)
+    state, coeff, provenance = prep.load_frozen_prepared_state(PREPARED)
+    summary = _read(PREPARED/"summary.json")
+    with np.load(PREPARED/"common_initial_state.npz", allow_pickle=False) as saved:
+        np.testing.assert_array_equal(state.profiles.coefficients, saved["U_C_legendre"])
+        np.testing.assert_array_equal(state.correction.eta_power_coefficients, saved["theta3_eta_power"])
+    np.testing.assert_array_equal(state.background.normalized_coefficients,
+                                  summary["background"]["normalized_analytic_coefficients"])
+    assert state.background.omega == summary["background"]["omega1"]
+    assert coeff.values() == summary["coefficients"]
+    assert state.admitted is False
+    assert provenance["regenerated_profiles"] is False
+    assert provenance["regenerated_Theta3"] is False
+    assert provenance["new_eigendecompositions"] == 0
+    assert provenance["manifest_sha256"] == _sha(PREPARED/"manifest.json")
+
+
+@pytest.mark.parametrize("artifact", ("summary.json", "common_initial_state.npz"))
+def test_frozen_target_loader_rejects_each_corrupt_physical_input(tmp_path, artifact):
+    if not PREPARED.is_dir():
+        pytest.skip("Frozen physical target absent")
+    for name in ("manifest.json", "summary.json", "common_initial_state.npz"):
+        (tmp_path/name).write_bytes((PREPARED/name).read_bytes())
+    (tmp_path/artifact).write_bytes((tmp_path/artifact).read_bytes()+b"corrupt")
+    with pytest.raises(ValueError, match="artifact hash mismatch"):
+        prep.load_frozen_prepared_state(tmp_path)
+
+
+@pytest.fixture(scope="module")
+def dyadic_projection_checks():
+    # Independent finite polynomial fixture, not a refit of the common state.
+    source = np.array([.125, -.25, -.0625, .28125, -.0625, -.03125])
+    return source, {policy: prep.project_saved_legendre(source, 8, length=.75, policy=policy, dps=40)
+                    for policy in (prep.UNCONSTRAINED_PROJECTION, prep.CONSTRAINED_PROJECTION)}
+
+
+@pytest.mark.parametrize("policy", (prep.UNCONSTRAINED_PROJECTION, prep.CONSTRAINED_PROJECTION))
+def test_exact_essential_zero_polynomial_is_reproduced_in_full_shen_space(dyadic_projection_checks, policy):
+    source, records = dyadic_projection_checks
+    projected = records[policy]
+    assert projected["raw"].shape == (7,)  # all p-1 spatial functions retained
+    assert projected["legendre"].shape == (9,)
+    np.testing.assert_allclose(projected["legendre"][:len(source)], source, atol=2e-16, rtol=0)
+    np.testing.assert_allclose(projected["legendre"][len(source):], 0., atol=2e-38, rtol=0)
+    assert np.max(abs(projected["mp_endpoint_error"])) < 2e-36
+    np.testing.assert_array_equal(projected["source_jets"][0], 0.)
+
+
+@pytest.mark.parametrize("derivative", (0, 1, 2))
+def test_analytic_projection_jets_match_independent_legendre_derivatives(dyadic_projection_checks, derivative):
+    source, records = dyadic_projection_checks
+    length = .75
+    independently = leg.legval([-1., 1.], leg.legder(source, m=derivative))*(2/length)**derivative
+    for projected in records.values():
+        np.testing.assert_allclose(projected["source_jets"][derivative], independently,
+                                   rtol=2e-15, atol=2e-15)
+
+
+def test_initial_projection_endpoint_rule_preserves_full_target_tail_not_filtering():
+    source = np.zeros(15)
+    source[:6] = [.125, -.25, -.0625, .28125, -.0625, -.03125]
+    source[12], source[14] = 1e-9, -1e-9
+    saved = source.copy()
+    ordinary = prep.project_saved_legendre(source, 8, policy=prep.UNCONSTRAINED_PROJECTION, dps=40)
+    common = prep.project_saved_legendre(source, 8, policy=prep.CONSTRAINED_PROJECTION, dps=40)
+    np.testing.assert_array_equal(source, saved)
+    np.testing.assert_array_equal(common["source_jets"], ordinary["source_jets"])
+    # Source tail is beyond p=8, yet its endpoint derivative remains in target.
+    assert np.max(abs(ordinary["mp_endpoint_error"][2])) > 1e-6
+    assert np.max(abs(common["mp_endpoint_error"][1:])) < 2e-34
+    assert common["raw"].shape == ordinary["raw"].shape == (7,)
+    assert np.linalg.norm(common["raw"]-ordinary["raw"]) > 0
+
+
+def test_constraint_applies_only_to_initial_representation_not_future_test_space(dyadic_projection_checks):
+    _, records = dyadic_projection_checks
+    common = records[prep.CONSTRAINED_PROJECTION]
+    future = common["legendre"].copy()
+    # This is one of the original essential-zero Shen test functions B_6.
+    # Its endpoint first/second derivatives are not excluded from later motion.
+    future[6] += 1e-5
+    future[8] -= 1e-5
+    np.testing.assert_allclose(leg.legval([-1., 1.], future), 0., rtol=0, atol=2e-16)
+    original = leg.legval([-1., 1.], leg.legder(common["legendre"]))
+    assert np.linalg.norm(leg.legval([-1., 1.], leg.legder(future))-original) > 1e-5
+
+
+def test_representation_does_not_erase_saved_essential_value_roundoff():
+    source = np.array([.125, -.25, -.0625, .28125, -.0625, -.03125])
+    source[0] += 2**-40
+    result = prep.project_saved_legendre(source, 8, policy=prep.CONSTRAINED_PROJECTION, dps=40)
+    assert np.all(result["source_jets"][0] != 0)
+    np.testing.assert_allclose(result["projected_jets"][0], 0., atol=2e-38, rtol=0)
+    np.testing.assert_allclose(result["mp_endpoint_error"][0], -result["source_jets"][0],
+                               rtol=0, atol=2e-38)
+    assert np.max(abs(result["mp_endpoint_error"][1:])) < 2e-35
+
+
+@pytest.mark.parametrize("invalid", (np.array([np.nan]), np.array([np.inf]), np.zeros((2, 3))))
+def test_nonfinite_or_nonscalar_source_projection_is_rejected(invalid):
+    with pytest.raises(ValueError, match="Finite 1D"):
+        prep.project_saved_legendre(invalid, 8, dps=40)
+
+
+def test_projection_requires_explicit_recognized_policy():
+    with pytest.raises(ValueError, match="Unknown projection policy"):
+        prep.project_saved_legendre([1., 0., -1.], 8, policy="filter_tail", dps=40)
+    with pytest.raises(ValueError, match="p>=5"):
+        prep.project_saved_legendre([1., 0., -1.], 4, policy=prep.CONSTRAINED_PROJECTION, dps=40)
+
+
+def test_preserved_theta3_enters_common_source_directly_without_per_p_reconstruction(frozen_prepared_state):
+    state, _, _ = frozen_prepared_state
+    x = np.linspace(0., state.length, 53)
+    eps = .05
+    for derivative in (0, 1, 2):
+        actual = state.evaluate(x, eps, derivative, require_admitted=False)
+        background_part = eps*state.background.evaluate(x, derivative)[:, 1]
+        expected = background_part+eps**3*state.correction.evaluate(x, derivative)
+        np.testing.assert_array_equal(actual[:, 2], expected)
+    assert state.admitted is False
+    with pytest.raises(RuntimeError, match="not admitted"):
+        state.evaluate(x, eps)
+
+
+@pytest.fixture(scope="module")
+def historical_runner_ast():
+    # Read-only Git object access; no checkout and no working-tree mutation.
+    source = subprocess.run(
+        ["git", "show", BASELINE_HEAD+":scripts/analysis/simulate_weakly_nonlinear_planar_rod.py"],
+        cwd=ROOT, check=True, stdout=subprocess.PIPE).stdout.decode("utf8")
+    return ast.parse(source)
+
+
+def test_optional_initializer_keeps_all_other_old_runner_functions(historical_runner_ast):
+    current = ast.parse((ROOT/"scripts/analysis/simulate_weakly_nonlinear_planar_rod.py").read_text(encoding="utf8"))
+    before = {x.name:x for x in historical_runner_ast.body if isinstance(x, ast.FunctionDef)}
+    after = {x.name:x for x in current.body if isinstance(x, ast.FunctionDef)}
+    assert before.keys() == after.keys()
+    for name in before.keys()-{"integrate_case"}:
+        assert ast.dump(before[name], include_attributes=False) == ast.dump(after[name], include_attributes=False), name
+    manifest = _read(PREPARED/"manifest.json")
+    assert manifest["identity"]["code_hashes"]["scripts/analysis/simulate_weakly_nonlinear_planar_rod.py"] == (
+        "333beed99948d8336dc4bdb5683d9991de684f9f1ba53ed9a1484a523b453759")
+
+
+def test_default_initializer_preserves_old_operations_and_solver_after_failure_guards(historical_runner_ast):
+    current = ast.parse((ROOT/"scripts/analysis/simulate_weakly_nonlinear_planar_rod.py").read_text(encoding="utf8"))
+    old = next(x for x in historical_runner_ast.body if isinstance(x, ast.FunctionDef) and x.name=="integrate_case")
+    new = next(x for x in current.body if isinstance(x, ast.FunctionDef) and x.name=="integrate_case")
+    assert [x.arg for x in new.args.kwonlyargs] == ["initial_coordinates"]
+    assert ast.dump(new.args.kw_defaults[0]) == ast.dump(ast.Constant(None))
+    # Normalization erases only the explicitly authorized q0 alternate path
+    # and failure-preservation guards. Every prior mathematical operation,
+    # tolerance expression, solver argument and accepted-step expression stays.
+    branch = next(x for x in new.body if isinstance(x, ast.If))
+    assert ast.dump(branch.test) == ast.dump(ast.parse("initial_coordinates is None").body[0].value)
+    assert ast.dump(branch.body[0]) == ast.dump(old.body[1])
+    branch_index = new.body.index(branch)
+    new.body[branch_index:branch_index+1] = branch.body
+    rhs = next(x for x in new.body if isinstance(x, ast.FunctionDef) and x.name=="rhs")
+    guard = rhs.body.pop(0)
+    assert isinstance(guard, ast.If)
+    assert ast.dump(guard.test) == ast.dump(ast.parse("not np.all(np.isfinite(y))").body[0].value)
+    assert ast.dump(guard.body[0]) == ast.dump(ast.parse('raise ArithmeticError("NONFINITE_STATE")').body[0])
+    loop = next(x for x in new.body if isinstance(x, ast.While))
+    controlled = next(x for x in loop.body if isinstance(x, ast.Try))
+    assert not controlled.orelse and not controlled.finalbody
+    assert len(controlled.handlers) == 1 and isinstance(controlled.handlers[0].body[-1], ast.Break)
+    old_loop = next(x for x in old.body if isinstance(x, ast.While))
+    assert ast.dump(controlled.body[0]) == ast.dump(old_loop.body[2])
+    at = loop.body.index(controlled)
+    loop.body[at:at+1] = controlled.body
+    stats = next(x.value for x in new.body if isinstance(x, ast.Assign)
+                 and any(isinstance(t, ast.Name) and t.id=="stats" for t in x.targets))
+    extra = next(i for i,key in enumerate(stats.keys)
+                 if isinstance(key, ast.Constant) and key.value=="internal_time_steps")
+    assert ast.dump(stats.values[extra]) == ast.dump(ast.Name(id="steps",ctx=ast.Load()))
+    del stats.keys[extra]; del stats.values[extra]  # additional saved metadata only
+    new.args = old.args
+    assert ast.dump(new, include_attributes=False) == ast.dump(old, include_attributes=False)
+
+
+@pytest.fixture
+def mocked_initializer(monkeypatch):
+    from types import SimpleNamespace
+    from scripts.analysis import simulate_weakly_nonlinear_planar_rod as runner
+    observed = {"solver_calls":0, "projected":[], "shape_calls":0, "reset_calls":0}
+    def forbidden(*args, **kwargs):
+        raise AssertionError("An initializer-forwarding test must not step, sample or evaluate an ODE")
+    def project(values):
+        observed["projected"].append(np.asarray(values).copy())
+        return np.array([.11, .22, .33, .44])
+    disc = SimpleNamespace(ndof=4, p=2, nq=5, x=np.array([.25, .75]),
+        project=project, rhs=forbidden, jacobian=forbidden,
+        reset_counters=lambda:observed.update(reset_calls=observed["reset_calls"]+1),
+        counters=lambda:{"rhs":0,"jacobian":0})
+    settings = {"rtol":2e-10, "atol":np.ones(8)*1e-13,
+                "max_step":.01, "coordinate_scales":[1.,1.,1.,1.],
+                "velocity_scale_multiplier":1.}
+    def create_finished(fun,t0,y0,t_end,**kwargs):
+        assert t0 == t_end == 0.
+        observed["solver_calls"] += 1
+        observed["y0"] = y0.copy()
+        observed["settings"] = kwargs
+        return SimpleNamespace(status="finished",nfev=0,njev=0,nlu=0,
+                               step=forbidden,dense_output=forbidden)
+    def shape(points):
+        observed["shape_calls"] += 1
+        return np.ones((len(points),4))*3
+    monkeypatch.setattr(runner,"np",np,raising=False)
+    monkeypatch.setattr(runner,"Radau",create_finished,raising=False)
+    monkeypatch.setattr(runner,"time_settings",lambda *args:settings)
+    return runner, disc, shape, observed, settings
+
+
+def _mock_initializer_call(runner,disc,shape,**kwargs):
+    """Only initialization forwarding: patched finished solver, t_end=0."""
+    config = {"material_geometry":{"h":.05}, "safety":{}}
+    return runner.integrate_case(disc,shape,{},config,.05,"tight",
+                                 np.array([0.]),float("inf"),**kwargs)
+
+
+def test_old_initialization_default_still_projects_exact_old_fields_once(mocked_initializer):
+    runner,disc,shape,observed,settings = mocked_initializer
+    history,stats = _mock_initializer_call(runner,disc,shape)
+    assert observed["shape_calls"] == len(observed["projected"]) == observed["solver_calls"] == 1
+    np.testing.assert_array_equal(observed["projected"][0], .05*.05*np.ones((2,4))*3)
+    np.testing.assert_array_equal(history[0,:4], [.11,.22,.33,.44])
+    np.testing.assert_array_equal(history[0,4:], 0.)
+    assert stats["accepted_internal_steps"] == stats["nfev"] == stats["njev"] == stats["nlu"] == 0
+    np.testing.assert_array_equal(observed["settings"]["atol"],settings["atol"])
+
+
+def test_explicit_whitened_q0_is_copied_without_reprojection_or_readmission(mocked_initializer):
+    runner,disc,_,observed,_ = mocked_initializer
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Already prepared full coefficients must not be reconstructed/reprojected")
+    disc.project = forbidden
+    q0 = np.array([-.01,.02,.03,-.04])
+    history,stats = _mock_initializer_call(runner,disc,forbidden,initial_coordinates=q0)
+    np.testing.assert_array_equal(history[0,:4],q0)
+    np.testing.assert_array_equal(history[0,4:],0.)
+    q0[:] = 100.
+    np.testing.assert_array_equal(history[0,:4],[-.01,.02,.03,-.04])
+    np.testing.assert_array_equal(observed["y0"][:4],history[0,:4])
+    assert not observed["projected"]
+    assert stats["time_end"] == stats["target_time_end"] == 0.
+    assert stats["accepted_internal_steps"] == 0
+
+
+@pytest.mark.parametrize("invalid", (
+    np.zeros(3), np.zeros((1,4)), np.array([0.,0.,np.nan,0.]),np.array([0.,0.,np.inf,0.])))
+def test_explicit_initial_coordinates_reject_bad_vector_before_solver(mocked_initializer,invalid):
+    runner,disc,shape,observed,_ = mocked_initializer
+    with pytest.raises(ValueError,match="finite full-sized"):
+        _mock_initializer_call(runner,disc,shape,initial_coordinates=invalid)
+    assert observed["solver_calls"] == observed["shape_calls"] == len(observed["projected"]) == 0
+
+@pytest.fixture(scope="module")
+def saved_precision_evidence():
+    config_path = ROOT/"data/input/planar_prepared_feasibility.json"
+    if not config_path.is_file():
+        pytest.skip("Bounded precision configuration absent")
+    folder = ROOT/_read(config_path)["precision_evidence"]
+    if not (folder/"manifest.json").is_file():
+        pytest.skip("Saved precision evidence absent; it is not recomputed by tests")
+    manifest = _read(folder/"manifest.json")
+    for name,digest in manifest["artifact_hashes"].items():
+        assert _sha(folder/name) == digest
+    assert manifest["new_ODE_integrations"] == 0
+    return folder
+
+
+def test_saved_precision_proof_keeps_state_and_gate_fixed_without_new_bvp(saved_precision_evidence):
+    proof = _read(saved_precision_evidence/"nlsp_strong_weak_precision_20261008.json")
+    assert proof["input_hashes"]["source_manifest"] == _sha(PREPARED/"manifest.json")
+    assert proof["policy"]["same_float64_coefficient_state"] is True
+    assert proof["policy"]["whitening_matrices_held_as_exact_binary_float64"] is True
+    assert proof["policy"]["original_relative_gate"] == 2e-12
+    assert proof["ODE_integrations"] == proof["eigensolves"] == 0
+    for p in (48,64):
+        for state in ("initial_zero_velocity","previous_synthetic_velocity"):
+            rows = [row for row in proof["rows"] if row["p"]==p and row["state"]==state]
+            by_stage = {(row["stage"],str(row["precision"])):row for row in rows}
+            for stage,precision in (("frozen_runtime","float64"),
+                                    ("stored_arrays","45"),
+                                    ("rebuilt_basis_float_gauss","45")):
+                assert float(by_stage[(stage,precision)]["relative_residual"]) > 2e-12
+            r45 = float(by_stage[("refined_gauss","45")]["relative_residual"])
+            r70 = float(by_stage[("refined_gauss","70")]["relative_residual"])
+            assert r70 < r45 < 2e-12
+    # This is arithmetic localization, not acceptance of the old failed DP gate.
+    old = _read(PREPARED/"auxiliary_weak_identity.json")
+    assert all(not row["relative_pass"] for row in old["rows"] if row["p"] in (48,64))
+
+
+@pytest.mark.parametrize("p", (48,64))
+def test_saved_initial_representation_precision_reproducible_with_one_common_target(saved_precision_evidence,p):
+    proof = _read(saved_precision_evidence/"prepared_precision_projection_20261008.json")
+    assert proof["provenance"]["manifest_sha256"] == _sha(PREPARED/"manifest.json")
+    assert proof["provenance"]["regenerated_profiles"] is False
+    assert proof["provenance"]["regenerated_Theta3"] is False
+    options = proof["cases"][str(p)]
+    ordinary,common = options[prep.UNCONSTRAINED_PROJECTION],options[prep.CONSTRAINED_PROJECTION]
+    np.testing.assert_array_equal(ordinary["source_jets"],common["source_jets"])
+    for variant in (ordinary,common):
+        assert variant["new_ODE_integrations"] == variant["new_eigendecompositions"] == 0
+        assert variant["same_trial_test_space"] is True
+        assert variant["40_70_raw_relative_difference"] < 2e-12
+        assert variant["40_70_endpoint_absolute_difference"] < 2e-12
+    assert all(max(row["relative_L2"],row["relative_max"],row["endpoint_fixed_scaled_error"]) <= 1e-6
+               for row in common["rows"])
+    assert len(common["rows"]) == 12
+    assert {row["field"] for row in common["rows"]} == {"u","w","theta","c"}
+    assert np.max(abs(np.asarray(common["source_essential_values"]))) > 0.
+
+
+def test_saved_precision_mechanism_distinguishes_arithmetic_and_source_roundoff(saved_precision_evidence):
+    proof = _read(saved_precision_evidence/"prepared_precision_synthetic_mechanism_20261008.json")
+    for p in ("48","64"):
+        ordinary = proof["synthetic"][p][prep.UNCONSTRAINED_PROJECTION]
+        common = proof["synthetic"][p][prep.CONSTRAINED_PROJECTION]
+        assert ordinary["quintic_endpoint_error"] < 2e-12
+        assert common["quintic_endpoint_error"] < 2e-12
+        assert ordinary["perturbed_second_endpoint_unresolved"] > 1e-6
+        assert common["perturbed_second_endpoint_unresolved"] < 2e-12
+        assert ordinary["perturbed_low_profile_change"] == 0.
+        assert common["perturbed_low_profile_change"] > 0.  # constrained L2, no tail filter
+    for row in proof["essential_roundoff_mechanism"]:
+        assert np.max(abs(np.asarray(row["original_source_essential_values"]))) > 0.
+        assert "diagnostic subtraction only" in row["qualification"]
+        assert "actual frozen state" in row["qualification"]
+
+
+@pytest.mark.parametrize("failed", (False,True))
+def test_feasibility_authorization_retains_failed_strict_rows_and_does_not_admit_state(frozen_prepared_state,failed):
+    from scripts.analysis import prepare_planar_initial_state as cli
+    state,_,_ = frozen_prepared_state
+    strict = [{"p":48,"check":"projection","pass":True,"tolerance":1e-6},
+              {"p":64,"check":"strong_weak","pass":not failed,"tolerance":2e-12}]
+    preserved = json.loads(json.dumps(strict))
+    mode = cli.authorize_feasibility(strict,{"positive_mass":True,"finite_RHS":True},True)
+    assert mode == ("EXPLORATORY_NOT_CERTIFIED" if failed else "STRICT_ADMITTED")
+    assert strict == preserved
+    assert state.admitted is False
+
+
+@pytest.mark.parametrize("basic,evidence", (
+    ({"finite_RHS":False,"positive_mass":True},True),
+    ({"finite_RHS":True,"positive_mass":False},True),
+    ({"finite_RHS":True,"positive_mass":True},False),
+))
+def test_exploratory_authorization_cannot_cover_unexplained_basic_inconsistency(basic,evidence):
+    from scripts.analysis import prepare_planar_initial_state as cli
+    with pytest.raises(ArithmeticError,match="BLOCKED_BY_UNEXPLAINED_INCONSISTENCY"):
+        cli.authorize_feasibility([{"pass":False}],basic,evidence)
+
+
+def test_feasibility_configuration_is_bounded_and_preserves_thresholds():
+    from scripts.analysis import prepare_planar_initial_state as cli
+    config = _read(cli.FEASIBILITY_CONFIG)
+    assert config["prepared_bundle"] == str(PREPARED.relative_to(ROOT)).replace(chr(92),"/")
+    assert config["degrees"] == [48,64]
+    assert config["cases"] == [[48,"tight"],[64,"tight"],[64,"allowed_extra"]]
+    assert config["short_periods"] == .1
+    assert config["amplitude_over_h"] == .05
+    assert config["projection_policy"] == prep.CONSTRAINED_PROJECTION
+    assert config["projection_dps"] == [40,70]
+    assert config["strict_identity_relative"] == 2e-12
+    assert config["profile_policy"]["relative_tolerance"] == config["profile_policy"]["endpoint_tolerance"] == 1e-6
+    assert config["budget"]["numerical_wall_seconds"] == 900
+    assert config["budget"]["local_precision_seconds"] == 180
+    assert config["budget"]["maximum_integrations"] == 3
+    assert config["semantics"]["initial_rule_is_not_boundary_condition"] is True
+    assert config["semantics"]["initial_endpoint_derivatives_not_dynamic_constraints"] is True
+    assert config["semantics"]["all_coordinates_retained"] is True
+
+
+@pytest.mark.parametrize("changed", ("projection","precision","time_level","source"))
+def test_feasibility_identity_invalidates_each_representation_time_or_physical_target_change(tmp_path,changed):
+    from scripts.analysis import prepare_planar_initial_state as cli
+    config = _read(cli.FEASIBILITY_CONFIG)
+    source = tmp_path/"config.json"
+    cli.write_json(source,config)
+    before,_ = cli.feasibility_identity(source)
+    if changed=="projection":config["projection_policy"]=prep.UNCONSTRAINED_PROJECTION
+    elif changed=="precision":config["projection_dps"]=[45,70]
+    elif changed=="time_level":config["cases"][-1][1]="tight"
+    else:
+        replacement = tmp_path/"other_frozen_target"
+        replacement.mkdir()
+        manifest = _read(PREPARED/"manifest.json")
+        manifest["test_fixture_changed_target"] = True
+        cli.write_json(replacement/"manifest.json",manifest)
+        config["prepared_bundle"]=str(replacement)
+    cli.write_json(source,config)
+    after,item = cli.feasibility_identity(source)
+    assert before != after
+    assert item["config"] == config
+
+
+def _synthetic_feasibility_cache(folder,item):
+    from scripts.analysis import prepare_planar_initial_state as cli
+    folder.mkdir(parents=True)
+    rows=[{"field":field,"derivative":d,"relative_L2":1e-8,"relative_max":1e-8,
+           "endpoint_fixed_scaled_error":1e-8}
+          for d in (0,1,2) for field in ("u","w","theta","c")]
+    summary={"schema":"nlsp-prepared-feasibility-v1","synthetic_fixture":True,
+        "statuses":{"NLSP_STRICT_INITIAL_VERIFICATION":"PARTIAL",
+                    "NLSP_PREPARED_FEASIBILITY_RUN":"COMPLETED_EXPLORATORY_NOT_CERTIFIED"},
+        "new_ODE_integrations":3,"new_eigendecompositions":0,
+        "execution_mode":"EXPLORATORY_NOT_CERTIFIED","state_admitted_flag":False,
+        "original_projection":{str(p):{"rows":rows} for p in (48,64)},
+        "projection":{str(p):{"rows":rows} for p in (48,64)}}
+    cli.write_json(folder/"summary.json",summary)
+    cli.write_json(folder/"manifest.json",cli.manifest_for(folder,item))
+    return summary
+
+
+@pytest.mark.parametrize("action", ("compute","report-only","plot-only"))
+def test_cached_feasibility_entrypoints_never_repeat_preparation_precision_or_three_controls(
+        tmp_path,monkeypatch,capsys,action):
+    from scripts.analysis import prepare_planar_initial_state as cli
+    from scripts.analysis import simulate_weakly_nonlinear_planar_rod as runner
+    item={"synthetic_cache":"feasibility-v1"}
+    bundle=tmp_path/"output"/"fixture"
+    expected=_synthetic_feasibility_cache(bundle,item)
+    def forbidden(*args,**kwargs):
+        raise AssertionError("Cached feasibility may only read saved data")
+    for name in ("run_feasibility","run_compute","initial_coordinate_metrics","strong_weak_metrics"):
+        monkeypatch.setattr(cli,name,forbidden)
+    for name in ("stable_initial_projection","high_precision_source_jets","load_frozen_prepared_state"):
+        monkeypatch.setattr(prep,name,forbidden)
+    monkeypatch.setattr(runner,"integrate_case",forbidden)
+    monkeypatch.setattr(cli,"feasibility_identity",lambda *args:("fixture",item))
+    args=(["--compute","--feasibility","--output-dir",str(bundle.parent)] if action=="compute"
+          else ["--"+action,str(bundle)])
+    returned=cli.main(args)
+    output=json.loads(capsys.readouterr().out)
+    assert returned == expected
+    assert all(value==0 for value in output["this_run_counters"].values())
+    assert returned["new_ODE_integrations"] == 3  # historical counts, not this run
+    assert returned["state_admitted_flag"] is False
+
+
+def test_feasibility_plot_repeat_preserves_cache_and_runs_zero_precision(tmp_path,monkeypatch):
+    from scripts.analysis import prepare_planar_initial_state as cli
+    item={"synthetic_cache":"feasibility-figures"}
+    bundle=tmp_path/"bundle"
+    expected=_synthetic_feasibility_cache(bundle,item)
+    def forbidden(*args,**kwargs):
+        raise AssertionError("Plotting cannot prepare or integrate")
+    monkeypatch.setattr(cli,"run_feasibility",forbidden)
+    monkeypatch.setattr(prep,"stable_initial_projection",forbidden)
+    cli.plot_only(bundle)
+    cli.write_json(bundle/"manifest.json",cli.manifest_for(bundle,item))
+    before={p.name:_sha(p) for p in (bundle/"figures").iterdir()}
+    cli.plot_only(bundle)
+    assert before == {p.name:_sha(p) for p in (bundle/"figures").iterdir()}
+    assert cli.validate_cache(bundle,item) == expected
+
+
+FEASIBILITY_RESULT = ROOT/"results/planar_prepared_feasibility/284a4039177391d1"
+
+
+@pytest.fixture(scope="module")
+def completed_feasibility_evidence():
+    from scripts.analysis import prepare_planar_initial_state as cli
+    if not (FEASIBILITY_RESULT/"manifest.json").is_file():
+        pytest.skip("Completed short controls absent; tests never reproduce them")
+    summary=cli.validate_cache(FEASIBILITY_RESULT)
+    runs={}
+    for stats in summary["actual_short_runs"]:
+        name=f'p{stats["p"]}_{stats["time_level"]}'
+        folder=FEASIBILITY_RESULT/"short_controls"/name
+        assert _read(folder/"case.json")==stats
+        with np.load(folder/"trajectory.npz",allow_pickle=False) as data:
+            runs[name]={"time":data["time"].copy(),"q0":data["q"][0].copy(),
+                        "v0":data["velocity"][0].copy(),"energy":data["energy"].copy(),
+                        "q_shape":data["q"].shape,"v_shape":data["velocity"].shape,
+                        "stats":stats}
+        with np.load(folder/"internal_steps.npz",allow_pickle=False) as data:
+            runs[name]["steps"]=data["time_step"].copy()
+    return summary,runs
+
+
+def test_actual_feasibility_does_not_promote_failed_strict_gates_or_source_admission(completed_feasibility_evidence):
+    summary,_=completed_feasibility_evidence
+    assert summary["execution_mode"]=="EXPLORATORY_NOT_CERTIFIED"
+    assert summary["state_admitted_flag"] is False
+    assert summary["independent_precision_evidence"] is True
+    assert summary["numerical_policy_chosen_before_ODE"] is True
+    assert all(summary["projection"][str(p)]["pass"] for p in (48,64))
+    assert any(not row["pass"] for row in summary["strict_table"])
+    assert summary["statuses"]["NLSP_STRICT_INITIAL_VERIFICATION"]=="PARTIAL"
+    assert summary["statuses"]["NLSP_PREPARED_FEASIBILITY_RUN"]=="COMPLETED_EXPLORATORY_NOT_CERTIFIED"
+    assert summary["historical_statuses"]==_read(PREPARED/"summary.json")["statuses"]
+    assert summary["source_provenance"]["manifest_sha256"]==_sha(PREPARED/"manifest.json")
+    assert summary["new_ODE_integrations"]==3
+    assert summary["new_eigendecompositions"]==summary["new_BVP_solves"]==0
+
+
+def test_actual_three_controls_have_same_real_short_interval_and_full_independent_fields(completed_feasibility_evidence):
+    summary,runs=completed_feasibility_evidence
+    assert set(runs)=={"p48_tight","p64_tight","p64_allowed_extra"}
+    expected=None
+    for name,row in runs.items():
+        t,stats=row["time"],row["stats"]
+        assert t[0]==0.
+        assert np.all(np.diff(t)>0)
+        assert t[-1]==stats["time_end"]==stats["target_time_end"]==summary["sampling"]["horizon"]
+        assert len(t)==stats["samples"]==summary["sampling"]["samples"]
+        assert row["q_shape"]==row["v_shape"]==(len(t),4*(stats["p"]-1))
+        assert stats["status"]=="PASS"
+        assert stats["execution_mode"]=="EXPLORATORY_NOT_CERTIFIED"
+        assert stats["projection_policy"]==prep.CONSTRAINED_PROJECTION
+        np.testing.assert_array_equal(row["v0"],0.)
+        if expected is None:expected=t
+        else:np.testing.assert_array_equal(t,expected)
+    assert summary["sampling"]["horizon"]==.1*summary["background"]["T1"]
+    assert summary["sampling"]["samples_per_bound_period"]==16
+    assert summary["sampling"]["output_grid_not_time_accuracy_control"] is True
+    with np.load(RECOVERY/"controls/new_p32/trajectory.npz") as old:
+        old_times=old["time"][old["time"]<=expected[-1]]
+    assert np.all(np.isin(old_times,expected))
+
+
+def test_actual_runner_uses_exact_projected_q0_and_same_p64_q0_at_both_time_levels(completed_feasibility_evidence):
+    _,runs=completed_feasibility_evidence
+    for name,row in runs.items():
+        p=row["stats"]["p"]
+        with np.load(FEASIBILITY_RESULT/"initial_projection"/f"p{p}.npz",allow_pickle=False) as projected:
+            np.testing.assert_array_equal(row["q0"],projected["q"])
+            np.testing.assert_array_equal(row["v0"],projected["velocity"])
+        n=p-1
+        assert np.linalg.norm(row["q0"][:n])>0.
+        assert np.linalg.norm(row["q0"][3*n:])>0.
+    np.testing.assert_array_equal(runs["p64_tight"]["q0"],runs["p64_allowed_extra"]["q0"])
+
+
+def test_actual_saved_steps_preserve_budget_step_statistics_without_invented_rejections(completed_feasibility_evidence):
+    summary,runs=completed_feasibility_evidence
+    for row in runs.values():
+        steps,stats=row["steps"],row["stats"]
+        np.testing.assert_array_equal(steps,stats["internal_time_steps"])
+        assert len(steps)==stats["accepted_internal_steps"]
+        assert np.all(steps>0.)
+        assert np.min(steps)==stats["min_internal_step"]
+        assert np.max(steps)==stats["max_internal_step"]
+        assert np.max(steps)<=stats["max_step"]*(1+2e-12)
+        np.testing.assert_allclose(np.sum(steps),stats["time_end"],rtol=2e-12,atol=0)
+        assert "rejected_steps" not in stats
+    assert summary["runtime"]["ODE_integrations"]==3
+    assert summary["runtime"]["numerical_wall_seconds"]<=900.
+    assert summary["runtime"]["local_precision_seconds"]<=180.
+
+
+def test_actual_saved_mass_safety_and_energy_gates_pass_for_each_short_run(completed_feasibility_evidence,pilot_config):
+    _,runs=completed_feasibility_evidence
+    for row in runs.values():
+        stats,energy=row["stats"],row["energy"]
+        assert np.all(np.isfinite(energy)) and np.all(energy>0.)
+        drift=float(np.max(abs((energy-energy[0])/energy[0])))
+        assert drift==stats["relative_energy_drift_max"]
+        assert drift<=pilot_config["gates"]["energy_relative_drift"]
+        assert stats["mass_lower_bound_min"]>=pilot_config["safety"]["min_relative_mass_eigenvalue"]
+        assert stats["mass_condition_bound_max"]>=1.
+        for key,value in stats["safety_extrema"].items():
+            if key=="min_one_plus_c":assert value>pilot_config["safety"][key]
+            else:assert value<=pilot_config["safety"][key]
+
+
+@pytest.mark.parametrize("comparison", ("new_spatial_comparison","new_temporal_comparison"))
+def test_actual_comparisons_report_all_eight_unchanged_norms_without_phase_or_floor_redefinition(
+        completed_feasibility_evidence,pilot_config,comparison):
+    summary,_=completed_feasibility_evidence
+    report=summary[comparison]
+    assert set(report["fields"])=={part+"_"+field for part in ("q","velocity") for field in ("u","w","theta","c")}
+    for name,row in report["fields"].items():
+        field=name.split("_")[-1]
+        tolerance=pilot_config["gates"]["w_theta_relative" if field in ("w","theta") else "u_c_relative"]
+        assert row["tolerance"]==tolerance
+        assert row["relative_L2"]==row["max_time_L2_difference"]/max(row["reference_max_time_L2"],row["numerical_floor"])
+        assert row["relative_max"]==row["max_space_time_difference"]/max(row["reference_max_space_time"],row["numerical_floor"])
+        assert row["pass"]==(row["relative_L2"]<=tolerance and row["relative_max"]<=tolerance)
+        assert row["fixed_scaled_L2"]==row["max_time_L2_difference"]/(row["fixed_physical_scale"]*np.sqrt(summary["background"]["L"]))
+        assert row["fixed_scaled_max"]==row["max_space_time_difference"]/row["fixed_physical_scale"]
+    assert "no phase alignment" in report["sampling_qualification"]
+
+
+def test_actual_spatial_failure_is_not_hidden_by_temporal_pass_or_bending_displacement(completed_feasibility_evidence):
+    summary,_=completed_feasibility_evidence
+    spatial,temporal=summary["new_spatial_comparison"],summary["new_temporal_comparison"]
+    assert temporal["status"]=="PASS" and all(row["pass"] for row in temporal["fields"].values())
+    assert spatial["status"]=="PARTIAL"
+    assert [name for name,row in spatial["fields"].items() if not row["pass"]]==["velocity_theta"]
+    assert spatial["fields"]["velocity_theta"]["relative_max"]>1e-4
+    assert spatial["fields"]["velocity_theta"]["relative_L2"]<=1e-4
+    assert summary["statuses"]["NLSP_PREPARED_SHORT_SPATIAL_CHECK"]=="PARTIAL"
+    assert summary["statuses"]["NLSP_PREPARED_SHORT_TEMPORAL_CHECK"]=="PASS"
+    assert "continuous-PDE convergence" in summary["qualification"]

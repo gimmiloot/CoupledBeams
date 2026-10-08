@@ -110,7 +110,9 @@ def plot_only(bundle):
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     bundle = Path(bundle)
-    validate_cache(bundle)
+    cached=validate_cache(bundle)
+    if cached.get('schema')=='nlsp-prepared-feasibility-v1':
+        return feasibility_plot_only(bundle,cached)
     if not (bundle/'profiles.npz').exists():
         return {'BVP_solves':0,'eigendecompositions':0,'analytic_history_evaluations':0,'ODE_integrations':0}
     data = np.load(bundle/'profiles.npz')
@@ -484,15 +486,282 @@ def manifest_for(bundle,item):
             'command':sys.argv,'artifact_hashes':{str(p.relative_to(bundle)):sha(p) for p in bundle.rglob('*') if p.is_file() and p.name!='manifest.json' and not p.name.endswith('.tmp')}}
 
 
+
+FEASIBILITY_CONFIG = ROOT/'data/input/planar_prepared_feasibility.json'
+FEASIBILITY_OUTPUT = ROOT/'results/planar_prepared_feasibility'
+FEASIBILITY_VERSION = 'frozen-prepared-initial-only-endpoint-L2-feasibility-v1'
+
+
+def feasibility_identity(config_path):
+    key,item=identity(config_path)
+    config=item['config']
+    item['version']=FEASIBILITY_VERSION
+    for name in ('prepared_bundle','precision_evidence'):
+        path=ROOT/config[name]
+        manifest=read_json(path/'manifest.json')
+        item['sources'][name]={'bundle':config[name],'manifest_sha256':sha(path/'manifest.json'),
+                              'artifact_hashes':manifest['artifact_hashes']}
+    item['dependencies']['mpmath']=importlib.metadata.version('mpmath')
+    return hashlib.sha256(json.dumps(item,sort_keys=True).encode()).hexdigest()[:16],item
+
+
+def authorize_feasibility(strict_table,basic,evidence):
+    """Explicit authorization; never changes the physical state's admitted flag."""
+    if not all(basic.values()) or not evidence:
+        raise ArithmeticError('BLOCKED_BY_UNEXPLAINED_INCONSISTENCY: basic correctness or independent precision evidence missing')
+    return 'STRICT_ADMITTED' if all(row['pass'] for row in strict_table) else 'EXPLORATORY_NOT_CERTIFIED'
+
+
+def initial_coordinate_metrics(state,disc,q,epsilon,policy):
+    """Historical norms, floors, endpoint scales, without reprojecting q."""
+    xi,ww=leg.leggauss(max(100,2*disc.p+1));x=(xi+1)*disc.length/2;ww*=disc.length/2
+    fixed=np.array([epsilon*state.background.h0]*2+[epsilon*state.background.h0/disc.length]*2)
+    rows=[]
+    for d in policy['spatial_derivatives']:
+        truth=state.evaluate(x,epsilon,d,require_admitted=False)
+        actual=disc.reconstruct(q,x,d)
+        jets=disc.reconstruct(q,[0.,disc.length],d)-state.evaluate([0.,disc.length],epsilon,d,require_admitted=False)
+        for f,field in enumerate(('u','w','theta','c')):
+            dif=actual[:,f]-truth[:,f];scale=fixed[f]/disc.length**d
+            norm=float(np.sqrt(ww@dif**2));peak=float(np.max(abs(dif)))
+            own=float(np.sqrt(ww@truth[:,f]**2));ownmax=float(np.max(abs(truth[:,f])))
+            row={'field':field,'derivative':d,'absolute_L2':norm,'absolute_max':peak,
+                 'relative_L2':norm/max(own,1e-10*scale*np.sqrt(disc.length)),
+                 'relative_max':peak/max(ownmax,1e-10*scale),
+                 'endpoint_fixed_scaled_error':float(np.max(abs(jets[:,f]))/scale)}
+            row['pass']=row['relative_L2']<=policy['relative_tolerance'] and row['relative_max']<=policy['relative_tolerance'] and row['endpoint_fixed_scaled_error']<=policy['endpoint_tolerance']
+            rows.append(row)
+    return {'rows':rows,'pass':all(r['pass'] for r in rows),'unchanged_historical_norms':True,
+            'sampled_maximum':True,'comparison_quadrature':len(x),'essential_endpoint_values':disc.reconstruct(q,[0.,disc.length]).tolist()}
+
+
+def initial_formal_compatibility(state,disc,projection,epsilon):
+    """Unchanged through-cubic traces; split a linear initial-only projection."""
+    from scripts.lib import planar_prepared_initial_state as prep
+    eta=np.polynomial.Polynomial(state.correction.coefficients)
+    power=eta(np.polynomial.Polynomial([.5,.5])).coef
+    lc=leg.poly2leg(power)
+    exact=prep.project_saved_legendre(lc,disc.p,disc.length,prep.UNCONSTRAINED_PROJECTION,70)
+    r3=np.zeros(disc.ndof);r3[disc.slices['theta']]=exact['raw']
+    q3=disc.from_raw_coefficients(r3)
+    q=projection['q'];q1=np.zeros(disc.ndof);q2=q1.copy()
+    for field in ('u','c'):q2[disc.slices[field]]=q[disc.slices[field]]/epsilon**2
+    q1[disc.slices['w']]=q[disc.slices['w']]/epsilon
+    q1[disc.slices['theta']]=(q[disc.slices['theta']]-epsilon**3*q3[disc.slices['theta']])/epsilon
+    d1,d2,d3=[disc.reconstruct(a,[0.,disc.length],1) for a in (q1,q2,q3)]
+    dd1,dd2,dd3=[disc.reconstruct(a,[0.,disc.length],2) for a in (q1,q2,q3)]
+    c=disc.coefficients
+    e1=np.column_stack((np.zeros(2),c.S*(dd1[:,1]-d1[:,2]),c.Bp*dd1[:,2]+c.S*d1[:,1],np.zeros(2)))
+    e2=np.column_stack((c.C*dd2[:,0]+c.nu*c.C*d2[:,3]+(c.C-c.S)*d1[:,2]*d1[:,1],np.zeros(2),np.zeros(2),c.H*dd2[:,3]-c.nu*c.C*d2[:,0]))
+    e3=np.column_stack((np.zeros(2),-c.S*d3[:,2]+(c.C-c.S)*d2[:,0]*d1[:,2],c.Bp*dd3[:,2]-(c.C-c.S)*d2[:,0]*d1[:,1],np.zeros(2)))
+    scales=np.array([c.C*state.background.h0/disc.length**2,c.S*state.background.h0/disc.length**2,c.S*state.background.h0/disc.length,c.C])
+    peak=float(max(np.max(abs(e)/scales) for e in (e1,e2,e3)))
+    return {'through_cubic_coefficients':{'epsilon1':e1.tolist(),'epsilon2':e2.tolist(),'epsilon3':e3.tolist()},
+            'compatibility_fixed_scaled_max':peak,'pass':peak<=1e-6,'Theta3_not_refitted':True}
+
+
+def strong_weak_metrics(disc,q,velocity,label):
+    acceleration=disc.acceleration(q,velocity)
+    gradient=disc.potential(q)['gradient'];mass=disc.mass_matrix(q)@acceleration
+    inertia=disc.inertial_terms(q,velocity)
+    action=mass+inertia+gradient;strong=disc.weak_residual(q,velocity,acceleration)
+    delta=strong-action
+    local=disc._local_potential(q)[1]
+    work=sum(np.linalg.norm(matrix.T@(disc.weights*value)) for matrix,value in zip(disc._potential_matrices,local))+np.linalg.norm(mass)+np.linalg.norm(inertia)
+    correction=disc._solve_mass(q,delta)
+    fields=disc.reconstruct(correction)
+    absolute=float(np.max(abs(delta)));relative=float(np.linalg.norm(delta)/work)
+    return {'state':label,'absolute_max':absolute,'difference_L2':float(np.linalg.norm(delta)),
+            'uncancelled_work_scale':float(work),'relative_residual':relative,'absolute_gate':2e-12,'relative_gate':2e-12,
+            'absolute_pass':absolute<=2e-12,'relative_pass':relative<=2e-12,'pass':absolute<=2e-12 and relative<=2e-12,
+            'difference_vector':delta.tolist(),'point_acceleration_difference_L2':np.sqrt(disc.weights@fields**2).tolist(),
+            'point_acceleration_difference_max':np.max(abs(fields),axis=0).tolist(),
+            'qualification':'Point-state assembly discrepancy, not a trajectory error bound; RHS unmodified'}
+
+
+def run_feasibility(config,bundle):
+    """Three bounded runs of one immutable state, strict and exploratory separate."""
+    import shutil
+    from types import SimpleNamespace
+    from scripts.lib import planar_prepared_initial_state as prep
+    from scripts.lib import weakly_nonlinear_spatial_rod as rod
+    from scripts.lib.weakly_nonlinear_planar_dynamics import PlanarGalerkin
+    from scripts.analysis import simulate_weakly_nonlinear_planar_rod as runner
+    started=time.perf_counter();previous_charge=config['budget']['previous_precision_seconds']
+    deadline=started+config['budget']['numerical_wall_seconds']-previous_charge
+    local_started=started
+    runner.load_runtime();pilot=read_json(ROOT/config['pilot_config'])
+    source=ROOT/config['prepared_bundle'];old=validate_cache(source)
+    for path in (config['spectral_bundle'],*config['historical_bundles'].values()):validate_cache(ROOT/path)
+    precision=ROOT/config['precision_evidence'];pm=read_json(precision/'manifest.json')
+    for name,digest in pm['artifact_hashes'].items():
+        if sha(precision/name)!=digest:raise ValueError('Precision artifact hash mismatch: '+name)
+        target=bundle/'precision_evidence'/name;target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(precision/name,target)
+    evidence=read_json(precision/'nlsp_strong_weak_precision_20261008.json')
+    if evidence['input_hashes']['source_manifest']!=sha(source/'manifest.json'):raise ValueError('Precision common-source mismatch')
+    source_state,coeff,provenance=prep.load_frozen_prepared_state(source)
+    audit=read_json(ROOT/pilot['audit_bundle']/'result.json')
+    if evidence['input_hashes']['audit_result']!=sha(ROOT/pilot['audit_bundle']/'result.json'):raise ValueError('Precision frozen action mismatch')
+    pol=audit['polynomials']
+    model=SimpleNamespace(T4=rod.Polynomial.deserialize(pol['T4']),V4=rod.Polynomial.deserialize(pol['V4']),
+        residual_a=tuple(rod.Polynomial.deserialize(a) for a in pol['residuals_A']),symbols={a:rod.Polynomial.symbol(a) for a in rod.SYMBOL_ORDER})
+    precise_rows=[a for a in evidence['rows'] if a.get('stage')=='refined_gauss' and a.get('precision') in (45,70)]
+    independent_ok=len(precise_rows)==8 and all(float(a['relative_on_original_float64_scale'])<=2e-12 for a in precise_rows)
+    eps=config['amplitude_over_h'];discs={};qs={};projection={};strict=[];basic={};identities={};original={}
+    for p in config['degrees']:
+        d=PlanarGalerkin(coeff,p,model=model);discs[p]=d
+        copies=[prep.stable_initial_projection(source_state,d,eps,config['projection_policy'],digits) for digits in config['projection_dps']]
+        rep=copies[-1];q=rep['q'];qs[p]=q
+        before=initial_coordinate_metrics(source_state,d,d.project(source_state.evaluate(d.x,eps,require_admitted=False)),eps,config['profile_policy'])
+        current=initial_coordinate_metrics(source_state,d,q,eps,config['profile_policy'])
+        compatibility=initial_formal_compatibility(source_state,d,rep,eps)
+        current.update(compatibility);current['pass']=all(r['pass'] for r in current['rows']) and compatibility['pass']
+        current['policy']=config['projection_policy'];current['dps']=config['projection_dps'];current['same_coefficients_after_float64_rounding']=bool(np.array_equal(copies[0]['raw'],rep['raw']))
+        current['roundtrip_relative']=rep['raw_roundtrip_relative'];current['source_jets']=rep['source_jets'].tolist();current['source_jets_decimal']=rep['source_jets_decimal']
+        current['mp_endpoint_error']=rep['mp_endpoint_error'].tolist();current['float64_endpoint_error']=rep['float64_endpoint_error'].tolist()
+        projection[str(p)]=current;original[str(p)]=before
+        save_npz(bundle/'initial_projection'/f'p{p}.npz',q=q,velocity=np.zeros(d.ndof),raw=rep['raw'],raw_roundtrip=rep['raw_roundtrip'],source_jets=rep['source_jets'])
+        write_json(bundle/'initial_projection'/f'p{p}.json',current)
+        write_json(bundle/'initial_projection'/f'p{p}_decimal.json',{'raw_decimal':rep['raw_decimal'],'source_jets_decimal':rep['source_jets_decimal']})
+        synthetic=d.project(np.column_stack((d.x*(1-d.x)*1e-8,d.x*(1-d.x)*1e-7,d.x*(1-d.x)*1e-8,d.x*(1-d.x)*1e-9)))
+        checks=[strong_weak_metrics(d,q,np.zeros(d.ndof),'initial_zero_velocity'),strong_weak_metrics(d,q,synthetic,'previous_synthetic_velocity')]
+        identities[str(p)]=checks
+        strict.append({'p':p,'check':'initial_projection_and_formal_jets','pass':current['pass'],'tolerance':1e-6})
+        strict.extend({'p':p,'check':a['state']+'_strong_weak','pass':a['pass'],'absolute':a['absolute_max'],'relative':a['relative_residual'],'tolerance':2e-12} for a in checks)
+        runner.safety_check(d,q,pilot['safety']);diag=mass_safety_bounds(d,q)
+        basic[str(p)+'_finite_q_RHS']=bool(np.all(np.isfinite(q)) and np.all(np.isfinite(d.rhs(0,np.r_[q,np.zeros(d.ndof)]))))
+        basic[str(p)+'_positive_mass']=diag['mass_positive'] and diag['relative_mass_eigenvalue_lower_bound']>=pilot['safety']['min_relative_mass_eigenvalue']
+        basic[str(p)+'_essential_BC']=bool(np.max(abs(d.reconstruct(q,[0.,d.length])))==0)
+        basic[str(p)+'_zero_velocities']=True
+    local_elapsed=time.perf_counter()-local_started+previous_charge
+    if local_elapsed>config['budget']['local_precision_seconds']:raise TimeoutError('Local precision budget exhausted before ODE')
+    execution=authorize_feasibility(strict,basic,independent_ok)
+    statuses={'NLSP_PROJECTION_ARITHMETIC_AUDIT':'COMPLETED','NLSP_NUMERICAL_REPRESENTATION_FIX':'PASS' if all(a['pass'] for a in projection.values()) else 'PARTIAL',
+        'NLSP_STRICT_INITIAL_VERIFICATION':'PASS' if execution=='STRICT_ADMITTED' else 'PARTIAL',
+        'NLSP_PREPARED_FEASIBILITY_RUN':'NOT_RUN','NLSP_PREPARED_SHORT_SPATIAL_CHECK':'NOT_RUN','NLSP_PREPARED_SHORT_TEMPORAL_CHECK':'NOT_RUN'}
+    summary={'schema':config['schema'],'config':config,'background':source_state.background.as_dict(),'coefficients':coeff.values(),'statuses':statuses,
+        'historical_statuses':old['statuses'],'source_provenance':provenance,'projection':projection,'original_projection':original,
+        'strong_weak':identities,'strict_table':strict,'execution_mode':execution,'execution_modes':{},'actual_short_runs':[],
+        'new_ODE_integrations':0,'new_eigendecompositions':0,'new_BVP_solves':0,'state_admitted_flag':source_state.admitted,
+        'numerical_policy_chosen_before_ODE':True,'independent_precision_evidence':independent_ok,
+        'qualification':'Short finite-dimensional feasibility, not continuous-PDE convergence, periodic-orbit or out-of-plane certification'}
+    write_json(bundle/'pre_run_decision.json',{'execution_mode':execution,'state_admitted_flag':source_state.admitted,'strict_table':strict,'basic_checks':basic,'independent_precision_evidence':independent_ok,'policy':config['projection_policy'],'new_dynamic_constraints':False})
+    write_json(bundle/'projection_comparison.json',{'before':original,'after':projection})
+    save_npz(bundle/'common_initial_state.npz',**{k:v for k,v in np.load(source/'common_initial_state.npz',allow_pickle=False).items()})
+    horizon=config['short_periods']*source_state.background.T1;omega_bound=0.
+    for d in discs.values():
+        diagonal=np.diag(d.M0);lower=float(np.min(diagonal-(np.sum(abs(d.M0),axis=1)-abs(diagonal))))
+        if lower<=0:raise ArithmeticError('Nonpositive resting-mass bound')
+        omega_bound=max(omega_bound,float(np.sqrt(np.max(np.sum(abs(d.K),axis=1))/(lower*pilot['safety']['min_relative_mass_eigenvalue']))))
+    count=int(np.ceil(horizon*omega_bound/(2*np.pi)*16))+1
+    with np.load(ROOT/config['historical_bundles']['recovery']/'controls/new_p32/trajectory.npz') as saved:old_times=saved['time'].copy()
+    times=np.unique(np.r_[np.linspace(0,horizon,count),old_times[old_times<=horizon]])
+    summary['sampling']={'horizon':horizon,'samples':len(times),'omega_upper_bound':omega_bound,'samples_per_bound_period':16,'old_times_preserved':True,'output_grid_not_time_accuracy_control':True}
+    summary['runtime']={'local_precision_seconds':local_elapsed,'limit_seconds':config['budget']['numerical_wall_seconds']}
+    write_json(bundle/'summary.json',summary)
+    print(json.dumps({'stage':'PRE_RUN','bundle':str(bundle),'execution':execution,'strict_table':strict,'samples':len(times),'local_precision_seconds':local_elapsed}),flush=True)
+    histories={}
+    for p,level in config['cases']:
+        if time.perf_counter()>=deadline:break
+        d=discs[p];name=f'p{p}_{level}'
+        shape=lambda x:source_state.evaluate(x,eps,require_admitted=False)/(eps*source_state.background.h0)
+        print(json.dumps({'stage':'START_ODE','case':name,'target_time':horizon,'execution_mode':execution}),flush=True)
+        summary['new_ODE_integrations']+=1
+        history,stats=runner.integrate_case(d,shape,source_state.background.as_dict(),pilot,eps,level,times,deadline,initial_coordinates=qs[p])
+        actual=times[:len(history)];q,v=history[:,:d.ndof],history[:,d.ndof:]
+        energy=np.array([d.energy(a,b) for a,b in zip(q,v)])
+        bounds=[mass_safety_bounds(d,a) for a in q]
+        stats.update(execution_mode=execution,projection_policy=config['projection_policy'],initial_energy=float(energy[0]),
+            relative_energy_drift_max=float(np.max(abs((energy-energy[0])/energy[0]))),
+            mass_lower_bound_min=min(a['relative_mass_eigenvalue_lower_bound'] for a in bounds),
+            mass_condition_bound_max=max(a['relative_mass_condition_upper_bound'] for a in bounds))
+        stats['safety_extrema']={key:(min(a[key] for a in bounds) if key=='min_one_plus_c' else max(a[key] for a in bounds)) for key in pilot['safety'] if key!='min_relative_mass_eigenvalue'}
+        summary['actual_short_runs'].append(stats);summary['execution_modes'][name]=execution
+        save_npz(bundle/'short_controls'/name/'trajectory.npz',time=actual,q=q,velocity=v,energy=energy)
+        save_npz(bundle/'short_controls'/name/'internal_steps.npz',time_step=np.asarray(stats['internal_time_steps']))
+        write_json(bundle/'short_controls'/name/'case.json',stats)
+        histories[name]={'q':q,'velocity':v,'time':actual}
+        write_json(bundle/'summary.json',summary)
+        print(json.dumps({'stage':'END_ODE','case':name,'stats':stats}),flush=True)
+        if stats['status']!='PASS':break
+    def comparison(a,b):
+        if a not in histories or b not in histories:return {'status':'NOT_RUN'}
+        aa,bb=histories[a],histories[b]
+        if not np.array_equal(aa['time'],bb['time']) or aa['time'][-1]!=horizon:return {'status':'PARTIAL','reason':'actual prefix; no repeated final snapshot'}
+        da,db=discs[int(a.split('_')[0][1:])],discs[int(b.split('_')[0][1:])]
+        result=runner.compare_histories(da,aa,db,bb,pilot)
+        fixed=np.array([eps*source_state.background.h0]*2+[eps*source_state.background.h0/source_state.length]*2)
+        for key,row in result.get('fields',{}).items():
+            idx=('u','w','theta','c').index(key.split('_')[-1]);scale=fixed[idx]
+            if key.startswith('velocity'):scale*=source_state.background.omega
+            row['fixed_physical_scale']=float(scale);row['fixed_scaled_L2']=row['max_time_L2_difference']/(scale*np.sqrt(source_state.length));row['fixed_scaled_max']=row['max_space_time_difference']/scale
+        result['sampling_qualification']='Shared actual dense-output samples; maxima sampled, no phase alignment. Output bound 16 points/period, not independent accuracy proof.'
+        return result
+    spatial=comparison('p48_tight','p64_tight');temporal=comparison('p64_tight','p64_allowed_extra')
+    plot_data={'T1':np.asarray(source_state.background.T1)}
+    for name,hist in histories.items():
+        d=discs[int(name.split('_')[0][1:])]
+        plot_data[name+'_time']=hist['time']
+        plot_data[name+'_quarter_fields']=d.reconstruct_series(hist['q'],[source_state.length/4])[:,0,:]
+        with np.load(bundle/'short_controls'/name/'trajectory.npz') as saved:plot_data[name+'_energy']=saved['energy'].copy()
+    save_npz(bundle/'plot_data.npz',**plot_data)
+    summary['new_spatial_comparison']=spatial;summary['new_temporal_comparison']=temporal
+    statuses['NLSP_PREPARED_SHORT_SPATIAL_CHECK']=spatial['status'];statuses['NLSP_PREPARED_SHORT_TEMPORAL_CHECK']=temporal['status']
+    complete=len(summary['actual_short_runs'])==3 and all(r['status']=='PASS' for r in summary['actual_short_runs'])
+    statuses['NLSP_PREPARED_FEASIBILITY_RUN']=('COMPLETED_'+execution) if complete else 'PARTIAL'
+    summary['runtime'].update(numerical_wall_seconds=time.perf_counter()-started+previous_charge,integration_seconds=sum(r['integration_seconds'] for r in summary['actual_short_runs']),ODE_integrations=summary['new_ODE_integrations'],eigendecompositions=0,BVP_solves=0)
+    summary['stop_reason']='Bounded0.1T1 controls completed or actual prefix saved; strict thresholds unchanged; no full-period extension'
+    write_json(bundle/'summary.json',summary)
+    return summary
+
+
+
+def feasibility_plot_only(bundle,summary):
+    """Only saved physical arrays, zero preparation/ODE/eigen evaluations."""
+    import matplotlib.pyplot as plt
+    bundle=Path(bundle);figs=bundle/'figures';figs.mkdir(exist_ok=True)
+    def finish(fig,name):
+        for ext in ('pdf','png'):fig.savefig(figs/(name+'.'+ext),dpi=220,metadata={'CreationDate':None,'ModDate':None} if ext=='pdf' else None)
+        plt.close(fig)
+    fig,axes=plt.subplots(1,2,figsize=(9,3.4),layout='constrained')
+    names=[f'{field} d{d}' for d in (0,1,2) for field in ('u','w','theta','c')]
+    for ax,p in zip(axes,(48,64)):
+        for label,key in (('original float64','original_projection'),('initial endpoint L2','projection')):
+            rows=summary[key][str(p)]['rows'];ax.semilogy(range(12),[max(r['relative_max'],r['relative_L2'],r['endpoint_fixed_scaled_error'],1e-18) for r in rows],'.-',label=label)
+        ax.axhline(1e-6,color='k',ls=':',lw=.8);ax.set_xticks(range(12),names,rotation=60,fontsize=7)
+        ax.set(title=f'p={p}',ylabel='initial representation errors');ax.grid(alpha=.2);ax.legend(fontsize=7,frameon=False)
+    finish(fig,'initial_projection_before_after')
+    if not (bundle/'plot_data.npz').exists():return {'ODE_integrations':0,'eigendecompositions':0}
+    with np.load(bundle/'plot_data.npz',allow_pickle=False) as saved:data={k:saved[k] for k in saved.files}
+    fig,axes=plt.subplots(2,2,figsize=(9,5.6),layout='constrained')
+    for f,(field,ax) in enumerate(zip(('u','w','theta','c'),axes.flat)):
+        for name,style in (('p48_tight','-'),('p64_tight','--')):
+            if name+'_time' in data:ax.plot(data[name+'_time']/data['T1'],data[name+'_quarter_fields'][:,f],style,label=name.replace('_',' '))
+        ax.set(xlabel='t/T1',ylabel=field+' at s=L/4');ax.grid(alpha=.2);ax.legend(fontsize=8,frameon=False)
+    finish(fig,'prepared_short_trajectories')
+    fig,ax=plt.subplots(figsize=(7,3.4),layout='constrained')
+    for name in ('p48_tight','p64_tight','p64_allowed_extra'):
+        if name+'_time' not in data:continue
+        e=data[name+'_energy'];ax.plot(data[name+'_time']/data['T1'],(e-e[0])/e[0],label=name.replace('_',' '))
+    ax.set(xlabel='t/T1',ylabel='relative semidiscrete energy drift');ax.grid(alpha=.2);ax.legend(frameon=False,fontsize=8)
+    finish(fig,'prepared_short_energy')
+    return {'ODE_integrations':0,'eigendecompositions':0,'BVP_solves':0}
+
+
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     mode=parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--compute',action='store_true')
     mode.add_argument('--report-only',type=Path)
     mode.add_argument('--plot-only',type=Path)
-    parser.add_argument('--config',type=Path,default=CONFIG)
-    parser.add_argument('--output-dir',type=Path,default=OUTPUT)
+    parser.add_argument('--config',type=Path)
+    parser.add_argument('--feasibility',action='store_true',help='Explicit bounded exploratory authorization, strict tests retained')
+    parser.add_argument('--output-dir',type=Path)
     args=parser.parse_args(argv)
+    if args.feasibility and not args.compute:
+        parser.error('--feasibility requires --compute; report/plot read the saved mode')
+    args.config=args.config or (FEASIBILITY_CONFIG if args.feasibility else CONFIG)
+    args.output_dir=args.output_dir or (FEASIBILITY_OUTPUT if args.feasibility else OUTPUT)
     zeros={'BVP_solves':0,'eigendecompositions':0,'analytic_history_evaluations':0,'ODE_integrations':0}
     if args.report_only or args.plot_only:
         bundle=args.report_only or args.plot_only
@@ -501,13 +770,13 @@ def main(argv=None):
             plot_only(bundle)
         print(json.dumps({'bundle':str(bundle),'statuses':summary['statuses'],'this_run_counters':zeros},indent=2))
         return summary
-    key,item=identity(args.config);bundle=args.output_dir/key
+    key,item=(feasibility_identity(args.config) if args.feasibility else identity(args.config));bundle=args.output_dir/key
     if (bundle/'manifest.json').exists():
         summary=validate_cache(bundle,item)
         print(json.dumps({'bundle':str(bundle),'cache_hit':True,'statuses':summary['statuses'],'this_run_counters':zeros},indent=2))
         return summary
     bundle.mkdir(parents=True,exist_ok=True)
-    summary=run_compute(read_json(args.config),bundle)
+    summary=(run_feasibility if args.feasibility else run_compute)(read_json(args.config),bundle)
     write_json(bundle/'manifest.json',manifest_for(bundle,item))
     plot_only(bundle)
     write_json(bundle/'manifest.json',manifest_for(bundle,item))

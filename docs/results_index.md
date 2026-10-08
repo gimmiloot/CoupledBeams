@@ -15,6 +15,23 @@ index should be run without first reviewing its cost and output contract.
 
 ## Result directories
 
+`results/planar_prepared_feasibility/284a4039177391d1/` contains the separate
+[precision/feasibility continuation](theory/planar_prepared_initial_state.md#prepared-precision-feasibility):
+verified immutable sources, independent MP quadrature/projection probes,
+original/new projection metrics, initial-only common endpoint-L2 coordinates,
+explicit strict table and EXPLORATORY_NOT_CERTIFIED decision, exactly3 complete
+0.1T1 histories, actual internal dt/counters, all8 spatial/temporal CSV/JSON,
+energy/Loewner mass/safety, code/config snapshots and3 PDF/PNG figures.
+
+Initial representation PASS; strict verification PARTIAL; exploratory runs
+COMPLETED; spatial PARTIAL (theta_t max only); temporal PASS. Numerical cost
+53.49s includes17.34s of integration, zero new BVP/model eigensolves. Matching
+compute/report/plot does zero new preparation/integration; no full5T1 or p96
+nonlinear run. Generated precision source inputs are preserved under
+`results/planar_prepared_feasibility/precision_evidence/77d6a6db28bf677c/` and
+copied into this bundle with their own manifest/hash checks. The older result
+entries below retain their historical statuses.
+
 `results/planar_prepared_initial_state/5ea8d41faf8ede54/` contains the
 [prepared initial-state gate](theory/planar_prepared_initial_state.md): source
 hashes, all saved-mode stat/harm coordinates and physical profiles, derivative
@@ -28,8 +45,8 @@ relative strong/weak numerical checks remain qualified at p48/p64, with fixed
 2e-12 gates and strict XFAIL tests. Primary audit3.857s,6 spectrum restorations,
 4 direct validation solves,0 M-H/Timoshenko eigensolves and0 ODE integrations.
 Matching compute/report/plot do zero BVP/eigen/history/ODE evaluations; report
-never extends missing old prefixes or promotes old PARTIAL. No new trajectory
-or full5T1 result exists. Early development preparation bundles f6c06a90f979185c
+never extends missing old prefixes or promotes old PARTIAL. That historical bundle contains no new trajectory
+or full5T1 result. Early development preparation bundles f6c06a90f979185c
 and b392d104d3391942 are retained separately, without overwriting any historical
 source bundle.
 
