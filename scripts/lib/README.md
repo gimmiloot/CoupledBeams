@@ -2,6 +2,13 @@
 
 This directory contains reusable helper modules that are not meant to be run directly.
 
+- The physical-sanity CLI reuses these unchanged prepared/planar helpers and
+  runner. It reads saved leading stat/harm profiles directly and performs only
+  one separately authorized half-amplitude ODE; reactions use canonical V4
+  derivatives and explicit finite-p/rotation-truncation accounting. No second
+  solver or new physical closure is added.
+  [Bounded diagnostic contract](../../docs/theory/weakly_nonlinear_planar_physical_sanity_checks.md).
+
 - One-T1 orchestration restores the already prepared q0 directly; it does
   not call any new numerical/MP projection in this helper. The existing Radau
   runner additionally accepts an optional writable float64 history buffer for

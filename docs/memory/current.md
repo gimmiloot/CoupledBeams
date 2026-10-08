@@ -1,6 +1,31 @@
 # Текущий контекст
 
-## Prepared one-T1 feasibility — exploratory, spatial PARTIAL, 2026-10-08
+## Planar physical sanity — diagnostic complete with qualifications, 2026-10-08
+
+[NLSP-D08](decisions.md#nlsp-d08), [NLSP-K08](knowledge.md#nlsp-k08),
+[canonical note](../theory/weakly_nonlinear_planar_physical_sanity_checks.md).
+Сохранённый p64 large run и единственный новый p64 tight half-amplitude run
+достигли общего T1. Наблюдаемые maxima близки 2/4 по ожидаемым field powers;
+normalized leading deviations уменьшаются примерно в 4 раза. Symmetry,
+formal classical stretching limit, strain/mass/energy/safety checks проходят.
+
+Overall `DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS`: second-order/amplitude
+checks PARTIAL из-за отсутствия независимого half-amplitude p/time control;
+reaction/momentum PARTIAL сохраняют finite-p residual и explicit rotational
+truncation contribution quartic action. Это physical sanity принятого reduced
+V0, не experimental/3D validation. Prepared strict certification PARTIAL,
+`EXPLORATORY_NOT_CERTIFIED` и `state.admitted=False` остаются; старые zero-u/c
+и full nonlinear spatial PARTIAL не повышаются.
+
+Model/action/RHS/Jacobian, four fields, basis, BC и coefficients сохранены;
+новый half initial state использует те же profiles/Theta3 с разными amplitude
+powers и прежним projection rule. После bounded report остановка, новый
+scientific direction не выбран. LONG CLOSED; EB/RLB-KV
+PAUSED_FOR_SUPERVISOR_DIRECTION; angular same-clamp out-of-plane reference
+UNAVAILABLE. Исторические решения и остановки ниже сохраняются отдельно.
+
+
+## Исторический prepared one-T1 feasibility — exploratory, spatial PARTIAL, 2026-10-08
 
 [NLSP-D07](decisions.md#nlsp-d07), [NLSP-K07](knowledge.md#nlsp-k07),
 [canonical continuation](../theory/planar_prepared_initial_state.md#prepared-one-period-feasibility).
@@ -307,7 +332,7 @@ short temporal PASS / spatial PARTIAL. Новая 0.1T1 prepared trajectory не
 LONG — CLOSED; EB/RLB-KV — PAUSED_FOR_SUPERVISOR_DIRECTION; angular same-clamp
 reference — UNAVAILABLE. Ни full-period/p-refinement, ни новая модель/IC/basis,
 ни новый scientific stage автоматически не выбраны или не разрешены.
-## Текущая остановка после bounded one-T1 feasibility
+## Историческая остановка после bounded one-T1 feasibility
 
 Все 3 exploratory trajectories достигли T1; prefix, temporal, energy/mass
 PASS, spatial PARTIAL сохраняется. Strict initial verification не повышена,
@@ -315,3 +340,12 @@ PASS, spatial PARTIAL сохраняется. Strict initial verification не �
 LONG — CLOSED; EB/RLB-KV — PAUSED_FOR_SUPERVISOR_DIRECTION; angular same-clamp
 reference — UNAVAILABLE. Автоматическое увеличение horizon/p, смена basis/IC/
 physics или новый scientific stage не выбраны и не разрешены.
+## Текущая остановка после bounded physical sanity checks
+
+Диагностика завершена с qualifications; weakly nonlinear patterns согласованы
+в проверенном reduced scope, physical accuracy V0 и strict numerical
+certification не установлены. Новых half-amplitude controls или дальнейших
+horizon/p/IC/model/angle/stability studies автоматически не выбирается.
+LONG — CLOSED; EB/RLB-KV — PAUSED_FOR_SUPERVISOR_DIRECTION; angular same-clamp
+reference — UNAVAILABLE. Historical zero-u/c и prepared strict PARTIAL
+сохраняются; следующий scientific stage требует отдельного явного решения.

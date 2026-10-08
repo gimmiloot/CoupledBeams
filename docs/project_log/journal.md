@@ -4,6 +4,18 @@
 
 ## 2026-10-08
 
+- Completed bounded physical sanity checks of the frozen planar quartic action:
+  reused p64 .05 one-T1 history and exactlyONE new p64 .025 tight run toT1.
+  Full-history amplitude maxima show2/4 patterns; normalized leading deviations
+  reduce approximately4x. Exact sign symmetry and formal EA/(8L) bulk stretching
+  checks pass; strain/reaction tables retain finite-p strong residuals and explicit
+  degree4 rotational truncation accounting. Overall DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS;
+  no physical/3D validation or independent small-amplitude p/time certification.
+  New focused CLI/config/tests/note,3 PDF/PNG figures and NLSP-D08/K08; frozen
+  model/RHS/Jacobian/IC profiles/BC/basis and historical strict/PARTIAL untouched.
+  One ODE118.55s, primary numerical work237.72s conservative/600s; matching cache/
+  report/plot perform zero new ODE/BVP/eigen/symbolic work. No next stage.
+
 - Extended the unchanged prepared four-field IVP to one fixed LINEAR T1 with
   exact saved p48/p64 initial coordinates and tight/allowed-extra settings.
   Exactly3 exploratory runs complete; prefix/temporal/energy-mass PASS, spatial

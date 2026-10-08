@@ -1,5 +1,24 @@
 # Scripts guide
 
+## Bounded planar physical sanity checks
+
+```powershell
+python scripts/analysis/check_weakly_nonlinear_planar_physics.py --compute
+python scripts/analysis/check_weakly_nonlinear_planar_physics.py --report-only results/nlsp_planar_physical_sanity_checks/888042e17cfc315a
+python scripts/analysis/check_weakly_nonlinear_planar_physics.py --plot-only results/nlsp_planar_physical_sanity_checks/888042e17cfc315a
+```
+
+Read the [diagnostic contract/results](../docs/theory/weakly_nonlinear_planar_physical_sanity_checks.md)
+and [bounded config](../data/input/nlsp_planar_physical_sanity_checks.json) first.
+This separate diagnostic I/O workflow loads saved large-amplitude trajectories/
+stat-harm profiles, derives only limited action/limit identities and permits
+exactlyONE new .025 p64 tight ODE throughT1. It reuses the existing frozen prepared
+evaluator, PlanarGalerkin and Radau runner. No old BVP/eigenpair/Theta3 is regenerated.
+Matching compute/report/plot doZERO new integration/BVP/eigen/symbolic derivation.
+Execution remains EXPLORATORY_NOT_CERTIFIED, admitted=False. The final result is
+DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS; no physical validation or automatic next
+study. The initial-only projection does not add endpoint derivative BC in dynamics.
+
 ## Prepared one-linear-period mode
 
 ```powershell

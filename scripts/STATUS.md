@@ -20,6 +20,16 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
+## Planar physical sanity diagnostic
+
+`check_weakly_nonlinear_planar_physics.py` is a completed bounded diagnostic:
+saved large history, one .025 p64 tight run, leading response/amplitude signs,
+formal bulk stretching and strain/reaction accounting. Overall
+**DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS**. Exact symmetry/classical/strain
+checks PASS; numerical asymptotic/amplitude/balance interpretation remains
+PARTIAL with visible finite-p/truncation/strict qualifications. It introduces
+no physics solver. [Canonical note](../docs/theory/weakly_nonlinear_planar_physical_sanity_checks.md).
+
 ## Prepared one-T1 calculation
 
 `prepare_planar_initial_state.py --compute --one-T1` completes3 runs of the

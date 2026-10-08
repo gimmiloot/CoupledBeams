@@ -1579,3 +1579,57 @@ prepared case и не повышаются новым результатом.
 T1 остановка; другой p, basis, IC/model, продолжение за T1 или scientific
 direction отдельно не выбраны. LONG CLOSED, EB/RLB-KV
 PAUSED_FOR_SUPERVISOR_DIRECTION и angular same-clamp reference UNAVAILABLE.
+## NLSP-K08
+
+**NLSP_PLANAR_PHYSICAL_SANITY_CHECKS=DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS**,
+2026-10-08, по [NLSP-D08](decisions.md#nlsp-d08),
+[canonical note](../theory/weakly_nonlinear_planar_physical_sanity_checks.md).
+Second-order comparison и amplitude scaling PARTIAL; reflection symmetry,
+classical stretching limit и strains PASS; reactions/momentum PARTIAL.
+Это разные sanity/consistency checks, не PHYSICAL_VALIDATION_PASS.
+
+**Установленные patterns:** сохранённая large trajectory и единственный новый
+p64 tight run при epsilon_a=.025 достигают одного и того же linear T1. Общие
+U_star,C_star,W,Theta,Theta3 и projection rule сохранены; новые IC учитывают
+разные amplitude powers, dimensional atols пересчитаны по прежнему правилу.
+Характерные field maxima large/half близки 2 для w/theta и 4 для u/c; energy
+ratio около 4.0027. Нормированные отклонения от одного сохранённого leading
+response уменьшаются примерно в 4 раза. Pointwise ratios у нулей, phase/period
+fitting и universal power-law claim не использовались.
+
+**Асимптотика / uncertainty:** saved stat/harm Legendre profiles дают u,c и
+их speeds прямо на actual timestamps; старые миллионные histories/eigensolves
+не восстанавливаются. Начальная theta³ correction отдельно учтена как physical
+initial contribution. Leading approximation описывает наблюдаемую amplitude
+structure, но remainder включает higher-order terms и finite-p/time error.
+Для half amplitude нет отдельного neighboring-p/time certification; A/B PARTIAL
+сохраняют это ограничение. Prepared strict initial PARTIAL и
+`EXPLORATORY_NOT_CERTIFIED`, `state.admitted=False` не повышены.
+
+**Физические согласования:** exact action/residual parity и RHS spot checks
+подтверждают even u,c / odd w,theta при смене знака bending amplitude без
+negative-amplitude ODE. Formal shear-free/bulk/quasistatic reduction даёт
+положительный classical EA/(8L) stretching coefficient и quartic amplitude
+order; finite c-clamp qualification сохраняется. Sampled deformations малы,
+1+c positive, energy/mass/safety gates проходят в объявленном G20 case.
+Его E=rho=1 и normalized geometry не являются лабораторным material prediction.
+
+**Reactions / balances:** силы и general resultants получены из той же
+retained action с outward signs, не определены из проверяемого баланса.
+Ненулевые support reactions физически допустимы. Momentum discrepancies
+разобраны с finite-p strong/weak residual; angular identity дополнительно
+содержит известный degree4 rotational truncation remainder quartic action,
+имеющий prepared amplitude order epsilon_a^5. Это не необъяснённая смена
+signs и не доказанная ошибка V0; decomposition identities проверены до
+roundoff scale, но reaction status PARTIAL не скрывает finite-p остатки.
+Точное continuum/3D соответствие или общий hardening law не установлены.
+
+**Стоимость / preservation / stop:** ровно 1 новый ODE до T1, около 118.55s;
+conservative budget account около 237.72s из 600s, включая allowance для
+неудачного report-only attempt; новых BVP/eigensolves 0. Старые
+bundles и D01…D07/K01…K07 сохранены. Исходная zero-u/c задача и full nonlinear
+spatial convergence остаются PARTIAL; physical consistency не заменяет strict
+certification. FEM, новые physical coefficients, angular models, periodic/
+Floquet или critical-amplitude search не выполнялись. LONG CLOSED,
+EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp reference UNAVAILABLE;
+после bounded diagnostic остановка, новый scientific direction не выбран.

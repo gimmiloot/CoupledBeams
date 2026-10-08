@@ -1,0 +1,45 @@
+{
+  "schema": "nlsp-planar-physical-sanity-v1",
+  "one_T1_source": "results/planar_prepared_one_T1/795dcb14d3cd3a55",
+  "prepared_source": "results/planar_prepared_initial_state/5ea8d41faf8ede54",
+  "second_order_source": "results/planar_second_order_axial_response/b3ea4eb6ac95d6e1",
+  "feasibility_source": "results/planar_prepared_feasibility/284a4039177391d1",
+  "pilot_config": "data/input/weakly_nonlinear_planar_time_pilot.json",
+  "large_amplitude": 0.05,
+  "small_amplitude": 0.025,
+  "p": 64,
+  "time_level": "tight",
+  "periods": 1.0,
+  "projection_policy": "common_endpoint_constrained_L2",
+  "projection_dps": 70,
+  "execution_mode": "EXPLORATORY_NOT_CERTIFIED",
+  "snapshot_fractions": [
+    0.0,
+    0.125,
+    0.25,
+    0.375,
+    0.5,
+    0.625,
+    0.75,
+    0.875,
+    1.0
+  ],
+  "comparison_quadrature": 100,
+  "block_rows": 256,
+  "budget": {
+    "numerical_wall_seconds": 600,
+    "max_new_integrations": 1,
+    "previous_limited_checks_seconds": 6.289
+  },
+  "semantics": {
+    "physical_validation": false,
+    "no_FEM": true,
+    "frozen_V0_and_RHS": true,
+    "negative_amplitude_ODE": false,
+    "no_new_p_or_time_levels": true,
+    "no_period_fit": true,
+    "classical_limit_bulk_only": true,
+    "momentum_includes_retained_action_rotation_defect": true
+  },
+  "preflight_metadata_revision": "Normalize own historical artifact key separators; previous attempt stopped before analysis/ODE"
+}

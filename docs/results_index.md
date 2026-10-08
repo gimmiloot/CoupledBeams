@@ -15,6 +15,16 @@ index should be run without first reviewing its cost and output contract.
 
 ## Result directories
 
+`results/nlsp_planar_physical_sanity_checks/888042e17cfc315a/` contains the
+[bounded physical sanity diagnostic](theory/weakly_nonlinear_planar_physical_sanity_checks.md):
+immutable source/action hashes, one new p64 half-amplitude tight history toT1,
+all8 leading/asymptotic and amplitude comparisons, snapshots, retained strain/
+resultant maxima, end forces/moments and finite-p/truncation balance accounting,
+energy/mass/safety, CSV/JSON and3 PDF/PNG figures. Original execution code/manifest
+and unchanged half-history hash are preserved after provenance/report-only
+refinements. Overall DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS; no independent
+half-case p/time certification or physical-validation claim.
+
 `results/planar_prepared_one_T1/795dcb14d3cd3a55/` contains the
 [one-linear-period continuation](theory/planar_prepared_initial_state.md#prepared-one-period-feasibility):
 immutable-source hashes and exact reused q0, shared95057 timestamps including all

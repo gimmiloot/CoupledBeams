@@ -4,6 +4,14 @@ CoupledBeams is a research repository for frequency models and computations for 
 
 ## Project Layout
 
+- [Bounded nonlinear physical sanity checks](docs/theory/weakly_nonlinear_planar_physical_sanity_checks.md)
+  -- `python scripts/analysis/check_weakly_nonlinear_planar_physics.py --compute`
+  reuses the large one-T1 result and permits one half-amplitude p64 trajectory.
+  Expected amplitude/leading-response patterns, formal stretching and reactions
+  are checked with explicit finite-p/truncation caveats. Diagnostic complete with
+  qualifications; report/plot/cache do zero new integration. No physical/3D
+  validation claim or automatic next stage.
+
 - [Prepared movement through one linear period](docs/theory/planar_prepared_initial_state.md#prepared-one-period-feasibility)
   -- `python scripts/analysis/prepare_planar_initial_state.py --compute --one-T1`
   reuses saved initial coordinates and completes3 exploratory runs toT1.

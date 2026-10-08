@@ -4,6 +4,18 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
+## Bounded planar physical sanity (2026-10-08)
+
+The [physical consistency note](theory/weakly_nonlinear_planar_physical_sanity_checks.md)
+compares the saved p64 .05 one-T1 history with leading second-order profiles and
+one new p64 .025 tight trajectory. Normalized motions show expected2/4 amplitude
+patterns; leading-deviation reductions are approximately4. Exact sign symmetry,
+formal classical stretching and retained-strain diagnostics pass. Reaction
+accounting includes finite-p strong residuals and the explicit degree4 rotational
+truncation term. Overall **DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS**: no physical
+validation, no independent half-case p/time certificate, strict/historical PARTIAL
+retained. Physics/RHS/basis/BC unchanged; no further calculation is authorized.
+
 ## Prepared movement through one linear period (2026-10-08)
 
 The [one-T1 continuation](theory/planar_prepared_initial_state.md#prepared-one-period-feasibility)

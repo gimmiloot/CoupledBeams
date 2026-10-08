@@ -916,3 +916,45 @@ main HEAD `a39c196127eae0cb1f44ade5a924be8ea5acc784`, без supervisor approval
 out-of-plane scope. LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION,
 angular same-clamp reference UNAVAILABLE и historical D/K qualifications
 сохраняются; следующий научный этап этим заданием не выбирается.
+## NLSP-D08
+
+**Разрешены bounded physical sanity checks**, 2026-10-08, после
+[NLSP-D07](#nlsp-d07)/[NLSP-K07](knowledge.md#nlsp-k07). Цель — проверить
+ожидаемые слабонелинейные закономерности принятой модели, не объявлять её
+экспериментально или 3D validated и не снимать strict numerical PARTIAL.
+
+**Scope / почему:** четыре ограниченных контроля: saved p64 large trajectory
+против сохранённой аналитической second-order approximation; один новый p64
+half-amplitude run; formal classical stretching limit; deformations, reactions
+и integral balances. One fixed-fixed G20 rod, прежние V0/quartic action/cubic
+residuals, variable mass, четыре independent fields, Shen basis, Radau/analytic
+Jacobian, coefficients и essential-only BC сохраняются. Старые trajectories,
+BVP/eigensystems и initial profiles не пересчитываются.
+
+**Amplitude rule / numerical policy:** epsilon_a=.05 сравнивается с .025
+на одном physical 0…T1. Prepared u,c масштабируются как epsilon_a², w как
+epsilon_a, theta содержит epsilon_a и ту же epsilon_a³ Theta3. Используется
+одно прежнее `common_endpoint_constrained_L2` правило; dimensional atols новой
+amplitude вычисляются по прежнему scaling prescription. Нельзя равномерно
+умножить весь q0 на 1/2 или определить новый nonlinear period. Допускается
+ровно 1 новый tight run до T1, budget 600s; отрицательный знак amplitude
+проверяется algebraically/numerical spots, без отдельного ODE.
+
+**Qualifications:** second-order approximation не exact full cubic solution;
+difference содержит higher-order physics и numerical uncertainty. Classical
+stretching — formal bulk/reduced benchmark, не равномерное устранение finite
+M-H c-clamps. Reaction balances различают endpoint fluxes, continuum identities,
+finite-p weak residual и retained-action rotational truncation remainder.
+V0 остаётся нашим reduced constitutive assumption, не полной 3D редукцией.
+
+**Основание / provenance:** новое прямое задание пользователя
+`ae54d7eb-2f9f-4e38-81af-2f964c57488c/Pasted text.txt`, 2026-10-08;
+main HEAD `5878f5b34d8ff04aae926c7a3e4be959cc78a4b6`, без supervisor approval.
+[Canonical note](../theory/weakly_nonlinear_planar_physical_sanity_checks.md),
+[configuration](../../data/input/nlsp_planar_physical_sanity_checks.json),
+результат — [NLSP-K08](knowledge.md#nlsp-k08).
+**Остановка / пересмотр:** после report остановиться. Не выбирать новую
+amplitude/p/time level, full 5T1, angular/joint/Floquet/out-of-plane или periodic
+orbit study. LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular
+same-clamp reference UNAVAILABLE и прежние PARTIAL сохраняются. Следующий этап
+этим bounded sanity task не выбирается автоматически.
