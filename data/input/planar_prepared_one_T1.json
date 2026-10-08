@@ -1,0 +1,61 @@
+{
+  "schema": "nlsp-prepared-one-T1-v1",
+  "source_bundle": "results/planar_prepared_feasibility/284a4039177391d1",
+  "pilot_config": "data/input/weakly_nonlinear_planar_time_pilot.json",
+  "periods": 1.0,
+  "degrees": [
+    48,
+    64
+  ],
+  "cases": [
+    [
+      48,
+      "tight"
+    ],
+    [
+      64,
+      "tight"
+    ],
+    [
+      64,
+      "allowed_extra"
+    ]
+  ],
+  "amplitude_over_h": 0.05,
+  "projection_policy": "common_endpoint_constrained_L2",
+  "execution_mode": "EXPLORATORY_NOT_CERTIFIED",
+  "state_admitted": false,
+  "budget": {
+    "numerical_wall_seconds": 1200,
+    "maximum_integrations": 3
+  },
+  "sampling": {
+    "policy": "extend_saved_conservative_bound_spacing",
+    "source_timestamps_preserved": true,
+    "period_fractions": [
+      0.0,
+      0.1,
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "samples_per_upper_bound_period": 16
+  },
+  "storage": {
+    "policy": "one_memmapped_float64_state_per_case",
+    "block_rows": 256,
+    "physical_snapshot_points": 501
+  },
+  "semantics": {
+    "same_frozen_initial_state": true,
+    "recompute_projection": false,
+    "derivative_BC": false,
+    "phase_alignment": false,
+    "period_fit": false,
+    "energy_matching": false,
+    "energy_classification": false,
+    "out_of_plane_stability": false,
+    "continuum_truth": false
+  }
+}

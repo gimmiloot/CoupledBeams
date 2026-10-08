@@ -713,3 +713,290 @@ feasibility config. Frozen model/RHS/Jacobian/old inputs/reference bundles и
 из-за нового explicit user mode; source index/BibTeX и assumptions не менялись:
 новой физической assumption нет. Обновлённые memory entries только NLSP-D06/K06;
 новый научный этап не выбран.
+
+
+<a id="prepared-one-period-feasibility"></a>
+## 17. То же подготовленное движение на 0…T1, 2026-10-08
+
+**Все3 разрешённых runs дошли до одного линейного периода T1.** Результат
+`COMPLETED_EXPLORATORY_NOT_CERTIFIED` сохраняет прежнюю strict qualification.
+Spatial p48→p64 остаётся PARTIAL:7/8 проходят, только max theta_t выше1e-4.
+Temporal p64 tight→allowed_extra проходит8/8. Разности увеличиваются относительно
+0.1T1, но остаются близкими; temporal uncertainty существенно меньше spatial
+разности по измеренным нормам. Практическая вычислимость подтверждена для этой
+конечной four-field задачи на0…T1; требуемая полная strict accuracy не заявлена.
+
+### 17.1. Неизменённые источник, initial state и time settings
+
+Исходный short bundle `results/planar_prepared_feasibility/284a4039177391d1/`
+проверен по собственному manifest:51 artifact hashes. Его manifest SHA256:
+`3eab260c50c08915d10c7e2eba5f706e5769bad350cfb3c8be8bd3cd8c9daf35`.
+Загружены непосредственно прежние p48/p64 q0,v0, без повторной L2/MP-проекции,
+BVP, eigensystem, Theta3 или precision ladder. Исходные физические функции и
+policy `common_endpoint_constrained_L2` неизменны; первые/вторые endpoint derivatives
+не закрепляются во время движения. Все4(p−1) независимых coordinates сохранены.
+
+Initial NPZ SHA256 p48:
+`42e509f0f1825d914be7da5a408b5755e66ed676ae8206a9731c2b37ade08a1a`;
+p64: `114b5ad0415f5cb58182dc8357cd3c224fd356e9e0c749992bb547c5bf14e624`.
+Проверены `(u,w,theta,c)` ordering,188/252 coordinates,97/129 Gauss points,
+raw/whitened representation и совпадение q0/v0 с начальными строками исторических
+histories. p64 tight/extra используют точно одинаковые q0,v0. Нулевые скорости,
+essential BC, finite RHS и прежняя safety policy сохраняются.
+
+Геометрия G20 и epsilon_a=.05, A=.0025 остаются прежними. V0, quartic action,
+cubic residuals, variable mass/inertia, Shen space, RHS и analytic Jacobian
+не изменены. Нет новых slope constraints, forcing, damping или joint model.
+`omega1=0.3174742907880648`, `T1=19.791162590151373`, tau=t/T1 фиксированы
+по прежнему reference; ни p, ни nonlinear history не переопределяют период.
+
+| Case | rtol / relative-atol prescription | max_step | component atol length |
+| --- | --- | ---: | ---: |
+| p48 tight | 1e-10 / 1e-10 | 0.0036046964938503193 | 376 |
+| p64 tight | 1e-10 / 1e-10 | 0.0036046964938503193 | 504 |
+| p64 allowed_extra | 2e-11 / 2e-11 | 0.002403130995900213 | 504 |
+
+Полные atol vectors восстановлены прежним time_settings и проверены на точное
+равенство saved cases; вектор не заменён scalar. Radau starts от t=0 ровно3 раза,
+без нового smoke или склейки internal states. Strict initial projection1e-6
+остаётся PASS; прежний relative strong/weak2e-12 остаётся FAIL/PARTIAL, его
+precision evidence только переиспользовано. `state.admitted=False`, execution
+`EXPLORATORY_NOT_CERTIFIED`; источник этой авторизации — новое прямое задание
+пользователя ([NLSP-D07](../memory/decisions.md#nlsp-d07)).
+
+### 17.2. Sampling, storage и short-prefix recovery
+
+Общая сетка содержит95057 points на0…T1. Унаследован conservative bound
+omega≈1796.391864 и16 points на upper-bound period; spacing≈0.0002185903.
+Включены все13568 точных прежних timestamps и0,.1,.25,.5,.75,1 T1.
+Minimum spacing объединённой сетки не используется для её продления: близкие
+совпадения исходных сеток не требуют нового refinement. Output grid не заменяет
+time accuracy control; extrema остаются sampled spatial/time maxima.
+
+Каждый case сразу сохраняет memmapped float64 `state.npy` с q/v columns и
+`time.npy`; valid rows определяются case.json. Для incomplete run нечитанный
+allocated tail не становится данными и timestamps не дополняются последним
+snapshot. Comparison при incomplete target имеет PARTIAL, даже если component
+criteria проходят на доступном prefix; отдельно указаны required_end и coverage.
+
+Обработка выполняется блоками256 rows; все3 полные physical histories в RAM
+не материализуются. Сохранены observations `w(L/2),theta(L/4),u(L/4),c(L/4),c(L/2),
+theta(L/2)`, нормы всех полей/скоростей, energy, safety, internal dt/counters,
+а также snapshots на0,.1,.25,.5,.75,1 T1. Ноль поля в symmetric observation
+не интерпретируется как его отсутствие; quarter observations и полные нормы
+сохранены. T1 не задаёт требование возврата q/v к начальному состоянию.
+
+Для каждого run новый prefix на точных old timestamps сравнен с соответствующим
+short case по прежним all8 norms, settings, projection policy и собственной
+initial energy. Все3 prefix regressions PASS; q0/v0 точно совпадают. Maximum
+relative field difference≤2.085e-8; energy difference≤1.491e-13. Изменение
+последнего dense-output шага возле старого t_bound не требует bitwise equality
+всего prefix и не интерпретируется как новая nonlinear physics.
+
+### 17.3. All-eight full-period comparisons
+
+Сохранены max_t L2 и sampled max_(s,t), прежние own-characteristic scales,
+floor1e-10 и fixed physical scales `[A,A,A/L,A/L]` для q, с множителем omega1
+для скоростей. Ни phase/period/amplitude matching, ни исключение краёв/начала
+не применяется. Primary table использует собственный **полный** characteristic
+scale соответствующей пары; instantaneous zero не служит знаменателем.
+
+Spatial **p48 tight vs p64 tight**,0…T1:
+
+| Component | absolute max-time L2 | absolute max-space-time | relative L2 | relative max | Gate |
+| --- | ---: | ---: | ---: | ---: | --- |
+| u | 5.46365e-13 | 1.23316e-12 | 6.45339e-07 | 8.99693e-07 | PASS |
+| w | 9.37661e-11 | 2.60548e-10 | 5.94040e-08 | 1.04272e-07 | PASS |
+| theta | 2.73271e-09 | 7.63698e-09 | 5.09444e-07 | 1.02064e-06 | PASS |
+| c | 6.04190e-12 | 1.41939e-11 | 1.34397e-06 | 3.08417e-06 | PASS |
+| u_t | 2.60090e-11 | 6.24885e-11 | 9.63341e-05 | 1.42706e-04 | PASS |
+| w_t | 4.54857e-09 | 1.31350e-08 | 9.07267e-06 | 1.65450e-05 | PASS |
+| theta_t | 1.35405e-07 | 3.80942e-07 | 7.88405e-05 | 1.59015e-04 | FAIL |
+| c_t | 4.10543e-10 | 1.02869e-09 | 2.86800e-04 | 7.00889e-04 | PASS |
+
+Temporal **p64 tight vs p64 allowed_extra**,0…T1:
+
+| Component | absolute max-time L2 | absolute max-space-time | relative L2 | relative max | Gate |
+| --- | ---: | ---: | ---: | ---: | --- |
+| u | 1.01363e-16 | 7.52014e-16 | 1.19725e-10 | 5.48658e-10 | PASS |
+| w | 7.69169e-15 | 6.07114e-14 | 4.87295e-12 | 2.42969e-11 | PASS |
+| theta | 2.08469e-12 | 3.22822e-12 | 3.88637e-10 | 4.31436e-10 | PASS |
+| c | 1.46241e-14 | 3.66844e-14 | 3.25302e-09 | 7.97112e-09 | PASS |
+| u_t | 2.84030e-14 | 2.10160e-13 | 1.05201e-07 | 4.79945e-07 | PASS |
+| w_t | 1.52453e-12 | 1.50736e-11 | 3.04086e-09 | 1.89868e-08 | PASS |
+| theta_t | 9.75177e-11 | 4.05374e-10 | 5.67805e-08 | 1.69213e-07 | PASS |
+| c_t | 1.13675e-12 | 3.67351e-12 | 7.94120e-07 | 2.50292e-06 | PASS |
+
+Spatial theta_t проходит L2, но max1.59015e-4 выше1e-4. u,c и speeds имеют
+порог1e-3; w,theta и speeds —1e-4. Temporal max differences составляют не более
+0.358% от соответствующих spatial maxima; это observed time-uncertainty control,
+не доказательство отсутствия любых временных ошибок или точности continuum p64.
+
+### 17.4. Развитие разностей и qualification знаменателей
+
+Сохранены для всех8 components обеих pairs: d_L2(t),d_max(t), sampled argmax_s,
+cumulative maxima и full-horizon normalization. Figure differences использует
+**общие full-horizon p64 tight L2 scales** для обеих lines; acceptance tables
+используют прежние own scales каждой пары. Тем самым visual relative growth
+не меняет normalization при переходе между окнами.
+
+Cumulative spatial **absolute max** к концам окон:
+
+| Component | .1T1 | .25T1 | .5T1 | .75T1 | T1 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| u | 5.5180e-13 | 5.5212e-13 | 8.8691e-13 | 9.1655e-13 | 1.2332e-12 |
+| w | 1.1683e-10 | 1.8002e-10 | 1.8002e-10 | 2.0952e-10 | 2.6055e-10 |
+| theta | 3.4297e-09 | 5.4444e-09 | 5.4444e-09 | 6.1980e-09 | 7.6370e-09 |
+| c | 5.8657e-12 | 7.1811e-12 | 1.2014e-11 | 1.3899e-11 | 1.4194e-11 |
+| u_t | 2.9175e-11 | 2.9175e-11 | 4.7373e-11 | 4.8264e-11 | 6.2488e-11 |
+| w_t | 6.4487e-09 | 9.5978e-09 | 9.5978e-09 | 1.0754e-08 | 1.3135e-08 |
+| theta_t | 1.9599e-07 | 2.8459e-07 | 2.8572e-07 | 3.1435e-07 | 3.8094e-07 |
+| c_t | 3.7632e-10 | 4.5338e-10 | 7.9960e-10 | 9.9526e-10 | 1.0287e-09 |
+
+Cumulative temporal **absolute max**, те же окна:
+
+| Component | .1T1 | .25T1 | .5T1 | .75T1 | T1 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| u | 3.2992e-16 | 4.6634e-16 | 5.7511e-16 | 6.4950e-16 | 7.5201e-16 |
+| w | 1.4914e-14 | 2.7845e-14 | 4.1037e-14 | 5.1189e-14 | 6.0711e-14 |
+| theta | 4.8029e-13 | 9.1367e-13 | 1.6352e-12 | 2.4235e-12 | 3.2282e-12 |
+| c | 4.6152e-15 | 7.4730e-15 | 1.5883e-14 | 3.3929e-14 | 3.6684e-14 |
+| u_t | 1.4754e-13 | 1.8553e-13 | 1.9225e-13 | 2.0921e-13 | 2.1016e-13 |
+| w_t | 5.2563e-12 | 9.6105e-12 | 1.2852e-11 | 1.3883e-11 | 1.5074e-11 |
+| theta_t | 1.3227e-10 | 2.0440e-10 | 2.8008e-10 | 3.6646e-10 | 4.0537e-10 |
+| c_t | 2.5606e-12 | 2.8242e-12 | 3.4045e-12 | 3.4091e-12 | 3.6735e-12 |
+
+Все cumulative L2/fixed-scale/relative rows также доступны в windows.csv/JSON.
+Instantaneous curves устанавливают большую часть spatial разности уже в раннем
+участке (примерно доtau=.05), затем показывают осциллирующую разность с умеренным
+увеличением envelope/cumulative peaks. Изолированные локальные пики присутствуют;
+нет основания заменять эту картину законом фазового ухода, exponential growth
+или физической instability. Законы роста/decay/Lyapunov не фитились.
+
+| Component | Absolute max T1 / short | Absolute L2 T1 / short | Own max-scale T1 / short |
+| --- | ---: | ---: | ---: |
+| u | 2.2348 | 2.2837 | 1.0001 |
+| w | 2.2301 | 2.4460 | 1.0000 |
+| theta | 2.2267 | 1.9281 | 1.0000 |
+| c | 2.4198 | 2.3447 | 1.0000 |
+| u_t | 2.1419 | 2.1363 | 1.0535 |
+| w_t | 2.0368 | 2.1990 | 1.7007 |
+| theta_t | 1.9437 | 1.7732 | 1.7177 |
+| c_t | 2.7336 | 2.5822 | 1.0542 |
+
+Таким образом, абсолютные spatial maxima выросли примерно2.0–2.7 раза, а не
+стали меньше. Для theta_t absolute max вырос1.944 раза; полный own max-scale
+стал примерно1.717 раза больше. Тот же prefix при новой full-horizon scale
+имеет relative max8.181e-5, тогда как его исходный short criterion сохраняет
+FAIL1.405e-4. Это изменение знаменателя, **не улучшение** старого результата.
+На полном T1 max1.590e-4 также FAIL. Малый energy drift не отменяет этот факт.
+
+Sampled locations/time of global spatial maxima:
+
+| Component | tau at max | s/L at one argmax |
+| --- | ---: | ---: |
+| u | 0.984592 | 0.746605 |
+| w | 0.829788 | 0.014607 |
+| theta | 0.819759 | 0.868414 |
+| c | 0.846145 | 0.907695 |
+| u_t | 0.941573 | 0.226701 |
+| w_t | 0.828253 | 0.014607 |
+| theta_t | 0.818224 | 0.868414 |
+| c_t | 0.847217 | 0.907695 |
+
+Основное ограничение остаётся theta_t; её максимум поздний, околоtau=.8182,
+s/L=.8684. C_t максимален околоtau=.8472,s/L=.9077 и остаётся ниже1e-3.
+Другие компоненты могут иметь максимумы в иных местах, включая близкие к clamp
+точки; endpoint zones не исключаются. Argmax не объявляется уникальным или
+точным continuum location, в частности при отражательной симметрии.
+
+### 17.5. Energy, safety, стоимость и result bundle
+
+Каждый case сохраняет собственную E_h(0)≈1.25973835e-9 без window renormalization.
+Energy drift max2.1329e-12/2.1321e-12/2.9433e-13 против1e-6. Relative mass lower
+bound≥.9999907955, condition bound≤1.0000092046, min(1+c)≥.9999953978.
+Max|c|≤4.603e-6, max|theta|≤.007484, max|u_s|≤1.496e-5,
+max|w_s|≤.007658,max L|theta_s|≤.068452. Прежние bounds проходят на всём
+достигнутом интервале; сохранены старые quartic strain diagnostics.
+Mass bounds имеют ту же weighted-Gram Loewner interpretation без eigensolves.
+Energy не применяется для classification, correction или spatial-certification claim.
+
+| Case | accepted steps | RHS/Jacobian | Radau nlu | mass factorizations | ODE seconds |
+| --- | ---: | --- | ---: | ---: | ---: |
+| p48_tight | 5491 | 38445/2 | 2414 | 38441 | 29.763 |
+| p64_tight | 5491 | 38445/2 | 2566 | 38441 | 48.005 |
+| p64_allowed_extra | 8236 | 57660/2 | 3930 | 57657 | 72.524 |
+
+Forecast по short counters≈173.42s; actual integration150.293s. Primary charged
+numerical work232.845s из1200s включает validation/output diagnostics/comparisons;
+plot/test/report overhead записывается отдельно. Выполнено ровно3 ODE,0 новых
+projection/MP/BVP/eigen/symbolic audits. Radau LU и variable-mass factorizations
+не смешиваются; rejected steps не восстанавливаются из guessed counters.
+
+Final bundle `results/planar_prepared_one_T1/795dcb14d3cd3a55/` содержит
+manifest/provenance, saved q0, complete95057-row q/v histories, exact settings,
+actual timestamps/internal dt, observations/norms/snapshots, energy/safety,
+all8 comparison CSV/JSON, error curves/windows/locations, prefix regressions
+и3 PDF/PNG figures:
+`prepared_motion_one_T1`, `prepared_differences_one_T1`, `prepared_quality_one_T1`.
+Физические plots показывают близкие движения двух p; полного exact-periodic
+возврата не требуют и nonlinear period не измеряют.
+
+Original execution `c505209d58fe74c0` сохранён в manifest/summary/code snapshots.
+После него улучшена только requested-horizon qualification partial comparison
+и caption общей plot scale; output cache identity обновлена прозрачно, arrays
+и три numerical runs не изменены/не повторены. Старый source284a неизменён.
+
+```powershell
+python scripts/analysis/prepare_planar_initial_state.py --compute --one-T1
+python scripts/analysis/prepare_planar_initial_state.py --report-only results/planar_prepared_one_T1/795dcb14d3cd3a55
+python scripts/analysis/prepare_planar_initial_state.py --plot-only results/planar_prepared_one_T1/795dcb14d3cd3a55
+```
+
+[One-T1 config](../../data/input/planar_prepared_one_T1.json) и новый horizon входят
+в cache identity. Старый default `--compute --feasibility` сохраняет0.1T1.
+Matching compute/report/plot не выполняют новой подготовки/ODE или symbolic work.
+
+| Status | Result |
+| --- | --- |
+| NLSP_PREPARED_ONE_T1_EXECUTION | COMPLETED_EXPLORATORY_NOT_CERTIFIED |
+| NLSP_PREPARED_ONE_T1_PREFIX_REGRESSION | PASS |
+| NLSP_PREPARED_ONE_T1_SPATIAL_CHECK | PARTIAL |
+| NLSP_PREPARED_ONE_T1_TEMPORAL_CHECK | PASS |
+| NLSP_PREPARED_ONE_T1_ENERGY_AND_MASS | PASS |
+| NLSP_PREPARED_ONE_T1_FEASIBILITY | COMPLETED_EXPLORATORY_NOT_CERTIFIED |
+
+Практическое основание сохранять выбранный метод для этой задачи есть. Работа
+на одном линейном периоде не доказывает continuous-PDE convergence, не делает
+p64 exact truth и не находит nonlinear periodic orbit. Strict float64 qualification
+сохраняется; out-of-plane/Floquet/critical-amplitude не исследовались.
+Физика, IC, basis и BC неизменны; LONG CLOSED, EB/RLB-KV PAUSED, angular same-clamp
+reference UNAVAILABLE, historical zero-u/c и prepared strict PARTIAL сохранены.
+Нет новых p/amplitudes, full5T1, angular dynamics или автоматически выбранного
+следующего scientific stage. Остановка после этого bounded result.
+
+
+### 17.6. Targeted verification и preservation
+
+Финальная адресная проверка: **62 PASS** за9.47s —61 tests нового one-T1 файла
+и1 обслуженная AST/API regression прежнего runner. Только buffer-related kwargs/
+allocation признаны изменёнными; defaultinitial/stepping, model/RHS/Jacobian,
+math thresholds и historical XFAIL не менялись. Tests реально не интегрировали
+ODE и не выполняли MP/BVP/eigen/source-symbolic studies. Проверены actual data,
+partial-prefix semantics, requested horizon, saved q0/settings, старый0.1T1
+preset, cache separation, all8 norms/windows и source qualifications.
+
+Matching one-T1 compute, report-only и **реальный** plot-only выполнены с
+запрещёнными ODE/MP/BVP/eigen/symbolic/preparation/comparison routes:0 новых
+численных calls, deterministic figure hashes сохранены. Plot reads только
+saved observations/curves/energy. Проверены753 affected relative links и300
+fragments, новые NLSP-D07/K07 уникальны; `git diff --check` проходит.
+
+HEAD `a39c196127eae0cb1f44ade5a924be8ea5acc784` и staging сохранены. Проверка
+ограничена affected/frozen files и source manifest, без массовой repository
+inventory. Source284a и physics/preparation helpers/old short config неизменны;
+исторические prefixes canonical note и D/K сохранены. README/CHANGELOG и
+relevant navigation/guides обновлены из-за нового explicit user mode. Старые
+source index/BibTeX, baseline equations, assumptions, old results/article files
+не менялись. Новых механических assumptions нет. Из scoped memory добавлены
+только NLSP-D07/K07; после отчёта остановка.

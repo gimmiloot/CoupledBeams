@@ -919,8 +919,8 @@ def test_default_initializer_preserves_old_operations_and_solver_after_failure_g
     current = ast.parse((ROOT/"scripts/analysis/simulate_weakly_nonlinear_planar_rod.py").read_text(encoding="utf8"))
     old = next(x for x in historical_runner_ast.body if isinstance(x, ast.FunctionDef) and x.name=="integrate_case")
     new = next(x for x in current.body if isinstance(x, ast.FunctionDef) and x.name=="integrate_case")
-    assert [x.arg for x in new.args.kwonlyargs] == ["initial_coordinates"]
-    assert ast.dump(new.args.kw_defaults[0]) == ast.dump(ast.Constant(None))
+    assert [x.arg for x in new.args.kwonlyargs] == ["initial_coordinates", "history_buffer"]
+    assert all(ast.dump(value)==ast.dump(ast.Constant(None)) for value in new.args.kw_defaults)
     # Normalization erases only the explicitly authorized q0 alternate path
     # and failure-preservation guards. Every prior mathematical operation,
     # tolerance expression, solver argument and accepted-step expression stays.
@@ -929,6 +929,13 @@ def test_default_initializer_preserves_old_operations_and_solver_after_failure_g
     assert ast.dump(branch.body[0]) == ast.dump(old.body[1])
     branch_index = new.body.index(branch)
     new.body[branch_index:branch_index+1] = branch.body
+    allocation = next(x for x in new.body if isinstance(x, ast.If)
+                      and ast.dump(x.test)==ast.dump(ast.parse("history_buffer is None").body[0].value))
+    old_allocation = next(x for x in old.body if isinstance(x, ast.Assign)
+                          and any(isinstance(t,ast.Name) and t.id=="history" for t in x.targets))
+    assert ast.dump(allocation.body[0])==ast.dump(old_allocation)
+    index = new.body.index(allocation)
+    new.body[index:index+1] = allocation.body  # caller buffer is storage only
     rhs = next(x for x in new.body if isinstance(x, ast.FunctionDef) and x.name=="rhs")
     guard = rhs.body.pop(0)
     assert isinstance(guard, ast.If)

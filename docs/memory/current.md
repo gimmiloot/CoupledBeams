@@ -1,6 +1,28 @@
 # Текущий контекст
 
-## Prepared-state precision/feasibility — exploratory, spatial PARTIAL, 2026-10-08
+## Prepared one-T1 feasibility — exploratory, spatial PARTIAL, 2026-10-08
+
+[NLSP-D07](decisions.md#nlsp-d07), [NLSP-K07](knowledge.md#nlsp-k07),
+[canonical continuation](../theory/planar_prepared_initial_state.md#prepared-one-period-feasibility).
+Тот же frozen prepared IVP рассчитан всеми тремя cases p48 tight, p64 tight,
+p64 allowed_extra до одного линейного reference T1. Source q0/v0/settings
+загружены без projection/MP/BVP/eigen/Theta3 пересчёта. Прежний short prefix,
+energy/mass/safety и все 8 temporal component gates проходят.
+
+Spatial p48→p64 остаётся PARTIAL: 7 из 8 проходят, theta_t max relative
+около 1.59015e-4 выше 1e-4 при прошедшем L2 gate. Практическая finite-dimensional
+feasibility установлена на 0…T1; strict initial PARTIAL и
+`EXPLORATORY_NOT_CERTIFIED`, `state.admitted=False` сохранены. Это не full 5T1
+или continuous-PDE validation, periodic orbit либо повышение старой zero-u/c
+задачи до PASS. V0/model/RHS/Jacobian/basis/BC/coefficients не менялись.
+
+После bounded one-T1 report остановка; дальнейший горизонт, refinement или
+новый scientific direction отдельно не выбраны. LONG CLOSED, EB/RLB-KV
+PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp out-of-plane reference
+UNAVAILABLE. Исторические разделы ниже сохраняют прежние результаты и остановки.
+
+
+## Исторический prepared-state precision/feasibility — exploratory, spatial PARTIAL, 2026-10-08
 
 [NLSP-D06](decisions.md#nlsp-d06), [NLSP-K06](knowledge.md#nlsp-k06),
 [canonical continuation](../theory/planar_prepared_initial_state.md#prepared-precision-feasibility).
@@ -277,7 +299,7 @@ EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp out-of-plane
 reference UNAVAILABLE сохраняются. Следующее направление требует отдельного
 явного решения пользователя.
 
-## Текущая остановка после bounded precision/feasibility
+## Историческая остановка после bounded precision/feasibility
 
 Projection recovery PASS, strict initial verification PARTIAL; exploratory
 short temporal PASS / spatial PARTIAL. Новая 0.1T1 prepared trajectory не заменяет
@@ -285,3 +307,11 @@ short temporal PASS / spatial PARTIAL. Новая 0.1T1 prepared trajectory не
 LONG — CLOSED; EB/RLB-KV — PAUSED_FOR_SUPERVISOR_DIRECTION; angular same-clamp
 reference — UNAVAILABLE. Ни full-period/p-refinement, ни новая модель/IC/basis,
 ни новый scientific stage автоматически не выбраны или не разрешены.
+## Текущая остановка после bounded one-T1 feasibility
+
+Все 3 exploratory trajectories достигли T1; prefix, temporal, energy/mass
+PASS, spatial PARTIAL сохраняется. Strict initial verification не повышена,
+историческая zero-u/c задача и прежний full 5T1 pilot остаются PARTIAL.
+LONG — CLOSED; EB/RLB-KV — PAUSED_FOR_SUPERVISOR_DIRECTION; angular same-clamp
+reference — UNAVAILABLE. Автоматическое увеличение horizon/p, смена basis/IC/
+physics или новый scientific stage не выбраны и не разрешены.

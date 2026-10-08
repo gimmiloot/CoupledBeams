@@ -4,7 +4,20 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
-## Prepared-state precision / short feasibility continuation (2026-10-08)
+## Prepared movement through one linear period (2026-10-08)
+
+The [one-T1 continuation](theory/planar_prepared_initial_state.md#prepared-one-period-feasibility)
+reuses exactly the saved common initial coefficients and time settings at p48/p64.
+All3 runs reachT1=19.791162590151373 in EXPLORATORY_NOT_CERTIFIED mode, with no
+new projection/MP/BVP/eigen/symbolic audit. Old0.1T1 prefixes match; temporal8/8
+and energy/mass/safety pass. Spatial remains PARTIAL:7/8 pass, theta_t max relative
+1.590e-4 exceeds1e-4. Absolute spatial maxima grow roughly1.94–2.73x; changes of
+full-horizon characteristic denominators are recorded separately. The sampled
+results support bounded practical computability, not continuous-PDE convergence,
+a nonlinear periodic orbit or out-of-plane/Floquet stability. Physics/IC/BC/basis
+and all historical strict/PARTIAL qualifications remain; no automatic extension.
+
+## Historical prepared-state precision / short feasibility continuation (2026-10-08)
 
 The [continuation evidence](theory/planar_prepared_initial_state.md#prepared-precision-feasibility)
 separates strict verification from explicitly authorized exploratory execution.

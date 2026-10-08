@@ -198,7 +198,7 @@ def safety_check(disc, q, policy):
         raise ArithmeticError(f"Declared small-neighborhood safety gate: {conditions}")
 
 
-def integrate_case(disc, shape, initial, config, amplitude_ratio, level, times, deadline, *, initial_coordinates=None):
+def integrate_case(disc, shape, initial, config, amplitude_ratio, level, times, deadline, *, initial_coordinates=None, history_buffer=None):
     amplitude=amplitude_ratio*config["material_geometry"]["h"]
     if initial_coordinates is None:
         q0=disc.project(amplitude*shape(disc.x))
@@ -209,7 +209,13 @@ def integrate_case(disc, shape, initial, config, amplitude_ratio, level, times, 
         q0=q0.copy()
     v0=np.zeros(disc.ndof)
     settings=time_settings(disc,amplitude,level,config)
-    history=np.empty((len(times),2*disc.ndof));history[0]=np.r_[q0,v0]
+    if history_buffer is None:
+        history=np.empty((len(times),2*disc.ndof))
+    else:
+        history=history_buffer
+        if history.shape!=(len(times),2*disc.ndof) or history.dtype!=np.float64 or not history.flags.writeable:
+            raise ValueError("History buffer must be writable float64 with the full output shape")
+    history[0]=np.r_[q0,v0]
     cursor=1
     started=time.perf_counter(); disc.reset_counters()
     def rhs(t,y):

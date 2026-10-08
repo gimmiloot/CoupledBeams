@@ -1537,3 +1537,45 @@ periodic orbit или out-of-plane/stability результат. Prepared case �
 canonical note, raw bundle служит дополнительным основанием. LONG CLOSED,
 EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp reference UNAVAILABLE;
 никакой следующий этап автоматически не выбран.
+## NLSP-K07
+
+**Prepared one-T1 feasibility — exploratory, spatial PARTIAL**, 2026-10-08,
+по [NLSP-D07](decisions.md#nlsp-d07),
+[canonical continuation](../theory/planar_prepared_initial_state.md#prepared-one-period-feasibility).
+`NLSP_PREPARED_ONE_T1_EXECUTION=COMPLETED_EXPLORATORY_NOT_CERTIFIED`;
+`NLSP_PREPARED_ONE_T1_FEASIBILITY=COMPLETED_EXPLORATORY_NOT_CERTIFIED`;
+prefix regression и energy/mass PASS, temporal PASS, spatial PARTIAL.
+
+**Установлено:** все 3 разрешённые trajectories достигли T1, около 19.79116,
+из точно загруженных source q0/v0 с прежними time prescriptions. Прежний
+0…0.1T1 prefix воспроизводится в рамках gates; один общий actual time grid
+сохраняет source timestamps. Новых projection/MP/BVP/eigen/symbolic вычислений
+нет. Frozen model/action/RHS/Jacobian и four-field essential-only clamps
+сохранены, производные не стали дополнительными BC.
+
+**Temporal / spatial evidence:** temporal p64 tight→allowed_extra проходит
+все 8 components. Spatial p48→p64 проходит 7 из 8; theta_t max relative
+около 1.59015e-4 остаётся выше 1e-4, хотя L2 gate проходит. Абсолютный максимум
+theta_t difference вырос примерно в 1.94 раза относительно short interval;
+c_t — в 2.73 раза, но её relative gate ещё проходит. Time-level differences
+существенно меньше соответствующих spatial differences. Поэтому temporal
+PASS не объясняет и не снимает сохранившийся spatial PARTIAL; единственная
+причина этого ограничения не доказана. Norms/gates/floors сохранены, phase
+alignment и rescaling не используются; extrema остаются sampled quantities.
+
+**Качество / предел claim:** discrete energy drift, mass positivity и safety
+проходят на фактическом 0…T1. Три bounded runs подтверждают практическую
+finite-dimensional feasibility на этом горизонте. Это не strict verification
+PASS, continuous-PDE convergence, доказательство periodic orbit или устранение
+initial compatibility всех порядков. `state.admitted=False`, source strict
+initial PARTIAL и прежний float-Gauss relative action check не переобъявлены
+PASS. Первоначальные zero-u/c и full 5T1 nonlinear PARTIAL не заменяются
+prepared case и не повышаются новым результатом.
+
+**Стоимость / остановка:** около 232.85s charged primary work из 1200s,
+из них 150.29s на 3 ODE; новых MP/BVP/eigen/symbolic calculations 0.
+Исходный feasibility bundle и D06/K06 сохранены; tracked canonical continuation
+является основным источником, raw histories — дополнительным. После одного
+T1 остановка; другой p, basis, IC/model, продолжение за T1 или scientific
+direction отдельно не выбраны. LONG CLOSED, EB/RLB-KV
+PAUSED_FOR_SUPERVISOR_DIRECTION и angular same-clamp reference UNAVAILABLE.

@@ -4,6 +4,17 @@
 
 ## 2026-10-08
 
+- Extended the unchanged prepared four-field IVP to one fixed LINEAR T1 with
+  exact saved p48/p64 initial coordinates and tight/allowed-extra settings.
+  Exactly3 exploratory runs complete; prefix/temporal/energy-mass PASS, spatial
+  7/8 PARTIAL (theta_t max1.590e-4>1e-4). Absolute differences grow1.94–2.73x;
+  full-horizon scale changes are qualified separately. No model/RHS/IC/BC/basis
+  change or repeat projection/MP/BVP/eigen/symbolic audit. Added one config and
+  explicit --one-T1 mode, optional memory-mapped history buffer, blockwise
+  all8/time-window diagnostics,3 PDF/PNG figures and targeted tests. ODE150.29s,
+  primary numerical work232.85s/1200s. Historical sources/strict XFAIL preserved;
+  appended NLSP-D07/K07. Default short horizon remains0.1T1; no next stage.
+
 - Completed a separate bounded prepared-state precision/feasibility continuation.
   Exact Gram/analytic moments and one initial-only endpoint-constrained L2 policy
   represent the same frozen target at p48/p64; initial1e-6 checks pass. Independent

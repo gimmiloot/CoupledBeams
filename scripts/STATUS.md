@@ -20,7 +20,19 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
-## Prepared-state precision / numerical feasibility
+## Prepared one-T1 calculation
+
+`prepare_planar_initial_state.py --compute --one-T1` completes3 runs of the
+unchanged prepared IVP from0 to one LINEAR T1. Execution/feasibility are
+COMPLETED_EXPLORATORY_NOT_CERTIFIED; prefix, temporal and energy/mass PASS;
+spatial7/8 PARTIAL (theta_t max1.590e-4>1e-4). Initial coefficients/settings
+are restored without new projection/MP/BVP/eigen work, full source timestamps
+are preserved, and q/v outputs are memory-mapped with actual-row metadata.
+[Canonical continuation](../docs/theory/planar_prepared_initial_state.md#prepared-one-period-feasibility).
+Historical short/zero-u-c results and strict qualification remain; no automatic
+longer run, new p or physical direction is selected. Cache/report/plot are zero-ODE.
+
+## Historical prepared-state precision / numerical feasibility
 
 Explicit `prepare_planar_initial_state.py --compute --feasibility` completes
 three0.1T1 short trajectories of one frozen common target with the existing

@@ -1,5 +1,24 @@
 # Scripts guide
 
+## Prepared one-linear-period mode
+
+```powershell
+python scripts/analysis/prepare_planar_initial_state.py --compute --one-T1
+python scripts/analysis/prepare_planar_initial_state.py --report-only results/planar_prepared_one_T1/795dcb14d3cd3a55
+python scripts/analysis/prepare_planar_initial_state.py --plot-only results/planar_prepared_one_T1/795dcb14d3cd3a55
+```
+
+This separate preset uses [planar_prepared_one_T1.json](../data/input/planar_prepared_one_T1.json)
+and loads q0/settings directly from the immutable short bundle284a. It never
+reprojects, regenerates IC/reference/Theta3 or recomputes the precision study.
+All3 cases start from0, reuse the same four-field model and run through one
+fixed LINEAR reference period. Memmapped output and blockwise processing retain
+actual prefixes; unfilled storage rows are never observations. Read the
+[contract/results](../docs/theory/planar_prepared_initial_state.md#prepared-one-period-feasibility):
+EXPLORATORY_NOT_CERTIFIED, prefix/temporal/energy PASS, spatial7/8 PARTIAL. Default
+`--compute --feasibility` still targets0.1T1. No next horizon/p/amplitude is
+selected. Matching cache/report/plot perform zero ODE/MP/BVP/eigen/symbolic work.
+
 ## Prepared-state short feasibility mode
 
 ```powershell

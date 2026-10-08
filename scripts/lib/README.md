@@ -2,6 +2,12 @@
 
 This directory contains reusable helper modules that are not meant to be run directly.
 
+- One-T1 orchestration restores the already prepared q0 directly; it does
+  not call any new numerical/MP projection in this helper. The existing Radau
+  runner additionally accepts an optional writable float64 history buffer for
+  memory-mapped output; its default numerical initial/stepping path is retained.
+  [One-period contract](../../docs/theory/planar_prepared_initial_state.md#prepared-one-period-feasibility).
+
 - `planar_prepared_initial_state.py` additionally loads the immutable saved
   common state without new BVP/eigenpair/Theta3, computes exact Gram/analytic
   moments at local high precision, includes quintic Theta3 directly and supplies

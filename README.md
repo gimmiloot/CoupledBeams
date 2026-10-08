@@ -4,6 +4,13 @@ CoupledBeams is a research repository for frequency models and computations for 
 
 ## Project Layout
 
+- [Prepared movement through one linear period](docs/theory/planar_prepared_initial_state.md#prepared-one-period-feasibility)
+  -- `python scripts/analysis/prepare_planar_initial_state.py --compute --one-T1`
+  reuses saved initial coordinates and completes3 exploratory runs toT1.
+  Prefix/temporal/energy checks PASS; spatial comparison remains7/8 PARTIAL.
+  Report/plot/cache reuse saved evidence without integration. The historical
+  `--compute --feasibility` horizon remains0.1T1.
+
 - [Prepared-state short feasibility](docs/theory/planar_prepared_initial_state.md#prepared-precision-feasibility)
   -- explicit `python scripts/analysis/prepare_planar_initial_state.py --compute --feasibility`
   completes three0.1T1 controls using the same frozen physical initial state.

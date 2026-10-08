@@ -883,3 +883,36 @@ main HEAD `f60f14370713f84b9ada09ce83dae2d1357ec24f`, без supervisor approval
 динамику, новые amplitudes или иное scientific direction. LONG CLOSED,
 EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION и angular same-clamp reference
 UNAVAILABLE сохраняются; исторические D/K записи не переписываются.
+## NLSP-D07
+
+**Разрешён bounded one-T1 feasibility control**, 2026-10-08, после
+[NLSP-D06](#nlsp-d06)/[NLSP-K06](knowledge.md#nlsp-k06). Новое явное задание
+пользователя продлевает проверяемый горизонт того же prepared exploratory IVP
+до одного сохранённого линейного периода T1, без выбора нового initial case.
+
+**Почему / scope:** проверить, сохраняются ли практическая реализуемость,
+temporal controls, energy/mass safety и наблюдаемое пространственное
+ограничение на 0…T1. Три cases: p48 tight, p64 tight, p64 allowed_extra.
+Начальные q0/v0 и time prescriptions загружаются из неизменного source bundle;
+одна `common_endpoint_constrained_L2` representation сохраняется без новой
+projection, MP, BVP, eigenpair или Theta3 подготовки. V0/action/RHS/Jacobian,
+четыре independent fields, Shen basis, geometry/material/coefficients и BC
+не меняются. `EXPLORATORY_NOT_CERTIFIED`, `state.admitted=False` и исходный
+strict initial PARTIAL сохраняются; продолжение по времени не снимает их.
+
+**Ограничения:** numerical wall budget 1200s, максимум 3 новых ODE integrations;
+проверяется фактически сохранённый интервал. Общие timestamps включают прежний
+0…0.1T1 grid и заданные контрольные моменты; нормы и gates не меняются,
+phase/period fitting и energy matching не разрешены. T1 — линейная reference
+scale, а не заранее известный нелинейный период. Старые bundles и zero-u/c
+PARTIAL не переписываются. Результат — [NLSP-K07](knowledge.md#nlsp-k07).
+
+**Основание / provenance:** прямое задание пользователя, 2026-10-08;
+main HEAD `a39c196127eae0cb1f44ade5a924be8ea5acc784`, без supervisor approval.
+[Canonical continuation](../theory/planar_prepared_initial_state.md#prepared-one-period-feasibility),
+[configuration](../../data/input/planar_prepared_one_T1.json).
+**Остановка / пересмотр:** после bounded report остановиться. Не расширять
+автоматически горизонт до 5T1, p/basis/IC/model/amplitude, angular/Floquet или
+out-of-plane scope. LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION,
+angular same-clamp reference UNAVAILABLE и historical D/K qualifications
+сохраняются; следующий научный этап этим заданием не выбирается.

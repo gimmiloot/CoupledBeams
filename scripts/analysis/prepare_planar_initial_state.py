@@ -111,10 +111,12 @@ def plot_only(bundle):
     import matplotlib.pyplot as plt
     bundle = Path(bundle)
     cached=validate_cache(bundle)
+    if cached.get('schema')=='nlsp-prepared-one-T1-v1':
+        return one_T1_plot_only(bundle,cached)
     if cached.get('schema')=='nlsp-prepared-feasibility-v1':
         return feasibility_plot_only(bundle,cached)
     if not (bundle/'profiles.npz').exists():
-        return {'BVP_solves':0,'eigendecompositions':0,'analytic_history_evaluations':0,'ODE_integrations':0}
+        return {'BVP_solves':0,'eigendecompositions':0,'analytic_history_evaluations':0,'ODE_integrations':0,'symbolic_derivations':0}
     data = np.load(bundle/'profiles.npz')
     x = data['s']
     fig, axs = plt.subplots(1,2,figsize=(9,3.4),layout='constrained')
@@ -129,7 +131,7 @@ def plot_only(bundle):
         fig.savefig(figs/('periodic_profiles.'+ext),dpi=220,metadata={'CreationDate':None,'ModDate':None} if ext=='pdf' else None)
     plt.close(fig)
     if not (bundle/'profile_convergence.json').exists():
-        return {'BVP_solves':0,'eigendecompositions':0,'analytic_history_evaluations':0,'ODE_integrations':0}
+        return {'BVP_solves':0,'eigendecompositions':0,'analytic_history_evaluations':0,'ODE_integrations':0,'symbolic_derivations':0}
     convergence = read_json(bundle/'profile_convergence.json')
     fig,axs = plt.subplots(1,2,figsize=(9,3.4),layout='constrained')
     for f,field in enumerate(('u','c')):
@@ -147,7 +149,7 @@ def plot_only(bundle):
     for ext in ('pdf','png'):
         fig.savefig(figs/('profile_derivative_convergence.'+ext),dpi=220,metadata={'CreationDate':None,'ModDate':None} if ext=='pdf' else None)
     plt.close(fig)
-    return {'BVP_solves':0,'eigendecompositions':0,'analytic_history_evaluations':0,'ODE_integrations':0}
+    return {'BVP_solves':0,'eigendecompositions':0,'analytic_history_evaluations':0,'ODE_integrations':0,'symbolic_derivations':0}
 
 
 def numeric_endpoint_audit(state, epsilon, coefficients):
@@ -748,6 +750,294 @@ def feasibility_plot_only(bundle,summary):
     return {'ODE_integrations':0,'eigendecompositions':0,'BVP_solves':0}
 
 
+
+ONE_T1_CONFIG=ROOT/'data/input/planar_prepared_one_T1.json'
+ONE_T1_OUTPUT=ROOT/'results/planar_prepared_one_T1'
+ONE_T1_VERSION='saved-q0-one-linear-period-memmap-v1'
+
+
+def one_T1_identity(config_path):
+    config=read_json(config_path);source=ROOT/config['source_bundle']
+    paths=('scripts/analysis/prepare_planar_initial_state.py','scripts/analysis/simulate_weakly_nonlinear_planar_rod.py',
+           'scripts/lib/weakly_nonlinear_planar_dynamics.py','scripts/lib/weakly_nonlinear_spatial_rod.py',
+           'scripts/lib/planar_prepared_initial_state.py',config['pilot_config'])
+    manifest=read_json(source/'manifest.json')
+    item={'version':ONE_T1_VERSION,'config':config,'config_sha256':sha(config_path),
+          'source':{'bundle':config['source_bundle'],'manifest_sha256':sha(source/'manifest.json'),'artifact_hashes':manifest['artifact_hashes']},
+          'code_hashes':{name:sha(ROOT/name) for name in paths},'python':sys.version,
+          'dependencies':{name:importlib.metadata.version(name) for name in ('numpy','scipy','matplotlib')},
+          'blas_threads':{k:os.environ.get(k) for k in ('OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','OMP_NUM_THREADS')}}
+    return hashlib.sha256(json.dumps(item,sort_keys=True).encode()).hexdigest()[:16],item
+
+
+def load_one_T1_source(config):
+    """Own historical manifests and saved initial coordinates, no preparation."""
+    if config['degrees']!=[48,64] or config['cases']!=[[48,'tight'],[64,'tight'],[64,'allowed_extra']] or config['periods']!=1 or config['amplitude_over_h']!=.05:
+        raise ValueError('One-T1 authorization is restricted to the declared three cases')
+    if config['execution_mode']!='EXPLORATORY_NOT_CERTIFIED' or config['state_admitted'] is not False or config['projection_policy']!='common_endpoint_constrained_L2':
+        raise ValueError('Exploratory qualification and fixed initial policy required')
+    if config['budget']['maximum_integrations']!=3 or config['budget']['numerical_wall_seconds']>1200:
+        raise ValueError('Declared one-T1 computation budget exceeded')
+    source=ROOT/config['source_bundle'];summary=validate_cache(source);manifest=read_json(source/'manifest.json')
+    if summary['execution_mode']!=config['execution_mode'] or summary['state_admitted_flag'] is not False:
+        raise ValueError('Source execution qualification mismatch')
+    frozen=('scripts/lib/weakly_nonlinear_planar_dynamics.py','scripts/lib/weakly_nonlinear_spatial_rod.py',config['pilot_config'])
+    for name in frozen:
+        if sha(ROOT/name)!=manifest['identity']['code_hashes'][name]:raise ValueError('Frozen physics/time input mismatch: '+name)
+    q0={};v0={};settings={};times=None
+    for degree in config['degrees']:
+        with np.load(source/'initial_projection'/f'p{degree}.npz',allow_pickle=False) as saved:
+            q0[degree]=saved['q'].copy();v0[degree]=saved['velocity'].copy()
+        if q0[degree].shape!=(4*(degree-1),) or not np.all(np.isfinite(q0[degree])) or not np.array_equal(v0[degree],np.zeros_like(q0[degree])):
+            raise ValueError('Invalid saved initial coordinates/velocities')
+    for degree,level in config['cases']:
+        name=f'p{degree}_{level}';case=read_json(source/'short_controls'/name/'case.json');settings[name]=case
+        if case['p']!=degree or case['ndof']!=4*(degree-1) or case['nq']!=2*degree+1 or case['projection_policy']!=config['projection_policy'] or case['status']!='PASS':
+            raise ValueError('Historical case contract mismatch: '+name)
+        with np.load(source/'short_controls'/name/'trajectory.npz',allow_pickle=False) as saved:
+            tt=saved['time'].copy()
+            if not np.array_equal(saved['q'][0],q0[degree]) or not np.array_equal(saved['velocity'][0],v0[degree]):raise ValueError('Initial/history mismatch: '+name)
+        if times is None:times=tt
+        if not np.array_equal(tt,times) or np.any(np.diff(tt)<=0) or tt[0]!=0 or tt[-1]!=case['time_end']:raise ValueError('Historical actual timestamps mismatch')
+    return {'summary':summary,'manifest':manifest,'source':source,'q0':q0,'v0':v0,'settings':settings,'short_time':times,
+            'pilot':read_json(ROOT/config['pilot_config']),
+            'provenance':{'source_bundle':config['source_bundle'],'manifest_sha256':sha(source/'manifest.json'),'own_manifest_verified':True,
+                'initial_npz_sha256':{str(p):sha(source/'initial_projection'/f'p{p}.npz') for p in config['degrees']},
+                'new_projection_BVP_MP_eigen_symbolic_calls':0,'field_order':['u','w','theta','c']}}
+
+
+def one_T1_time_grid(source,t_end):
+    sampling=source['summary']['sampling'];short=source['short_time'];bound=sampling['omega_upper_bound']
+    per=sampling['samples_per_bound_period'];n=int(np.ceil(short[-1]*bound/(2*np.pi)*per))
+    step=short[-1]/n
+    base=np.arange(int(np.floor(t_end/step))+1,dtype=float)*step
+    checkpoints=t_end*np.array([0.,.1,.25,.5,.75,1.])
+    times=np.unique(np.r_[base[base<=t_end],short,checkpoints,t_end])
+    if np.any(np.diff(times)<=0) or times[-1]!=t_end:raise ValueError('Invalid one-T1 output grid')
+    return times,{'samples':len(times),'omega_upper_bound':bound,'samples_per_bound_period':per,'bound_step_reused':step,
+                  'source_timestamps_preserved':bool(np.array_equal(times[np.searchsorted(times,short)],short)),
+                  'period_fractions':[0.,.1,.25,.5,.75,1.],'output_grid_not_time_error_control':True}
+
+
+def one_T1_history(bundle,name):
+    path=Path(bundle)/'cases'/name;case=read_json(path/'case.json')
+    times=np.load(path/'time.npy',mmap_mode='r');state=np.load(path/'state.npy',mmap_mode='r')
+    n=case['actual_valid_rows'];d=case['ndof']
+    if len(times)!=n or state.shape[0]<n or state.shape[1]!=2*d or (n and times[-1]!=case['time_end']):raise ValueError('Actual prefix metadata mismatch')
+    return {'time':times,'q':state[:n,:d],'velocity':state[:n,d:],'case':case}
+
+
+def one_T1_compare(a,b,da,db,pilot,T1,fixed,outpath,window_fractions=(.1,.25,.5,.75,1.),*,required_end=None):
+    """Historical all-eight norms plus sampled time curves, in bounded blocks."""
+    n=min(len(a['time']),len(b['time']));times=np.asarray(a['time'][:n])
+    if n==0:return {'status':'NOT_RUN'}
+    if not np.array_equal(times,b['time'][:n]):raise ValueError('Comparison requires shared actual timestamps')
+    xi,weights=leg.leggauss(pilot['spatial']['comparison_quadrature']);x=(xi+1)*da.length/2;weights*=da.length/2
+    l2=np.empty((n,8));peak=np.empty((n,8));location=np.empty((n,8));ref_l2=np.zeros(8);ref_peak=np.zeros(8)
+    for partidx,part in enumerate(('q','velocity')):
+        sl=slice(4*partidx,4*partidx+4)
+        for start in range(0,n,256):
+            stop=min(start+256,n);aa=da.reconstruct_series(a[part][start:stop],x);bb=db.reconstruct_series(b[part][start:stop],x)
+            dif=aa-bb;ab=abs(dif)
+            l2[start:stop,sl]=np.sqrt(np.einsum('tif,i,tif->tf',dif,weights,dif))
+            peak[start:stop,sl]=ab.max(axis=1);location[start:stop,sl]=x[ab.argmax(axis=1)]
+            ref_l2[sl]=np.maximum(ref_l2[sl],np.sqrt(np.einsum('tif,i,tif->tf',bb,weights,bb)).max(axis=0))
+            ref_peak[sl]=np.maximum(ref_peak[sl],abs(bb).max(axis=(0,1)))
+    floors=np.r_[np.repeat(pilot['gates']['relative_numerical_floor']*max(ref_l2[:4].max(),1e-30),4),np.repeat(pilot['gates']['relative_numerical_floor']*max(ref_l2[4:].max(),1e-30),4)]
+    scale_l2=np.maximum(ref_l2,floors);scale_max=np.maximum(ref_peak,floors)
+    cum_l2=np.maximum.accumulate(l2,axis=0);cum_peak=np.maximum.accumulate(peak,axis=0)
+    names=[part+'_'+f for part in ('q','velocity') for f in ('u','w','theta','c')];rows={};windows=[]
+    for k,name in enumerate(names):
+        field=name.split('_')[-1];tol=pilot['gates']['w_theta_relative' if field in ('w','theta') else 'u_c_relative']
+        i=int(l2[:,k].argmax());j=int(peak[:,k].argmax());rl=float(cum_l2[-1,k]/scale_l2[k]);rm=float(cum_peak[-1,k]/scale_max[k])
+        rows[name]={'max_time_L2_difference':float(cum_l2[-1,k]),'max_space_time_difference':float(cum_peak[-1,k]),
+            'reference_max_time_L2':float(ref_l2[k]),'reference_max_space_time':float(ref_peak[k]),'relative_L2':rl,'relative_max':rm,
+            'numerical_floor':float(floors[k]),'floor_limited':bool(ref_l2[k]<=floors[k]),'tolerance':tol,'pass':rl<=tol and rm<=tol,
+            'fixed_physical_scale':float(fixed[k]),'fixed_scaled_L2':float(cum_l2[-1,k]/(fixed[k]*np.sqrt(da.length))),
+            'fixed_scaled_max':float(cum_peak[-1,k]/fixed[k]),'L2_peak_time_tau':float(times[i]/T1),
+            'max_peak_time_tau':float(times[j]/T1),'max_peak_s_over_L':float(location[j,k]/da.length)}
+        for tau in window_fractions:
+            stop=int(np.searchsorted(times,tau*T1,side='right'))
+            if not stop:continue
+            index=stop-1
+            if times[index]<tau*T1:continue
+            windows.append({'component':name,'end_tau':tau,'absolute_cumulative_L2':float(cum_l2[index,k]),
+                            'absolute_cumulative_max':float(cum_peak[index,k]),'relative_L2_full_scale':float(cum_l2[index,k]/scale_l2[k]),
+                            'relative_max_full_scale':float(cum_peak[index,k]/scale_max[k]),'fixed_scaled_L2':float(cum_l2[index,k]/(fixed[k]*np.sqrt(da.length))),
+                            'fixed_scaled_max':float(cum_peak[index,k]/fixed[k])})
+    save_npz(outpath,time=times,d_L2=l2,d_max=peak,max_location_s=location,cumulative_L2=cum_l2,cumulative_max=cum_peak,
+             full_reference_L2=ref_l2,full_reference_max=ref_peak,normalization_L2=scale_l2,normalization_max=scale_max,fixed_physical_scales=fixed)
+    component_pass=all(r['pass'] for r in rows.values())
+    target_end=T1 if required_end is None else required_end
+    coverage=bool(times[-1]==target_end and n==len(a['time'])==len(b['time']))
+    return {'status':'PASS' if component_pass and coverage else 'PARTIAL','horizon_complete':coverage,
+            'required_end':float(target_end),'component_gates_pass':component_pass,'fields':rows,'windows':windows,
+            'time_end':float(times[-1]),'samples':n,'normalization':'one full-comparison-horizon own scale; old per-field floor, fixed physical scale; no phase alignment',
+            'maximum_semantics':'sampled Gauss100 spatial/time maxima; not continuum supremum'}
+
+
+def one_T1_case_diagnostics(d,hist,pilot,bg,path,fractions):
+    n=len(hist['time']);energy=np.lib.format.open_memmap(path/'energy.npy',mode='w+',dtype=float,shape=(n,))
+    observations=np.empty((n,6));norms=np.empty((n,4));velocity_norms=np.empty((n,4));safety={};min_mass=1.;max_condition=1.
+    for start in range(0,n,256):
+        stop=min(n,start+256);q=hist['q'][start:stop];v=hist['velocity'][start:stop]
+        if not(np.all(np.isfinite(q)) and np.all(np.isfinite(v))):raise ArithmeticError('NONFINITE_SAVED_OUTPUT')
+        f=d.reconstruct_series(q);vv=d.reconstruct_series(v);g=d.reconstruct_series(q,derivative=1)
+        obs=d.reconstruct_series(q,[d.length/4,d.length/2])
+        observations[start:stop]=np.column_stack((obs[:,1,1],obs[:,0,2],obs[:,0,0],obs[:,0,3],obs[:,1,3],obs[:,1,2]))
+        norms[start:stop]=np.sqrt(np.einsum('tif,i,tif->tf',f,d.weights,f));velocity_norms[start:stop]=np.sqrt(np.einsum('tif,i,tif->tf',vv,d.weights,vv))
+        c,theta=f[:,:,3],f[:,:,2];us,ws=g[:,:,0],g[:,:,1]
+        values={'min_one_plus_c':float((1+c).min()),'max_abs_c':float(abs(c).max()),'max_abs_theta':float(abs(theta).max()),
+            'max_abs_axial_gradient':float(abs(us).max()),'max_abs_transverse_gradient':float(abs(ws).max()),'max_L_abs_curvature':float(d.length*abs(g[:,:,2]).max())}
+        for key,val in values.items():safety[key]=(min(safety.get(key,val),val) if key=='min_one_plus_c' else max(safety.get(key,val),val))
+        gamma1=us+ws*theta-theta**2/2-us*theta**2/2-ws*theta**3/6+theta**4/24
+        gamma2=ws-theta-us*theta-ws*theta**2/2+theta**3/6+us*theta**3/6
+        safety['max_quartic_Gamma1']=max(safety.get('max_quartic_Gamma1',0),float(abs(gamma1).max()))
+        safety['max_quartic_Gamma2']=max(safety.get('max_quartic_Gamma2',0),float(abs(gamma2).max()))
+        lo=min(1.,float(((1+c)**2).min()));hi=max(1.,float(((1+c)**2).max()))
+        min_mass=min(min_mass,lo);max_condition=max(max_condition,hi/lo)
+        for i,(a,b) in enumerate(zip(q,v),start):energy[i]=d.energy(a,b)
+    energy.flush();drift=float(np.max(abs((energy-energy[0])/energy[0])))
+    safe=safety['min_one_plus_c']>pilot['safety']['min_one_plus_c'] and all(safety[k]<=v for k,v in pilot['safety'].items() if k not in ('min_one_plus_c','min_relative_mass_eigenvalue'))
+    stats={'initial_energy':float(energy[0]),'relative_energy_drift_max':drift,'mass_lower_bound_min':min_mass,'mass_condition_bound_max':max_condition,
+           'safety_extrema':safety,'safety_pass':safe,'energy_and_mass_pass':safe and min_mass>=pilot['safety']['min_relative_mass_eigenvalue'] and drift<=pilot['gates']['energy_relative_drift'],
+           'mass_bound_method':'same weighted-Gram Loewner bounds, no eigensolves'}
+    save_npz(path/'observations.npz',time=hist['time'],observations=observations,field_L2_norms=norms,velocity_L2_norms=velocity_norms)
+    ix=[int(np.searchsorted(hist['time'],tau*bg['T1'])) for tau in fractions if tau*bg['T1']<=hist['time'][-1]]
+    x=np.linspace(0,d.length,501)
+    save_npz(path/'snapshots.npz',s=x,time=hist['time'][ix],fields=d.reconstruct_series(hist['q'][ix],x),velocities=d.reconstruct_series(hist['velocity'][ix],x))
+    return stats
+
+
+def run_one_T1(config,bundle):
+    from types import SimpleNamespace
+    import shutil,csv
+    from scripts.lib import weakly_nonlinear_spatial_rod as rod
+    from scripts.lib.weakly_nonlinear_planar_dynamics import PlanarGalerkin
+    from scripts.analysis import simulate_weakly_nonlinear_planar_rod as runner
+    started=time.perf_counter();deadline=started+config['budget']['numerical_wall_seconds'];source=load_one_T1_source(config)
+    runner.load_runtime();pilot=source['pilot'];old=source['summary'];bg=old['background'];coeff=rod.RodCoefficients(**old['coefficients'])
+    audit_path=ROOT/pilot['audit_bundle']/'result.json'
+    if sha(audit_path)!=source['manifest']['identity']['sources']['audit']['result_sha256']:raise ValueError('Frozen action archive hash mismatch')
+    pol=read_json(audit_path)['polynomials']
+    model=SimpleNamespace(T4=rod.Polynomial.deserialize(pol['T4']),V4=rod.Polynomial.deserialize(pol['V4']),
+        residual_a=tuple(rod.Polynomial.deserialize(a) for a in pol['residuals_A']),symbols={a:rod.Polynomial.symbol(a) for a in rod.SYMBOL_ORDER})
+    discs={p:PlanarGalerkin(coeff,p,model=model) for p in config['degrees']}
+    T1=bg['T1'];times,sampling=one_T1_time_grid(source,T1)
+    for p,d in discs.items():
+        q=source['q0'][p]
+        with np.load(source['source']/'initial_projection'/f'p{p}.npz') as saved:
+            raw=d.raw_coefficients(q);scale=max(float(np.max(abs(saved['raw_roundtrip']))),1e-30)
+            if not np.allclose(raw,saved['raw_roundtrip'],rtol=2e-11,atol=2e-11*scale):raise ValueError('Saved whitening/basis contract mismatch')
+        runner.safety_check(d,q,pilot['safety'])
+        if not np.all(np.isfinite(d.rhs(0,np.r_[q,source['v0'][p]]))) or np.any(d.reconstruct(q,[0.,d.length])!=0):raise ValueError('Initial RHS or essential BC inconsistency')
+    for p,level in config['cases']:
+        name=f'p{p}_{level}';settings=runner.time_settings(discs[p],config['amplitude_over_h']*pilot['material_geometry']['h'],level,pilot);prev=source['settings'][name]
+        if settings['rtol']!=prev['rtol'] or settings['max_step']!=prev['max_step'] or not np.array_equal(settings['atol'],prev['atol']):raise ValueError('Actual time settings mismatch: '+name)
+    statuses={key:'NOT_RUN' for key in ('NLSP_PREPARED_ONE_T1_EXECUTION','NLSP_PREPARED_ONE_T1_PREFIX_REGRESSION','NLSP_PREPARED_ONE_T1_SPATIAL_CHECK','NLSP_PREPARED_ONE_T1_TEMPORAL_CHECK','NLSP_PREPARED_ONE_T1_ENERGY_AND_MASS','NLSP_PREPARED_ONE_T1_FEASIBILITY')}
+    summary={'schema':config['schema'],'config':config,'background':bg,'coefficients':old['coefficients'],'source_provenance':source['provenance'],
+        'source_strict_table':old['strict_table'],'source_strict_status':old['statuses']['NLSP_STRICT_INITIAL_VERIFICATION'],
+        'execution_mode':config['execution_mode'],'state_admitted_flag':False,'projection_policy':config['projection_policy'],
+        'sampling':sampling,'statuses':statuses,'cases':{},'prefix_regression':{},'new_ODE_integrations':0,
+        'forecast_integration_seconds':{name:case['integration_seconds']*10 for name,case in source['settings'].items()},
+        'new_projection_MP_BVP_eigen_symbolic_calls':0,'no_new_dynamic_constraints':True,'qualification':'One LINEAR period horizon; no periodic orbit or continuum truth claim'}
+    save_npz(bundle/'time_grid.npz',time=times);write_json(bundle/'summary.json',summary)
+    shutil.copy2(source['source']/'common_initial_state.npz',bundle/'common_initial_state.npz')
+    for p in config['degrees']:save_npz(bundle/'initial_projection'/f'p{p}.npz',q=source['q0'][p],velocity=source['v0'][p])
+    print(json.dumps({'stage':'ONE_T1_PRE_RUN','bundle':str(bundle),'T1':T1,'samples':len(times),'execution':config['execution_mode'],'forecast':summary['forecast_integration_seconds']}),flush=True)
+    fixed=np.array([config['amplitude_over_h']*bg['h0']]*2+[config['amplitude_over_h']*bg['h0']/bg['L']]*2);fixed=np.r_[fixed,fixed*bg['omega1']]
+    for p,level in config['cases']:
+        if time.perf_counter()>=deadline:break
+        name=f'p{p}_{level}';path=bundle/'cases'/name;path.mkdir(parents=True,exist_ok=True);d=discs[p]
+        storage=np.lib.format.open_memmap(path/'state.npy',mode='w+',dtype=float,shape=(len(times),2*d.ndof))
+        summary['new_ODE_integrations']+=1;print(json.dumps({'stage':'START_ONE_T1','case':name}),flush=True)
+        history,stats=runner.integrate_case(d,None,bg,pilot,config['amplitude_over_h'],level,times,deadline,initial_coordinates=source['q0'][p],history_buffer=storage)
+        storage.flush();np.save(path/'time.npy',times[:len(history)]);stats.update(actual_valid_rows=len(history),storage_allocated_rows=len(times),
+            execution_mode=config['execution_mode'],state_admitted=False,projection_policy=config['projection_policy'],periods=1.,T1=T1,omega1=bg['omega1'])
+        write_json(path/'case.json',stats);save_npz(path/'internal_steps.npz',dt=np.asarray(stats['internal_time_steps']))
+        del history,storage
+        hist=one_T1_history(bundle,name)
+        stats.update(one_T1_case_diagnostics(d,hist,pilot,bg,path,config['sampling']['period_fractions']));write_json(path/'case.json',stats)
+        sourcepath=source['source']/'short_controls'/name/'trajectory.npz'
+        with np.load(sourcepath) as saved:
+            prefix_time=saved['time'].copy();oldhist={part:saved[part].copy() for part in ('q','velocity')};oldhist['time']=prefix_time;oldenergy=saved['energy'].copy()
+        indexes=np.searchsorted(hist['time'],prefix_time);available=indexes<len(hist['time']);indexes=indexes[available];prefix_time=prefix_time[available]
+        if len(indexes) and not np.array_equal(hist['time'][indexes],prefix_time):raise ValueError('Source prefix timestamps not found exactly')
+        newprefix={'time':prefix_time,'q':hist['q'][indexes],'velocity':hist['velocity'][indexes]};oldhist={k:v[:len(indexes)] for k,v in oldhist.items()}
+        prefix=one_T1_compare(newprefix,oldhist,d,d,pilot,T1,fixed,path/'prefix_differences.npz',(.1,),required_end=source['short_time'][-1])
+        en=np.load(path/'energy.npy',mmap_mode='r')[indexes]
+        prefix['relative_energy_difference_max']=float(np.max(abs(en-oldenergy[:len(indexes)]))/oldenergy[0])
+        prefix['initial_q_v_exact']=bool(np.array_equal(newprefix['q'][0],source['q0'][p]) and np.array_equal(newprefix['velocity'][0],source['v0'][p]))
+        prefix['source_interval_complete']=len(indexes)==len(source['short_time']);prefix['time_settings_identical']=True
+        prefix['pass']=prefix['status']=='PASS' and prefix['relative_energy_difference_max']<=pilot['gates']['energy_relative_drift'] and prefix['initial_q_v_exact'] and prefix['source_interval_complete']
+        summary['prefix_regression'][name]=prefix;summary['cases'][name]=stats
+        write_json(path/'prefix_regression.json',prefix);write_json(bundle/'summary.json',summary)
+        print(json.dumps({'stage':'END_ONE_T1','case':name,'runtime':stats['integration_seconds'],'nfev':stats['nfev'],'end_tau':stats['time_end']/T1,'energy_drift':stats['relative_energy_drift_max'],'prefix_pass':prefix['pass']}),flush=True)
+        del hist,oldhist,newprefix
+        if stats['status']!='PASS' or not prefix['pass']:break
+    pairs=(('spatial','p48_tight','p64_tight'),('temporal','p64_tight','p64_allowed_extra'))
+    for label,a,b in pairs:
+        if a not in summary['cases'] or b not in summary['cases']:summary[label+'_comparison']={'status':'NOT_RUN'};continue
+        aa,bb=one_T1_history(bundle,a),one_T1_history(bundle,b)
+        result=one_T1_compare(aa,bb,discs[int(a.split('_')[0][1:])],discs[int(b.split('_')[0][1:])],pilot,T1,fixed,bundle/(label+'_differences.npz'))
+        summary[label+'_comparison']=result;write_json(bundle/(label+'_comparison.json'),result)
+        for suffix,rows in (('all8',[{'component':key,**val} for key,val in result['fields'].items()]),('windows',result['windows'])):
+            with (bundle/f'{label}_{suffix}.csv').open('w',newline='',encoding='utf8') as f:
+                writer=csv.DictWriter(f,fieldnames=list(rows[0]));writer.writeheader();writer.writerows(rows)
+        del aa,bb
+    complete=len(summary['cases'])==3 and all(c['status']=='PASS' for c in summary['cases'].values())
+    statuses['NLSP_PREPARED_ONE_T1_EXECUTION']='COMPLETED_EXPLORATORY_NOT_CERTIFIED' if complete else 'PARTIAL'
+    statuses['NLSP_PREPARED_ONE_T1_PREFIX_REGRESSION']='PASS' if len(summary['prefix_regression'])==3 and all(c['pass'] for c in summary['prefix_regression'].values()) else 'PARTIAL'
+    for label in ('spatial','temporal'):statuses['NLSP_PREPARED_ONE_T1_'+label.upper()+'_CHECK']=summary[label+'_comparison']['status']
+    statuses['NLSP_PREPARED_ONE_T1_ENERGY_AND_MASS']='PASS' if complete and all(c['energy_and_mass_pass'] for c in summary['cases'].values()) else 'PARTIAL'
+    statuses['NLSP_PREPARED_ONE_T1_FEASIBILITY']='COMPLETED_EXPLORATORY_NOT_CERTIFIED' if complete and statuses['NLSP_PREPARED_ONE_T1_PREFIX_REGRESSION']==statuses['NLSP_PREPARED_ONE_T1_ENERGY_AND_MASS']=='PASS' else 'PARTIAL'
+    summary['runtime']={'numerical_wall_seconds':time.perf_counter()-started,'integration_seconds':sum(c['integration_seconds'] for c in summary['cases'].values()),'limit_seconds':1200,'ODE_integrations':summary['new_ODE_integrations'],'projection_MP_BVP_eigen_symbolic_calls':0}
+    summary['stop_reason']='Authorized one-linear-period horizon complete or accepted prefix saved; no automatic extension'
+    write_json(bundle/'summary.json',summary);return summary
+
+
+def one_T1_plot_only(bundle,summary):
+    import matplotlib.pyplot as plt
+    figs=Path(bundle)/'figures';figs.mkdir(exist_ok=True);T1=summary['background']['T1']
+    def finish(fig,name):
+        for ext in ('pdf','png'):fig.savefig(figs/(name+'.'+ext),dpi=200,metadata={'CreationDate':None,'ModDate':None} if ext=='pdf' else None)
+        plt.close(fig)
+    fig,axes=plt.subplots(2,3,figsize=(11,5.6),layout='constrained')
+    labels=('w(L/2)','theta(L/4)','u(L/4)','c(L/4)','c(L/2)','||c|| L2')
+    for name,style in (('p48_tight','-'),('p64_tight','--')):
+        if name not in summary['cases']:continue
+        with np.load(Path(bundle)/'cases'/name/'observations.npz') as data:
+            for k,ax in enumerate(axes.flat):
+                values=data['observations'][:,k] if k<5 else data['field_L2_norms'][:,3]
+                ax.plot(data['time']/T1,values,style,label=name.replace('_',' '))
+                ax.set(xlabel='t/T1',ylabel=labels[k]);ax.grid(alpha=.2)
+    axes.flat[0].legend(fontsize=8,frameon=False);finish(fig,'prepared_motion_one_T1')
+    fig,axes=plt.subplots(2,4,figsize=(12,5.5),layout='constrained')
+    for label,style in (('spatial','-'),('temporal','--')):
+        path=Path(bundle)/(label+'_differences.npz')
+        if not path.exists():continue
+        with np.load(path) as data:
+            scale=summary['spatial_comparison']['fields'] if summary.get('spatial_comparison',{}).get('fields') else summary[label+'_comparison']['fields']
+            keys=[part+'_'+f for part in ('q','velocity') for f in ('u','w','theta','c')]
+            for k,ax in enumerate(axes.flat):
+                ref=max(scale[keys[k]]['reference_max_time_L2'],scale[keys[k]]['numerical_floor'])
+                ax.semilogy(data['time']/T1,np.maximum(data['d_L2'][:,k]/ref,1e-18),style,lw=.8,label=label)
+                ax.set(xlabel='t/T1',ylabel=keys[k].replace('q_','')+' L2 difference');ax.grid(alpha=.2)
+    fig.suptitle('L2 differences / common full-horizon p64 tight scales',fontsize=10)
+    axes.flat[0].legend(fontsize=8,frameon=False);finish(fig,'prepared_differences_one_T1')
+    fig,axes=plt.subplots(1,2,figsize=(9,3.4),layout='constrained')
+    for name,case in summary['cases'].items():
+        tt=np.load(Path(bundle)/'cases'/name/'time.npy',mmap_mode='r');energy=np.load(Path(bundle)/'cases'/name/'energy.npy',mmap_mode='r')
+        axes[0].plot(tt/T1,(energy-energy[0])/energy[0],lw=.8,label=name.replace('_',' '))
+    if 'spatial_comparison' in summary and (Path(bundle)/'spatial_differences.npz').exists():
+        with np.load(Path(bundle)/'spatial_differences.npz') as data:
+            for k,f in enumerate(('u','w','theta','c','u_t','w_t','theta_t','c_t')):
+                axes[1].plot(data['time']/T1,data['cumulative_max'][:,k]/data['normalization_max'][k],lw=.8,label=f)
+    axes[0].set(xlabel='t/T1',ylabel='relative energy drift');axes[1].set(xlabel='t/T1',ylabel='cumulative spatial max / full-horizon scale')
+    for ax in axes:ax.grid(alpha=.2);ax.legend(fontsize=7,frameon=False)
+    finish(fig,'prepared_quality_one_T1');return {'ODE_integrations':0,'BVP_solves':0,'eigensolves':0,'symbolic_derivations':0}
+
+
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     mode=parser.add_mutually_exclusive_group(required=True)
@@ -755,14 +1045,16 @@ def main(argv=None):
     mode.add_argument('--report-only',type=Path)
     mode.add_argument('--plot-only',type=Path)
     parser.add_argument('--config',type=Path)
-    parser.add_argument('--feasibility',action='store_true',help='Explicit bounded exploratory authorization, strict tests retained')
+    horizon=parser.add_mutually_exclusive_group()
+    horizon.add_argument('--feasibility',action='store_true',help='Explicit bounded exploratory authorization, strict tests retained')
+    horizon.add_argument('--one-T1',dest='one_T1',action='store_true',help='Reuse saved q0 for exactly three exploratory runs to one linear period')
     parser.add_argument('--output-dir',type=Path)
     args=parser.parse_args(argv)
-    if args.feasibility and not args.compute:
-        parser.error('--feasibility requires --compute; report/plot read the saved mode')
-    args.config=args.config or (FEASIBILITY_CONFIG if args.feasibility else CONFIG)
-    args.output_dir=args.output_dir or (FEASIBILITY_OUTPUT if args.feasibility else OUTPUT)
-    zeros={'BVP_solves':0,'eigendecompositions':0,'analytic_history_evaluations':0,'ODE_integrations':0}
+    if (args.feasibility or args.one_T1) and not args.compute:
+        parser.error('Horizon selection requires --compute; report/plot read the saved mode')
+    args.config=args.config or (ONE_T1_CONFIG if args.one_T1 else FEASIBILITY_CONFIG if args.feasibility else CONFIG)
+    args.output_dir=args.output_dir or (ONE_T1_OUTPUT if args.one_T1 else FEASIBILITY_OUTPUT if args.feasibility else OUTPUT)
+    zeros={'BVP_solves':0,'eigendecompositions':0,'analytic_history_evaluations':0,'ODE_integrations':0,'symbolic_derivations':0}
     if args.report_only or args.plot_only:
         bundle=args.report_only or args.plot_only
         summary=validate_cache(bundle)
@@ -770,13 +1062,13 @@ def main(argv=None):
             plot_only(bundle)
         print(json.dumps({'bundle':str(bundle),'statuses':summary['statuses'],'this_run_counters':zeros},indent=2))
         return summary
-    key,item=(feasibility_identity(args.config) if args.feasibility else identity(args.config));bundle=args.output_dir/key
+    key,item=(one_T1_identity(args.config) if args.one_T1 else feasibility_identity(args.config) if args.feasibility else identity(args.config));bundle=args.output_dir/key
     if (bundle/'manifest.json').exists():
         summary=validate_cache(bundle,item)
         print(json.dumps({'bundle':str(bundle),'cache_hit':True,'statuses':summary['statuses'],'this_run_counters':zeros},indent=2))
         return summary
     bundle.mkdir(parents=True,exist_ok=True)
-    summary=(run_feasibility if args.feasibility else run_compute)(read_json(args.config),bundle)
+    summary=(run_one_T1 if args.one_T1 else run_feasibility if args.feasibility else run_compute)(read_json(args.config),bundle)
     write_json(bundle/'manifest.json',manifest_for(bundle,item))
     plot_only(bundle)
     write_json(bundle/'manifest.json',manifest_for(bundle,item))

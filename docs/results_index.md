@@ -15,6 +15,21 @@ index should be run without first reviewing its cost and output contract.
 
 ## Result directories
 
+`results/planar_prepared_one_T1/795dcb14d3cd3a55/` contains the
+[one-linear-period continuation](theory/planar_prepared_initial_state.md#prepared-one-period-feasibility):
+immutable-source hashes and exact reused q0, shared95057 timestamps including all
+old short times, three complete memory-mapped q/v histories, snapshots/observations,
+energy/Loewner mass/safety and actual steps/counters; all8 spatial/temporal CSV/JSON,
+instantaneous/cumulative difference curves, spatial argmax, full-horizon scales,
+window tables, prefix regression and3 PDF/PNG figures. Exactly3 ODE; no new MP,
+projection/BVP/eigen/symbolic audit. Primary numerical work232.845s, integration
+150.293s. Execution/feasibility COMPLETED_EXPLORATORY_NOT_CERTIFIED, prefix/temporal/
+energy-mass PASS, spatial PARTIAL. Original executionc505209d58fe74c0 is preserved
+in execution manifest/summary/code snapshots: the subsequent coverage/caption
+metadata revision changed no numerical arrays and performed zero integrations.
+The old284a bundle is unchanged. Cached compute/report/plot perform zero new
+numerical preparation or integrations; no automatic full5T1 extension.
+
 `results/planar_prepared_feasibility/284a4039177391d1/` contains the separate
 [precision/feasibility continuation](theory/planar_prepared_initial_state.md#prepared-precision-feasibility):
 verified immutable sources, independent MP quadrature/projection probes,
