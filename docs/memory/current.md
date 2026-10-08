@@ -1,5 +1,35 @@
 # Текущий контекст
 
+## Full-family linear3D FEM-1 — bounded complete / mesh PARTIAL, 2026-10-08
+
+[NLSP-D09](decisions.md#nlsp-d09), [NLSP-K10](knowledge.md#nlsp-k10),
+[report](../numerics/nlsp_linear_rectangular_3d_fem_validation.md).
+L=1,b=.20,h=.10 выбран до FEM по1D спектру; first axial на позиции8. Все4 families
+сопоставлены,3 audited C3D10 meshes/24 complete vectors each; quality/execution/
+identification PASS. Mesh convergence и quantitative all-family comparison
+PARTIAL:5/8 medium/fine изменений выше заранее принятого.1% критерия.
+Observed discrepancies не являются exact continuum/model errors. No extra3D
+mode inside window; contraction branch outside. No fitting/четвёртая сетка/
+nonlinear calculation. После отчёта остановка, FEM-2/FEM-3 не разрешены.
+LONG CLOSED; EB/RLB-KV PAUSED; angular same-clamp UNAVAILABLE; prepared strict
+PARTIAL и physical sanity DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS сохраняются.
+
+## 3D FEM infrastructure audit — завершён, 2026-10-08
+
+[NLSP-K09](knowledge.md#nlsp-k09),
+[readiness report](../numerics/nlsp_3d_fem_environment_readiness.md).
+Gmsh4.15.2 и cached CalculiX2.22 x64 запускаются; linear solid workflow ранее
+использовался. Локальная документация подтверждает nonlinear STATIC/DYNAMIC
+с NLGEOM, но готовых project workflows для них нет. Для rectangular G20 нужна
+небольшая geometry/config адаптация и отдельный execution test. Опциональные
+Python FEM packages не установлены и не являются blocker существующего CLI path.
+
+Этот этап — только readiness audit: ни mesh, ни FEM job, ни installation,
+ни physical/model/result change. Следующий bounded linear rectangular test
+предложен, но не разрешён к запуску. Физическая проверка V0 ещё не выполнена.
+NLSP physical sanity остаётся DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS;
+LONG CLOSED, EB/RLB-KV PAUSED и angular same-clamp UNAVAILABLE сохраняются.
+
 ## Planar physical sanity — diagnostic complete with qualifications, 2026-10-08
 
 [NLSP-D08](decisions.md#nlsp-d08), [NLSP-K08](knowledge.md#nlsp-k08),
@@ -349,3 +379,20 @@ horizon/p/IC/model/angle/stability studies автоматически не вы�
 LONG — CLOSED; EB/RLB-KV — PAUSED_FOR_SUPERVISOR_DIRECTION; angular same-clamp
 reference — UNAVAILABLE. Historical zero-u/c и prepared strict PARTIAL
 сохраняются; следующий scientific stage требует отдельного явного решения.
+
+## Текущая остановка после FEM-readiness audit
+
+Readiness установлена в проверенном локальном scope; nonlinear solver support
+документирован, но не execution-tested для нашей задачи. Никаких FEM-расчётов
+не выполнено. FEM-1 предложен только для отдельного следующего разрешения;
+FEM-2/FEM-3 не запускаются автоматически. LONG CLOSED; EB/RLB-KV PAUSED;
+angular same-clamp UNAVAILABLE; NLSP physical sanity qualified и strict PARTIAL
+сохраняются. Это инфраструктурный аудит, не новая научная модель.
+
+
+## Текущая остановка после FEM-1
+
+Линейный четырёхсемейный benchmark выполнен, mesh convergence PARTIAL сохранена.
+Это не проверка nonlinear terms V0 и не повод автоматически расширять сетку,
+геометрию или запускать FEM-2/FEM-3. Существующие scoped statuses неизменны;
+следующий расчёт требует отдельного решения пользователя.

@@ -4,6 +4,27 @@
 
 ## 2026-10-08
 
+- Completed the authorized full-family rectangular linear FEM-1: pre-FEM h=.10
+  puts first MH acoustic at sorted8; generalized CT retained,8 roots complete in
+  guarded omega3.4651 window. Three audited C3D10 meshes yield24 real modes each;
+  all8 MAC identities/4 families PASS, zero extra in-window/ambiguous matches.
+  Mesh convergence/all-family comparison PARTIAL:5/8 exceed preset.1% medium-fine
+  tolerance. Apparent fine differences.49% axial,1.40-1.81% bending,4.46-5.04% twist
+  retain mesh/end/warping qualifications. New scoped CLI/config/tests/report,
+  strict FRD adapter (old reader/code untouched),3 PDF/PNG figures and D09/K10.
+  Three sequential CCX calls, no extension/fourth mesh/nonlinear jobs;26.31s
+  primary numerical work/3600s. Existing readiness edits and frozen files preserved.
+
+- Audited local3D FEM readiness without solver jobs, new meshes, installation,
+  archive expansion or code/model/result changes. Gmsh4.15.2 and cached CCX/MT2.22
+  x64 version probes confirmed; expected CCX -v exit201 verified from local source.
+  Historical linear solid evidence and reusable C3D10/DAT/FRD/convergence functions
+  distinguished from angular joint-model/MAC issues. Local2.22 manual confirms
+  STATIC/DYNAMIC with NLGEOM; new rectangular/static/transient workflows still
+  need adaptation and execution tests, including constitutive/initial-state/load/
+  energy contracts. Added one readiness report/navigation and one substantive
+  NLSP-K09 infrastructure record; historical scientific statuses remain unchanged.
+
 - Completed bounded physical sanity checks of the frozen planar quartic action:
   reused p64 .05 one-T1 history and exactlyONE new p64 .025 tight run toT1.
   Full-history amplitude maxima show2/4 patterns; normalized leading deviations

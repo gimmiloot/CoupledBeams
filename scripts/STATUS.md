@@ -20,6 +20,14 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
+## Rectangular full-family linear3D FEM-1
+
+`verify_nlsp_linear_rectangular_3d_fem.py` completes the bounded three-mesh job
+program with real24-mode vectors per mesh. Four-family identity PASS;
+mesh convergence/all-family numerical comparison PARTIAL (5/8 unresolved).
+Linear accepted-limit benchmark, not nonlinear V0 validation. Cached modes do
+zero new computation. [Report](../docs/numerics/nlsp_linear_rectangular_3d_fem_validation.md).
+
 ## Planar physical sanity diagnostic
 
 `check_weakly_nonlinear_planar_physics.py` is a completed bounded diagnostic:

@@ -1633,3 +1633,62 @@ certification. FEM, новые physical coefficients, angular models, periodic/
 Floquet или critical-amplitude search не выполнялись. LONG CLOSED,
 EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp reference UNAVAILABLE;
 после bounded diagnostic остановка, новый scientific direction не выбран.
+## NLSP-K09
+
+**Существенный infrastructure fact, 2026-10-08:** локальный Windows audit
+подтвердил Gmsh4.15.2 и уже распакованные CCX/CCX_MT2.22 x64; version probes
+прошли без FEM jobs. CCX -v exit201 ожидаем по исходнику. Runtime находится в
+ignored historical smoke cache, а не гарантированной fresh-clone установке.
+PATH/GMSH_EXE/CCX_EXE пусты, но явные абсолютные пути работают.
+
+**Основание:** [readiness report](../numerics/nlsp_3d_fem_environment_readiness.md),
+собственные version/PE/DLL probes, сохранённые прежние linear solid inputs/logs/
+DAT/FRD и локальное руководство CalculiX2.22. Linear workflow уже использовался;
+STATIC/DYNAMIC+NLGEOM поддерживаются по документации, но новые nonlinear
+solid workflows и rectangular G20 benchmark требуют NEEDS_EXECUTION_TEST.
+Python gmsh/meshio/pyvista и FEM packages в рабочем venv отсутствуют; CLI path
+не требует их установки. Старые angular-joint/MAC проблемы не являются
+автоматическим blocker для цельного прямого прямоугольного стержня.
+
+**Scope / implications:** программы достаточны для начала отдельного FEM-1
+после небольшого rectangular adapter и отдельного разрешения. FEM-2/FEM-3
+потребуют step/load/result/initial-state/energy workflows; они не выполнены.
+Нельзя считать c отдельной solid DOF или NLGEOM+ELASTIC эквивалентом V0;
+solid-face/1D clamps и numerical damping/units требуют явного comparison contract.
+Аудит не создавал mesh/deck, не устанавливал программы и не менял solver/physics/
+results/manifests. Один linear G20 test только предложен, не запущен.
+
+**Не снимает:** LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION,
+angular same-clamp reference UNAVAILABLE, NLSP physical sanity
+DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS и historical strict/PARTIAL.
+Это readiness evidence, не physical validation. После отчёта остановка;
+FEM-1/static/transient выполнение этим заданием не разрешено.
+
+## NLSP-K10
+
+**FEM-1 result, 2026-10-08:** [NLSP-D09](decisions.md#nlsp-d09),
+[canonical full-family report](../numerics/nlsp_linear_rectangular_3d_fem_validation.md).
+Pre-FEM h=.10 geometry/CT/8-root completeness PASS; first MH acoustic at position8.
+Three actual C3D10 meshes each yield24 positive frequencies and complete nodal
+vectors. Mesh quality and four-family shape identification PASS;8 unique matches,
+no extra3D modes in selected window, no ambiguous/duplicate match. All-plane
+rotation/inertia signs and generalized CT preserved; no physical fitting.
+
+**Numerical qualification:** mesh convergence/all-family quantitative comparison
+PARTIAL,5/8 exceed predeclared.1% medium/fine criterion; no fourth mesh.
+Observed fine differences: axial about.49%, bending1.40-1.81%, twist4.46-5.04%.
+First axial and both out-of-plane modes meet mesh criterion; remaining values
+MESH_UNRESOLVED rather than MODEL_INVALID. Strong MAC/mesh identity does not
+eliminate continuum error. Effective contraction is a section-fit diagnostic,
+not a3D c DOF. Warping/solid clamp differences plausibly contribute to twist,
+but no unique causal claim or CT correction is made. Contraction-dominated
+branch is OUTSIDE_FEM_1_FREQUENCY_WINDOW.
+
+**Evidence / implication / stop:** no missing/fabricated vectors; strict new FRD
+adapter addresses confirmed historical parsing limitation without editing old
+parser/results.49 tests PASS,3 figures/actual input-output/manifest retained.
+3 sequential CCX calls,0 extensions,26.31s primary work/3600s. This tests only
+accepted LINEAR limit, not nonlinear V0 accuracy. Readiness K09 remains history.
+LONG CLOSED; EB/RLB-KV PAUSED; angular same-clamp UNAVAILABLE; prepared strict
+PARTIAL and physical sanity DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS preserved.
+No FEM-2/FEM-3, extra geometry/refinement/map is automatically authorized.

@@ -4,6 +4,29 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
+## Full-family thick rectangular FEM-1 (2026-10-08)
+
+The [linear3D report](numerics/nlsp_linear_rectangular_3d_fem_validation.md)
+uses h=.10,b=.20,L=1 chosen BEFORE FEM: first MH acoustic is position8. Eight1D
+modes within omega3.4651 cover both bending planes, twist and axial contraction.
+Three real C3D10 meshes each yield24 complete modes; all8 shapes match uniquely,
+with no additional3D mode in the window. Geometry/1D/mesh/execution/identification
+PASS; mesh convergence and all-family quantitative comparison PARTIAL (5/8 exceed
+predeclared.1% medium/fine criterion). Observed differences about.49% axial,
+1.40-1.81% bending,4.46-5.04% twist are qualified by mesh/end/warping effects.
+No coefficient fitting, backup thickness, fourth mesh or nonlinear step followed.
+
+## Local 3D FEM readiness audit (2026-10-08)
+
+The [readiness report](numerics/nlsp_3d_fem_environment_readiness.md) confirms
+Gmsh4.15.2 and already unpacked CalculiX2.22 x64 run locally, even though PATH/
+GMSH_EXE/CCX_EXE are unset. Historical linear solid jobs are retained. Static and
+direct transient NLGEOM support is confirmed in the local2.22 manual; project
+nonlinear workflows and the new rectangular G20 test remain NEEDS_EXECUTION_TEST.
+No mesh/job/install/model change occurred. One bounded linear rectangular test
+is proposed, not executed or automatically authorized. NLSP physical sanity
+remains DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS; other scoped stops are unchanged.
+
 ## Bounded planar physical sanity (2026-10-08)
 
 The [physical consistency note](theory/weakly_nonlinear_planar_physical_sanity_checks.md)

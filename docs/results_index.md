@@ -13,6 +13,17 @@ map](../scripts/STATUS.md), and [thickness-mismatch script
 map](../scripts/analysis/thickness_mismatch/README.md). No command in this
 index should be run without first reviewing its cost and output contract.
 
+## FEM-1 full linear family evidence
+
+`results/nlsp_linear_rectangular_3d_fem/4262efa427b03dad/` contains the
+[thick rectangular3D comparison](numerics/nlsp_linear_rectangular_3d_fem_validation.md):
+pre-FEM frozen geometry/coefficients/window and1D completeness/profile data,
+three audited C3D10 meshes and actual GEO/MSH/INP/DAT/FRD/logs,24 nodal vectors
+per mesh, shape-only assignment/section diagnostics, raw/comparison CSV,
+mesh convergence, axial effective contraction,3 PDF/PNG figures and49 tests.
+No prior result is overwritten. Five modes remain MESH_UNRESOLVED;
+identification PASS is not nonlinear V0 validation.
+
 ## Result directories
 
 `results/nlsp_planar_physical_sanity_checks/888042e17cfc315a/` contains the

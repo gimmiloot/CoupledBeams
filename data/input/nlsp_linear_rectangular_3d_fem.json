@@ -1,0 +1,106 @@
+{
+  "schema": "nlsp-linear-rectangular-3d-fem-v1",
+  "geometry": {
+    "L": 1.0,
+    "b": 0.2,
+    "h": 0.1
+  },
+  "material": {
+    "E": 1.0,
+    "rho": 1.0,
+    "nu": 0.3,
+    "kappa": 0.8333333333333334
+  },
+  "geometry_selection": {
+    "candidate_h": [
+      0.1,
+      0.12
+    ],
+    "selected_h": 0.1,
+    "backup_used": false,
+    "basis": "Completed 1D gate before ANY 3D result",
+    "first_axial_sorted_index": 8,
+    "pre_fem_screen_SHA256": "7f00a250041bf588c15f8e2ad17dd58bd3aeddef0ccc9a3bd1ebc7d465741bbf"
+  },
+  "frequency_guard_multiplier": 1.1,
+  "frozen_omega_window": 3.4651360027859885,
+  "field_order": [
+    "u",
+    "w",
+    "v",
+    "Phi",
+    "psi",
+    "theta",
+    "c"
+  ],
+  "global_from_local": [
+    [
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      -1,
+      0
+    ],
+    [
+      0,
+      0,
+      -1
+    ]
+  ],
+  "element": "C3D10",
+  "mesh_levels": [
+    {
+      "name": "coarse",
+      "through_h_nominal": 2,
+      "target_size": 0.05
+    },
+    {
+      "name": "medium",
+      "through_h_nominal": 3,
+      "target_size": 0.03333333333333333
+    },
+    {
+      "name": "fine",
+      "through_h_nominal": 4,
+      "target_size": 0.025
+    }
+  ],
+  "gmsh_exe": "D:/PHD/gmsh-4.15.2-Windows64/gmsh.exe",
+  "ccx_exe": "D:/PHD/CoupledBeams/CoupledBeams/results/_smoke/3d_fem_environment_check/calculix_2p22/CalculiX-2.22.0-win-x64/bin/ccx.exe",
+  "initial_eigenpairs": 24,
+  "one_extension_eigenpairs": 36,
+  "numerical_budget_seconds": 3600,
+  "job_timeout_seconds": 900,
+  "job_memory_limit_bytes": 4294967296,
+  "numerical_mesh_convergence_relative": 0.001,
+  "matching": {
+    "minimum_mac": 0.7,
+    "minimum_margin": 0.08,
+    "dominance": 0.7,
+    "section_residual_limit": 0.35,
+    "section_count": 41
+  },
+  "threads": 1,
+  "fine_forecast": {
+    "time_node_power": 1.7,
+    "memory_node_power": 1.5,
+    "remaining_budget_fraction": 0.8
+  },
+  "model_hashes": {
+    "scripts/lib/weakly_nonlinear_spatial_rod.py": "aabc5a8657e56061df3d1c86f70801ad8fc0f1f355bc1f659f24ee62950a71f2",
+    "scripts/lib/weakly_nonlinear_planar_dynamics.py": "eea98b77babcb4ed840e325efb270f37a68c32cff1d20ededf43c9989defc548",
+    "scripts/lib/mindlin_herrmann_longitudinal.py": "ecf5f94a163db2b84523d03e72d465f00c7b95b9b2db4d1838afdf3fac226c8f",
+    "scripts/lib/yartsev_ch2_monoclinic_rod.py": "379842701f17ddf9d311af0b53c4d02dfa0becc1df0f85137393533da990b328",
+    "scripts/lib/isotropic_rectangular_timoshenko_coupled_beams.py": "62f994d18bfce382e2cd37d113d6d4a0cd8f5920ea25ea147be60728886ecc65",
+    "scripts/analysis/solid_fem_single_rod_fixed_fixed.py": "0c2bee784cff99e75156717360c5709684ae31ed37ed41978623f2bb3686d18d"
+  },
+  "semantics": {
+    "linear_only": true,
+    "model_fitting": false,
+    "new_nonlinear_jobs": false,
+    "c_projection_diagnostic_only": true
+  }
+}

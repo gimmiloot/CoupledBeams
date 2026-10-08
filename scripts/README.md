@@ -1,5 +1,24 @@
 # Scripts guide
 
+## Full-family rectangular linear3D FEM-1
+
+```powershell
+python scripts/analysis/verify_nlsp_linear_rectangular_3d_fem.py --preflight
+python scripts/analysis/verify_nlsp_linear_rectangular_3d_fem.py --run-fem
+python scripts/analysis/verify_nlsp_linear_rectangular_3d_fem.py --report-only results/nlsp_linear_rectangular_3d_fem/4262efa427b03dad
+python scripts/analysis/verify_nlsp_linear_rectangular_3d_fem.py --plot-only results/nlsp_linear_rectangular_3d_fem/4262efa427b03dad
+```
+
+Read the [frozen config](../data/input/nlsp_linear_rectangular_3d_fem.json) and
+[canonical scope/result](../docs/numerics/nlsp_linear_rectangular_3d_fem_validation.md).
+This new rectangular/all-seven-field I/O contract reuses old analytic and modal
+helpers. Preflight fixes h=.10 and all-family window before FEM. Run-fem is
+strictly sequential,3 audited C3D10 levels/24 modes,one optional count extension;
+no nonlinear step/old output overwrite/model tuning. Matching cache/report/plot
+perform zero solver/BVP/eigenanalysis. Full-shape identification passes; mesh
+convergence stays PARTIAL under the preselected.1% criterion. The scoped FRD
+reader fixes a confirmed fixed-width parsing issue without changing old scripts.
+
 ## Bounded planar physical sanity checks
 
 ```powershell

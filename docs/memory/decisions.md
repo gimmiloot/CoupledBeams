@@ -958,3 +958,30 @@ amplitude/p/time level, full 5T1, angular/joint/Floquet/out-of-plane или peri
 orbit study. LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular
 same-clamp reference UNAVAILABLE и прежние PARTIAL сохраняются. Следующий этап
 этим bounded sanity task не выбирается автоматически.
+## NLSP-D09
+
+**Decision / scope, 2026-10-08:** пользователь явно разрешил первый bounded
+independent3D FEM этап для линейного предела принятой семиполевой модели.
+Все четыре семейства: MH(u,c), Tim(w,theta), Tim(v,psi), generalized twist Phi.
+Только один цельный fixed-fixed isotropic rectangle; V0/cubic/coefficients,
+старые solvers/results и исходный G20 не изменяются. Не nonlinear FEM-2/FEM-3.
+
+**Почему / выбор до FEM:** цель — включить первую axial acoustic среди низших.
+L=1,b=.20,h=.10 выбран по предварительному1D inventory; первая axial позиция8,
+backup h.12 не понадобился. CT берётся из existing isotropic generalized section
+reduction, не GI_p; семь essential field-value BC, не book_slope_clamp.
+Окно с заранее заданным10% guard и24 eigenpairs; coarse/medium/fine h/2,h/3,h/4,
+максимум одно расширение числа форм и budget3600s. Не выбирать геометрию или
+физические коэффициенты по FEM-разности, не делать четвёртую сетку автоматически.
+
+**Основание / provenance:** прямое задание пользователя,
+`d1c6bfb1-ad4b-4761-914a-545fae89a6ba/Pasted text.txt`; main
+7d1363cc47d9cea426515fa0783a0643b47a5361; preserved pre-existing readiness edits.
+[Config](../../data/input/nlsp_linear_rectangular_3d_fem.json),
+[canonical report](../numerics/nlsp_linear_rectangular_3d_fem_validation.md),
+[результат NLSP-K10](knowledge.md#nlsp-k10). Supervisor approval не предполагается.
+
+**Stop / qualification:** после трёх grids и отчёта остановиться, даже при хорошем
+matching. Mesh error и reduced-model discrepancy различать; exact3D/nonlinear
+validation не заявлять. LONG CLOSED, EB/RLB-KV PAUSED, angular same-clamp
+UNAVAILABLE и прежние strict/physical-sanity qualifications сохраняются.

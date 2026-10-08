@@ -2,6 +2,12 @@
 
 This directory contains reusable helper modules that are not meant to be run directly.
 
+- Full-family FEM-1 reuses the unchanged MH/Tim analytic finite-rod operators
+  and Yartsev generalized isotropic torsional reduction. The new scoped solid
+  orchestration/mesh/shape diagnostics live in one analysis CLI, not a new
+  physics module. No GI_p substitution or book slope-clamp transfer.
+  [Rectangular linear3D report](../../docs/numerics/nlsp_linear_rectangular_3d_fem_validation.md).
+
 - The physical-sanity CLI reuses these unchanged prepared/planar helpers and
   runner. It reads saved leading stat/harm profiles directly and performs only
   one separately authorized half-amplitude ODE; reactions use canonical V4

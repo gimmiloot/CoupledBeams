@@ -4,6 +4,13 @@ CoupledBeams is a research repository for frequency models and computations for 
 
 ## Project Layout
 
+- [Full-family rectangular linear3D FEM-1](docs/numerics/nlsp_linear_rectangular_3d_fem_validation.md)
+  -- `python scripts/analysis/verify_nlsp_linear_rectangular_3d_fem.py --preflight`
+  and `--run-fem`: frozen thick diagnostic,3 audited C3D10 levels,24 modes each,
+  both bending planes/MH/twist uniquely identified. Mesh convergence remains
+  PARTIAL; no nonlinear validation or automatic refinement. Cached report/plot
+  perform zero new solver/eigen calls.
+
 - [Bounded nonlinear physical sanity checks](docs/theory/weakly_nonlinear_planar_physical_sanity_checks.md)
   -- `python scripts/analysis/check_weakly_nonlinear_planar_physics.py --compute`
   reuses the large one-T1 result and permits one half-amplitude p64 trajectory.
