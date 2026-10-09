@@ -2,6 +2,19 @@
 
 Здесь ведётся рабочий журнал проекта: этапы, решения и важные исследовательские заметки.
 
+## 2026-10-09
+
+- Completed explicitly authorized FEM-1R: one .020 C3D10 grid with20752 nodes/
+  12687 elements,one24-mode CalculiX job,all8 shape matches stable. All inherited
+  .1% mesh checks pass (.01649-.06880%); four-grid frequencies decrease with
+  shrinking absolute changes. Updated finite-grid discrepancies.47666% axial,
+  1.36648-1.74302% bending,4.40336-4.97569% twist retain continuum/BC/warping
+  qualifications; no extrapolation or fitting. Parent94 artifact hashes/source
+  data preserved,0 new1D solves/old-job repeats,32.84s/1200s,353.41MiB peak.
+  Separate thin continuation CLI/config/tests,bundle63d44daae533389c,2 figures,
+  appended canonical report and NLSP-D10/K11. Linear baseline ready for a bounded
+  FEM-2 decision if separately authorized; no fifth grid/static/dynamic execution.
+
 ## 2026-10-08
 
 - Completed the authorized full-family rectangular linear FEM-1: pre-FEM h=.10

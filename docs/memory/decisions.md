@@ -985,3 +985,30 @@ reduction, не GI_p; семь essential field-value BC, не book_slope_clamp.
 matching. Mesh error и reduced-model discrepancy различать; exact3D/nonlinear
 validation не заявлять. LONG CLOSED, EB/RLB-KV PAUSED, angular same-clamp
 UNAVAILABLE и прежние strict/physical-sanity qualifications сохраняются.
+
+
+## NLSP-D10
+
+**Decision / scope, 2026-10-09:** explicit user authorization for FEM-1R, exactly
+one additional target-size.020 C3D10 mesh and ONE new24-mode CalculiX job for the
+same monolithic L=1,b=.20,h=.10 isotropic fixed-fixed solid. This is a bounded
+continuation of [D09](#nlsp-d09), not FEM-2 or a revised physical model.
+
+**Why:** five of eight historical medium/fine changes exceeded the preset.1%
+mesh criterion. Preserve that threshold and verify whether one finer grid resolves
+the existing all-family comparison. Do not fit physical coefficients to FEM.
+
+**Frozen basis / provenance:** parent4262efa427b03dad manifest SHA256
+9f2d5139b84b2aa133b20d9a7cae806bac085c178fba506e087cae2941da1d90 and saved1D profiles/
+frequencies, three old mesh results, coefficients, axes and BC. The user request
+"FEM-1R: дополнительное сгущение3D FEM-сетки",2026-10-09, is the authorization;
+no supervisor approval is inferred. Separate [config](../../data/input/nlsp_linear_rectangular_3d_fem_refinement.json)
+and thin continuation CLI preserve the old three-grid schema/cache.
+
+**Limits / stop:** one geometry, one.020 level,24 eigenpairs without extension,
+<=900s per process/4GiB,1200s stage; no old-job/1D recalculation, fifth grid,
+nonlinear static/dynamic, new material or model/parameter tuning. A damaged source,
+mesh failure or solver failure is a concrete stop; no hidden repeat. Report all
+qualifications and stop. [Canonical continuation](../numerics/nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement),
+[result K11](knowledge.md#nlsp-k11). LONG CLOSED, EB/RLB-KV PAUSED, angular same-clamp
+UNAVAILABLE and old NLSP strict/physical-sanity statuses remain unchanged.

@@ -4,6 +4,16 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
+## FEM-1R: bounded extra mesh (2026-10-09)
+
+[Continuation](numerics/nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement)
+loads immutable1D/three-grid evidence and adds exactly one .020 C3D10 mesh/24-mode
+job. All8 shape identities and.1% preset mesh changes pass; frequencies decrease
+regularly across four grids. Updated axial/bending/twist differences.47666%/
+1.36648-1.74302%/4.40336-4.97569% retain model/end/warping qualifications. Linear
+baseline supports a separately authorized limited FEM-2 test; no nonlinear V0
+validation, new1D solve or automatic fifth grid/FEM-2 follows.
+
 ## Full-family thick rectangular FEM-1 (2026-10-08)
 
 The [linear3D report](numerics/nlsp_linear_rectangular_3d_fem_validation.md)

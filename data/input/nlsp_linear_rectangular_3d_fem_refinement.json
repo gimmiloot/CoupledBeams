@@ -1,0 +1,45 @@
+{
+  "schema": "nlsp-linear-rectangular-3d-fem-refinement-v1",
+  "parent_bundle": "results/nlsp_linear_rectangular_3d_fem/4262efa427b03dad",
+  "parent_manifest_sha256": "9f2d5139b84b2aa133b20d9a7cae806bac085c178fba506e087cae2941da1d90",
+  "geometry": {
+    "L": 1,
+    "b": 0.2,
+    "h": 0.1
+  },
+  "material": {
+    "E": 1,
+    "rho": 1,
+    "nu": 0.3,
+    "kappa": 0.8333333333333334
+  },
+  "mesh_level": {
+    "name": "refined",
+    "target_size": 0.02,
+    "through_h_nominal": 5
+  },
+  "element": "C3D10",
+  "requested_eigenpairs": 24,
+  "frozen_omega_window": 3.4651360027859885,
+  "numerical_mesh_convergence_relative": 0.001,
+  "matching": {
+    "minimum_mac": 0.7,
+    "minimum_margin": 0.08,
+    "dominance": 0.7,
+    "section_residual_limit": 0.35,
+    "section_count": 41
+  },
+  "threads": 1,
+  "numerical_budget_seconds": 1200,
+  "job_timeout_seconds": 900,
+  "job_memory_limit_bytes": 4294967296,
+  "gmsh_exe": "D:/PHD/gmsh-4.15.2-Windows64/gmsh.exe",
+  "ccx_exe": "D:/PHD/CoupledBeams/CoupledBeams/results/_smoke/3d_fem_environment_check/calculix_2p22/CalculiX-2.22.0-win-x64/bin/ccx.exe",
+  "semantics": {
+    "linear_only": true,
+    "model_fitting": false,
+    "new_1d_solutions": false,
+    "new_nonlinear_jobs": false,
+    "automatic_mesh_or_eigenpair_extension": false
+  }
+}

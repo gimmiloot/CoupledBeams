@@ -1,5 +1,22 @@
 # Scripts guide
 
+## FEM-1R: one immutable-parent mesh continuation
+
+```powershell
+python scripts/analysis/verify_nlsp_linear_rectangular_3d_fem_refinement.py --check-source
+python scripts/analysis/verify_nlsp_linear_rectangular_3d_fem_refinement.py --run-fem
+python scripts/analysis/verify_nlsp_linear_rectangular_3d_fem_refinement.py --report-only results/nlsp_linear_rectangular_3d_fem_refinement/63d44daae533389c
+python scripts/analysis/verify_nlsp_linear_rectangular_3d_fem_refinement.py --plot-only results/nlsp_linear_rectangular_3d_fem_refinement/63d44daae533389c
+```
+
+[Config](../data/input/nlsp_linear_rectangular_3d_fem_refinement.json) pins parent
+manifest/reference and exactly one .020 C3D10/24-mode job. [Result/contract](../docs/numerics/nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement).
+The parent-validated continuation I/O contract reuses all existing mesh/modal/
+matching helpers, preserving the old three-grid CLI/config/cache. It starts no
+new1D computation,repeat old job,fifth mesh or nonlinear step; matching compute
+cache/report/plot perform zero new solver calls. Corrupt historical data or an
+unmanifested attempt stops rather than triggering hidden regeneration/retry.
+
 ## Full-family rectangular linear3D FEM-1
 
 ```powershell

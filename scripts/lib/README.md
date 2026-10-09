@@ -2,6 +2,11 @@
 
 This directory contains reusable helper modules that are not meant to be run directly.
 
+- FEM-1R loads the immutable saved1D and three-grid reference, then reuses
+  FEM-1 geometry/audit/modal/section/MAC functions for one .020 continuation.
+  No new library/physics solver or modified historical helper is introduced.
+  [Contract/result](../../docs/numerics/nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement).
+
 - Full-family FEM-1 reuses the unchanged MH/Tim analytic finite-rod operators
   and Yartsev generalized isotropic torsional reduction. The new scoped solid
   orchestration/mesh/shape diagnostics live in one analysis CLI, not a new

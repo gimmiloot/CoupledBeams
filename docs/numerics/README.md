@@ -5,6 +5,9 @@ policies define how calculations are organized, checked, resumed, and
 reported; they do not define the governing equations of individual physical
 models.
 
+- [FEM-1R: one additional .020 mesh](nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement) --
+  same frozen rod/reference,24 complete vectors,all8 identities and preset.1%
+  mesh changes accepted; four-grid linear evidence, no nonlinear execution.
 - [Full-family rectangular FEM-1](nlsp_linear_rectangular_3d_fem_validation.md) --
   three real C3D10 meshes, four-family shape identification PASS, numerical mesh
   convergence/all-family quantitative comparison PARTIAL; linear only.

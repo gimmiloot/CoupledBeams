@@ -1692,3 +1692,39 @@ accepted LINEAR limit, not nonlinear V0 accuracy. Readiness K09 remains history.
 LONG CLOSED; EB/RLB-KV PAUSED; angular same-clamp UNAVAILABLE; prepared strict
 PARTIAL and physical sanity DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS preserved.
 No FEM-2/FEM-3, extra geometry/refinement/map is automatically authorized.
+
+
+## NLSP-K11
+
+**FEM-1R result, 2026-10-09:** [D10](decisions.md#nlsp-d10),
+[canonical continuation](../numerics/nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement).
+Parent4262 manifest/artifacts and saved1D reference are checked and unchanged.
+Exactly one refined.020 mesh has20752 nodes/12687 C3D10; mesh quality PASS.
+One CalculiX job yields24 positive frequencies/full nodal eigenvectors; window
+covered,8 unique shape matches/4 families, no extra in-window/ambiguous/duplicate
+match. Fine/refined section MAC>=.99999914; no identity change.
+
+**Established within scope:** all8 fine/refined changes.01649-.06880% satisfy
+the unchanged.1% preset criterion, with monotonically decreasing frequencies and
+decreasing absolute changes across all four grids. FEM1R source/quality/execution/
+identity/convergence/all-family comparison PASS; original FEM1 PARTIAL remains
+history. Updated differences: axial.47666%, bending1.36648-1.74302%, twist4.40336/
+4.97569%. New grid shifts them only.01641-.06564 percentage points. This regular
+observed trend supports a more reliable bounded linear comparison.
+
+**Qualifications:** accepted numerical mesh tolerance is not an exact continuum
+reference/error bound or universal1D applicability. No effective-order law or
+extrapolation is used. Effective c is a thickness-strain projection diagnostic,
+not a Cartesian/FEM M-H DOF. Warping/section/full-face-clamp effects are plausible
+contributors to differences, not separately proven causes. No coefficient fitting.
+Linear FEM1R does not validate nonlinear coefficients V0.
+
+**Evidence / implication / stop:** separate bundle63d44daae533389c contains input/
+output, complete refined vectors, four-mesh tables, matching/quality/provenance,
+2 PDF/PNG figures;32.84s stage/1200s, observed peak353.41MiB. Old results/manifests,
+source physics/solvers and D/K are preserved. The four-grid linear baseline is
+sufficient for a limited nonlinear static verification IF separately authorized;
+its load/constitutive/BC contract and nonlinear convergence would need own evidence.
+No fifth grid/FEM2/FEM3 is run or automatically authorized. LONG CLOSED; EB/RLB-KV
+PAUSED; angular same-clamp UNAVAILABLE; prepared strict PARTIAL and physical sanity
+DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS remain unchanged.

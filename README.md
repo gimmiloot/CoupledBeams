@@ -4,6 +4,12 @@ CoupledBeams is a research repository for frequency models and computations for 
 
 ## Project Layout
 
+- [FEM-1R: one extra .020 mesh](docs/numerics/nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement)
+  -- `python scripts/analysis/verify_nlsp_linear_rectangular_3d_fem_refinement.py --check-source`
+  and `--run-fem`: immutable parent/reference,one24-mode job,all8 preset mesh
+  checks accepted. Matching cache/report/plot do zero new solver calls; no
+  new1D roots,old-job repeats,fifth grid or nonlinear calculation.
+
 - [Full-family rectangular linear3D FEM-1](docs/numerics/nlsp_linear_rectangular_3d_fem_validation.md)
   -- `python scripts/analysis/verify_nlsp_linear_rectangular_3d_fem.py --preflight`
   and `--run-fem`: frozen thick diagnostic,3 audited C3D10 levels,24 modes each,

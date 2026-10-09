@@ -13,6 +13,15 @@ map](../scripts/STATUS.md), and [thickness-mismatch script
 map](../scripts/analysis/thickness_mismatch/README.md). No command in this
 index should be run without first reviewing its cost and output contract.
 
+## FEM-1R single refined-level evidence
+
+`results/nlsp_linear_rectangular_3d_fem_refinement/63d44daae533389c/` contains
+[the continuation](numerics/nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement):
+parent manifest/hash links,one.020 C3D10 mesh/24 complete eigenvectors,input/output,
+four-mesh/signed-model-difference CSV,MAC/section/c/warping diagnostics,resources
+and2 PDF/PNG figures. All8 preset mesh checks pass; this does not replace the
+historical three-grid PARTIAL report or validate nonlinear V0.
+
 ## FEM-1 full linear family evidence
 
 `results/nlsp_linear_rectangular_3d_fem/4262efa427b03dad/` contains the

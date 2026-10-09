@@ -33,6 +33,7 @@
 
 | Тема | Ключевые записи |
 |---|---|
+| FEM-1R: one .020 mesh; all8 matched and preset mesh criterion accepted; linear only | [NLSP-D10](decisions.md#nlsp-d10), [NLSP-K11](knowledge.md#nlsp-k11), [continuation](../numerics/nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement) |
 | Full-family rectangular linear3D FEM-1:3 grids/4 families identified, mesh convergence PARTIAL | [NLSP-D09](decisions.md#nlsp-d09), [NLSP-K10](knowledge.md#nlsp-k10), [report](../numerics/nlsp_linear_rectangular_3d_fem_validation.md) |
 | Локальная3D FEM readiness: Gmsh/CCX confirmed, nonlinear support documented; без новых jobs | [NLSP-K09](knowledge.md#nlsp-k09), [readiness audit](../numerics/nlsp_3d_fem_environment_readiness.md) |
 | Семиполевая модель: V0 → exact/cubic audit → первый four-field planar time pilot PARTIAL; без stability/порога | [NLSP-D01](decisions.md#nlsp-d01), [NLSP-K01](knowledge.md#nlsp-k01), [NLSP-D02](decisions.md#nlsp-d02), [NLSP-K02](knowledge.md#nlsp-k02), [numerical note](../theory/weakly_nonlinear_planar_time_pilot.md) |

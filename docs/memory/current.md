@@ -1,5 +1,25 @@
 # Текущий контекст
 
+## FEM-1R — one refined mesh, all eight preset-accepted, 2026-10-09
+
+[NLSP-D10](decisions.md#nlsp-d10), [NLSP-K11](knowledge.md#nlsp-k11),
+[canonical continuation](../numerics/nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement).
+Same L=1,b=.20,h=.10/material/BC/axes; saved1D and parent three meshes unchanged.
+One.020 C3D10 level:20752 nodes/12687 elements, one24-mode CCX job, all8 uniquely
+identified. All fine/refined changes.01649-.06880% meet preset.1%; four-grid trends
+are regular and identities stable. FEM1R statuses PASS in the declared linear
+window; original FEM1 mesh/all-family PARTIAL remains historical below.
+Updated finite-grid differences: axial.47666%, bending1.36648-1.74302%, twist
+4.40336/4.97569%. No exact3D truth, causal separation or nonlinear V0 validation.
+
+The linear baseline is sufficient for a limited FEM-2 test IF separately
+chosen/authorized; its nonlinear/load/BC/mesh verification is still outstanding.
+No fifth mesh, new1D roots, repeated old jobs, coefficient fitting or nonlinear
+step occurred. After this bounded continuation stop; FEM-2/FEM-3 are not started.
+LONG CLOSED; EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION; angular same-clamp
+UNAVAILABLE; prepared strict PARTIAL and physical sanity
+DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS remain unchanged.
+
 ## Full-family linear3D FEM-1 — bounded complete / mesh PARTIAL, 2026-10-08
 
 [NLSP-D09](decisions.md#nlsp-d09), [NLSP-K10](knowledge.md#nlsp-k10),
@@ -396,3 +416,14 @@ angular same-clamp UNAVAILABLE; NLSP physical sanity qualified и strict PARTIAL
 Это не проверка nonlinear terms V0 и не повод автоматически расширять сетку,
 геометрию или запускать FEM-2/FEM-3. Существующие scoped statuses неизменны;
 следующий расчёт требует отдельного решения пользователя.
+
+
+## Текущая остановка после FEM-1R
+
+Один разрешённый дополнительный mesh level рассчитан; все8 формы удовлетворяют
+preset linear mesh criterion. Исторические результаты и qualifications сохранены.
+Это достаточный linear baseline для отдельного ограниченного FEM-2 решения, не
+запуск FEM-2 и не проверка nonlinear V0. Fifth mesh, nonlinear static/dynamic,
+новые геометрии/1D roots и maps не разрешены автоматически. LONG CLOSED;
+EB/RLB-KV PAUSED; angular same-clamp UNAVAILABLE; prepared strict PARTIAL и physical
+sanity DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS сохраняются.

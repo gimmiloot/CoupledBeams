@@ -20,6 +20,14 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
+## FEM-1R: one additional .020 mesh
+
+`verify_nlsp_linear_rectangular_3d_fem_refinement.py` is a bounded reusable
+continuation layer with pinned parent-hash contract; one24-mode job,20752 nodes/
+12687 C3D10. All8 identities/mesh criterion PASS,regular four-grid observed trend.
+No new physics/1D calculation/nonlinear job; historical FEM1 PARTIAL preserved.
+[Continuation](../docs/numerics/nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement).
+
 ## Rectangular full-family linear3D FEM-1
 
 `verify_nlsp_linear_rectangular_3d_fem.py` completes the bounded three-mesh job

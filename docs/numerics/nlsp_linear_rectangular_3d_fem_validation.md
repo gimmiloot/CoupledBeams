@@ -262,3 +262,237 @@ nonlinear static/dynamic, angular joint or out-of-plane stability calculation ra
 EB/RLB-KV PAUSED, angular same-clamp UNAVAILABLE, prepared planar strict PARTIAL
 and physical sanity DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS remain unchanged.
 FEM-2/FEM-3 and further refinement require a separate explicit decision.
+
+
+<a id="fem-1r-one-additional-mesh-refinement"></a>
+## FEM-1R: one additional mesh refinement
+
+2026-10-09; main HEAD `efb7966fbaf44ef956666477a89904c00731e033`.
+This separately authorized continuation adds exactly one target-size
+.020 C3D10 level to the historical coarse/medium/fine results above. The original
+FEM-1 report, three-grid PARTIAL statuses, decisions and bundle remain history;
+they are not rewritten as if the fourth grid had already existed.
+
+The original geometry/material, axes, solid-face clamps, mesh generator/algorithm,
+quadratic element order, mass, output, 24-mode request and matching policy remain
+unchanged. L=1,b=.20,h=.10,E=rho=1,nu=.3,kappa=5/6. The same normalized time is used:
+omega is rad per normalized time, with cyclic frequency=omega/(2*pi); no Hz or
+Lambda conversion is introduced. V0, cubic equations and all 1D coefficients,
+including C_T and H, are untouched.
+
+### Frozen parent and continuation contract
+
+Parent: `results/nlsp_linear_rectangular_3d_fem/4262efa427b03dad/`.
+Its pinned manifest SHA256 is
+`9f2d5139b84b2aa133b20d9a7cae806bac085c178fba506e087cae2941da1d90`.
+The historical manifest and all listed artifacts are checked before a new job;
+the saved eight 1D frequencies, mode profiles, section reduction, completeness
+and original three mesh results are loaded directly. No new roots, eigensystems,
+BVP, torsional-series evaluation or 1D profiles are computed. Current helper and
+binary hashes must match the parent identities; a changed new CLI hash does not
+invalidate or regenerate the historical bundle.
+
+The [continuation config](../../data/input/nlsp_linear_rectangular_3d_fem_refinement.json)
+and [CLI](../../scripts/analysis/verify_nlsp_linear_rectangular_3d_fem_refinement.py)
+use a separate schema/output contract. This is a diagnostic parent-validated
+orchestration layer, not a second FEM solver. It reuses `rectangular_geo`,
+`audit_rectangular_mesh`, `inspect_modal`, strict FRD reading, section projection,
+MAC/assignment and the historical Gmsh/CalculiX generator/runner. Altering the
+frozen three-grid config/schema would change its cache semantics; this new
+immutable-parent continuation contract is the Script Proliferation Control
+reason for a separate reusable entry point.
+
+### New mesh and modal job
+
+| Level | Target size | Nodes | C3D10 | Left/right fixed-face nodes | Min Jacobian | Corner quality min/median/max | Volume/mass |
+|---|---:|---:|---:|---:|---:|---|---:|
+| refined | 0.020000 | 20752 | 12687 | 279/279 | 2.559649e-06 | 0.147842/0.430992/0.707107 | 0.020000 |
+
+The bbox remains X=[0,1],Y=[-.05,.05],Z=[-.10,.10]. One face-connected solid,
+consistent quadratic faces, straight midsides, no negative/zero Jacobian element,
+and full end-face constraints pass before CalculiX. Volume relative discrepancy
+is5.20e-16. Corner/centroid/positive14-point volume-quadrature samples confirm the
+affine positive Jacobians. No unused or artificially restrained internal nodes.
+
+Actual corner-edge segment counts, excluding midside nodes, are5 through h and10
+through b. Nine interior rays intersect15-18 tetrahedra through h and28-40 through
+b; these are cell intersections, not structured-layer counts. Ray coverage is
+complete to arithmetic accuracy. Gmsh and CalculiX warning lists are empty.
+
+Same Gmsh4.15.2/CalculiX2.22 binaries and one-thread policy were used, without
+installation, relocation or PATH changes. Two deterministic Gmsh format exports
+(MSH4.1 and INP) describe ONE additional resolution level. Exactly ONE CalculiX
+modal job returned0 and produced24 positive elastic eigenpairs and24 complete
+20752-node displacement blocks. Success also requires parsed DAT/FRD evidence;
+exit status alone is not sufficient. Maximum fixed-face relative displacement
+is0. The three printed DAT frequency columns agree within6.33e-7 relative, below
+the inherited1e-5 format-consistency gate.
+
+Mode24 has omega10.79142, so the original omega_max3.4651360027859885 window is
+covered. No additional 3D mode occurs inside this window. No extension of the
+24-mode request, fifth grid, backup h=.12 or nonlinear calculation was attempted.
+The stage used32.8429s/1200s; CalculiX18.1133s and353.410MiB observed peak working
+set. Individual timeout900s and memory limit4GiB were retained.
+
+### Shape identity and full four-mesh frequencies
+
+All eight modes are independently matched to the saved 1D lift using the same
+positive mass-quadrature MAC and shape-only unique assignment. Frequency proximity
+is not an assignment input. Family fractions, section residuals, axial warping,
+independent-best duplicates/margins and all24 full vectors are retained. All
+family dominance checks pass (minimum matched family fraction>.99999967), with
+zero ambiguous/duplicate assignments. The old raw IDs1-8 re-emerge from the shape
+checks; they were not copied as the assumed assignment.
+
+Fine/refined identity is checked against all24 refined candidates with the
+historical common241-point translation/rotation section mass metric; c_eff is
+excluded from that metric. Minimum cross-mesh MAC=.999999142, minimum margin
+=.966888. Minimum full refined1D/3D MAC=.9902147, assignment margin=.9881806.
+In particular, both twists, in-plane mode3 and axial mode1 retain identity.
+
+| Family | Mode | 1D omega | Coarse .050 | Medium .033333 | Fine .025 | Refined .020 |
+|---|---:|---:|---:|---:|---:|---:|
+| In-plane bending | 1 | 0.605416730 | 0.6182542 | 0.6166689 | 0.6159927 | 0.6156668 |
+| Out-of-plane bending | 1 | 1.038923589 | 1.0552370 | 1.0543180 | 1.0536820 | 1.0533170 |
+| Torsion | 1 | 1.443392698 | 1.5231980 | 1.5132500 | 1.5108350 | 1.5098780 |
+| In-plane bending | 2 | 1.551535483 | 1.5863410 | 1.5810000 | 1.5788980 | 1.5779590 |
+| Out-of-plane bending | 2 | 2.378101731 | 2.4199780 | 2.4178940 | 2.4165000 | 2.4157600 |
+| In-plane bending | 3 | 2.804275820 | 2.8728140 | 2.8605930 | 2.8559300 | 2.8540220 |
+| Torsion | 2 | 2.886785396 | 3.0670850 | 3.0451820 | 3.0400340 | 3.0379440 |
+| Axial M-H acoustic | 1 | 3.150123639 | 3.1679230 | 3.1666160 | 3.1657330 | 3.1652110 |
+
+All values above are ACTUALLY calculated FEM frequencies or immutable parent1D
+values. No extrapolated continuum frequency appears in the table.
+
+### Mesh criterion and updated model differences
+
+For each transition use abs(omega_new-omega_old)/omega_new. The new main control
+is abs(omega_.020-omega_.025)/omega_.020, with the unchanged preset criterion
+<=1e-3 (0.1%). The inherited decreasing-successive-change qualification also
+holds. All eight satisfy the criterion, with fine/refined changes.01649-.06880%.
+Each is recorded as **MESH_ACCEPTED_AT_PRESET_TOLERANCE**, not
+EXACT_3D_CONTINUUM_REFERENCE. Historical medium/fine statuses remain unchanged.
+
+| Family | Mode | Coarse-medium % | Medium-fine % | Fine-refined % | Fine/refined section MAC |
+|---|---:|---:|---:|---:|---:|
+| In-plane bending | 1 | 0.25707 | 0.10977 | 0.05293 | 0.999999940 |
+| Out-of-plane bending | 1 | 0.08717 | 0.06036 | 0.03465 | 0.999999964 |
+| Torsion | 1 | 0.65739 | 0.15985 | 0.06338 | 0.999999816 |
+| In-plane bending | 2 | 0.33782 | 0.13313 | 0.05951 | 0.999999768 |
+| Out-of-plane bending | 2 | 0.08619 | 0.05769 | 0.03063 | 0.999999886 |
+| In-plane bending | 3 | 0.42722 | 0.16327 | 0.06685 | 0.999999425 |
+| Torsion | 2 | 0.71927 | 0.16934 | 0.06880 | 0.999999142 |
+| Axial M-H acoustic | 1 | 0.04127 | 0.02789 | 0.01649 | 0.999999854 |
+
+All eight frequencies decrease across all four grids, and their absolute changes
+decrease at each refinement. No identity change or irregular-trend flag occurs.
+This is a regular observed trend, not a proven asymptotic law or rigorous error
+bound. Grid-size ratios differ; no constant-ratio Richardson formula, effective
+order fit or extrapolation was needed or used.
+
+Updated model difference is abs(omega_1D-omega_.020)/omega_.020; the signed quantity
+(omega_1D-omega_.020)/omega_.020 is retained separately. Every signed value remains
+negative. The last column below uses ACCEPTED as shorthand for
+MESH_ACCEPTED_AT_PRESET_TOLERANCE.
+
+| Family | Mode | Fine-refined % | Signed 1D/refined % | Absolute 1D/refined % | Change from previous model difference, percentage points | Refined shape MAC | Mesh status |
+|---|---:|---:|---:|---:|---:|---:|---|
+| In-plane bending | 1 | 0.05293 | -1.66487 | 1.66487 | -0.05203 | 0.9998768 | ACCEPTED |
+| Out-of-plane bending | 1 | 0.03465 | -1.36648 | 1.36648 | -0.03417 | 0.9998637 | ACCEPTED |
+| Torsion | 1 | 0.06338 | -4.40336 | 4.40336 | -0.06055 | 0.9970807 | ACCEPTED |
+| In-plane bending | 2 | 0.05951 | -1.67454 | 1.67454 | -0.05848 | 0.9993307 | ACCEPTED |
+| Out-of-plane bending | 2 | 0.03063 | -1.55886 | 1.55886 | -0.03015 | 0.9993788 | ACCEPTED |
+| In-plane bending | 3 | 0.06685 | -1.74302 | 1.74302 | -0.06564 | 0.9981234 | ACCEPTED |
+| Torsion | 2 | 0.06880 | -4.97569 | 4.97569 | -0.06533 | 0.9902147 | ACCEPTED |
+| Axial M-H acoustic | 1 | 0.01649 | -0.47666 | 0.47666 | -0.01641 | 0.9972084 | ACCEPTED |
+
+The additional grid reduces the measured model differences by.01641-.06564
+percentage points, while leaving their family ordering and scale intact.
+In-plane modes1-3 now differ by1.66487,1.67454,1.74302%; out-of-plane modes1-2
+by1.36648,1.55886%. Both bending planes use the inherited distinct inertias,
+section rotations and solid-face restraint; no shear coefficient is fitted.
+
+Twist differences remain largest:4.40336/4.97569%, with mesh changes.06338/.06880%.
+Refined axial-warp squared mass fractions.00192689/.00722057 and total section
+residual fractions.00195705/.00745194 are close to the earlier diagnostics.
+Condensed static sectional warping in C_T, absence of a separate dynamic warping
+field and differing end restraint are plausible contributors, not proven unique
+causes. Small mass fractions do not bound a stiffness/frequency effect; C_T is
+not corrected from FEM.
+
+First acoustic M-H difference is now.476662%, mesh change.0164918%, axial section
+MAC=.9999644. The effective thickness-strain diagnostic c_eff has shape
+MAC=.9988310 and maximum aligned difference.7799998 versus reference scale9.1602715
+(about8.52%). These are arbitrary unit-mass LINEAR eigenvector amplitudes, not
+finite-motion strains. The41-slab projection and full-end restraint qualification
+remain; no boundary zone is omitted. c_eff is not an exact FEM M-H coordinate or
+a direct Cartesian DOF. The contraction-dominated branch remains outside the
+unchanged frequency window.
+
+### Reliability and readiness for a bounded FEM-2 test
+
+The observed model differences persist as the mesh changes become substantially
+smaller. The new level strengthens their interpretation as systematic finite-grid
+1D/3D discrepancies in this declared linear window. It does not uniquely separate
+shear stiffness, section deformation, constrained warping, local face-clamp effects
+and other reduced-model assumptions, or establish a continuum reference.
+
+All eight meet the declared linear numerical criterion. The available four-grid
+evidence is sufficient as the LINEAR baseline for a limited nonlinear static
+verification, IF separately authorized; no fifth linear grid is required solely
+to satisfy this completed preset criterion. Nonlinear static mesh convergence,
+load/control and constitutive/BC comparison contracts would still require their
+own evidence. FEM-1R neither executes FEM-2/FEM-3 nor proves physical accuracy of
+nonlinear V0. No new scientific stage is started automatically.
+
+### Reproduction, artifacts, figures and stop
+
+Bundle: `results/nlsp_linear_rectangular_3d_fem_refinement/63d44daae533389c/`.
+Old data are referenced by parent path/hashes rather than copied large arrays.
+Continuation identity covers parent manifest, geometry/material, one mesh size,
+24-mode/window/matching policy, source-helper and executable/runtime hashes,
+new CLI/config hashes, Python/dependencies and resource/semantic policy.
+New GEO/MSH/INP/DAT/FRD, logs, complete nodal vectors, mesh/section/assignment data,
+`four_mesh_comparison.csv`, `full_refined_spectrum.csv`, axial diagnostic,
+resource counters, execution-code copy, provenance and manifest are retained.
+
+```powershell
+python scripts/analysis/verify_nlsp_linear_rectangular_3d_fem_refinement.py --check-source
+python scripts/analysis/verify_nlsp_linear_rectangular_3d_fem_refinement.py --run-fem
+python scripts/analysis/verify_nlsp_linear_rectangular_3d_fem_refinement.py --report-only results/nlsp_linear_rectangular_3d_fem_refinement/63d44daae533389c
+python scripts/analysis/verify_nlsp_linear_rectangular_3d_fem_refinement.py --plot-only results/nlsp_linear_rectangular_3d_fem_refinement/63d44daae533389c
+```
+
+Matching cached compute and report/plot start no Gmsh/CalculiX,1D roots or BVP.
+A corrupt parent or unmanifested attempted job is a stop condition, not an
+instruction to regenerate history or retry a new mesh automatically.
+[Targeted tests](../../tests/test_nlsp_linear_rectangular_3d_fem_refinement.py)
+use synthetic fixtures and saved evidence, with no extra real FEM jobs:59 tests
+PASS (3.52s). Sixteen selected historical FEM1 regressions PASS (1.32s); the other
+33 were not run to avoid new preflight roots. Cache replay of matching --run-fem,
+report-only and plot-only confirms zero new Gmsh/CCX/1D/BVP calls and unchanged
+figure hashes. All15 frozen source/model/config/test hashes, HEAD and staging
+index are preserved. Link and whitespace verification are recorded separately.
+
+Exactly two PDF+PNG figures: `four_mesh_convergence` shows all four actual grids;
+`refined_model_difference_and_mesh_change` separates model differences from
+successive numerical mesh changes. Historical mode-shape figures are reused;
+no new identity-problem figure is needed.
+
+| Status | Outcome |
+|---|---|
+| NLSP_FEM1R_SOURCE_PRESERVATION | PASS |
+| NLSP_FEM1R_NEW_MESH_QUALITY | PASS |
+| NLSP_FEM1R_MODAL_EXECUTION | PASS |
+| NLSP_FEM1R_MODE_IDENTIFICATION | PASS |
+| NLSP_FEM1R_MESH_CONVERGENCE | PASS |
+| NLSP_FEM1R_ALL_FAMILY_COMPARISON | PASS |
+
+[NLSP-D10](../memory/decisions.md#nlsp-d10) and
+[NLSP-K11](../memory/knowledge.md#nlsp-k11) record this separately authorized
+continuation and bounded result. LONG CLOSED, EB/RLB-KV PAUSED, angular same-clamp
+UNAVAILABLE, prepared planar strict PARTIAL and physical sanity
+DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS are preserved. Linear convergence PASS
+is not universal1D applicability or nonlinear validation. No new1D calculation,
+repeat of the original three modal jobs, fifth mesh, parameter fitting/map,
+nonlinear static/dynamic or change to physics/BC occurred. Stop after FEM-1R.
