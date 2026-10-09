@@ -1,0 +1,49 @@
+{
+  "schema": "nlsp-static-fem2r-continuation-v1",
+  "parent_failed_bundle": "results/nlsp_nonlinear_static_3d_fem/6714bd9f2778e6d7",
+  "parent_manifest_sha256": "e0a972bf852c64658202bc5e385fabbede8ea5f5396248603e0ed6fe76d3d62c",
+  "corrected_generator_sha256": "02cebdacd680385c96a57b67439ce3f5b11c4e3226674bac723ed5245585c4f5",
+  "authorization": {
+    "id": "explicit_user_FEM2R_2026_10_09",
+    "basis": "User FEM-2R controlled continuation after serialization failure",
+    "maximum_new_ccx_jobs": 6,
+    "case_order": [
+      "medium_linear",
+      "medium_nonlinear",
+      "fine_linear",
+      "fine_nonlinear",
+      "refined_linear",
+      "refined_nonlinear"
+    ],
+    "automatic_retry_after_new_solver_failure": false
+  },
+  "frozen_load": {
+    "g": 0.0014224751066856333,
+    "q": 0.00002844950213371267,
+    "F_total": 0.00002844950213371267
+  },
+  "geometry": {
+    "L": 1,
+    "b": 0.2,
+    "h": 0.1
+  },
+  "material": {
+    "E": 1,
+    "rho": 1,
+    "nu": 0.3,
+    "kappa": 0.8333333333333334
+  },
+  "threads": 1,
+  "job_timeout_seconds": 1200,
+  "job_memory_limit_bytes": 4294967296,
+  "numerical_budget_seconds": 3600,
+  "one_d_policy": "reuse_parent_p48_p64_without_equilibrium_solves",
+  "semantics": {
+    "new_static_jobs_only": true,
+    "new_meshes": false,
+    "new_modal_jobs": false,
+    "new_dynamics": false,
+    "new_one_d_solves": false,
+    "model_fitting": false
+  }
+}

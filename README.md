@@ -4,6 +4,13 @@ CoupledBeams is a research repository for frequency models and computations for 
 
 ## Project Layout
 
+- [FEM-2R: authorized nonlinear static continuation](docs/numerics/nlsp_nonlinear_static_3d_fem_validation.md#fem-2r-controlled-continuation-after-input-serialization-failure)
+  -- `python scripts/analysis/resume_nlsp_nonlinear_static_3d_fem.py --run-fem`
+  reuses the preserved 1D equilibria and three saved meshes under the same frozen
+  load. A separate authorization-bound ledger preserves the original failed
+  FEM-2 attempt; cache/report/plot perform no new scientific calculations.
+  This bounded static comparison does not authorize FEM-3.
+
 - [FEM-2: nonlinear static comparison](docs/numerics/nlsp_nonlinear_static_3d_fem_validation.md)
   -- `python scripts/analysis/verify_nlsp_nonlinear_static_3d_fem.py --preflight`:
   frozen dead load and p48/p64 quartic equilibrium PASS. The first medium 3D

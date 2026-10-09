@@ -2,6 +2,13 @@
 
 This directory contains reusable helper modules that are not meant to be run directly.
 
+- FEM-2R reuses the unchanged FEM-2 deck writer, static readers, reference-section
+  polar recovery, consistent-bodyload reaction correction and report functions.
+  Its scoped analysis CLI only orchestrates a separately authorized continuation
+  over saved 1D profiles/meshes; it adds no library physics solver or dynamic
+  helper change. The historical failed-attempt guard remains intact.
+  [Continuation contract/result](../../docs/numerics/nlsp_nonlinear_static_3d_fem_validation.md#fem-2r-controlled-continuation-after-input-serialization-failure).
+
 - FEM-2 reuses unchanged `PlanarGalerkin.linear_stiffness`, `potential` gradient/
   Hessian and reconstruction for static stationarity of V_le4. A scoped analysis
   layer loads saved C3D10 meshes, builds static GRAV decks and contains final-

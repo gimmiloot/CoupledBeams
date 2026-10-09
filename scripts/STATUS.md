@@ -20,6 +20,18 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
+## FEM-2R: static diagnostic complete with qualifications
+
+`resume_nlsp_nonlinear_static_3d_fem.py` is the separate authorized continuation,
+reusing saved1D equilibria and source meshes plus unchanged static helpers.
+All six actual linear/NLGEOM jobs, final-output/reaction gates and correction
+signal diagnostics pass. Refined correction agrees in sign with1D;3.19353%
+common-scale profile difference retains constitutive/BC/numerical qualifications.
+No new Gmsh/modal/1D/ODE solve; code-hash changes cannot retry an authorization.
+Cached source/compute/report/plot use saved evidence. Original FEM-2 failed
+replay remains historical below; no automatic FEM-3.
+[Result](../docs/numerics/nlsp_nonlinear_static_3d_fem_validation.md#fem-2r-controlled-continuation-after-input-serialization-failure).
+
 ## FEM-2: nonlinear static comparison, PARTIAL
 
 `verify_nlsp_nonlinear_static_3d_fem.py` is the focused static entry point:

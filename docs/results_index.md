@@ -13,6 +13,18 @@ map](../scripts/STATUS.md), and [thickness-mismatch script
 map](../scripts/analysis/thickness_mismatch/README.md). No command in this
 index should be run without first reviewing its cost and output contract.
 
+## FEM-2R controlled continuation evidence
+
+`results/nlsp_nonlinear_static_3d_fem_resume/210b74b8b166997c/` contains the
+[completed qualified static comparison](numerics/nlsp_nonlinear_static_3d_fem_validation.md#fem-2r-controlled-continuation-after-input-serialization-failure):
+pinned failed-parent/source manifests, reused1D profile hashes, serialization
+checks/authorization ledger, six new actual INP/DAT/FRD/STA/logs, nodal U/RF/S/E,
+material-section recovery41/81, independent reactions/current-moment balance,
+linear/NL/correction tables/profiles, observed mesh/signal uncertainty, resource
+counters and three PDF/PNG figures. All six cases and bounded diagnostics pass;
+overall FEM2_DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS. Historical failed6714 bundle
+is unchanged; no source regeneration, fresh1D equilibrium or dynamic job.
+
 ## FEM-2 static preflight and stopped first job
 
 `results/nlsp_nonlinear_static_3d_fem/6714bd9f2778e6d7/` preserves the

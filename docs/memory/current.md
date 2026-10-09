@@ -1,5 +1,31 @@
 # Текущий контекст
 
+## FEM-2R — static diagnostic complete with qualifications, 2026-10-09
+
+[NLSP-D12](decisions.md#nlsp-d12), [NLSP-K13](knowledge.md#nlsp-k13),
+[canonical continuation](../numerics/nlsp_nonlinear_static_3d_fem_validation.md#fem-2r-controlled-continuation-after-input-serialization-failure).
+Новое явное разрешение продолжило FEM-2 после input serialization failure:
+все шесть новых sequential linear/NLGEOM jobs на saved medium/fine/refined
+meshes достигли полной нагрузки и прошли output/reaction gates. Предыдущий
+failed bundle/guard остаётся неизменным; готовые1D equilibria не пересчитывались.
+V0, коэффициенты, нагрузка, базис и заделки сохранены; никаких новых meshes.
+
+Refined w_linear=.0048372596764, w_NL=.0048280969939,
+Delta w=-9.1626824679e-6;1D Delta w=-8.8700793068e-6. Знак совпадает;
+full-profile max correction difference3.19353% от общего масштаба. Signal
+превышает наблюдаемые mesh/recovery/output-rounding measures, но это не строгая
+континуальная оценка или полная оценка Newton-error. Общий статус
+FEM2_DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS; не универсальный physical PASS V0,
+не проверка переменной инерции. Effective c остаётся отдельным diagnostic,
+не идентичной FEM/M-H DOF и не подтверждением всех четырёх полей.
+
+После отчёта остановка. FEM-3, новые нагрузки/геометрии и dynamics/Floquet
+не выбраны и не запускаются автоматически. LONG CLOSED, EB/RLB-KV
+PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp reference UNAVAILABLE,
+prepared strict PARTIAL и physical sanity DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS
+сохранены. Разделы ниже описывают исторические результаты и прежние остановки;
+новое разрешение не переписывает их задним числом.
+
 ## FEM-2 — 1D preflight complete, first 3D input failure, 2026-10-09
 
 [NLSP-D11](decisions.md#nlsp-d11), [NLSP-K12](knowledge.md#nlsp-k12),
@@ -454,3 +480,15 @@ preset linear mesh criterion. Исторические результаты и q
 новые геометрии/1D roots и maps не разрешены автоматически. LONG CLOSED;
 EB/RLB-KV PAUSED; angular same-clamp UNAVAILABLE; prepared strict PARTIAL и physical
 sanity DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS сохраняются.
+
+
+## Текущая остановка после FEM-2R
+
+Разрешённая static continuation закончена: actual6/6 jobs и bounded numerical
+comparison получены, FEM2_DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS. Старый failed
+attempt и strict float64 PARTIAL остаются историческими. Это ограниченное
+свидетельство о статическом изгибе при одной нагрузке, не universal nonlinear
+V0/inertia validation. Следующее scientific execution decision не выбрано;
+FEM-3/dynamics, angular joints/Floquet и дополнительный mesh/load study не
+разрешены автоматически. LONG CLOSED; EB/RLB-KV PAUSED; angular same-clamp
+UNAVAILABLE; prepared strict и historical zero-u/c PARTIAL сохраняются.

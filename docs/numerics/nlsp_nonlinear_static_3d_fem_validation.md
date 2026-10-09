@@ -384,3 +384,279 @@ reference UNAVAILABLE. V0/cubic equations, physical coefficients, basis, old
 solvers/results/manifests and historical D/K are unchanged. One static CCX
 attempt, zero new Gmsh/modal/ODE calls; no nonlinear 3D job or automatic further
 study. Stop after the report.
+
+
+<a id="fem-2r-controlled-continuation-after-input-serialization-failure"></a>
+
+## FEM-2R - controlled continuation after input serialization failure
+
+2026-10-09. Initial checkout: main, HEAD
+`a650b77db3ebcb73bce1c57bce9bc98472950c9b`, clean working tree and index.
+This section extends the historical FEM-2 result above; it does not replace its
+PARTIAL status or its failed medium job. [Authorization D12](../memory/decisions.md#nlsp-d12),
+[result K13](../memory/knowledge.md#nlsp-k13).
+
+**FEM2_DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS.** All six newly authorized
+static jobs completed and passed their output/equilibrium gates. The nonlinear
+bending correction has the same negative sign in both models. On refined 3D,
+Delta w at midspan is -9.1626824679e-6 versus saved 1D -8.8700793068e-6;
+the full-profile max difference is 3.19353% of the common correction scale.
+The signal exceeds the observed mesh/recovery/printed-rounding measures, with
+no claim of an exact 3D reference or universal physical validation of V0.
+
+### Frozen sources and serialization gate
+
+The separate bundle is `results/nlsp_nonlinear_static_3d_fem_resume/210b74b8b166997c/`.
+Its identity pins the historical failed parent6714bd9f2778e6d7 manifest SHA256
+`e0a972bf852c64658202bc5e385fabbede8ea5f5396248603e0ed6fe76d3d62c`, all31 parent
+artifact hashes, the two FEM-1/FEM-1R source manifests and their94/41 artifacts,
+saved p48/p64 NPZ profiles, frozen load/material/geometry, source mesh hashes,
+corrected generator, solver/runtime DLLs, code/environment and explicit
+`explicit_user_FEM2R_2026_10_09` authorization. Sources are referenced directly;
+large historical arrays are not copied or recomputed. The old failed input,
+code/logs/manifest and original failed-attempt guard are unchanged.
+
+The preserved 1D profiles independently reproduce w_linear=.005,
+w_NL=.004991129920693126 and Delta w=-8.8700793068e-6 at x=.5. Existing static
+residuals, energies, reactions and p48/p64 comparison are reused; this stage
+performs zero new 1D equilibria, BVP/eigen/section reduction or symbolic work.
+The strict float64 strong/weak relative threshold2e-12 remains PARTIAL.
+
+Before CCX, original failed input, corrected preview and freshly serialized
+inputs were compared. All six linear/NL cards pass finite parseability and
+native20-character checks for each numeric field in STATIC/CONTROLS/DLOAD/
+ELASTIC/DENSITY. Maximum new token width is18; the failed minimum-increment
+token was22. New medium input matches the preview except its mesh include path;
+linear/NL pairs differ only by NLGEOM. The same frozen g is represented within
++2.57794e-13 relative rounding, not replaced by a fitted load.
+No additional generator or parser correction was needed in this continuation.
+
+### Actual static execution and output recovery
+
+Same L=1,b=.20,h=.10; E=rho=1,nu=.3,kappa=5/6; g=.0014224751066856333,
+q=F_total=2.844950213371267e-5, global load direction(0,-1,0). Full end faces
+remain fixed, lateral faces free, with no internal joint/MPC/contact/spring.
+No Gmsh or modal job ran; the saved medium/fine/refined C3D10 meshes were reused.
+All source mesh quality/material/clamp contracts passed before execution.
+
+CalculiX2.22 binary is unchanged:
+`results/_smoke/3d_fem_environment_check/calculix_2p22/CalculiX-2.22.0-win-x64/bin/ccx.exe`.
+One thread, job timeout1200s and4GiB ceiling; jobs execute sequentially in the
+explicit ledger order. Medium linear and NL both passed before fine/refined.
+Each linear solve has one accepted full-load increment; each NLGEOM solve has
+10 accepted increments of0.1, two iterations each, no cutback/retry/warning.
+STA final step time is1, i.e. full load factor1 under the preserved ramp.
+This load-step pseudo-time is not a time-dynamic trajectory.
+
+| New case | Nodes / C3D10 | CCX seconds | Peak working set, MiB | Final load | Output / equilibrium |
+|---|---:|---:|---:|---:|---|
+| medium linear | 5649 / 3120 | 1.2113 | 69.70 | 1 | PASS |
+| medium NLGEOM | 5649 / 3120 | 10.1626 | 74.21 | 1 | PASS |
+| fine linear | 11553 / 6670 | 2.8220 | 150.36 | 1 | PASS |
+| fine NLGEOM | 11553 / 6670 | 27.0664 | 159.46 | 1 | PASS |
+| refined linear | 20752 / 12687 | 6.5445 | 331.57 | 1 | PASS |
+| refined NLGEOM | 20752 / 12687 | 80.6070 | 347.02 | 1 | PASS |
+
+The numerical stage, including mesh audits and recovery, is138.31963s/3600s.
+All return codes0 are supported independently by completion markers, complete
+final DAT/FRD U/RF/S/E blocks, STA increments, finite nodal fields, zero fixed-face
+displacements and checked force/moment balances. No parser repair or solver
+repetition occurred. Exact decks, source include hashes, native command, logs,
+DAT/FRD/STA, nodal arrays, sections and per-case diagnostics are retained at once.
+
+An independent read-only audit parses INP/DAT/FRD/STA and integrates the body
+load without importing the production static parser. It confirms six complete
+cases,33 accepted increments (3linear+30NL),60 nonlinear Newton iterations and
+zero cutbacks. Native stdout prints average/residual forces with only six
+fixed decimal places; printed zero is not proof of zero numerical residual.
+Accepted correction/increment ratios range from about1.2034e-4 at the first
+increment to1.35-1.37e-7 at the last, so nominal control can=1e-8 cannot be
+reported as a demonstrated bound for every accepted state. Local2.22 convergence
+source permits alternative acceptance branches; coarse stdout cannot identify
+the exact branch. Controls are unchanged. Independent final RF balances pass,
+but no complete native Newton-error bound or tighter-control test is claimed.
+Small recovered asymmetry/transverse fields persist on the unstructured mesh;
+perfect symmetry/planarity is not asserted.
+
+Recovery uses the unchanged weighted original material-section policy, cubic X
+variation/transverse affine fit, finite polar orientation for both linear/NL
+states and41-versus81-section check. Positive w is negative global Y; the same
+undeformed material coordinate x is used, with no surface-node substitution,
+profile/phase/amplitude alignment or altered bounding box. DAT displacement
+(seven significant digits) is primary; FRD is independent rounded evidence.
+
+### Deflection and correction comparison
+
+| Model / mesh | Linear midspan w | NL midspan w | Signed Delta w | Relative NL effect, % | Status |
+|---|---:|---:|---:|---:|---|
+| saved 1D p64 | .004999999999999884 | .004991129920693126 | -8.8700793068e-6 | -.177401586 | existing equilibrium PASS; strict PARTIAL |
+| 3D medium | .004821160849899094 | .004812087371842098 | -9.0734780570e-6 | -.188201106 | PASS |
+| 3D fine | .004831278709155392 | .004822130272658330 | -9.1484364971e-6 | -.189358492 | PASS |
+| 3D refined | .004837259676401260 | .004828096993933395 | -9.1626824679e-6 | -.189418867 | PASS |
+
+Relative nonlinear effects use each model's own linear midspan w. Profile
+comparisons use the predeclared common801-point original-x grid, composite
+trapezoid L2 and sampled maxima; no continuous supremum is proved. The shared
+correction scale is max absolute Delta w across saved p64/all three3D results,
+9.1626824679e-6. Translation differences also retain the fixed scale h=.10;
+angles/strain diagnostics use fixed scale1. No denominator is a local zero.
+
+| Refined 1D-minus-3D w quantity | Midspan signed difference | Absolute profile max | L2 | Relative max, % |
+|---|---:|---:|---:|---:|
+| Linear displacement | +1.6274032360e-4 | 1.6287136025e-4 | 1.1526475242e-4 | 3.25743 of common linear scale |
+| Total nonlinear displacement | +1.6303292676e-4 | 1.6316227131e-4 | 1.1543881626e-4 | 3.26904 of common NL scale |
+| Nonlinear correction | +2.9260316111e-7 | 2.9261288903e-7 | 1.7764915170e-7 | 3.19353 of common correction scale |
+
+The refined3D correction max/L2 are9.1626824679e-6 /5.6997874068e-6;
+saved1D values are8.8700793068e-6 /5.5222537356e-6. Both are negative in the
+interior and reduce deflection relative to their own linear response. The
+small nonlinear signal is not mistaken for the much larger linear offset.
+
+For context, saved full-profile comparisons include all recovered fields.
+Refined nonlinear-correction max differences are9.86842e-7 for u (17.7989% of
+the common u-correction scale) and4.47796e-7 for theta (1.73663%). Effective c
+is only a finite-section thickness-contraction diagnostic: its comparison is
+not identity of independent M-H and solid DOFs, and its finite polar extraction
+has a nonzero linear baseline. Its correction discrepancy is82.9202% of the
+diagnostic common scale; close Delta w must not be reported as agreement of all
+four fields or validation of c/V0 coefficients. Solid-face/clamp and section
+reduction distinctions are retained. Small v/Phi/psi diagnostics are saved,
+without claiming new spatial dynamics or classifying modes.
+
+### Static mesh and small-signal qualification
+
+The frequency criterion0.1% is not applied to Delta w. Instead the original
+signal rule compares signal with observed successive-grid, recovery and printed
+rounding measures and retains sign/decreasing-change checks.
+
+| Transition | Max change w_linear | Max change w_NL | Max change Delta w | L2 change Delta w | Delta w change / common signal, % |
+|---|---:|---:|---:|---:|---:|
+| medium to fine | 1.1469171206e-5 | 1.1391400023e-5 | 7.7790574643e-8 | 4.9220784763e-8 | .848993 |
+| fine to refined | 5.9866240008e-6 | 5.9723940965e-6 | 1.4245970802e-8 | 7.7699733409e-9 | .155478 |
+
+Absolute and L2 correction changes decrease; correction sign is stable. No
+extrapolated value is substituted for the actual refined result and no static
+fourth grid is introduced. The 1D/3D max correction differences are2.03416e-7,
+2.80317e-7,2.92613e-7 for medium/fine/refined, respectively; refinement does not
+artificially drive them to agreement.
+
+| Refined w-correction evidence | Absolute magnitude |
+|---|---:|
+| Nonlinear signal | 9.1626824679e-6 |
+| Last fine/refined profile change | 1.4245970802e-8 |
+| Paired correction recovery change,41 vs81sections | 3.1405842805e-9 |
+| Conservative summed DAT nodal printed-rounding allowance | 4.906427e-9 |
+| Signal / largest observed measure | 643.177 |
+
+The saved outcome is SIGNAL_EXCEEDS_OBSERVED_UNCERTAINTY. The last change is
+not a rigorous continuum-error bound; the rounding allowance is a pointwise
+formatting estimate, not a full propagated recovery/solver error theorem.
+DAT/FRD nodal displacement differences are at most5e-9; equilibrium convergence
+is checked separately. No numerical green threshold was invented after seeing
+the result. The observation supports a resolved negative bending correction
+and a quantified finite-grid comparison, not exact continuum truth.
+
+### Reactions, equilibrium and strains
+
+Actual support forces are independently recovered as
+`R_support=DAT_RF_support-consistent_reference_bodyload_support`.
+Bodyload is integrated from saved reference C3D10 geometry, not deduced from
+reaction balance. Nonlinear moment balance uses current nodal coordinates and
+the corresponding dead-load moment. Raw RF is not treated as pure support
+reaction; the free-node RF/bodyload residual is also retained.
+
+| Refined support observable | Linear | NLGEOM |
+|---|---:|---:|
+| Left R_X | +5.9510850e-11 | -1.1373996719e-6 |
+| Right R_X | -5.9422700e-11 | +1.1373997021e-6 |
+| Left R_Y | 1.4224656856e-5 | 1.4224656517e-5 |
+| Right R_Y | 1.4224844976e-5 | 1.4224845426e-5 |
+| Left M_Z about face centroid | +2.3882004421e-6 | +2.3851623695e-6 |
+| Right M_Z about face centroid | -2.3882944827e-6 | -2.3852567457e-6 |
+| Force imbalance / total force | 1.18159e-8 | 7.04492e-9 |
+| Moment imbalance / total force times L | 9.86754e-9 | 2.15632e-9 |
+| Maximum fixed-face displacement | 0 | 0 |
+| Maximum recovered nodal strain component | .00798158 | .00790246 |
+| Maximum recovered nodal stress component | .0107444 | .0105592 |
+
+Across all six cases the maximum relative force/moment imbalance is
+4.84236e-8 /1.36216e-8, below the unchanged1e-5 equilibrium gate. All fields are
+finite. Strain is infinitesimal for linear and Green-Lagrange for NLGEOM; printed
+stress is Cauchy. FRD S/E are extrapolated/averaged nodal diagnostics, not exact
+local maxima; their mesh variation near full-face clamps remains qualified.
+The unchanged1D reaction/strain diagnostics above remain a separate reduction.
+
+### Interpretation, replay and stop
+
+For this one load/geometry the adopted reduced quartic model and StVK3D both
+predict a small reduction of transverse deflection. The resolved correction
+profiles differ by about3.19% on the declared common max scale, while total
+linear/NL deflections retain about3.26% offsets. This is useful independent
+physical evidence for the sign and order of the static bending response;
+it is not PHYSICAL_NONLINEAR_VALIDATION_PASS for all V0 coefficients.
+Section/shear/clamp/constitutive differences are possible contributors, without
+unique causal separation. Hardening is not attributed solely to axial stretching.
+Variable inertia, nonlinear dynamics/Floquet, damping, angular joints and
+amplitude dependence are not checked by this static task.
+
+[Continuation CLI](../../scripts/analysis/resume_nlsp_nonlinear_static_3d_fem.py)
+and [config](../../data/input/nlsp_nonlinear_static_3d_fem_resume.json) implement
+only the explicit immutable-parent/authorization/ledger orchestration contract,
+reusing original FEM-2 functions. The old failed guard remains in place. Cache
+identity includes parent manifest/source profiles/meshes, corrected generator,
+code/solver/runtime/environment and frozen numerical/recovery settings. A new
+solver failure cannot acquire a hidden retry merely by changing code hash.
+
+```powershell
+python scripts/analysis/resume_nlsp_nonlinear_static_3d_fem.py --check-source
+python scripts/analysis/resume_nlsp_nonlinear_static_3d_fem.py --run-fem
+python scripts/analysis/resume_nlsp_nonlinear_static_3d_fem.py --report-only results/nlsp_nonlinear_static_3d_fem_resume/210b74b8b166997c
+python scripts/analysis/resume_nlsp_nonlinear_static_3d_fem.py --plot-only results/nlsp_nonlinear_static_3d_fem_resume/210b74b8b166997c
+```
+
+Three PDF+PNG figures preserve full profiles and separate correction/numerical
+mesh diagnostics: [linear/NL profiles](../../results/nlsp_nonlinear_static_3d_fem_resume/210b74b8b166997c/figures/linear_and_nonlinear_static_profiles.pdf),
+[correction profiles](../../results/nlsp_nonlinear_static_3d_fem_resume/210b74b8b166997c/figures/static_nonlinear_corrections.pdf),
+[mesh changes/reactions](../../results/nlsp_nonlinear_static_3d_fem_resume/210b74b8b166997c/figures/static_mesh_convergence_and_reactions.pdf).
+
+| FEM-2R status | Outcome |
+|---|---|
+| NLSP_FEM2R_SOURCE_PRESERVATION | PASS |
+| NLSP_FEM2R_INPUT_SERIALIZATION | PASS |
+| NLSP_FEM2R_MEDIUM_LINEAR | PASS |
+| NLSP_FEM2R_MEDIUM_NONLINEAR | PASS |
+| NLSP_FEM2R_FINE_PAIR | PASS |
+| NLSP_FEM2R_REFINED_PAIR | PASS |
+| NLSP_FEM2R_STATIC_OUTPUT_RECOVERY | PASS |
+| NLSP_FEM2R_EQUILIBRIUM | PASS |
+| NLSP_FEM2R_NONLINEAR_SIGNAL_RESOLUTION | PASS |
+| NLSP_FEM2R_1D_3D_COMPARISON | PASS |
+| Overall | FEM2_DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS |
+
+A PASS for comparison means actual complete, numerically qualified evidence,
+not automatic exact physical agreement or universal applicability. Historical
+FEM-2 PARTIAL/failed attempt and strict float64 PARTIAL are not raised.
+
+V0/cubic equations, linear coefficients, material/load, Shen basis and BC are
+unchanged. Exactly six new static CCX jobs; zero new meshes, modal/1D/BVP/ODE or
+symbolic computations. LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION,
+angular same-clamp reference UNAVAILABLE, prepared strict PARTIAL and physical
+sanity DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS remain. Stop after the report;
+FEM-3, other amplitudes/geometries and angular/Floquet studies are not authorized
+or launched automatically. Test/cache/link/preservation evidence is recorded in
+the continuation bundle and the final verification paragraph below.
+
+
+Final targeted verification:75 new continuation tests PASS and42 selected
+historical serialization/I/O/recovery/failure-cache regressions PASS (117total),
+using synthetic fixtures and saved evidence with no fresh scientific solver.
+The first historical-test invocation had32pass/10setup errors solely from pytest
+default temporary-directory ACL; both that XML and the42/42 successful fresh-
+basetemp rerun are retained, with no code/threshold changes to make tests pass.
+Artifacts: `targeted_tests.xml`, `historical_targeted_tests.xml` and
+`historical_targeted_tests_initial_env_error.xml` in the continuation bundle.
+`cache_checks.json` confirms all four source/cached-compute/report/plot routes
+with numerical entry points forbidden: zero new CCX/Gmsh/1D/eigen/BVP/ODE/symbolic
+calls and identical figure hashes. Historical report/D/K exact byte-prefix
+preservation and unique new anchors pass; `git diff --check` passes. Final
+source/hash/link/index/HEAD verification is recorded separately in the bundle.

@@ -1778,3 +1778,60 @@ change. Four cached CLI routes perform zero new scientific calls, figure hashes
 unchanged; 53 targeted tests PASS. Two figures show only obtained 1D profiles/
 correction. This addresses a confirmed formatting defect but does not establish
 successful3D equilibrium or raise any NOT_RUN status.
+
+
+## NLSP-K13
+
+**FEM-2R result, 2026-10-09:** [D12](decisions.md#nlsp-d12),
+[canonical continuation](../numerics/nlsp_nonlinear_static_3d_fem_validation.md#fem-2r-controlled-continuation-after-input-serialization-failure).
+Overall FEM2_DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS. Historical parent31 and
+FEM-1/FEM-1R94/41 artifact hashes pass; original failed input/guard/manifests and
+saved1D p48/p64 equilibria remain unchanged. Native numeric-card gate passes
+before solver; corrected preview/current inputs differ only by include paths,
+linear/NL pairs only by NLGEOM. No further code/parser correction was needed.
+
+**Established within scope:** all six newly authorized sequential static CCX
+jobs on existing medium/fine/refined C3D10 meshes reach full load with complete
+DAT/FRD fields, zero clamp displacement and independent force/moment balances
+below the unchanged1e-5 gate. No cutbacks/retries/warnings. The refined3D pair has
+w_linear=.00483725967640126,w_NL=.00482809699393340,
+Delta w=-9.1626824679e-6 (-.189419% of own linear response), versus saved1D
+-8.8700793068e-6 (-.177402%). Both predict reduced deflection. Refined max/L2
+correction-profile differences are2.92613e-7/1.77649e-7,3.19353% of common max
+correction scale; total linear/NL offsets remain about3.26% on their common scales.
+
+**Numerical qualification:** successive Delta w max changes7.77906e-8 to
+1.42460e-8 decrease and sign stays stable. Paired41/81-section recovery change
+3.14058e-9 and summed DAT printed-rounding allowance4.90643e-9 are retained.
+Signal exceeds the largest observed measure by643.18; this supports a resolved
+static bending correction, not an exact continuum-error bound. Printed output
+cannot establish the exact native nonlinear Newton acceptance branch/error;
+independent reactions and successful increments are the saved evidence.
+Old float64 strict2e-12 PARTIAL remains separate. No frequency.1% criterion
+is reused as a static correction threshold or new threshold fitted afterward.
+
+**Physical qualifications:** StVK3D is not identical to reduced V0; full-face
+and1D clamps/section recovery differ. Agreement of the bending correction's
+sign/order does not prove every nonlinear coefficient or variable inertia.
+The u-correction differs by17.8%, theta-correction by1.74% on their common
+scales; effective c is diagnostic only, with a finite-polar linear baseline
+and a much larger correction discrepancy. Do not claim all fields agree or
+attribute hardening/discrepancy to one uniquely established mechanism.
+
+**Evidence / implication / stop:** bundle210b74b8b166997c retains frozen sources,
+explicit authorization/attempt ledger, exact six-job inputs/outputs/reactions,
+profiles/mesh/signal diagnostics, runtime/counters and3 PDF/PNG figures.
+Numerical stage138.32s/3600s, peak347.02MiB;0 Gmsh/modal/new1D/BVP/ODE calls.
+The bounded static comparison is completed; it does not automatically select
+FEM-3/dynamics, another load/geometry, angular joint or Floquet study.
+LONG CLOSED; EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION; angular same-clamp
+UNAVAILABLE; prepared strict PARTIAL, physical sanity qualifications and old
+zero-u/c/historical FEM2 PARTIAL remain. No PHYSICAL_NONLINEAR_VALIDATION_PASS.
+
+
+**Final verification in this continuation:**75 new and42 selected historical
+regressions PASS, no new scientific solvers in tests. Four cached CLI routes
+perform zero scientific calls and preserve figure hashes. Historical D/K/report
+byte prefixes and sources are preserved; new D12/K13 anchors unique,
+`git diff --check` PASS. An initial pytest temp-directory ACL/setup failure is
+retained separately from the successful read-only rerun, not a science failure.

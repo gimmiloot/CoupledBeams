@@ -4,6 +4,19 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
+## FEM-2R: completed static diagnostic with qualifications (2026-10-09)
+
+[Controlled continuation](numerics/nlsp_nonlinear_static_3d_fem_validation.md#fem-2r-controlled-continuation-after-input-serialization-failure)
+reuses the saved1D equilibria/load and three meshes after the separate explicit
+execution authorization. All six new linear/NLGEOM static jobs reach full load,
+complete output and independent reaction-balance gates. Refined Delta w=-9.16268e-6
+versus1D-8.87008e-6; negative signs agree, full-profile difference3.19353% of the
+common correction scale. The signal exceeds observed mesh/recovery/rounding
+measures; these are not exact continuum/complete solver-error bounds. Overall
+FEM2_DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS, not PHYSICAL_NONLINEAR_VALIDATION_PASS
+for all V0 coefficients. Historical failed attempt/strict PARTIAL remain.
+No new mesh,1D/modal/ODE solve or FEM-3; stop after the bounded report.
+
 ## FEM-2: bounded nonlinear static comparison (2026-10-09)
 
 [Static report](numerics/nlsp_nonlinear_static_3d_fem_validation.md) fixes the same

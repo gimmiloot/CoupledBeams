@@ -1,5 +1,32 @@
 # Scripts guide
 
+## FEM-2R: controlled continuation after input serialization failure
+
+```powershell
+python scripts/analysis/resume_nlsp_nonlinear_static_3d_fem.py --check-source
+python scripts/analysis/resume_nlsp_nonlinear_static_3d_fem.py --run-fem
+python scripts/analysis/resume_nlsp_nonlinear_static_3d_fem.py --report-only results/nlsp_nonlinear_static_3d_fem_resume/210b74b8b166997c
+python scripts/analysis/resume_nlsp_nonlinear_static_3d_fem.py --plot-only results/nlsp_nonlinear_static_3d_fem_resume/210b74b8b166997c
+```
+
+[Continuation config](../data/input/nlsp_nonlinear_static_3d_fem_resume.json)
+pins the historical failed parent manifest, corrected generator, unchanged load,
+source meshes, saved p48/p64 profiles and explicit FEM-2R execution authorization.
+[Contract and result](../docs/numerics/nlsp_nonlinear_static_3d_fem_validation.md#fem-2r-controlled-continuation-after-input-serialization-failure).
+The thin orchestration layer reuses the existing FEM-2 deck writer, CCX runner,
+static readers, section/reaction recovery and reports; it contains no new physics
+solver. A distinct immutable-parent/authorization/attempt-ledger contract keeps
+the historical failed workflow safe, satisfying Script Proliferation Control.
+
+At most six sequential jobs run in the fixed medium-linear, medium-NL, fine-pair,
+refined-pair order, with no new mesh, modal job or 1D equilibrium solve. A new
+solver failure is retained and stops the series; changing the code hash does not
+authorize another attempt. `--reparse-only` is a read-only output-recovery route,
+never a solver retry. Matching cached `--run-fem`, source/report/plot routes read
+saved evidence with zero new CCX/Gmsh/1D/eigen/BVP/ODE calls. The old FEM-2 CLI and
+its deliberate failed-attempt replay remain unchanged. After the report stop;
+no FEM-3 or new load/geometry is selected automatically.
+
 ## FEM-2: bounded nonlinear static comparison
 
 ```powershell

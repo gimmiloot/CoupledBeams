@@ -2,6 +2,19 @@
 
 ## 2026-10-09
 
+- FEM-2R completed the explicitly authorized six sequential linear/NLGEOM static
+  jobs on saved medium/fine/refined meshes under the unchanged preselected load.
+  Parent failed bundle31 artifacts and FEM-1/FEM-1R94/41 artifacts remain intact;
+  saved1D equilibria are reused, zero new Gmsh/modal/1D/BVP/ODE solves. Refined
+  w_linear=.0048372596764, w_NL=.0048280969939, Delta w=-9.1626824679e-6;
+  sign matches1D and max correction-profile difference is3.19353% on common scale.
+  Last mesh/recovery/printed-rounding measures are1.42460e-8/3.14058e-9/4.90643e-9;
+  correction signal exceeds these observed measures, not a continuum-error bound.
+  Overall FEM2_DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS; no universal V0/inertia
+  validation, code/model/load fitting, new retry or automatic FEM-3. Separate
+  thin continuation CLI/config/ledger/bundle210b74b8b166997c; original guard,
+  strict float64 PARTIAL and old D/K/statuses preserved. NLSP-D12/K13 appended.
+
 - FEM-2 stopped at the prescribed first-medium gate: frozen q=2.8449502134e-5
   gives 1D linear w=.005 and quartic w=.00499112992069312, Delta w=-8.8700793068e-6;
   p48/p64 variational equilibrium and static convergence PASS. One actual medium

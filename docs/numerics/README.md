@@ -5,6 +5,13 @@ policies define how calculations are organized, checked, resumed, and
 reported; they do not define the governing equations of individual physical
 models.
 
+- [FEM-2R controlled continuation](nlsp_nonlinear_static_3d_fem_validation.md#fem-2r-controlled-continuation-after-input-serialization-failure) --
+  six actual static jobs on saved meshes complete; refined Delta w=-9.16268e-6,
+  same sign as1D,3.19353% full-profile correction difference on the common scale.
+  Signal exceeds observed mesh/recovery/rounding measures; diagnostic complete
+  with qualifications, not universal V0/inertia validation. Historical failure
+  stays preserved; no new mesh,1D solve, nonlinear dynamics or automatic FEM-3.
+
 - [FEM-2 nonlinear static comparison](nlsp_nonlinear_static_3d_fem_validation.md) --
   frozen load and 1D static preflight PASS; first medium linear CCX input rejected
   before equilibrium. Overall PARTIAL; no 3D correction or mesh comparison,

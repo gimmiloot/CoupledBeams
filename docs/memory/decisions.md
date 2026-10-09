@@ -1050,3 +1050,44 @@ parallel jobs. After report stop; another execution after a failed gate or
 FEM-3/other load/geometry requires an explicit new decision. LONG CLOSED,
 EB/RLB-KV PAUSED, angular same-clamp UNAVAILABLE, prepared strict PARTIAL,
 physical sanity qualifications and FEM1R linear PASS are retained.
+
+
+## NLSP-D12
+
+**Decision / scope, 2026-10-09:** explicit user authorization for FEM-2R,
+controlled continuation after the recorded FEM-2 input serialization failure.
+One new corrected medium linear job; only after its output/equilibrium gate,
+medium NLGEOM; only after the checked medium pair, fine linear/NL and refined
+linear/NL. At most six sequential CalculiX static jobs, no hidden retry.
+
+**Why:** complete the originally selected independent static comparison with
+the same dead gravity load and adopted reduced quartic model. The historical
+failed attempt stays failed and immutable; the old CLI's deliberate guard is
+not removed. A separate authorization-bound continuation/config/bundle reuses
+the corrected serialization and existing readers/recovery, not a copied solver.
+
+**Frozen scope:** L=1,b=.20,h=.10; E=rho=1,nu=.3,kappa=5/6; full end-face clamps,
+free sides, no internal joint. g=.0014224751066856333,
+q=F_total=2.844950213371267e-5; no amplitude/load/coefficients/BC fitting.
+Load saved p48/p64 profiles, residuals, energies and reactions directly, without
+new 1D equilibria, BVP/eigen/section reduction. Reuse medium/fine/refined C3D10
+meshes without Gmsh/modal jobs. Preserve the strict float64 2e-12 PARTIAL.
+
+**Basis / provenance:** direct user request "FEM-2R: resume nonlinear
+static 1D/3D verification",2026-10-09; initial main HEAD
+`a650b77db3ebcb73bce1c57bce9bc98472950c9b`, clean working tree and index.
+No supervisor approval is inferred. Parent6714bd9f2778e6d7 manifest SHA256
+`e0a972bf852c64658202bc5e385fabbede8ea5f5396248603e0ed6fe76d3d62c`;
+[config](../../data/input/nlsp_nonlinear_static_3d_fem_resume.json),
+[canonical continuation](../numerics/nlsp_nonlinear_static_3d_fem_validation.md#fem-2r-controlled-continuation-after-input-serialization-failure),
+[result K13](knowledge.md#nlsp-k13).
+
+**Stop / revisit:** source/hash or input-gate failure stops before solver.
+A real new solver/input/equilibrium failure stops later jobs with the completed
+prefix retained; no code-hash retry. Correct successful output may be reparsed
+read-only after an independently tested parser repair, without CCX rerun.
+One thread, job<=1200s/4GiB, stage<=3600s; no fourth static grid/new geometry/load,
+nonlinear time dynamics, FEM-3, angular joints or Floquet. After report stop.
+Static signal evidence does not validate every V0 coefficient or variable inertia.
+LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp
+UNAVAILABLE, prepared strict PARTIAL and physical sanity qualifications remain.
