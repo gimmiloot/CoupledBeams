@@ -4,6 +4,14 @@ CoupledBeams is a research repository for frequency models and computations for 
 
 ## Project Layout
 
+- [FEM-2: nonlinear static comparison](docs/numerics/nlsp_nonlinear_static_3d_fem_validation.md)
+  -- `python scripts/analysis/verify_nlsp_nonlinear_static_3d_fem.py --preflight`:
+  frozen dead load and p48/p64 quartic equilibrium PASS. The first medium 3D
+  linear attempt failed at input parsing; remaining jobs were not run. Overall
+  PARTIAL, no 1D/3D nonlinear validation. Report/plot use preserved evidence;
+  another solver attempt requires a separate decision after the hard-gate stop.
+
+
 - [FEM-1R: one extra .020 mesh](docs/numerics/nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement)
   -- `python scripts/analysis/verify_nlsp_linear_rectangular_3d_fem_refinement.py --check-source`
   and `--run-fem`: immutable parent/reference,one24-mode job,all8 preset mesh

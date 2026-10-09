@@ -1728,3 +1728,53 @@ its load/constitutive/BC contract and nonlinear convergence would need own evide
 No fifth grid/FEM2/FEM3 is run or automatically authorized. LONG CLOSED; EB/RLB-KV
 PAUSED; angular same-clamp UNAVAILABLE; prepared strict PARTIAL and physical sanity
 DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS remain unchanged.
+
+
+## NLSP-K12
+
+**FEM-2 result, 2026-10-09:** [D11](decisions.md#nlsp-d11),
+[canonical static report](../numerics/nlsp_nonlinear_static_3d_fem_validation.md).
+Overall PARTIAL. Frozen1D load selected before FEM: g=.0014224751066856333,
+q=F=2.844950213371267e-5; primary w_linear/h=.05 has bending surface strain
+.0071124 below the .01 load-selection guide, so backup unused.
+
+**Established within scope:** unchanged quartic1D static stationarity at p48/p64
+converges with positive finite-dimensional tangent and zero essential endpoint
+residual; independent linear Timoshenko profile passes. Midspan w_linear=.005,
+w_NL=.00499112992069312, Delta w=-8.8700793068e-6 (about-.177402% of its own linear
+response). Two-p correction/field/reaction differences are tiny; variational
+Newton residual<=7.14e-14. Existing independent strict float64 action/strong
+threshold2e-12 remains PARTIAL and is separate from equilibrium PASS.
+
+**Concrete stop / no3D result:** exactly one medium linear CCX job was attempted.
+It returned201 before stiffness/equilibrium because the new *STATIC .17g numeric
+field was22 characters against native20-character reading, truncating its
+exponent. This is a localized new input-formatting defect, not nonlinear
+solver divergence or evidence against V0. Original code/input/logs and bundle
+6714bd9f2778e6d7 are preserved. No medium NL, fine/refined job,3D section profile,
+reaction equilibrium, correction or static mesh comparison exists; all are
+NOT_RUN. Old FEM jobs/meshes/manifests are unchanged; no hidden retry occurred.
+
+**Qualifications / implication:** StVK3D law is not identical to reduced V0;
+RF includes consistent applied body load; finite section recovery and effective
+c need real output verification. Their synthetic/documentary support is not
+actual3D equilibrium. No correction sign/magnitude agreement or physical
+nonlinear-validation claim can be made. The next necessary evidence, if
+separately authorized, is a corrected medium linear/NL execution gate before
+finer statics; this incomplete result supplies no basis to skip to FEM-3.
+
+**Preserved / stop:** original V0/cubic equations/coefficients/basis/helpers,
+historical D/K/results, FEM1R PASS in linear scope, LONG CLOSED, EB/RLB-KV PAUSED,
+angular same-clamp UNAVAILABLE, prepared strict PARTIAL and physical sanity
+DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS. No Gmsh/eigen/ODE/nonlinear3D calculation,
+load fitting or automatic further study. Stop after the bounded report.
+
+
+**Numerical remediation / verification in the same task:** current static cards
+now use bounded `ccx_float` serialization; the original failed deck/code/log
+remain immutable. Corrected medium preview is NOT_RUN; there was no rerun or
+new preflight. A failed-attempt ledger preserves cache replay despite code-hash
+change. Four cached CLI routes perform zero new scientific calls, figure hashes
+unchanged; 53 targeted tests PASS. Two figures show only obtained 1D profiles/
+correction. This addresses a confirmed formatting defect but does not establish
+successful3D equilibrium or raise any NOT_RUN status.

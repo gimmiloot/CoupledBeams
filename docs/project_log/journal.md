@@ -4,6 +4,21 @@
 
 ## 2026-10-09
 
+- FEM-2 stopped at the prescribed first-medium gate: frozen q=2.8449502134e-5
+  gives 1D linear w=.005 and quartic w=.00499112992069312, Delta w=-8.8700793068e-6;
+  p48/p64 variational equilibrium and static convergence PASS. One actual medium
+  linear CCX attempt returned201 before equilibrium because the new *STATIC
+  .17g numeric field exceeded its native20-character limit. Original input,
+  execution code and logs are preserved; no retry, medium NL or fine/refined job.
+  New scoped CLI/config/tests and canonical note record overall PARTIAL with
+  all 3D comparison/recovery/mesh evidence NOT_RUN. V0, coefficients, basis,
+  historical linear/dynamic results and old D/K are unchanged; D11/K12 added.
+  No FEM-3 or physical nonlinear validation conclusion follows.
+  Corrected current card formatting via existing bounded formatter, synthetic
+  width/round-trip regression and NOT_RUN input preview; no hidden retry.
+  Failed-attempt ledger/cache survives code-hash change, all four replay routes
+  do zero scientific calls. 53 targeted tests PASS; two 1D-only figures.
+
 - Completed explicitly authorized FEM-1R: one .020 C3D10 grid with20752 nodes/
   12687 elements,one24-mode CalculiX job,all8 shape matches stable. All inherited
   .1% mesh checks pass (.01649-.06880%); four-grid frequencies decrease with

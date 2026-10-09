@@ -1,0 +1,98 @@
+{
+  "schema": "nlsp-nonlinear-static-3d-fem-v1",
+  "geometry": {
+    "L": 1,
+    "b": 0.2,
+    "h": 0.1
+  },
+  "material": {
+    "E": 1,
+    "rho": 1,
+    "nu": 0.3,
+    "kappa": 0.8333333333333334
+  },
+  "sources": {
+    "fem1": {
+      "bundle": "results/nlsp_linear_rectangular_3d_fem/4262efa427b03dad",
+      "manifest_sha256": "9f2d5139b84b2aa133b20d9a7cae806bac085c178fba506e087cae2941da1d90"
+    },
+    "fem1r": {
+      "bundle": "results/nlsp_linear_rectangular_3d_fem_refinement/63d44daae533389c",
+      "manifest_sha256": "bf42a0bbb1bbee8c64a18068848377bea477d8decd2990cf7f36bbedc832eb24"
+    }
+  },
+  "mesh_levels": [
+    "medium",
+    "fine",
+    "refined"
+  ],
+  "load_policy": {
+    "primary_w_over_h": 0.05,
+    "backup_w_over_h": 0.03,
+    "bending_surface_strain_ceiling": 0.01,
+    "kind": "dead_global_gravity",
+    "global_direction": [
+      0,
+      -1,
+      0
+    ],
+    "line_load": "rho*A0*g"
+  },
+  "one_d": {
+    "p": [
+      48,
+      64
+    ],
+    "quadrature_minimum": "2p+1",
+    "residual_relative_tolerance": 1e-10,
+    "increment_relative_tolerance": 1e-12,
+    "load_steps": 10,
+    "newton_max_iterations": 20,
+    "max_load_subdivisions": 6
+  },
+  "static_settings": {
+    "initial_increment": 0.1,
+    "total_step_time": 1.0,
+    "minimum_increment": 1e-06,
+    "maximum_increment": 0.1,
+    "maximum_increments": 100,
+    "field_residual_relative": 1e-08,
+    "field_correction_relative": 1e-08,
+    "output_frequency": 1000000
+  },
+  "recovery": {
+    "policy": "weighted_reference_slabs_cubic_axis_transverse_affine_polar_41",
+    "section_count": 41,
+    "sensitivity_section_count": 81,
+    "primary_theta": "finite_transverse_polar_for_both_linear_and_nonlinear",
+    "report_grid_count": 801
+  },
+  "comparison": {
+    "fixed_displacement_scale": 0.1,
+    "correction_characteristic": "common_max_abs_over_p64_and_all_3D_meshes",
+    "numerical_signal_rule": "signal_must_exceed_last_mesh_change_and_recovery_rounding_uncertainties",
+    "frequency_mesh_tolerance_not_used": true,
+    "L2_rule": "composite trapezoid on common801-point material-x grid; sampled extrema"
+  },
+  "gates": {
+    "equilibrium_relative": 1e-05,
+    "fixed_face_absolute": 1e-12
+  },
+  "threads": 1,
+  "numerical_budget_seconds": 3600,
+  "job_timeout_seconds": 1200,
+  "job_memory_limit_bytes": 4294967296,
+  "ccx_exe": "D:/PHD/CoupledBeams/CoupledBeams/results/_smoke/3d_fem_environment_check/calculix_2p22/CalculiX-2.22.0-win-x64/bin/ccx.exe",
+  "semantics": {
+    "static_only": true,
+    "model_fitting": false,
+    "new_meshes": false,
+    "new_modal_jobs": false,
+    "new_dynamics": false,
+    "maximum_real_ccx_jobs": 6,
+    "automatic_further_studies": false
+  },
+  "parent_bundle": "results/nlsp_linear_rectangular_3d_fem/4262efa427b03dad",
+  "action_bundle": "results/weakly_nonlinear_spatial_rod/a9cedd4b6de99295",
+  "action_manifest_sha256": "04346246a1bf88a59d3d5a5055849313e3febe09f62f6929dd5bbcec7522f505"
+}

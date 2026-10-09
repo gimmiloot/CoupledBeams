@@ -2,6 +2,13 @@
 
 This directory contains reusable helper modules that are not meant to be run directly.
 
+- FEM-2 reuses unchanged `PlanarGalerkin.linear_stiffness`, `potential` gradient/
+  Hessian and reconstruction for static stationarity of V_le4. A scoped analysis
+  layer loads saved C3D10 meshes, builds static GRAV decks and contains final-
+  increment-aware static parsing/recovery; no new library physics solver or
+  dynamic helper change. Synthetic recovery does not substitute for the failed
+  real medium equilibrium. [Static contract/result](../../docs/numerics/nlsp_nonlinear_static_3d_fem_validation.md).
+
 - FEM-1R loads the immutable saved1D and three-grid reference, then reuses
   FEM-1 geometry/audit/modal/section/MAC functions for one .020 continuation.
   No new library/physics solver or modified historical helper is introduced.

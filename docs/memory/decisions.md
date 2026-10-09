@@ -1012,3 +1012,41 @@ mesh failure or solver failure is a concrete stop; no hidden repeat. Report all
 qualifications and stop. [Canonical continuation](../numerics/nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement),
 [result K11](knowledge.md#nlsp-k11). LONG CLOSED, EB/RLB-KV PAUSED, angular same-clamp
 UNAVAILABLE and old NLSP strict/physical-sanity statuses remain unchanged.
+
+
+## NLSP-D11
+
+**Decision / scope, 2026-10-09:** explicit user authorization for FEM-2,
+independent static comparison of the accepted four-field quartic planar model
+with StVK3D elasticity under one common dead transverse gravity load. Same
+monolithic L=1,b=.20,h=.10 solid, material/axes/full end-face clamps; V0/cubic
+coefficients, Shen basis, old solvers/results and all historical statuses frozen.
+
+**Why / load policy:** compare each nonlinear profile against its own linear
+baseline, especially Delta w, without fitting reduced coefficients. Select g
+from1D max w_linear/h=.05 before3D, surface bending strain guide<=.01; only one
+backup .03 if needed. Freeze g/q/resultant before any CCX job. 1D uses V2/V_le4
+stationarity and analytic PlanarGalerkin gradient/Hessian at p48/p64, no forced
+c=-nu*u_s, slope constraints or kinetic/dynamic simplification.
+
+**Scope / quality:** saved medium/fine/refined C3D10 source meshes, checked
+manifests, no Gmsh; at most six sequential static jobs. The medium linear/NL
+pair must fully pass output/parser/reaction gates before finer levels. Keep
+StVK versus reduced V0 and solid-face/1D clamps distinct; RF must be corrected
+for consistent applied body load. Static Delta w requires its own numerical
+quality evidence, not the linear frequency0.1% gate. No empirical parameter,
+new load, dynamics or automatic retry/broad study.
+
+**Basis / provenance:** explicit user request
+`74438306-b0fa-4b50-b471-b49aa3c81103/Pasted text.txt`,2026-10-09; initial main
+HEAD e10b23d7f6c27b4dae6cdf869704f8c58b2ada44. No supervisor approval inferred.
+[Config](../../data/input/nlsp_nonlinear_static_3d_fem.json),
+[canonical report](../numerics/nlsp_nonlinear_static_3d_fem_validation.md),
+[result K12](knowledge.md#nlsp-k12).
+
+**Stop / revisit:** a medium gate failure preserves the actual attempt and
+stops finer/nonlinear jobs. Budget3600s, each job<=1200s/4GiB, one thread, no
+parallel jobs. After report stop; another execution after a failed gate or
+FEM-3/other load/geometry requires an explicit new decision. LONG CLOSED,
+EB/RLB-KV PAUSED, angular same-clamp UNAVAILABLE, prepared strict PARTIAL,
+physical sanity qualifications and FEM1R linear PASS are retained.

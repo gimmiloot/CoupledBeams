@@ -4,6 +4,18 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
+## FEM-2: bounded nonlinear static comparison (2026-10-09)
+
+[Static report](numerics/nlsp_nonlinear_static_3d_fem_validation.md) fixes the same
+L=1,b=.20,h=.10 rod and a dead global transverse load selected before FEM.
+1D p48/p64 linear and quartic nonlinear statics pass their equilibrium gates;
+midspan w=.005 / .00499112992069312 and Delta w=-8.8700793068e-6.
+The first medium linear 3D attempt failed while parsing a numeric *STATIC field,
+before equilibrium. No medium NL/fine/refined jobs ran; 3D comparison and static
+mesh convergence remain NOT_RUN, overall PARTIAL. This is a new input-formatting
+issue, not physical evidence against V0. FEM-3 is not justified or authorized
+by the incomplete comparison. Historical scope/statuses remain unchanged.
+
 ## FEM-1R: bounded extra mesh (2026-10-09)
 
 [Continuation](numerics/nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement)

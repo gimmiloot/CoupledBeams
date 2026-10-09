@@ -13,6 +13,16 @@ map](../scripts/STATUS.md), and [thickness-mismatch script
 map](../scripts/analysis/thickness_mismatch/README.md). No command in this
 index should be run without first reviewing its cost and output contract.
 
+## FEM-2 static preflight and stopped first job
+
+`results/nlsp_nonlinear_static_3d_fem/6714bd9f2778e6d7/` preserves the
+[partial static result](numerics/nlsp_nonlinear_static_3d_fem_validation.md):
+frozen load/source manifests, p48/p64 linear/NL fields, residual/Hessian/reaction
+and work diagnostics, attempted medium linear INP/DAT/STA/stdout/stderr and
+original execution-code provenance. The input parser rejected an overlength
+*STATIC number before equilibrium; no usable 3D static field or correction exists.
+No historical mesh/result was regenerated and no hidden solver retry occurred.
+
 ## FEM-1R single refined-level evidence
 
 `results/nlsp_linear_rectangular_3d_fem_refinement/63d44daae533389c/` contains

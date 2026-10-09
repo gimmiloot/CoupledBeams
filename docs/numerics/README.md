@@ -5,6 +5,11 @@ policies define how calculations are organized, checked, resumed, and
 reported; they do not define the governing equations of individual physical
 models.
 
+- [FEM-2 nonlinear static comparison](nlsp_nonlinear_static_3d_fem_validation.md) --
+  frozen load and 1D static preflight PASS; first medium linear CCX input rejected
+  before equilibrium. Overall PARTIAL; no 3D correction or mesh comparison,
+  no automatic retry, new mesh or dynamic calculation.
+
 - [FEM-1R: one additional .020 mesh](nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement) --
   same frozen rod/reference,24 complete vectors,all8 identities and preset.1%
   mesh changes accepted; four-grid linear evidence, no nonlinear execution.

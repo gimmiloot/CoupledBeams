@@ -1,5 +1,30 @@
 # Scripts guide
 
+## FEM-2: bounded nonlinear static comparison
+
+```powershell
+python scripts/analysis/verify_nlsp_nonlinear_static_3d_fem.py --preflight
+python scripts/analysis/verify_nlsp_nonlinear_static_3d_fem.py --run-fem
+python scripts/analysis/verify_nlsp_nonlinear_static_3d_fem.py --report-only results/nlsp_nonlinear_static_3d_fem/6714bd9f2778e6d7
+python scripts/analysis/verify_nlsp_nonlinear_static_3d_fem.py --plot-only results/nlsp_nonlinear_static_3d_fem/6714bd9f2778e6d7
+```
+
+[Config](../data/input/nlsp_nonlinear_static_3d_fem.json) and
+[canonical report](../docs/numerics/nlsp_nonlinear_static_3d_fem_validation.md).
+This focused static workflow reuses unchanged PlanarGalerkin V2/V_le4 derivatives,
+saved C3D10 meshes and the existing CCX runner. The distinct load/equilibrium/
+static-output contract warrants a stable CLI, not a copied modal physics solver.
+The frozen load is selected from 1D before FEM; only a checked medium linear/NL
+pair admits the fine/refined pairs, maximum six sequential jobs, zero Gmsh/ODE.
+The actual first medium linear attempt failed in input parsing; hard-gate stop
+was honored. Overall PARTIAL; remaining 3D evidence NOT_RUN. Report/plot and
+matching cache read actual evidence without solving. These execution commands
+do not authorize a retry after the recorded stop or a future FEM-3 calculation.
+The localized numeric-card fix is now in the current CLI, with an unexecuted
+corrected-input preview. The failed-attempt ledger keeps the existing failed
+bundle authoritative even if that fix changes code identity; cached --run-fem
+returns the failure rather than automatically creating another job.
+
 ## FEM-1R: one immutable-parent mesh continuation
 
 ```powershell

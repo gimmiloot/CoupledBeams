@@ -1,5 +1,32 @@
 # Текущий контекст
 
+## FEM-2 — 1D preflight complete, first 3D input failure, 2026-10-09
+
+[NLSP-D11](decisions.md#nlsp-d11), [NLSP-K12](knowledge.md#nlsp-k12),
+[canonical static report](../numerics/nlsp_nonlinear_static_3d_fem_validation.md).
+Это отдельная разрешённая статическая проверка прежнего L=1,b=.20,h=.10 solid
+под dead transverse gravity, без пересмотра V0/коэффициентов/базиса/заделок.
+Нагрузка выбрана до FEM из1D w_linear/h=.05: g=.0014224751066856333,
+q=2.844950213371267e-5. p48/p64 linear и quartic equilibria PASS;
+1D Delta w=-8.8700793068e-6, но independent strict float642e-12 PARTIAL сохранён.
+
+Первый medium linear CalculiX job не дошёл до equilibrium: новое .17g число
+в *STATIC превысило native20-character field. Это локализованная ошибка I/O,
+не nonlinear divergence и не свидетельство physical failure V0. Hard gate
+остановил все следующие jobs; сохранены фактический bad deck/log/code/manifest.
+Текущий CLI исправляет только bounded numeric serialization; corrected deck
+и code preview имеют NOT_RUN, новый solver job не выполнялся. Ledger/cache
+сохраняют исходный failed attempt даже при изменении code hash, без retry.
+Overall PARTIAL: 3D linear FAIL, остальные 3D recovery/equilibrium/comparison
+NOT_RUN. Нет3D прогибов/поправок или основания объявлять physical validation.
+Следующий разрешённый этап не выбран: исправленный medium pair потребует
+отдельного execution decision; автоматически не повторять job и не идти кFEM-3.
+
+Сохранены FEM-1R PASS в linear scope, LONG CLOSED, EB/RLB-KV
+PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp reference UNAVAILABLE,
+prepared strict PARTIAL и physical sanity DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS.
+Нелинейная динамика не запускалась; historical разделы ниже остаются отдельно.
+
 ## FEM-1R — one refined mesh, all eight preset-accepted, 2026-10-09
 
 [NLSP-D10](decisions.md#nlsp-d10), [NLSP-K11](knowledge.md#nlsp-k11),

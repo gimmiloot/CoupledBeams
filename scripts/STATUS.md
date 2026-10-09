@@ -20,7 +20,17 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
+## FEM-2: nonlinear static comparison, PARTIAL
+
+`verify_nlsp_nonlinear_static_3d_fem.py` is the focused static entry point:
+load/1D linear/NL preflight PASS; attempted medium linear CCX deck failed at
+input reading, before equilibrium. No medium nonlinear or fine/refined jobs,
+3D section fields or nonlinear corrections. Historical source meshes/physics
+are unchanged; report/plot/cache do zero new solver calls. No automatic retry
+or FEM-3. [Report](../docs/numerics/nlsp_nonlinear_static_3d_fem_validation.md).
+
 ## FEM-1R: one additional .020 mesh
+
 
 `verify_nlsp_linear_rectangular_3d_fem_refinement.py` is a bounded reusable
 continuation layer with pinned parent-hash contract; one24-mode job,20752 nodes/
