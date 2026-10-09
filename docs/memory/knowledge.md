@@ -1835,3 +1835,78 @@ perform zero scientific calls and preserve figure hashes. Historical D/K/report
 byte prefixes and sources are preserved; new D12/K13 anchors unique,
 `git diff --check` PASS. An initial pytest temp-directory ACL/setup failure is
 retained separately from the successful read-only rerun, not a science failure.
+
+
+## NLSP-K14
+
+**FEM-3A result,2026-10-09:** [D13](decisions.md#nlsp-d13),
+[canonical pilot](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md).
+Overall BLOCKED_BY_SOLVER. The first linear medium preload+direct-dynamic
+CalculiX job ends with Windows access violation0xC0000005 (return3221225477).
+No usable native preload/transient displacement, strain/stress/reaction or
+energy output exists; actual static-end/dynamic times cannot be established.
+The buffered banner cannot locate the stage as input reading/before equilibrium.
+The event/PE audit narrows the fault to the mechanical-results symbol region;
+source/binary tracing identifies the LINEAR STATIC ELKE/veold output path,
+not a physical failure of V0.
+
+**Established within scope:** source manifests/artifacts and saved p64 q_linear/
+q_nonlinear scaling/fields are checked. Raw/physical reconstruction and endpoint
+errors are zero; released discrete M*a0+gradient identity about1.12e-16 relative,
+restoring midspan acceleration about-.00141819 in both cases, initial nonlinear
+mass positive with Loewner lower bound.99996311. Existing strict float642e-12
+PARTIAL is not repaired by this discrete identity or raised to PASS.
+Local2.22 manual/source and checked inputs support same-job state persistence,
+OP=NEW+zeroGRAV under STEP amplitude, zero physical initial velocity and ALPHA=0.
+Native acceleration regularization/tiny initialization and output precision
+are explicitly qualified; source-supported semantics are not actual free-motion
+execution evidence. No new physical initial state or coefficient change.
+
+**Concrete stop / unavailable evidence:** exactly one production CCX call,
+2.016s/24.13MiB observed, no resource timeout/memory kill. No accepted states/
+histories, NL production job,1D nonlinear ODE/full exact-time linear evolution,
+fixture, new mesh/modal/static reference solve or hidden retry.0 dynamic figures;
+missing motion/energy/correction data are not filled, extrapolated or inferred
+from historical statics. The attempted input/log/resource record, ledger and
+read-only protocol/crash evidence are retained in bundlea69310e3bb30bab7.
+
+**Qualification / implication / stop:** native mechanical-results access violation
+blocks practical verification of this release pilot; it does not demonstrate
+that V0 is wrong, that CalculiX lacks documented dynamics or that the previously
+verified1D method is unusable. Actual preload transfer/release/short-response
+comparison and temporal/spatial dynamic accuracy remain unestablished. No
+PHYSICAL_DYNAMIC_VALIDATION_PASS, nonlinear period, stability or Floquet claim.
+Future technical execution/retry requires an explicit new decision; no next
+scientific stage is selected automatically. All historical source results and
+D/K remain unchanged: FEM-1R linear PASS, FEM-2R and physical sanity
+DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS, prepared strict/oldzero-u/c PARTIAL,
+LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp
+reference UNAVAILABLE. After the bounded failed-pilot report stop.
+
+
+**Read-only cause/remediation in the same pilot:** source and native instruction
+tracing locate a use-after-free of veold: the linear static route frees velocity,
+ELKE enables kinetic evaluation, and resultsmech reads that dangling pointer.
+No additional solver run is needed to identify this source/binary path. A minimal
+current-generator preview excludes ELKE only in the first LINEAR STATIC output,
+keeps ELSE/ENER there and ELKE in DYNAMIC. It changes no physics/load/release/IC;
+preview NOT_RUN, actual failed input/code/ledger preserved. Correcting output
+routing does not retroactively produce a preload/trajectory or authorize a retry.
+
+
+**Final statuses / tests:** source preservation PASS, release protocol/initial
+velocities PARTIAL (document/source/input definition only, no actual3D traces),
+combined linear production case FAIL; transfer/1D trajectory/NL3D/recovery/energy/
+short comparison NOT_RUN.102 new+42 selected historical tests PASS (144total),
+using synthetic/saved evidence and no extra production solver/integration.
+Original execution code and failed input stay intact; corrected output preview
+has separate PASS input check but remains NOT_RUN. No physical accuracy status
+is raised by either synthetic tests or preview generation.
+
+
+**Cache / preservation verification:** four matching source/preflight-compute/
+report/plot routes perform zero scientific calls with entry points forbidden,
+retain failed-deck/log hashes and create no fake history/figure. The ledger keeps
+the actual blocker despite a current generator hash change. Old D/K exact byte
+prefixes and the complete prior static canonical report are preserved; D13/K14
+anchors unique and `git diff --check` PASS. No further execution follows.

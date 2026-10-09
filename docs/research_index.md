@@ -4,6 +4,21 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
+## FEM-3A: source/preflight ready, native execution blocked (2026-10-09)
+
+[Dynamic pilot](numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md) preserves the
+h=.10 statics/geometry/physics and documents installed2.22 sequential preload,
+OP=NEW/zeroGRAV/STEP release, zero physical initial velocities and ALPHA=0.
+Frozen p64 coordinates and released1D acceleration checks pass. Release/velocity
+protocol statuses remain PARTIAL because actual3D evidence is absent. First linear
+medium3D job terminated with access violation0xC0000005; no accepted static or
+transient state can be verified. No NL job,1D trajectory or extra fixture/retry
+ran. Overall BLOCKED_BY_SOLVER; not evidence against V0 or general absence of
+CalculiX dynamic capability. Read-only source/binary tracing
+localizes first LINEAR STATIC ELKE reading freed veold; a corrected output-only
+preview remains NOT_RUN. Actual release/transfer/energy/comparison are NOT_RUN.
+FEM-2R static/old strict/scoped statuses remain; stop without further execution.
+
 ## FEM-2R: completed static diagnostic with qualifications (2026-10-09)
 
 [Controlled continuation](numerics/nlsp_nonlinear_static_3d_fem_validation.md#fem-2r-controlled-continuation-after-input-serialization-failure)

@@ -1,0 +1,101 @@
+{
+  "schema": "nlsp-fem3a-dynamic-pilot-v1",
+  "authorization": {
+    "id": "explicit_user_FEM3A_2026_10_09",
+    "maximum_production_CCX_jobs": 2,
+    "maximum_nonlinear_1D_integrations": 1,
+    "maximum_technical_fixtures": 1,
+    "automatic_retry": false
+  },
+  "source_resume": {
+    "bundle": "results/nlsp_nonlinear_static_3d_fem_resume/210b74b8b166997c",
+    "manifest_sha256": "2ba6f23d41d49275c4e7e15b2c947258671c2a9b1b9a18a2bb8ef5d8bbfb1151"
+  },
+  "source_static": {
+    "bundle": "results/nlsp_nonlinear_static_3d_fem/6714bd9f2778e6d7",
+    "manifest_sha256": "e0a972bf852c64658202bc5e385fabbede8ea5f5396248603e0ed6fe76d3d62c"
+  },
+  "source_fem1": {
+    "bundle": "results/nlsp_linear_rectangular_3d_fem/4262efa427b03dad",
+    "manifest_sha256": "9f2d5139b84b2aa133b20d9a7cae806bac085c178fba506e087cae2941da1d90"
+  },
+  "source_action": {
+    "bundle": "results/weakly_nonlinear_spatial_rod/a9cedd4b6de99295",
+    "manifest_sha256": "04346246a1bf88a59d3d5a5055849313e3febe09f62f6929dd5bbcec7522f505"
+  },
+  "geometry": {
+    "L": 1,
+    "b": 0.2,
+    "h": 0.1
+  },
+  "material": {
+    "E": 1,
+    "rho": 1,
+    "nu": 0.3,
+    "kappa": 0.8333333333333334
+  },
+  "g": 0.0014224751066856333,
+  "q": 2.844950213371267e-05,
+  "omega1": 0.6054167303477958,
+  "horizon_T1": 0.05,
+  "mesh_level": "medium",
+  "dynamic": {
+    "alpha": 0,
+    "initial_T1_fraction": 0.00025,
+    "maximum_T1_fraction": 0.0005,
+    "minimum_initial_fraction": 0.0001,
+    "maximum_increments": 2000,
+    "output_frequency": 1,
+    "release": "OP=NEW plus zero GRAV; STEP AMPLITUDE=STEP"
+  },
+  "recovery": {
+    "sections": 41,
+    "sensitivity_sections": 81,
+    "field_order": [
+      "u",
+      "w",
+      "v",
+      "Phi",
+      "psi",
+      "theta",
+      "c_eff"
+    ]
+  },
+  "preload_reproduction": {
+    "U_absolute": 1e-08,
+    "RF_absolute": 1e-11,
+    "relative_S_E": 1e-05,
+    "qualification": "native DAT/FRD print precision plus same-static repetition; no new physical applicability threshold"
+  },
+  "numerical_budget_seconds": 3600,
+  "job_timeout_seconds": 1200,
+  "job_memory_limit_bytes": 4294967296,
+  "threads": 1,
+  "execution_mode": "EXPLORATORY_NOT_CERTIFIED",
+  "admitted": false,
+  "time_levels": {
+    "tight": {
+      "rtol": 1e-10,
+      "atol_relative": 1e-10,
+      "max_step_cutoff_period_fraction": 0.041666666666666664
+    }
+  },
+  "spatial": {
+    "degrees": [
+      64
+    ],
+    "allowed_extra_degree": 48,
+    "basis": "P_n-P_(n+2); n=0,...,p-2",
+    "quadrature": "2*p+1 Gauss points; exact through degree 4*p+1",
+    "comparison_quadrature": 100
+  },
+  "safety": {
+    "min_one_plus_c": 0.9,
+    "max_abs_c": 0.1,
+    "max_abs_theta": 0.1,
+    "max_abs_axial_gradient": 0.1,
+    "max_abs_transverse_gradient": 0.1,
+    "max_L_abs_curvature": 0.2,
+    "min_relative_mass_eigenvalue": 0.8
+  }
+}

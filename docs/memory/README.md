@@ -33,6 +33,7 @@
 
 | Тема | Ключевые записи |
 |---|---|
+| FEM-3A: preload/release protocol documented, p64 preflight PASS; first native job access violation, no trajectories | [NLSP-D13](decisions.md#nlsp-d13), [NLSP-K14](knowledge.md#nlsp-k14), [pilot](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md) |
 | FEM-2R: отдельное разрешённое продолжение static comparison; исторический input failure сохранён | [NLSP-D12](decisions.md#nlsp-d12), [NLSP-K13](knowledge.md#nlsp-k13), [continuation](../numerics/nlsp_nonlinear_static_3d_fem_validation.md#fem-2r-controlled-continuation-after-input-serialization-failure) |
 | FEM-2: 1D quartic static preflight PASS; first medium input-parser failure, 3D comparison not reached | [NLSP-D11](decisions.md#nlsp-d11), [NLSP-K12](knowledge.md#nlsp-k12), [static report](../numerics/nlsp_nonlinear_static_3d_fem_validation.md) |
 | FEM-1R: one .020 mesh; all8 matched and preset mesh criterion accepted; linear only | [NLSP-D10](decisions.md#nlsp-d10), [NLSP-K11](knowledge.md#nlsp-k11), [continuation](../numerics/nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement) |

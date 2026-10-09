@@ -2,6 +2,13 @@
 
 This directory contains reusable helper modules that are not meant to be run directly.
 
+- FEM-3A narrow helpers `nlsp_fem3a_1d_reference.py` and
+  `nlsp_fem3a_transient_output.py` restore frozen p64 static coordinates into the
+  unchanged four-field mass/RHS/Jacobian/Radau implementation and stream actual
+  CalculiX step/increment/time/field/energy output. They contain no new physical
+  law or standalone FEM solver; static-origin metadata is not relabelled a
+  dynamic frame. [Pilot contract](../../docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md).
+
 - FEM-2R reuses the unchanged FEM-2 deck writer, static readers, reference-section
   polar recovery, consistent-bodyload reaction correction and report functions.
   Its scoped analysis CLI only orchestrates a separately authorized continuation

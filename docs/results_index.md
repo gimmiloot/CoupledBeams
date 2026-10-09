@@ -13,6 +13,17 @@ map](../scripts/STATUS.md), and [thickness-mismatch script
 map](../scripts/analysis/thickness_mismatch/README.md). No command in this
 index should be run without first reviewing its cost and output contract.
 
+## FEM-3A blocked first execution evidence
+
+`results/nlsp_nonlinear_dynamic_3d_fem_pilot/a69310e3bb30bab7/` retains the
+[blocked dynamic pilot](numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md): pinned
+source/solver/code/environment hashes, installed-version protocol evidence,
+frozen-p64 preflight and acceleration/safety checks, both inspected input decks,
+one actual failed linear input/stdout/stderr/resource record, explicit attempt
+ledger and read-only crash audit. No accepted preload/transient trajectory,
+1D dynamic history, energy curve or comparison is fabricated. The historical
+FEM-2R and every source result remain unchanged; no automatic rerun occurs.
+
 ## FEM-2R controlled continuation evidence
 
 `results/nlsp_nonlinear_static_3d_fem_resume/210b74b8b166997c/` contains the

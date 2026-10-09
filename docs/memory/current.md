@@ -1,5 +1,34 @@
 # Текущий контекст
 
+## FEM-3A — BLOCKED_BY_SOLVER, 2026-10-09
+
+[NLSP-D13](decisions.md#nlsp-d13), [NLSP-K14](knowledge.md#nlsp-k14),
+[canonical pilot](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md).
+Новое разрешение ограничивало free-motion pilot двумя medium preload+dynamic
+jobs до .05T1 для прежнего h=.10 и одной nonlinear1D p64 trajectory.
+Sources/input и сохранённые q0/initial acceleration preflight проходят;
+release/velocity protocol statuses PARTIAL: actual3D evidence отсутствует;
+OP=NEW/zeroGRAV/STEP, ALPHA=0 и физические zero velocities подтверждены только
+по local2.22 документации/исходникам и проверенным decks.
+
+Первый actual linear CalculiX job завершился access violation0xC0000005.
+Accepted native preload/transient output отсутствует; buffering banner/log не
+устанавливает точную стадию падения. Actual transfer/release/free motion/energy
+не подтверждены. Следующий NL job,1D ODE/exact-time trajectory и fixture не
+запускались; failed input/log/ledger сохранены, автоматического retry нет.
+Это конкретный native execution blocker, не physical failure V0 или доказанная
+неработоспособность метода вообще. Read-only source/binary audit локализовал native output-path use-after-free:
+ELKE в первом LINEAR STATIC читает освобождённый veold. Current generator
+предусматривает только ELSE/ENER в этом preload и сохраняет ELKE в DYNAMIC;
+corrected preview NOT_RUN, failed attempt не заменён и retry не выполнялся.
+
+Остановка после отчёта: новый execution/debug retry требует отдельного решения;
+не идти автоматически к fine/refined dynamics, fullT1, другой amplitude,
+угловому узлу или Floquet. FEM-2R остаётся DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS,
+FEM-1R linear PASS, prepared strict PARTIAL, physical sanity qualified,
+LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp
+reference UNAVAILABLE. Исторические разделы ниже сохраняют прежний scope.
+
 ## FEM-2R — static diagnostic complete with qualifications, 2026-10-09
 
 [NLSP-D12](decisions.md#nlsp-d12), [NLSP-K13](knowledge.md#nlsp-k13),
@@ -492,3 +521,13 @@ V0/inertia validation. Следующее scientific execution decision не в�
 FEM-3/dynamics, angular joints/Floquet и дополнительный mesh/load study не
 разрешены автоматически. LONG CLOSED; EB/RLB-KV PAUSED; angular same-clamp
 UNAVAILABLE; prepared strict и historical zero-u/c PARTIAL сохраняются.
+
+
+## Текущая остановка после FEM-3A
+
+Source/protocol и1D acceleration preflight получены, но actual first native
+job завершился access violation; accepted preload/free-motion data нет.
+BLOCKED_BY_SOLVER сохранён отдельно от старой strict numerical PARTIAL.
+No further3D/1D integration or retry; next execution is not authorized by this
+failed pilot. LONG CLOSED, EB/RLB-KV PAUSED, angular same-clamp UNAVAILABLE и
+FEM-2R/physical-sanity qualifications сохранены. Это не dynamic/Floquet verdict.

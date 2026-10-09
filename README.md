@@ -4,6 +4,13 @@ CoupledBeams is a research repository for frequency models and computations for 
 
 ## Project Layout
 
+- [FEM-3A: static preload and short free-motion pilot](docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md)
+  -- `python scripts/analysis/pilot_nlsp_nonlinear_dynamic_3d_fem.py --run-pilot`
+  preserves the first medium native access-violation failure. Source/protocol/
+  saved-state preflight pass; actual transfer and trajectories remain unverified.
+  No NL/1D dynamic run or automatic retry; this blocked pilot does not establish
+  dynamic convergence or authorize another/longer study.
+
 - [FEM-2R: authorized nonlinear static continuation](docs/numerics/nlsp_nonlinear_static_3d_fem_validation.md#fem-2r-controlled-continuation-after-input-serialization-failure)
   -- `python scripts/analysis/resume_nlsp_nonlinear_static_3d_fem.py --run-fem`
   reuses the preserved 1D equilibria and three saved meshes under the same frozen

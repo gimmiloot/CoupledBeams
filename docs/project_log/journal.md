@@ -4,6 +4,20 @@
 
 ## 2026-10-09
 
+- FEM-3A source/input and saved-p64 acceleration preflight passed; release and
+  velocity protocol remain PARTIAL (document/source support only). The
+  sole linear medium preload+dynamic job terminated with Windows access
+  violation0xC0000005. No accepted preload/transient fields or energies exist;
+  actual transfer/release/free motion are unverified. Stop rule honored: no NL
+  job, nonlinear1D ODE, full linear spectral evolution, mesh/modal/root/fixture
+  or hidden retry. Separate pilot CLI/config, narrow saved-state/transient
+  helpers and failure-ledger bundlea69310e3bb30bab7 preserve actual input/logs;
+  original physics/helpers/static sources and historical statuses unchanged.
+  Read-only source/binary tracing localizes LINEAR STATIC ELKE reading freed
+  veold; current minimal output-routing preview is NOT_RUN, no corrected retry.
+  Overall BLOCKED_BY_SOLVER; installed-version protocol support is documentary,
+  not a completed dynamic validation. NLSP-D13/K14 record scope and concrete stop.
+
 - FEM-2R completed the explicitly authorized six sequential linear/NLGEOM static
   jobs on saved medium/fine/refined meshes under the unchanged preselected load.
   Parent failed bundle31 artifacts and FEM-1/FEM-1R94/41 artifacts remain intact;

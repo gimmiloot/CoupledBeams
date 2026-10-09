@@ -1,5 +1,39 @@
 # Scripts guide
 
+## FEM-3A: bounded static-preload/release/free-motion pilot
+
+```powershell
+python scripts/analysis/pilot_nlsp_nonlinear_dynamic_3d_fem.py --preflight
+python scripts/analysis/pilot_nlsp_nonlinear_dynamic_3d_fem.py --run-pilot
+python scripts/analysis/pilot_nlsp_nonlinear_dynamic_3d_fem.py --report-only results/nlsp_nonlinear_dynamic_3d_fem_pilot/a69310e3bb30bab7
+python scripts/analysis/pilot_nlsp_nonlinear_dynamic_3d_fem.py --plot-only results/nlsp_nonlinear_dynamic_3d_fem_pilot/a69310e3bb30bab7
+```
+
+[Config](../data/input/nlsp_nonlinear_dynamic_3d_fem_pilot.json) and
+[canonical pilot](../docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md).
+A stable diagnostic entry point is warranted by the distinct two-step release,
+transient/time/energy output contract, rather than a mesh/load parameter change.
+It reuses the existing static deck/mesh/resource/recovery infrastructure and
+unchanged PlanarGalerkin/Radau physics; narrow helpers restore frozen p64 states
+and stream transient outputs. It adds no general FEM or new physics solver.
+
+The pilot authorizes two sequential medium C3D10 preload+dynamic jobs and one
+nonlinear1D p64 integration only. The complete1D linear reference is exact in
+time for its finite-dimensional system, without truncating retained modes.
+Preload transfer/release/output gates precede the next case. ALPHA=0 and explicit
+OP=NEW/zero GRAV/STEP release are checked against installed2.22 semantics;
+physical zero initial velocities are distinct from tiny native initialization.
+A failed solver preserves the actual prefix and stops; code-hash changes cannot
+create a silent retry. The historical FEM-2/FEM-2R workflows stay unchanged.
+Cache/report/plot reuse saved evidence with zero new scientific calculations.
+No fine/refined dynamics, extra timestep, fullT1, amplitude sweep, angular joint,
+periodic orbit or Floquet study is authorized automatically.
+
+The actual first linear job stopped with native access violation0xC0000005.
+No accepted preload/transient data were recovered; later jobs/references did
+not run. Matching cache replays this blocked attempt, not a fresh execution.
+Source-resolved protocol semantics are distinct from unverified actual release.
+
 ## FEM-2R: controlled continuation after input serialization failure
 
 ```powershell

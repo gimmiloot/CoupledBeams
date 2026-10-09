@@ -1091,3 +1091,46 @@ nonlinear time dynamics, FEM-3, angular joints or Floquet. After report stop.
 Static signal evidence does not validate every V0 coefficient or variable inertia.
 LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp
 UNAVAILABLE, prepared strict PARTIAL and physical sanity qualifications remain.
+
+
+## NLSP-D13
+
+**Decision / scope,2026-10-09:** explicit user authorization for FEM-3A,
+short free-motion pilot after static preload/instantaneous gravity release.
+Two medium3D production jobs, linear and NLGEOM, each with its own static
+preload and direct dynamic step inside one solver job; one nonlinear1D p64
+Radau solve and full exact-time semidiscrete linear reference. No new physics.
+
+**Why:** establish correct static stress-state transfer, zero physical initial
+velocities, complete load removal and bounded computational feasibility before
+claiming dynamic accuracy. FEM-2R's qualified static result is retained, not
+reinterpreted as validation of inertia/all V0 coefficients. L/NL start at their
+own frozen equilibria, without fitted initial amplitude or phase.
+
+**Frozen / numerical policy:** same L=1,b=.20,h=.10; E=rho=1,nu=.3,kappa=5/6,
+g=.0014224751066856333,q=2.844950213371267e-5 before release; thereafter zero
+external load/damping. Same clamps/axes/four1D fields/Shen basis/variable mass/
+RHS/Jacobian, saved p64 coordinates reused directly. Horizon.05T1,
+T1=10.37828159055014 from saved1D omega1.3D dt_initial=T1/4000,max=T1/2000,
+min=1e-4*initial,ALPHA=0; tight componentwise1D tolerances adapted to current
+scales. No new convergence threshold, modal reduction or physical correction.
+
+**Basis / provenance:** direct user request
+`93490460-7ff2-4977-ab37-f2e3187965aa/Pasted text.txt`,2026-10-09;
+initial clean main HEAD `bcf5d96f5ede0b5deca994272f5d9787d129d203`.
+No supervisor approval inferred. Parent FEM-2R manifest SHA256
+`2ba6f23d41d49275c4e7e15b2c947258671c2a9b1b9a18a2bb8ef5d8bbfb1151`;
+[config](../../data/input/nlsp_nonlinear_dynamic_3d_fem_pilot.json),
+[canonical pilot](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md),
+[result K14](knowledge.md#nlsp-k14).
+
+**Stop / qualification:** installed2.22 load/state/velocity/energy semantics
+and numeric input gate precede jobs; actual linear preload/release/output gate
+precedes NL job. Preserve a solver failure/prefix and stop without retry.
+At most one tiny technical release fixture if necessary, no scientific sweep;
+<=1200s/job,4GiB,one thread,total3600s. No fine/refined or extra timestep jobs,
+fullT1, new amplitudes, standalone static studies beyond the two required
+preloads, new physical roots/meshes, angular joints/out-of-plane perturbations/
+Floquet. One medium timestep level is not dynamic convergence or
+PHYSICAL_DYNAMIC_VALIDATION_PASS. Existing strictPARTIAL and scoped stops remain.
+After report stop; future execution requires a separate explicit decision.

@@ -5,6 +5,12 @@ policies define how calculations are organized, checked, resumed, and
 reported; they do not define the governing equations of individual physical
 models.
 
+- [FEM-3A short preload/release pilot](nlsp_nonlinear_dynamic_3d_fem_pilot.md) --
+  source/protocol/input and1D saved-state preflight pass; first linear medium
+  job aborts with native access violation before any accepted output can be
+  verified. BLOCKED_BY_SOLVER, zero further jobs/trajectories/figures; actual
+  transfer/release/energy comparison unverified. No model or source change.
+
 - [FEM-2R controlled continuation](nlsp_nonlinear_static_3d_fem_validation.md#fem-2r-controlled-continuation-after-input-serialization-failure) --
   six actual static jobs on saved meshes complete; refined Delta w=-9.16268e-6,
   same sign as1D,3.19353% full-profile correction difference on the common scale.

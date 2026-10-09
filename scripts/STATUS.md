@@ -20,6 +20,17 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
+## FEM-3A: native execution blocked
+
+`pilot_nlsp_nonlinear_dynamic_3d_fem.py` has the separate static-to-dynamic
+protocol/transient/time/energy contract. Source/input/frozen-p64 preflight pass;
+the sole actual linear medium job crashes with access violation0xC0000005.
+No accepted native state/trajectory; NL and1D trajectories NOT_RUN. Overall
+BLOCKED_BY_SOLVER, with no retry/new case triggered by code-hash changes.
+Cache/report/plot preserve failed evidence and do no scientific calculations;
+no trajectory/energy plot is fabricated. New helpers reuse frozen numerical
+physics and static infrastructure. [Pilot](../docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md).
+
 ## FEM-2R: static diagnostic complete with qualifications
 
 `resume_nlsp_nonlinear_static_3d_fem.py` is the separate authorized continuation,
