@@ -1,5 +1,67 @@
 # Scripts guide
 
+## Seven-field spatial nonlinear comparison
+
+The existing continuation CLI exposes `--spatial-verification`, with
+[config](../data/input/nlsp_spatial_nonlinear_3d_fem_verification.json),
+[report](../docs/numerics/nlsp_spatial_nonlinear_3d_fem_verification.md) and
+[D18](../docs/memory/decisions.md#nlsp-d18)/[K19](../docs/memory/knowledge.md#nlsp-k19). Historical default, --long-horizon,
+--validation and --profile-audit routes retain their own caches and guards.
+
+~~~powershell
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --spatial-verification --preflight
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --spatial-verification --compute --through-stage A
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --spatial-verification --compute --through-stage B
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --spatial-verification --compute --through-stage B --additional-controls
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --spatial-verification --compute
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --spatial-verification --postprocess-only results/nlsp_spatial_nonlinear_3d_fem_verification/e7e9dee6dbf616f0
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --spatial-verification --report-only results/nlsp_spatial_nonlinear_3d_fem_verification/e7e9dee6dbf616f0
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --spatial-verification --plot-only results/nlsp_spatial_nonlinear_3d_fem_verification/e7e9dee6dbf616f0
+~~~
+
+The first bounded programme has joint p48/p64 and isolated-w/v p64 cases.
+Two necessary isolated p48 controls are separately recorded under the same
+user's three excitation types/two-resolution scope; total nonlinear 1D calls
+are capped at six and 3600 s. They measure the actual mixed p-sensitivity.
+Original four-case config/comparison are preserved. `--additional-controls`
+handles that supplement; default through-stage C verifies it before FEM.
+A frozen primary-displacement decision may permit medium linear/NL and one
+fine pair, only to .25T1 with T1/8000 and T1/4000 increments. At most four
+sequential CCX jobs, 4GiB, one thread, 14400 s; no solver retry or new mesh.
+Postprocess-only reads saved native fields and refreshes gradient/twist/moment
+diagnostics without CCX/Gmsh/Radau/static/eigen/BVP calls; native RF and outputs
+are preserved. Completed matching compute/report/plot/postprocess replay has zero scientific
+and render calls. All four native jobs are complete; overall NUMERICAL_PARTIAL
+preserves v correction/evolution discrepancies 47.29%/38.80%, unresolved small
+rotation corrections/dynamic twist, c/velocities, mixed-w, time and energy
+qualifications. There is no automatic additional FEM or 1D programme.
+
+## Saved spatial-profile postprocessing audit
+
+The existing continuation CLI exposes --profile-audit with
+[config](../data/input/nlsp_spatial_profile_audit.json),
+[report](../docs/numerics/nlsp_spatial_profile_audit.md) and
+[D17](../docs/memory/decisions.md#nlsp-d17). It is a completed read-only
+scientific-data diagnostic: compute writes new postprocessing artifacts but
+does not solve FEM, ODE, static, eigen/root/BVP or generate a mesh.
+Historical default/--long-horizon/--validation behavior is preserved.
+
+~~~powershell
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --profile-audit --preflight
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --profile-audit --compute
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --profile-audit --report-only results/nlsp_spatial_profile_audit/c19f5a82203c0260
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --profile-audit --plot-only results/nlsp_spatial_profile_audit/c19f5a82203c0260
+~~~
+
+The scoped helpers reuse saved nodal/coordinate histories, existing C3D10
+quadrature and historical section recovery. Raw 21/41/81 fits, direct strains,
+actual-time selection, interpolation, one separate quadratic-fit control
+and 1D c/u/theta mechanics remain distinct. No smoothing or phase/amplitude
+alignment. Three parent identities and selected artifact hashes protect the
+source data; matching completed compute/report/plot start zero scientific
+calls. Local c_eff sensitivity and historical 1D spatial PARTIAL stay visible,
+and FEM-3C qualified completion is not revised. No next physical study follows.
+
 ## FEM-3C: robustness controls and conditional full-period illustration
 
 The existing continuation CLI exposes a separate `--validation` preset, with

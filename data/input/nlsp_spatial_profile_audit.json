@@ -1,0 +1,28 @@
+{
+  "schema": "nlsp-spatial-profile-audit-v1",
+  "authorization": "explicit_user_NLSP_spatial_profile_postprocessing_2026_10_10",
+  "source_bundles": {
+    "FEM3C": {"path": "results/nlsp_nonlinear_dynamic_validation/c6256269eb8143ef", "manifest_sha256": "0fa3488d30c1b36de2061894e2f8811443ab80b802f47fddb99fcb30e5677450"},
+    "FEM3B": {"path": "results/nlsp_nonlinear_dynamic_long_horizon/7d2b499e6a1eb990", "manifest_sha256": "e4bcc291fab5f04a2fb73103c35a2fa6481aecf5f058b8ce6ae4a5661efa0c4e"},
+    "FEM3AR": {"path": "results/nlsp_nonlinear_dynamic_3d_fem_resume/f6ac2f2f38510893", "manifest_sha256": "187870ece572dfe1b999b83d99016d01c1fdbe10e8835ed45543d1119d6f36ea"}
+  },
+  "snapshot_T1_fractions": [0.0, 0.25, 0.5, 0.75, 1.0],
+  "section_counts": [21, 41, 81],
+  "primary_section_count": 41,
+  "spatial_comparison_T1_fractions": [0.0, 0.125, 0.25],
+  "native_time_selection": "nearest_actual_saved_frame; requested and actual times separate; no nodal temporal interpolation",
+  "original_figure_time_policy": "preserve historical time-interpolated curves separately",
+  "FEM_spatial_grid_points": 801,
+  "one_d_spatial_grid_points": 2001,
+  "independent_strain_quadrature": "existing positive14point C3D10 reference quadrature",
+  "slab_integration_qualification": "hard-binned quadrature estimate, not exact clipped-tetrahedron volume integration",
+  "quadratic_sampling_control": "U_eta=eta^2/L on original saved mesh; exact P2 nodal kinematics; no equilibrium solution",
+  "quadratic_fit_probe": "one separate 11-column WLS probe adding eta^2,eta*zeta,zeta^2; historical eight-column recovery unchanged",
+  "one_d_boundary_partition_ell_c": 3.0,
+  "maximum_main_figures": 4,
+  "smoothing": false,
+  "phase_amplitude_fitting": false,
+  "new_physical_solves": false,
+  "new_meshes": false,
+  "historical_statuses_unchanged": true
+}

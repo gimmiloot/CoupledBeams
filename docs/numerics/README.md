@@ -5,6 +5,18 @@ policies define how calculations are organized, checked, resumed, and
 reported; they do not define the governing equations of individual physical
 models.
 
+- [Seven-field spatial nonlinear verification](nlsp_spatial_nonlinear_3d_fem_verification.md) --
+  six 1D and four actual medium/fine 3D trajectories to .25T1; overall
+  NUMERICAL_PARTIAL. Full w/v agree in scale, but v correction differs
+  substantially. Weak-form/planar checks, all14, mesh/recovery, dynamic twist
+  and native-energy qualifications stay separate; no automatic follow-up.
+
+- [Saved spatial-profile audit](nlsp_spatial_profile_audit.md) --
+  limited postprocessing of u, theta, c and 3D effective contraction after FEM-3C.
+  Raw/interpolated recovery, 21/41/81 slabs, actual medium/fine states,
+  independent volume-strain averages and saved p48/p64 profiles are kept
+  distinct; no new physical solve or altered historical status.
+
 - [FEM-3C numerical robustness and limited verification](nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification) --
   four completed quarter-period time/mesh controls pass the predeclared guide;
   updated evolving-w model difference 7.76472% on its own scale. Full-period

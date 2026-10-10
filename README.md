@@ -2,6 +2,31 @@
 
 CoupledBeams is a research repository for frequency models and computations for coupled beams. The repository combines analytic frequency calculations, a baseline FEM implementation of the same problem, and the local theory, literature notes, and consistency checks used to support them.
 
+## Seven-field spatial nonlinear verification
+
+[The spatial report](docs/numerics/nlsp_spatial_nonlinear_3d_fem_verification.md)
+uses the existing continuation CLI's `--spatial-verification` mode and a
+[separate config](data/input/nlsp_spatial_nonlinear_3d_fem_verification.json).
+Six p48/p64 1D cases and all four medium/fine 3D jobs reach 0.25T1.
+Overall NUMERICAL_PARTIAL: full nonlinear w/v differences are 3.55%/3.03%,
+but v correction/evolution differences remain 47.29%/38.80% on declared
+common scales. Small rotational corrections, dynamic twist, c, velocities,
+single-level temporal checks and energy remain qualified. Frozen physics,
+load and historical results are preserved. Completed cache/report/plot/
+postprocess replay makes zero scientific calls; no further study is started.
+
+## Saved spatial-profile diagnostic
+
+[The profile audit](docs/numerics/nlsp_spatial_profile_audit.md) examines the
+saved u, theta, c and 3D effective-contraction profiles after FEM-3C. The existing
+continuation CLI exposes `--profile-audit` with a separate
+[postprocessing config](data/input/nlsp_spatial_profile_audit.json).
+It reads saved nodal/coordinate histories, checks raw section recovery,
+independent C3D10 strain averages and p48/p64 sensitivity, and performs no new
+FEM, ODE, static, eigen or mesh calculation. The effective contraction remains
+a diagnostic proxy; historical FEM-3C and spatial/energy qualifications remain
+unchanged. No smoothing or phase/amplitude fitting is applied.
+
 ## FEM-3C: limited straight-rod verification
 
 The [technical report](docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification)

@@ -173,6 +173,14 @@ def audit_case(b,science,s,kind,*,native_time_rounding=False):
 
 def main(argv=None):
     arguments=list(sys.argv[1:] if argv is None else argv)
+    if '--spatial-verification' in arguments:
+        from scripts.lib import nlsp_spatial_nonlinear_verification
+        arguments.remove('--spatial-verification')
+        return nlsp_spatial_nonlinear_verification.main(arguments)
+    if '--profile-audit' in arguments:
+        from scripts.lib import nlsp_spatial_profile_audit
+        arguments.remove('--profile-audit')
+        return nlsp_spatial_profile_audit.main(arguments)
     if '--validation' in arguments:
         from scripts.lib import nlsp_fem3c_validation
         arguments.remove('--validation')

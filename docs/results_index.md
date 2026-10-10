@@ -13,6 +13,36 @@ map](../scripts/STATUS.md), and [thickness-mismatch script
 map](../scripts/analysis/thickness_mismatch/README.md). No command in this
 index should be run without first reviewing its cost and output contract.
 
+## Seven-field spatial nonlinear verification evidence
+
+`results/nlsp_spatial_nonlinear_3d_fem_verification/e7e9dee6dbf616f0/`
+retains [the separate comparison](numerics/nlsp_spatial_nonlinear_3d_fem_verification.md):
+frozen action/source manifests, Stage A checks, load/pre-FEM decision,
+six own-equilibrium p48/p64 histories, all14/mixed/decomposition metrics
+and four completed medium/fine CCX preload+dynamic jobs to .25T1.
+Native INP/DAT/FRD/STA/logs, actual timestamps, recovered orientations,
+gradients, mesh/interpolation diagnostics, endpoint 41/81 sensitivity,
+independent kinetic energy and beam-axis support moments are saved.
+Four PDF+PNG figures and CSV/NPZ preserve primary four-case evidence and
+separate supplemental p48 provenance. Overall NUMERICAL_PARTIAL: the large
+v correction discrepancy and rotational/time/energy limitations remain
+visible. Completed cache/report/plot/postprocess replay has zero scientific
+calls; historical bundles/statuses are unchanged. [K19](memory/knowledge.md#nlsp-k19).
+
+## Saved spatial-profile diagnostic
+
+results/nlsp_spatial_profile_audit/c19f5a82203c0260/ retains the
+[bounded postprocessing audit](numerics/nlsp_spatial_profile_audit.md):
+three immutable parent manifest identities, selected raw nodal/coordinate
+source hashes, 11 actual nonlinear states, 21/41/81 raw fits, independent
+C3D10 quadrature strains, separate quadratic-fit/sampling controls,
+window/mesh/interpolation metrics and p48/p64 contraction/mechanics diagnostics.
+Four PDF+PNG figures, raw CSV/NPZ, actual-time coverage and historical
+nominal-time profiles preserve distinctions between native and interpolated
+data. DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS; c spatial PARTIAL and
+physical longitudinal teeth UNRESOLVED remain visible. Scientific calls 0;
+old results and FEM-3C status unchanged.
+
 ## FEM-3C bounded robustness and full-period illustration
 
 `results/nlsp_nonlinear_dynamic_validation/c6256269eb8143ef/` retains the

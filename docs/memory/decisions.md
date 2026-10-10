@@ -1311,3 +1311,192 @@ full-period illustration complete, all8 spatial и energy/strict float64 PARTIAL
 Overall STRAIGHT_ROD_NONLINEAR_3D_FEM_VERIFICATION_COMPLETE_WITH_QUALIFICATIONS
 с ограниченным bending conclusion. Авторизация не расширяется; после отчёта
 нет автоматического нового FEM/geometry/amplitude/stability исследования.
+
+## NLSP-D17
+
+**Решение / scope, 2026-10-10:** отдельный ограниченный postprocessing audit
+после [D16](#nlsp-d16)/[K17](knowledge.md#nlsp-k17). Требуется установить
+происхождение внутренних зубцов 3D effective contraction и проверить
+механический смысл сохранённых пространственных профилей u, theta, c.
+Это не возобновление FEM-валидации и не новый физический расчёт.
+
+**Разрешено:** прочитать неизменные FEM-3C/3B/3AR bundles, meshes, nodal
+displacements и p48/p64 coefficient histories. Повторить прежний reference-slab
+recovery для 21/41/81 участков; сохранить raw samples, conditioning, residuals,
+interpolation extrema и sensitivity. Независимо дифференцировать прежний
+C3D10 displacement interpolant в существующей 14-point quadrature и получить
+volume-weighted strains. Одно отдельное расширение локального fit поперечными
+квадратичными функциями является диагностическим контролем и не заменяет
+историческое восстановление.
+
+**Данные / время:** medium анализирует пять выбранных фаз от 0 до T1.
+Fine используется только в действительно сохранённом интервале от 0 до .25T1.
+Выбор ближайшего native frame фиксирует requested и actual times отдельно;
+nodal temporal interpolation не вводится. Исторические интерполированные
+кривые сохраняются отдельно. Подтверждённый static preload при t=0 не
+переписывается как native dynamic frame.
+
+**Физический смысл:** c_eff — компонент правой полярной stretch matrix двух
+поперечных директоров, не отдельная 3D DOF и не тождественная M-H coordinate.
+Small transverse gradient, finite Green strain и width strain различаются.
+Hard-binned quadrature по участкам не считается точным clipped-tet интегралом.
+Зубцы нельзя заранее объявлять физикой или ошибкой solver. Симметрия,
+Gamma1/N и классическое геометрическое приближение служат sanity diagnostics,
+не новым closure. Старые full-period c/c_t spatial FAIL/PARTIAL остаются видимыми.
+
+**Provenance / исполнение:** authorization
+explicit_user_NLSP_spatial_profile_postprocessing_2026_10_10 отдельна.
+Parent FEM-3C manifest SHA256
+0fa3488d30c1b36de2061894e2f8811443ab80b802f47fddb99fcb30e5677450.
+[Config](../../data/input/nlsp_spatial_profile_audit.json),
+[diagnostic report](../numerics/nlsp_spatial_profile_audit.md).
+Existing continuation CLI получает отдельный --profile-audit preset и scoped
+saved-data helpers. Compute/cache/report/plot не запускают CCX, Gmsh, Radau,
+Newton, eigen/root/BVP или новые meshes. Сглаживание и fitting фаз/амплитуд
+не применяются; не более 4 основных PDF+PNG figures.
+
+**Остановка / сохранение:** V0, quartic action, cubic equations, variable mass,
+RHS/Jacobian, coefficients, BC, Shen space, trajectories, source manifests
+и прежние D/K не меняются. FEM-3C qualified completion и strict float64/energy
+PARTIAL сохраняются. LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION,
+angular same-clamp UNAVAILABLE сохраняются. После отчёта остановка; новые
+FE/ODE jobs, angular dynamics, Floquet и изменение модели не разрешены.
+
+
+## NLSP-D18
+
+**Решение / scope, 2026-10-10:** отдельное явное задание независимого
+сопоставления нелинейного пространственного движения прямого стержня
+после [D16](#nlsp-d16)/[K17](knowledge.md#nlsp-k17) и диагностического
+[D17](#nlsp-d17)/[K18](knowledge.md#nlsp-k18). Проверяются разрешённые
+взаимодействия двух изгибных направлений, продольного движения и вращений.
+Семиполевая физика, constitutive coefficients и reduced closure не меняются.
+
+**Stage A:** scoped SpatialGalerkin загружает сохранённое quartic action
+из a9cedd4b6de99295, переиспользует Shen basis/monomial compiler и сохраняет
+все семь полей. Обязательны exact EL/energy/reflection identities, planar
+energy/gradient/Hessian/mass/inertia/RHS/Jacobian и saved-state checks,
+bounded comparison с прежними identified linear frequencies, safety.
+В проверке A4 independently compiled continuum body/flux проецируются
+до spatial differentiation flux. Явное boundary work сохраняется;
+Shen test functions дают ноль. Это стабильная weak representation только
+для проверки, не изменение RHS или модели. Историческая strong projection
+с прежними uncancelled denominator/floor/2e-12 thresholds остаётся отдельной
+STRICT_FLOAT64_STRONG_PROJECTION PARTIAL; непрошедший результат не становится
+PASS. Genuine weak A4, exact identities и остальные новые gates должны пройти
+до Stage C. Stage A PASS_WITH_QUALIFICATIONS не снимает strict qualification.
+
+**Stage B / нагрузка:** L=1,b=.20,h=.10; E=rho=1,nu=.3,kappa=5/6;
+local B=diag(1,-1,-1), a=(Phi,-psi,theta). Uniform dead body force имеет
+компоненты gn/gk по local n/k; qw/qv=rho*bh*gn/gk. Нет приложенного torque.
+Основной кандидат w_lin,max/h=.04,gk/gn=1.25; разрешён единственный заранее
+установленный fallback .03 при том же отношении. Corner bending strain<=.01.
+Нагрузка и H=.25T1 фиксируются до FEM, T1=10.37828159055014 неизменен.
+Разрешены joint p48/p64 nonlinear trajectories и isolated w-only/v-only
+p64 controls с собственными статическими equilibria и zero velocities.
+Static Newton continuation и exact-time finite-dimensional linear references
+используют то же действие. Mixed translational response и его evolution
+отделяются от двух ненулевых components, геометрической неплоскостности
+и torsion. При неразрешённом nonlinear spatial signal FEM не запускается.
+Малый torsion не даёт права заявлять nonlinear torsion verification.
+
+**Stage C / hard gates:** сначала medium linear/NL STATIC+free DYNAMIC pair;
+условно одна fine pair при valid medium jobs, разрешённом nonlinear signal
+и достаточном бюджете. Старые medium/fine C3D10 meshes переиспользуются.
+Две GRAV components мгновенно удаляются; OP=NEW/zeroGRAV/STEP, ALPHA=0,
+zero velocities и прежние supports/material сохраняются. NLGEOM только
+в nonlinear case; unsafe ELKE в linear STATIC отсутствует. Полное preload
+состояние передаётся в одном job. Initial/max increments T1/8000,T1/4000,
+minimum=1e-4*initial; максимум четыре sequential CCX jobs, один поток,
+4GiB, medium<=1800s/job, fine<=4200s/job, total numerical<=14400s.
+При первой actual solver failure остановка без hidden retry.
+
+**Authorization:** explicit_user_NLSP_spatial_seven_field_verification_2026_10_10.
+Отдельный frozen [config](../../data/input/nlsp_spatial_nonlinear_3d_fem_verification.json)
+и bundle e7e9dee6dbf616f0 сохраняют source identities и pre-FEM load decision.
+
+**Сопоставление / provenance:** full/Delta/evolving Delta y получают отдельные
+absolute max/L2, fixed scales и p/mesh/output/recovery/interpolation diagnostics.
+Нет phase/amplitude/time fitting или arbitrary 10% physical PASS criterion.
+c_eff — effective contraction proxy с D17/K18 recovery qualification.
+Phi, physical chi1 и raw section orientations различаются. Native +100%
+energy-reference issue не исправляется подобранной константой; energy PARTIAL
+сохраняется при незакрытом internal bookkeeping. Новое разрешение, source
+hashes/config/code/environment и actual attempts имеют отдельный namespace
+results/nlsp_spatial_nonlinear_3d_fem_verification/. Existing continuation CLI
+получает --spatial-verification и scoped helpers; cache/report/plot не выполняют
+новых scientific calls. [Technical report](../numerics/nlsp_spatial_nonlinear_3d_fem_verification.md).
+
+**Остановка / сохранение:** старые FEM-1–FEM-3C bundles, manifests, failed
+ledgers и D/K не меняются. FEM-3C qualified completion не повышается задним
+числом. LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular
+same-clamp UNAVAILABLE и прежние PARTIAL/qualified results сохраняются.
+Не разрешены новые meshes/modal jobs, full-period FEM, amplitude/time/mesh
+ladders, angular joints, Floquet, nonlinear periodic orbits и critical searches.
+После bounded отчёта остановка. Новая spatial comparison не является
+UNIVERSAL_NONLINEAR_MODEL_VALIDATION_PASS или experimental validation.
+
+
+**Уточнение ограниченных 1D controls до FEM, 2026-10-10:** четыре исходных
+Stage B cases joint p48/p64 и isolated-w/v p64 завершились. Полная all14
+qualification остаётся NUMERICAL_PARTIAL: проходят 6/7 coordinate fields,
+c max gate и все семь velocity gates не проходят. Эти результаты и первичный
+config с максимумом четырёх 1D integrations сохраняются как evidence первой
+программы; числа, thresholds и denominators не меняются.
+
+В исходном задании §12 прямо разрешены «дополнительные ограниченные
+контрольные решения: только q_w; только q_v; совместно q_w,q_v». §19 требует
+«ограниченное сравнение как минимум двух разумных Galerkin-разрешений».
+До первого 3D result агент интерпретировал совместное применение этих двух
+требований как основание для двух необходимых isolated-w/v p48 controls.
+Это не новое сообщение пользователя или новая физическая постановка.
+Они проверяют p48/p64 sensitivity самого mixed response, которая не может
+быть установлена одним joint-only control при отсутствующих isolated p48
+histories. Ровно три прежних типа возбуждения используются при двух p;
+новые load components, amplitude, horizon, time level или p не добавляются.
+
+Supplemental additional_1d_controls_config отдельно фиксирует исходную
+phase-manifest identity, две aux cases и maximum2 integrations. Общая
+программа ограничена шестью nonlinear ODE и прежним 1D budget3600s;
+никаких seventh case или автоматического retry. Первичная four-case
+comparison не переписывается. Additional controls и updated comparison
+имеют отдельные файлы. До них и до нового pre-FEM decision CCX не запускается.
+
+Primary displacement/correction signal допускается проверять отдельно от
+full all14 convergence. Именно mixed displacement p-sensitivity и ранее
+зафиксированный planning signal ratio проверяются до FEM. Velocity/c
+PARTIAL и single-tight-level temporal PARTIAL остаются видимыми; они не
+переводятся в PASS из-за хороших displacement curves. Новый gate относится
+только к ограниченному сравнению разрешённых displacement corrections,
+а не полной seven-field numerical или physical certification.
+
+
+**Actual pre-FEM resolution, 2026-10-10:** оба aux p48 cases завершились;
+ровно шесть 1D trajectories достигли H за 550.04 s вместе с проверками и
+постобработкой. Actual mixed-evolution p48/p64 absolute differences:
+u=9.06119e-14,w=1.65114e-11,v=1.58666e-11. Первичный four-case manifest
+заморожен отдельно как primary_four_case_evidence/phase_manifest.json,
+SHA256 683817ea7a51091bc1cdaf24337d53cca1ed1270e4e964690b53512da5a75d14.
+Original comparison/config сохраняются; supplemental config SHA256
+193676be8a2bb0f6d869b2a8223683713091f8c3556dad489d2095410f752955.
+
+До первого 3D result frozen pre_fem_decision.json (SHA256
+c47ea46f00e4eb7a2c0dbf3bda90a147f9fba7ec5d1893606823c4848780c1b1)
+разрешил ограниченное displacement comparison. Оба primary w/v coordinate
+gates проходят, обе evolving corrections и transverse mixed responses
+превышают десятикратный planning indicator с actual independent mixed
+p-control. Full all14/c/velocities остаются PARTIAL. Evolving mixed-w
+relative max 0.00010331747>0.0001 также остаётся PARTIAL, несмотря на малое
+absolute change 1.65e-11; его результат не переписан в PASS. Решение о CCX
+не является physical accuracy PASS или полной seven-field certification.
+Первым запускается medium linear; его completion пока не установлен.
+
+
+**Завершение ограниченной программы, 2026-10-10:** четыре разрешённых
+CCX jobs завершились без retry; [K19](knowledge.md#nlsp-k19) фиксирует
+фактические различия и ограничения. Overall NUMERICAL_PARTIAL сохранён:
+fine Delta-v47.2897% и evolving-v38.8019%, c/velocity/time/energy PARTIAL,
+малые psi/theta corrections и dynamic chi1 количественно не закрыты.
+Native completion не приравнивается к physical PASS. Старые D/K, V0,
+RHS/Jacobian и historical statuses не изменены. После bounded отчёта
+остановка; дальнейшего вычислительного этапа это решение не разрешает.

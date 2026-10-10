@@ -2110,3 +2110,184 @@ angular/Floquet/periodic-orbit/critical search или experimental validation.
 PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp UNAVAILABLE, prepared strict/
 zero-u-c PARTIAL и physical sanity qualifications сохранены. Stop after report:
 вывод ограничен bending sign/scale/development при исследованных parameters.
+
+## NLSP-K18
+
+**Spatial-profile postprocessing diagnostic, 2026-10-10:**
+[D17](decisions.md#nlsp-d17),
+[canonical report](../numerics/nlsp_spatial_profile_audit.md),
+bundle results/nlsp_spatial_profile_audit/c19f5a82203c0260/.
+DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS; historical FEM-3C status unchanged.
+Обработаны 11 actual saved nonlinear 3D states, 21/41/81 slabs и p48/p64
+histories. Новых физических расчётов, meshes или solver calls нет.
+
+**Где возникают зубцы:** raw medium static c_eff имеет 27 extrema ещё до
+CubicSpline; cubic добавляет 4, overshoot 1.40891e-6. 41→81 повышает TV
+2.20829e-4→7.17013e-4 и физически нормированный second-derivative RMS
+.0216965→.146569; max/L2 cubic profile difference 2.83228e-5/8.15119e-6.
+Fit rank 8, conditioning 49.67–69.98, minimum 462 quadrature samples:
+не выявлены rank failure или большое float64 amplification.
+Mean contraction значительно устойчивее локальных samples.
+
+**Recovery и sampling:** отдельный 11-column probe с transverse quadratic
+terms уменьшает raw41 TV в medium static до 5.73567e-5 (~74% reduction),
+при том же неизменном nodal field. Nested WLS alias identity residual
+<=1.26316e-17 локализует изменение affine coefficients. Synthetic точное
+C3D10 displacement U_eta=eta^2/L воспроизводит gradient до 4.16e-14,
+но hard-binned strain averages получают 2<eta>/L вместо нулевого среднего
+симметричного сечения; mean identity <= 2.14e-16. Самый большой medium/fine 41
+fit-minus-direct-mean .000935874/.000700495. Это отдельный kinematic
+postprocessing control, не новый FEM job или физический boundary condition.
+11-column probe не заменяет historical recovery и не является continuum truth.
+
+**Mesh и реальное 3D поле:** medium→fine41 static TV снижается
+2.20829e-4→1.83003e-4, но local cubic c_eff gap2.07163e-5 остаётся;
+при 81 static TV слегка возрастает. Direct volume-averaged Green strain
+тоже неровна, её TV 2.23194e-4→1.78782e-4. Raw local peaks не сохраняют
+надёжной идентичности. GL variation по объёмным samples участка
+std около .00113/.00110 гораздо больше mean около 2e-5; transverse deformation
+неоднородна. Эти slab statistics не exact central-section integrals.
+Hard-binned cut-slab quadrature может загрязнять и direct strain means.
+Recovery/sampling effects подтверждены; физическая устойчивость отдельных
+продольных зубцов UNRESOLVED. Нет доказательства solver defect или реальной
+физической продольной волнистости только по виду curves.
+
+**Смысл мер:** local frame (X,-Y,-Z), thickness along second direction.
+c_eff=right transverse polar stretch[0,0]-1, c_small=gradU[1,1];
+same-gradient E22=c_eff+.5(c_eff^2+U23^2) проверено до порядка 1e-15.
+Разность c_eff-c_small достигает 8.73e-5 в статике из-за finite measure/
+rotation, не автоматический recovery error. Width stretch отдельна,
+c_eff не M-H DOF. Finite rigid rotation даёт 0 Green/polar strain,
+но linearized gradient diagonal может быть O(rotation^2).
+
+**1D c,u,theta:** ell_c=.01559023911L. При больших изгибных деформациях
+mean c<0 и mean Gamma1>0; c≈-nuGamma1 во внутренней области [3ell,L-3ell]
+до 0.72–0.76% regional L2, у clamps отклонение около 50–52%. Это sanity relation,
+не exact dynamic closure. c_s sensitivity five-time max 7.23257e-6/L;
+p64 degrees>=48 derivative-tail fraction 6.704% при .25T1.
+Historical full c relative max .00193586>.001 и c_t .1136466>.001
+сохраняют PARTIAL; smooth appearance не certification.
+1D theta antisymmetry residual<=1.56e-17; axes/sign/zeroends и linear
+Timoshenko initial reference<=6.07e-16 проверены. u имеет 4 extrema
+при 0,.5,1T1, но 2 при .25,.75T1; classical geometric benchmark объясняет
+high-bend форму/масштаб и не описывает low-bend dynamic phases.
+Sign u не sign strain/force. Local N и global F1=Ncos(theta)-Qsin(theta)
+различаются; static nonconstant N не automatic equilibrium failure.
+
+**Представление / остановка:** raw c_eff +window/mesh sensitivity показывать
+как proxy diagnostic, не сглаженный эталон c. Direct strain means сохраняют
+sampling qualification; historical figures/results не изменены. Four PDF+PNG,
+rawCSV/NPZ/metrics/hash manifests сохранены отдельно. Actual native time
+offsets и старые interpolated nominal curves различаются. Source checks
+адресные: три parent manifests и используемые artifacts, не весь multi-GB
+FEM archive. FEM-3C qualified completion, strict float64/energy/all8 PARTIAL,
+LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp
+UNAVAILABLE и прежние D/K сохраняются. Нет нового FE/ODE/model/angle/stability
+этапа; после отчёта остановка.
+
+
+## NLSP-K19
+
+**Независимое пространственное сопоставление, 2026-10-10:**
+[D18](decisions.md#nlsp-d18),
+[канонический отчёт](../numerics/nlsp_spatial_nonlinear_3d_fem_verification.md),
+bundle results/nlsp_spatial_nonlinear_3d_fem_verification/e7e9dee6dbf616f0/.
+Итог NUMERICAL_PARTIAL; Stage A PASS_WITH_QUALIFICATIONS,
+Stage B NUMERICAL_PARTIAL, Stage C COMPLETE_WITH_QUALIFICATIONS.
+Все шесть 1D и четыре последовательных CCX расчёта достигли H=.25T1.
+Это отдельная проверка семиполевой модели, не пересмотр плоского FEM-3C.
+
+**Модель и возбуждение:** q=(u,w,v,Phi,psi,theta,c), B=diag(1,-1,-1),
+a=(Phi,-psi,theta). Сохранены T4/V4 36/90 членов, переменная масса,
+все инерционные члены и аналитический Jacobian. Плоское ограничение по 13
+сохранённым состояниям FEM-3AR/FEM-3C воспроизводит энергию, gradient/Hessian,
+массу, RHS/Jacobian; неактивные поля/блоки=0. Сохранены L=1,b=.20,h=.10,
+E=rho=1,nu=.3,kappa=5/6,CT=1.759089824002232e−5; условий на производные нет.
+Основная нагрузка gn=.0011379800853485065,gk=.001422475106685633,
+qw=2.275960170697013e−5,qv=2.8449502133712663e−5.
+Оценка для выбора нагрузки .00924608819<.01; fallback не понадобился.
+Нагрузка неизменна в глобальных осях, заданных torque/damping нет.
+STATIC→zeroGRAV free DYNAMIC в одном job; собственные линейные/нелинейные равновесия,
+нулевые скорости, амплитуды не выравниваются. T1=10.37828159055014.
+
+**Stage A / strict qualification:** точные EL/energy/reflection/planar
+identities проходят; 16 сохранённых линейных частот: max relative 1.644e−11.
+Независимая body/flux слабая проекция до пространственного дифференцирования проходит
+прежние denominator/floor/2e−12: p48/p64 relative 3.85269e−16/4.93127e−16.
+Историческая strong projection остаётся PARTIAL с тем же relative defect
+2.73382e−12/1.04319e−11 и тем же допуском. Это отдельная стабильная численная
+проверка слабой формы, не исправление физики/RHS или подмена strong FAIL.
+Jacobian directional error 8.86e−10<2e−7; analytic energy identity PASS.
+
+**1D пространственные связи и разрешение:** joint/isolated-w/isolated-v
+p48/p64 дают шесть nonlinear ODE; два isolated p48 controls отдельно
+обоснованы интерпретацией исходных §12/§19, не новым ответом пользователя.
+Первичные four-case config/comparison/phase manifest неизменны.
+Общая 1D стадия 550.04 s<3600 s; max собственный energy drift<=4.08e−11,
+mass/min(1+c)/strain/rotation safety PASS. All14: 6/7 координат PASS,
+c max и все семь скоростей PARTIAL; relative max эволюции mixed-w
+.00010331747>.0001 также PARTIAL. Один tight временной уровень: PARTIAL.
+Эволюция joint w/v=1.989249e−6/4.687739e−7; эволюция mixed w/v=
+1.598119e−7/3.655408e−7, изменения p48→p64 1.651136e−11/1.586664e−11.
+Сохранённые полные линейные операторы отделяют перенос начальной разности
+от нелинейной эволюции при одинаковых IC: тождество<=5.42e−19; максимумы mixed same-IC w/v
+1.280237e−7/1.145188e−7. Это разрешимый 1D смешанный динамический отклик,
+не только статическая память. Изолированные 3D controls не выполнялись.
+Линейная ось уже неплоская: расстояние от лучшей плоскости 7.67e−5;
+это не доказательство нелинейного взаимодействия.
+Pre-FEM displacement decision зафиксирован до новых 3D результатов;
+Правило обнаружения 10×signal не физический PASS и не строгая граница ошибки.
+
+**Фактическая 3D программа:** medium 5649/3120 и fine 11553/6670 C3D10
+переиспользованы. Initial/max increments T1/8000,T1/4000, output каждый второй;
+по 1002 dynamic increments/501 frames, STATIC 1 L/10 NL, cutbacks 0.
+Native runtime 1129.53/1201.04/2991.22/3149.04 s; total execution 8470.86 s
+<14400 s, peak<=210.25 MiB<4 GiB, один поток. Preload/release/finite U/V/positive
+sampled detF/output/equilibrium gates PASS. Новых Gmsh/modal/static-only jobs 0.
+
+**Полное движение и малые поправки:** Fine nonlinear w/v max differences
+3.5483%/3.0303% общего full-horizon max(max|1D|,max|3D|).
+Delta w/v differences 7.5468%/47.2897%; evolving w/v 13.1545%/38.8019%.
+Большое расхождение малой v-поправки сохраняется после сгущения сетки:
+medium 47.0350%/38.5780%. Количественное согласие всех пространственных
+нелинейных откликов не установлено. Fine абсолютные evolving gaps w=3.013122e−7,
+v=2.972200e−7; medium→fine изменения 1.010890e−8/4.780302e−9,
+3.3550%/1.6083% разностей моделей. Это не строгие границы континуальной ошибки.
+Linear/PCHIP изменение evolving w/v 2.609e−11/1.834e−11 меньше разностей моделей.
+Один 3D временной уровень не закрывает самостоятельную временную проверку.
+
+**Вращения / кручение:** fine nonlinear Phi difference 19.8659%,
+DeltaPhi 15.7046%, evolvingPhi 11.9555%; evolving mesh change 2.6227% gap.
+НО сеточные изменения evolving psi/theta 58.9194%/69.9862% разностей моделей;
+fine 41→81 endpoint recovery 59.1931%/82.7772% (только STATIC/final DYNAMIC,
+не границы на всём интервале). Агрегированная разность полных R не сертифицирует малые угловые поправки.
+Phi signal превышает historical planar proxy; динамическая chi1 proxy
+NOT_RESOLVED: изменение метода производной 4.58387e−4,
+сеточное изменение 4.24782e−4, разность 1D/3D 6.62184e−4.
+Независимые support RF-bodyload moments перенесены со среднего положения
+закреплённых узлов на геометрическую ось без изменения RF. Fine nonlinear Mx left/right
+−1.935446e−8/−1.933519e−8 vs 1D −2.020239e−8, max gap 4.293%; linear~1e−11.
+Это подтверждает ненулевой статический крутящий отклик; количественная
+точность dynamic twist/warping/inertia не установлена. Dynamic support torque NOT_TESTED.
+
+**Энергия, strains и предел вывода:** raw STATIC/DYNAMIC +100% reference
+jump не исправлен; DYNAMIC drift 1.3431–1.3481e−7, external/damping work 0.
+Независимая кинетическая энергия C3D10 quadrature согласуется с native до
+6.096e−14 medium/2.642e−14 fine; internal StVK reconstruction NOT_RUN, ENERGY PARTIAL.
+Min sampled detF>=.9914476; max Green component<=.0111385 превышает
+planning corner .00924609, который не строгая граница всех локальных деформаций.
+c_eff — proxy с D17/K18 recovery/sampling qualification, не M-H DOF.
+Four PDF+PNG, raw native/NPZ/CSV/actual times/manifests/source hashes сохранены.
+218 targeted tests PASS/12.34 s; compute/report/plot/postprocess cache replay
+имеет 0 scientific/render calls и неизменный manifest. No phase/amplitude/time
+or coefficient fitting. Исторические model/bundles/failed ledgers/D/K сохранены.
+
+**Остановка:** результат подтверждает вычислимость полного семиполевого
+маршрута и обнаружение пространственного нелинейного отклика; он не завершает
+количественную независимую проверку всех нелинейных связей.
+NUMERICAL_PARTIAL, не PHYSICAL_DYNAMIC_VALIDATION_PASS.
+LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp
+UNAVAILABLE, FEM-3C qualified completion, prepared strict/zero-u-c PARTIAL,
+physical sanity и strict float64 qualifications сохранены.
+После отчёта остановка: full-period FEM, new p/amplitudes/time/mesh sweeps,
+angular/Floquet/periodic-orbit/critical search автоматически не запускаются.

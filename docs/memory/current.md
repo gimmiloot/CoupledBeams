@@ -1,5 +1,77 @@
 # Текущий контекст
 
+## Семиполевое пространственное сопоставление: NUMERICAL_PARTIAL, 2026-10-10
+
+[D18](decisions.md#nlsp-d18), [K19](knowledge.md#nlsp-k19) и
+[отчёт](../numerics/nlsp_spatial_nonlinear_3d_fem_verification.md) фиксируют
+завершённую ограниченную программу: шесть p48/p64 1D траекторий и четыре
+medium/fine C3D10 preload+dynamic jobs до .25T1. V0, quartic action,
+variable mass, RHS/Jacobian, коэффициенты, нагрузка и BC сохранены.
+Stage A PASS_WITH_QUALIFICATIONS: новый слабый body/flux контроль проходит
+неизменный 2e−12 gate, прежняя strict strong projection остаётся PARTIAL.
+Плоское ограничение воспроизводит действующую четырёхполевую модель.
+
+Собственная смешанная нелинейная эволюция выделена в 1D из joint/isolated
+контролей и разложения на сохранённом линейном операторе; это не только начальная
+статическая разность. Два isolated p48 controls отдельно объяснены в D18 как
+интерпретация исходных §12/§19, не новое пользовательское разрешение.
+Первичный four-case evidence неизменен. All14 spatial: 6/7 координат PASS,
+c max и все скорости PARTIAL; evolving mixed-w relative и time также PARTIAL.
+
+Полные fine nonlinear w/v отличаются от 1D на 3.55%/3.03% общего масштаба.
+Однако Delta-w/v differences 7.55%/47.29%, evolving-w/v 13.15%/38.80%:
+существенное расхождение второй малой изгибной поправки сохраняется.
+Evolving mesh changes w/v 3.355%/1.608% разностей моделей; interpolation мала.
+Для evolving psi/theta mesh changes 58.9%/70.0%, endpoint 41→81 fine 59.2%/82.8%
+разностей моделей. Endpoint audit не даёт границы на всём интервале. Разность
+полных ориентаций не сертифицирует эти малые поправки. Dynamic chi1 NOT_RESOLVED.
+Phi signal и независимо восстановленные статические Mx относительно оси подтверждают
+ненулевой отклик; fine Mx max gap 4.293% не проверяет точность динамического кручения.
+
+Все четыре CCX jobs PASS: 1002 increments/501 frames, H, cutbacks 0, один поток;
+execution 8470.86 s/14400 s, peak<=210.25 MiB. 1D 550.04 s/3600 s, safety PASS.
+Raw native energy jump +100% сохраняется; dynamic drift~1.34e−7,
+independent K checked, internal StVK NOT_RUN: ENERGY PARTIAL. c_eff остаётся
+proxy по D17/K18. Bundle e7e9dee6dbf616f0 содержит actual native fields,
+CSV/NPZ/четыре PDF+PNG; 218 tests PASS, четыре CLI cache replay: 0 scientific/render calls.
+
+Итог NUMERICAL_PARTIAL; Stage C COMPLETE_WITH_QUALIFICATIONS означает
+получение и сопоставление данных, не PHYSICAL_DYNAMIC_VALIDATION_PASS.
+Полные w/v воспроизводят близкий масштаб, но удовлетворительное согласие
+всех пространственных нелинейных связей не установлено. Старый FEM-3C ниже не
+пересмотрен. LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION,
+angular same-clamp UNAVAILABLE и все прежние qualifications сохраняются.
+После отчёта остановка; новый FEM, amplitude/p/time/mesh sweep, angular/Floquet/
+periodic-orbit/critical search не выбран и автоматически не запускается.
+
+
+## Spatial-profile diagnostic complete with qualifications, 2026-10-10
+
+[D17](decisions.md#nlsp-d17), [K18](knowledge.md#nlsp-k18) и
+[report](../numerics/nlsp_spatial_profile_audit.md) фиксируют отдельную
+постобработку saved FEM-3C, без новых FE/ODE/static/eigen/mesh расчётов.
+Зубцы c_eff уже есть в raw41 values; cubic усиливает часть extrema.
+41→81 существенно повышает roughness; medium→fine41 умеренно уменьшает её,
+но локальный contraction profile не разрешён. Независимый C3D10 quadratic
+контроль и отдельный 11-column fit подтверждают sampling/recovery effects.
+Direct volume strain means тоже имеют hard-binning sensitivity; реальные
+transverse fields неоднородны, а физичность отдельных продольных зубцов
+остаётся UNRESOLVED. c_eff нельзя считать точной M-H coordinate.
+
+1D отрицательный mean c при больших изгибных деформациях согласуется с
+продольным растяжением и внутренним c≈-nuGamma1, но c/c_t spatial PARTIAL
+сохраняется; у c_s имеется коротковолновая составляющая. Theta sign/parity
+подтверждены. Четырёхлепестковое u объясняется геометрическим benchmark
+в high-bend phases, но не сохраняется и не описывается им при low-bend phases.
+Результат: DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS; четыре diagnostic figures
+и raw arrays в c19f5a82203c0260. Старый FEM-3C статус ниже не пересмотрен.
+Raw proxy с sensitivity показывается отдельно, без smoothing и fitting.
+
+После отчёта остановка. Новых физических расчётов и изменений V0 нет.
+LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp
+UNAVAILABLE, prepared strict/zero-u-c PARTIAL и все прежние qualifications
+сохраняются. Следующий научный этап этим аудитом не выбран.
+
 ## FEM-3C — limited straight-rod verification complete, 2026-10-10
 
 [NLSP-D16](decisions.md#nlsp-d16), [NLSP-K17](knowledge.md#nlsp-k17),

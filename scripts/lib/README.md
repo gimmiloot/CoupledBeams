@@ -2,6 +2,27 @@
 
 This directory contains reusable helper modules that are not meant to be run directly.
 
+- Seven-field spatial verification reuses --spatial-verification on the
+  existing continuation CLI. `weakly_nonlinear_spatial_dynamics.py` compiles
+  the saved quartic action; `nlsp_spatial_verification_checks.py` retains exact
+  planar/energy/parity evidence and separate strict strong/weak-flux checks.
+  `nlsp_spatial_1d_program.py` owns bounded static/release/Radau cases;
+  `nlsp_spatial_comparison.py` reads saved histories and correction controls.
+  `nlsp_spatial_fem_protocol.py` and `nlsp_spatial_native_program.py` reuse the
+  verified CCX generator, C3D10 quadrature, streaming native readers and
+  section orientations without changing historical physics/helpers.
+  [Scoped contract](../../docs/numerics/nlsp_spatial_nonlinear_3d_fem_verification.md).
+
+- The saved-profile audit uses `--profile-audit` on the existing continuation
+  CLI. `nlsp_spatial_profile_audit.py` owns source/hash selection, separate
+  generated diagnostics and saved-data figures. `nlsp_profile_fem_diagnostics.py`
+  reuses the historical section recovery and audited C3D10 quadrature for raw
+  fits, unsmoothed interpolation, independent gradient/strain averages and
+  one explicitly separate quadratic-fit probe. `nlsp_profile_1d_diagnostics.py`
+  restores saved p48/p64 coordinates and derives contraction, symmetry,
+  resultant and spectral-tail diagnostics; it never integrates motion.
+  [Scoped postprocessing contract](../../docs/numerics/nlsp_spatial_profile_audit.md).
+
 - FEM-3C reuses the same public continuation CLI through `--validation`.
   `nlsp_fem3c_validation.py` owns the six-case authorization/ledger, saved
   medium/fine source selection and conditional full-period gates. Its I/O

@@ -33,6 +33,8 @@
 
 | Тема | Ключевые записи |
 |---|---|
+| Семиполевое пространственное сопоставление: 6 1D/4 CCX завершены; NUMERICAL_PARTIAL, большая разность v-поправки, кручение не закрыто | [NLSP-D18](decisions.md#nlsp-d18), [NLSP-K19](knowledge.md#nlsp-k19), [report](../numerics/nlsp_spatial_nonlinear_3d_fem_verification.md) |
+| Postprocessing spatial-profile audit: c_eff recovery/sampling effects, local longitudinal teeth unresolved; 1D c remains PARTIAL | [NLSP-D17](decisions.md#nlsp-d17), [NLSP-K18](knowledge.md#nlsp-k18), [report](../numerics/nlsp_spatial_profile_audit.md) |
 | FEM-3C: limited straight-rod verification complete with qualifications; C1 PASS, full-period illustration, all8/energy PARTIAL | [NLSP-D16](decisions.md#nlsp-d16), [NLSP-K17](knowledge.md#nlsp-k17), [report](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification), [scientific summary](../numerics/nlsp_straight_rod_3d_fem_verification_summary.md) |
 | FEM-3B: .25T1 выбран по 1D до FEM; 2 native jobs/502 frames; evolving signal измерен, 3D accuracy и energy qualified | [NLSP-D15](decisions.md#nlsp-d15), [NLSP-K16](knowledge.md#nlsp-k16), [report](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3b-nonlinear-correction-evolution-and-longer-horizon) |
 | FEM-3AR: two corrected native jobs and p64 references complete .05T1; release/motion pass, energy PARTIAL; dynamic correction uncertified | [NLSP-D14](decisions.md#nlsp-d14), [NLSP-K15](knowledge.md#nlsp-k15), [continuation](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3ar-controlled-continuation-after-native-elke-output-path-failure) |

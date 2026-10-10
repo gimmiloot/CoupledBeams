@@ -4,6 +4,34 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
+## Seven-field nonlinear spatial comparison (2026-10-10)
+
+[The scoped report](numerics/nlsp_spatial_nonlinear_3d_fem_verification.md),
+[NLSP-D18](memory/decisions.md#nlsp-d18) and [K19](memory/knowledge.md#nlsp-k19)
+record six p48/p64 1D cases and four actual medium/fine 3D jobs to .25T1.
+Stage A PASS_WITH_QUALIFICATIONS preserves strict strong-projection PARTIAL.
+Overall NUMERICAL_PARTIAL: spatial nonlinear response is detected, but fine
+v correction/evolution differences 47.29%/38.80% persist despite small
+bending mesh changes. Full nonlinear w/v differences are 3.55%/3.03%.
+Small psi/theta corrections, dynamic twist, all14 c/velocities, time and
+energy retain explicit qualifications. Static beam-axis Mx supports a
+nonzero twist response; it does not certify dynamic torsional strain.
+Physics and loads are unfitted; no universal seven-field, angular-joint or
+nonlinear-inertia validity is claimed. The bounded programme stops here.
+
+## Saved spatial-profile audit after FEM-3C (2026-10-10)
+
+[Diagnostic report](numerics/nlsp_spatial_profile_audit.md),
+[D17](memory/decisions.md#nlsp-d17) and [K18](memory/knowledge.md#nlsp-k18)
+record postprocessing only, with no new FEM/1D/mesh solve. Raw c_eff teeth
+depend on section windows, transverse fit and quadrature sampling; CubicSpline
+adds extrema. Medium/fine and direct strain averages retain local sensitivity.
+Actual 3D transverse deformation is heterogeneous, but stable physical
+longitudinal teeth are unresolved. The negative 1D mean c at large bending,
+theta symmetry and high-bend u lobes have supported mechanical meaning;
+historical c/c_t spatial PARTIAL remains. No smoothing, changed model or
+revised FEM-3C status. The audit stops after its qualified report.
+
 ## FEM-3C: bounded numerical robustness and dissertation verification (2026-10-10)
 
 [Technical continuation](numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification)

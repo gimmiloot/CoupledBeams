@@ -2,6 +2,32 @@
 
 ## 2026-10-10
 
+- NLSP seven-field spatial verification adds --spatial-verification to the
+  existing continuation CLI, scoped quartic Galerkin/static-release/native
+  helpers, configuration, tests and a separate canonical report/D18/K19.
+  Exact action/planar/RHS/Jacobian and stable weak-flux checks pass while
+  strict strong-projection PARTIAL remains. Six 1D and four sequential
+  medium/fine 3D jobs reach .25T1. Overall NUMERICAL_PARTIAL: full w/v
+  differences are 3.55%/3.03%, but v correction/evolution 47.29%/38.80%
+  persist; small rotation corrections and dynamic twist remain unresolved.
+  All14 c/velocity, mixed-w, temporal and native energy qualifications stay
+  visible. Four PDF+PNG figures, endpoint recovery/mass-quadrature energy/
+  beam-axis support-moment diagnostics preserve raw data. 218 targeted tests
+  pass; four completed CLI replay modes make zero scientific/render calls.
+  Frozen physics/load/BC, primary four-case evidence and old bundles/guards
+  remain unchanged; no automatic additional study follows.
+
+- NLSP saved-profile audit adds --profile-audit to the existing continuation
+  CLI, scoped postprocessing helpers/config/tests and four diagnostic figures.
+  Raw c_eff teeth precede cubic interpolation; 21/41/81 and medium/fine controls
+  plus an exact quadratic displacement probe localize recovery/sampling effects.
+  Direct 3D strain averages retain cut-slab quadrature sensitivity; stable
+  physical longitudinal teeth remain unresolved. Saved p48/p64 c physics,
+  theta symmetry and u/resultant diagnostics preserve historical spatial
+  PARTIAL. Separate c19f5a82203c0260 bundle, canonical report and NLSP-D17/K18
+  retain source hashes, actual times and zero new scientific solver/mesh calls.
+  No smoothing, physics change or rewritten FEM-3C status.
+
 - FEM-3C adds explicit --validation to the existing continuation CLI, separate
   immutable-parent authorization/config, scoped orchestration/saved-data helpers
   and a dissertation summary. Four actual C1 medium/fine refined-time jobs pass

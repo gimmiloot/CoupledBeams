@@ -4,6 +4,43 @@
 
 ## 2026-10-10
 
+- Завершено отдельное семиполевое пространственное сопоставление по
+  [D18](../memory/decisions.md#nlsp-d18)/[K19](../memory/knowledge.md#nlsp-k19).
+  Stage A PASS_WITH_QUALIFICATIONS: слабый body/flux контроль проходит
+  неизменный допуск, прежний strict strong-projection PARTIAL сохранён.
+  Шесть 1D и четыре medium/fine C3D10 preload+dynamic расчёта достигли .25T1.
+  Полные nonlinear w/v различаются на 3.55%/3.03% общего масштаба, но малая
+  v-поправка и её эволюция — на 47.29%/38.80%; сгущение не снимает расхождение.
+  Эволюционный mixed response в 1D содержит собственную нелинейную динамику,
+  не только статическую память. All14 c/скорости, mixed-w относительный
+  критерий, малые вращательные поправки и временная проверка остаются PARTIAL.
+  Статические Mx относительно оси подтверждают ненулевой крутящий отклик;
+  dynamic chi1 количественно не разрешена. Энергетика сохраняет raw +100%
+  native reference jump, independent K checked, internal StVK NOT_RUN.
+  CCX execution 8470.86s/14400s, 1D550.04s/3600s; 218 тестов PASS,
+  четыре CLI cache replay дают ноль scientific/render calls. Четыре PDF+PNG
+  и raw CSV/NPZ сохранены отдельно в e7e9dee6dbf616f0. Итог NUMERICAL_PARTIAL,
+  не physical PASS; физика, нагрузка, старые bundles/статусы неизменны.
+  [Канонический отчёт](../numerics/nlsp_spatial_nonlinear_3d_fem_verification.md).
+  После отчёта остановка; следующий расчёт автоматически не выбран.
+
+- Выполнен ограниченный spatial-profile postprocessing audit после FEM-3C:
+  11 saved nonlinear nodal states, 21/41/81 section fits и p48/p64 histories,
+  без новых FE/ODE/static/eigen/mesh расчётов. Зубцы c_eff уже содержатся
+  в raw41 values; cubic добавляет extrema. Сужение windows усиливает TV,
+  fine умеренно уменьшает её при 41, но local proxy остаётся чувствительным.
+  Exact quadratic C3D10 displacement control и отдельный 11-column fit
+  подтверждают recovery/sampling effects. Direct Green averages тоже
+  подвержены hard-binning; реальные transverse fields неоднородны,
+  физичность отдельных longitudinal teeth не установлена. 1D negative c
+  при large bending согласуется с Gamma1; c/c_t spatial PARTIAL сохраняется.
+  Theta sign/parity подтверждены; classic axial benchmark поясняет u lobes
+  только в high-bend phases. Четыре PDF+PNG и raw data в c19f5a82203c0260,
+  [report](../numerics/nlsp_spatial_profile_audit.md),
+  [D17](../memory/decisions.md#nlsp-d17)/[K18](../memory/knowledge.md#nlsp-k18).
+  DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS, scientific calls 0; никаких
+  изменений V0/BC/коэффициентов/старых результатов. После отчёта остановка.
+
 - FEM-3C продолжает отдельно разрешённую проверку прямого стержня, без подбора
   коэффициентов, нагрузки или новых начальных равновесий. Все четыре C1
   preload+dynamic jobs завершены: medium/fine при одном уточнённом времени,

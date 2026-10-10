@@ -20,6 +20,30 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
+## Seven-field spatial nonlinear verification
+
+The scoped --spatial-verification continuation completed six 1D and four
+medium/fine 3D jobs to .25T1. Stage A PASS_WITH_QUALIFICATIONS and Stage C
+COMPLETE_WITH_QUALIFICATIONS are distinct from overall NUMERICAL_PARTIAL.
+Full nonlinear w/v differences are 3.55%/3.03%; v correction/evolution
+47.29%/38.80% persist. All14 c/velocities, mixed-w, small rotation corrections,
+dynamic twist, single-level time and energy remain qualified. Historical
+model/bundles/guards are preserved; four completed cache CLI modes make
+zero scientific/render calls. No automatic refinement or next study.
+[Report](../docs/numerics/nlsp_spatial_nonlinear_3d_fem_verification.md).
+
+## Saved spatial-profile diagnostic
+
+The existing continuation command --profile-audit is a completed diagnostic
+postprocessing preset with separate source/config identity. It reads saved
+FEM-3C nodal/coordinate histories and existing meshes; no CCX/Gmsh/Radau/
+Newton/eigen/root/BVP or new mesh. Raw/interpolated c_eff, window/mesh
+sensitivity, independent strains, quadratic kinematic controls and 1D
+contraction/mechanics are distinct. DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS:
+recovery/sampling effects found; physical longitudinal teeth unresolved,
+historical c spatial PARTIAL and FEM-3C status unchanged. No smoothing or
+automatic next scientific study. [Report](../docs/numerics/nlsp_spatial_profile_audit.md).
+
 ## FEM-3C: bounded robustness / conditional illustration
 
 `resume_nlsp_nonlinear_dynamic_3d_fem.py --validation` is a completed bounded diagnostic
