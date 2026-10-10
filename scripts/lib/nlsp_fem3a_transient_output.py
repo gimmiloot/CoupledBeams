@@ -9,6 +9,7 @@ this module neither runs a solver nor interprets modal results.
 from __future__ import annotations
 
 import math
+from decimal import Decimal
 import re
 from pathlib import Path
 from typing import Iterable, Iterator
@@ -32,6 +33,27 @@ def _finite_number(text: str) -> float:
     if not math.isfinite(number):
         raise ValueError("Nonfinite transient output number")
     return number
+
+
+def _native_time_precision(token: str) -> dict:
+    """Derive rounding from the actual printed decimal place, not a tolerance.
+
+    STA Fortran E14.6 uses a leading-zero mantissa: ``.151891E+01`` has
+    quantum 1e-5, not 1e-6. DAT, FRD and stdout have distinct native formats.
+    Decimal reads the original token; this does not increase native precision.
+    """
+    raw = token.strip()
+    value = _finite_number(raw)
+    decimal = Decimal(raw.replace("D", "E").replace("d", "E"))
+    quantum = float(Decimal(10) ** decimal.as_tuple().exponent)
+    return {"token": raw, "value": value, "quantum": quantum,
+            "rounding_bound": quantum / 2}
+
+
+def _rounding_overlap(first: float, second: float, first_bound: float,
+                      second_bound: float) -> bool:
+    arithmetic = 8 * np.finfo(float).eps * max(1., abs(first), abs(second))
+    return abs(first - second) <= first_bound + second_bound + arithmetic
 
 
 def _expected_ids(ids: Iterable[int]) -> np.ndarray:
@@ -59,8 +81,13 @@ def read_transient_sta(path: str | Path, *, dynamic_step: int = 2) -> dict:
                 continue
             row = dict(zip(("step", "increment", "attempt", "iterations"),
                            map(int, tokens[:4])))
-            row.update(zip(("total_time", "step_time", "increment_time"),
-                           map(_finite_number, tokens[4:])))
+            fields = ("total_time", "step_time", "increment_time")
+            precision = {name: _native_time_precision(token)
+                         for name, token in zip(fields, tokens[4:])}
+            row.update({name: item["value"] for name, item in precision.items()})
+            row["native_time_tokens"] = {name: item["token"] for name, item in precision.items()}
+            row["time_quantums"] = {name: item["quantum"] for name, item in precision.items()}
+            row["time_rounding_bounds"] = {name: item["rounding_bound"] for name, item in precision.items()}
             if row["step"] < 1 or row["increment"] < 1 or row["attempt"] < 1:
                 raise ValueError("Invalid transient STA step/increment/attempt")
             if row["step_time"] <= 0 or row["increment_time"] <= 0:
@@ -74,12 +101,19 @@ def read_transient_sta(path: str | Path, *, dynamic_step: int = 2) -> dict:
                     raise ValueError("Decreasing transient STA step time")
             rows.append(row)
     offsets = {}
+    intervals = {}
     for row in rows:
         offset = row["total_time"] - row["step_time"]
-        old = offsets.setdefault(row["step"], offset)
-        # Native STA E13.6 timestamps carry only seven significant digits.
-        if abs(offset - old) > 2e-6 * max(1., abs(row["total_time"])):
+        offsets.setdefault(row["step"], offset)
+        bound = row["time_rounding_bounds"]["total_time"] + row["time_rounding_bounds"]["step_time"]
+        arithmetic = 8 * np.finfo(float).eps * max(1., abs(row["total_time"]))
+        low, high = offset - bound - arithmetic, offset + bound + arithmetic
+        if row["step"] in intervals:
+            low = max(low, intervals[row["step"]][0])
+            high = min(high, intervals[row["step"]][1])
+        if low > high:
             raise ValueError("Inconsistent transient STA step offset")
+        intervals[row["step"]] = (low, high)
     dynamic = [r for r in rows if r["step"] == dynamic_step]
     return {"status": "PARSED" if rows else "NO_ACCEPTED_INCREMENTS",
             "accepted_increments": rows, "step_offsets": offsets,
@@ -87,11 +121,13 @@ def read_transient_sta(path: str | Path, *, dynamic_step: int = 2) -> dict:
             "actual_total_end": rows[-1]["total_time"] if rows else None,
             "reported_attempts": sum(r["attempt"] for r in rows),
             "reported_cutbacks": sum(r["attempt"] - 1 for r in rows),
-            "timestamp_precision": "native STA E13.6; rounded printed timestamps"}
+            "step_offset_rounding_intervals": intervals,
+            "timestamp_precision": "actual native decimal-place quantums; rounded printed timestamps"}
 
 
 def _metadata(step: int, increment: int, total_time: float, static_end_time: float,
-              dynamic_step: int, increments: list[dict] | None = None) -> dict:
+              dynamic_step: int, increments: list[dict] | None = None,
+              total_time_precision: dict | None = None) -> dict:
     if total_time < 0:
         raise ValueError("Negative transient total time")
     if not math.isfinite(static_end_time) or static_end_time < 0:
@@ -102,12 +138,18 @@ def _metadata(step: int, increment: int, total_time: float, static_end_time: flo
             "step_time": total_time if step == 1 else total_time - static_end_time,
             "dynamic_time": total_time - static_end_time if step == dynamic_step else None,
             "time_source": "native total time; documented preload offset"}
+    if total_time_precision is not None:
+        meta["native_total_time_token"] = total_time_precision["token"]
+        meta["total_time_quantum"] = total_time_precision["quantum"]
+        meta["total_time_rounding_bound"] = total_time_precision["rounding_bound"]
     if increments is not None:
         matched = [r for r in increments if r["step"] == step and r["increment"] == increment]
         if len(matched) != 1:
             raise ValueError("FRD frame lacks a unique actual STA increment")
         row = matched[0]
-        if abs(row["total_time"] - total_time) > 2e-6 * max(1., abs(total_time)):
+        frame_bound = total_time_precision["rounding_bound"] if total_time_precision else 0.
+        row_bound = row.get("time_rounding_bounds", {}).get("total_time", 0.)
+        if not _rounding_overlap(row["total_time"], total_time, row_bound, frame_bound):
             raise ValueError("FRD/STA total-time disagreement")
         meta["sta_total_time"] = row["total_time"]
         meta["sta_step_time"] = row["step_time"]
@@ -124,6 +166,7 @@ def iter_transient_frd_blocks(path: str | Path, expected_node_ids: Iterable[int]
     expected = set(ids.tolist())
     pstep = None
     total_time = None
+    total_time_precision = None
     declared_count = None
     field = None
     nodes = None
@@ -145,7 +188,8 @@ def iter_transient_frd_blocks(path: str | Path, expected_node_ids: Iterable[int]
             elif s.startswith("100C"):
                 if nodes is not None:
                     raise ValueError("Unterminated transient FRD field")
-                total_time = _finite_number(raw[12:24])
+                total_time_precision = _native_time_precision(raw[12:24])
+                total_time = total_time_precision["value"]
                 declared_count = int(raw[24:36])
                 # A binary dataset cannot be interpreted as ASCII.
                 if len(raw.rstrip("\r\n")) > 74 and raw[74] == "2":
@@ -170,7 +214,7 @@ def iter_transient_frd_blocks(path: str | Path, expected_node_ids: Iterable[int]
                 if set(nodes) != expected:
                     raise ValueError(f"Incomplete {field} nodes: expected {len(ids)}, got {len(nodes)}")
                 meta = _metadata(pstep[2], pstep[1], total_time, static_end_time,
-                                 dynamic_step, increments)
+                                 dynamic_step, increments, total_time_precision)
                 yield {**meta, "dataset_counter": pstep[0], "name": field,
                        "node_ids": ids, "values": np.asarray([nodes[int(n)] for n in ids]),
                        "precision": "native FRD float32/E12.5 values"}
@@ -231,21 +275,21 @@ def iter_transient_frd(path: str | Path, expected_node_ids: Iterable[int], *,
 
 
 def _dat_time_metadata(total_time: float, static_end_time: float,
-                       dynamic_step: int, increments: list[dict] | None) -> dict:
+                       dynamic_step: int, increments: list[dict] | None,
+                       total_time_precision: dict | None = None) -> dict:
     if increments is not None:
-        tolerance = 6e-8 * max(1., abs(total_time))  # DAT E14.7 timestamps
-        rows = [r for r in increments if abs(r["total_time"] - total_time) <= tolerance]
-        # STA timestamps have fewer digits than DAT: allow their own rounding.
-        if not rows:
-            rows = [r for r in increments if abs(r["total_time"] - total_time)
-                    <= 6e-7 * max(1., abs(total_time))]
+        bound = total_time_precision["rounding_bound"] if total_time_precision else 0.
+        rows = [r for r in increments
+                if _rounding_overlap(r["total_time"], total_time,
+                    r.get("time_rounding_bounds", {}).get("total_time", 0.), bound)]
         if len(rows) != 1:
             raise ValueError("DAT timestamp lacks a unique actual STA increment")
         row = rows[0]
         return _metadata(row["step"], row["increment"], total_time, static_end_time,
-                         dynamic_step, increments)
+                         dynamic_step, increments, total_time_precision)
     step = 1 if total_time <= static_end_time else dynamic_step
-    item = _metadata(step, None, total_time, static_end_time, dynamic_step)
+    item = _metadata(step, None, total_time, static_end_time, dynamic_step,
+                     total_time_precision=total_time_precision)
     item["time_source"] = "DAT total-time offset only; increment not independently available"
     return item
 
@@ -266,7 +310,7 @@ def iter_transient_dat(path: str | Path, expected_node_sets: dict[str, Iterable[
     def finish():
         if header is None:
             return None
-        name, setname, time = header
+        name, setname, time, precision = header
         if setname not in sets:
             return None
         ids = sets[setname]
@@ -276,7 +320,7 @@ def iter_transient_dat(path: str | Path, expected_node_sets: dict[str, Iterable[
         if key in seen:
             raise ValueError("Duplicate transient DAT nodal block")
         seen.add(key)
-        return {**_dat_time_metadata(time, static_end_time, dynamic_step, increments),
+        return {**_dat_time_metadata(time, static_end_time, dynamic_step, increments, precision),
                 "name": name, "set": setname, "node_ids": ids,
                 "values": np.asarray([values[int(n)] for n in ids]),
                 "precision": "native DAT E13.6 nodal values"}
@@ -289,8 +333,11 @@ def iter_transient_dat(path: str | Path, expected_node_sets: dict[str, Iterable[
                 if block is not None:
                     yield block
                 values = {}
-                header = ((_DAT_NAMES[found[1].lower()], found[2].upper(), _finite_number(found[3]))
-                          if found else None)
+                if found:
+                    precision = _native_time_precision(found[3])
+                    header = (_DAT_NAMES[found[1].lower()], found[2].upper(), precision["value"], precision)
+                else:
+                    header = None
             elif header is not None and raw.strip():
                 tokens = raw.split()
                 if len(tokens) != 4 or not re.fullmatch(r"\d+", tokens[0]):
@@ -316,17 +363,18 @@ def parse_transient_dat_energies(path: str | Path, *, static_end_time: float = 1
             if found:
                 if pending is not None:
                     raise ValueError("Missing native DAT total-energy scalar")
-                pending = (found[1].lower(), found[2].upper(), _finite_number(found[3]))
+                precision = _native_time_precision(found[3])
+                pending = (found[1].lower(), found[2].upper(), precision["value"], precision)
             elif pending is not None and raw.strip():
                 if len(raw.split()) != 1:
                     raise ValueError("Invalid native DAT total-energy scalar")
                 value = _finite_number(raw.strip())
-                kind, setname, time = pending
+                kind, setname, time, precision = pending
                 pending = None
                 if element_set is not None and setname != element_set.upper():
                     continue
                 record = records.setdefault((setname, time), {
-                    **_dat_time_metadata(time, static_end_time, dynamic_step, increments),
+                    **_dat_time_metadata(time, static_end_time, dynamic_step, increments, precision),
                     "element_set": setname})
                 key = "internal_energy" if kind == "internal" else "kinetic_energy"
                 if key in record:
@@ -369,6 +417,7 @@ def parse_transient_stdout_energies(path: str | Path, *, static_end_time: float 
         "energy balance (relative)": "native_energy_balance_relative_percent",
     }
     current_time = None
+    current_time_precision = None
     current_step_time = None
     current_increment = None
     current_attempt = None
@@ -392,9 +441,11 @@ def parse_transient_stdout_energies(path: str | Path, *, static_end_time: float 
                 current_increment, current_attempt = map(int, found.groups())
             found = re.match(r"\s*actual (total|step) time\s*=\s*(\S+)", raw, re.I)
             if found:
-                value = _finite_number(found[2])
+                precision = _native_time_precision(found[2])
+                value = precision["value"]
                 if found[1].lower() == "total":
                     current_time = value
+                    current_time_precision = precision
                 else:
                     current_step_time = value
             if "=" not in raw:
@@ -415,7 +466,7 @@ def parse_transient_stdout_energies(path: str | Path, *, static_end_time: float 
                               "dynamic_time": None, "time_source": "NOT_PRESENT"}
                 else:
                     record = _dat_time_metadata(current_time, static_end_time,
-                                                dynamic_step, increments)
+                                                dynamic_step, increments, current_time_precision)
                 record["stdout_increment"] = current_increment
                 record["stdout_attempt"] = current_attempt
                 record["stdout_step_time"] = current_step_time

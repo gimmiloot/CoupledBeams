@@ -1,5 +1,120 @@
 # Scripts guide
 
+## FEM-3C: robustness controls and conditional full-period illustration
+
+The existing continuation CLI exposes a separate `--validation` preset, with
+[config](../data/input/nlsp_nonlinear_dynamic_validation.json),
+[authorization D16](../docs/memory/decisions.md#nlsp-d16),
+[technical contract](../docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification)
+and [scientific summary](../docs/numerics/nlsp_straight_rod_3d_fem_verification_summary.md).
+Historical default FEM-3AR and `--long-horizon` FEM-3B behavior are unchanged.
+This scoped mode reuses the prior generator, monitored CCX runner, C3D10
+quadrature, native readers, section recovery and four-field Radau solver.
+
+```powershell
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --validation --preflight
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --validation --compute
+```
+
+Fresh authorized compute verifies the immutable parent and both saved meshes,
+then performs medium linear/NL and fine linear/NL on .25T1 at T1/8000 initial
+and T1/4000 maximum increments, output every 2. The common 201-time comparison
+uses linear/PCHIP postprocessing, confirmed STATIC t=0 and fixed baseline
+2.824717e-7. The preset Rt/Rh guide is .25; observations are not strict bounds.
+Only after the actual C1 outcome may the saved-state full-period 1D stage run.
+Full-period3D additionally requires all four preload/release/recovery gates,
+numerical robustness and a frozen resource decision. It uses medium, original
+T1/4000 initial/T1/2000 maximum increments, output every 5 and INC 3000.
+
+Optional stage routing uses `--run-controls`, `--run-1d` and `--run-full-period`;
+`--through-case` stops at a declared sequential case. These are parts of one
+explicitly bounded program, not extra jobs or parallel execution. Maximum 6
+production CCX jobs and 2 nonlinear1D solves; no new mesh/modal/static-only job.
+One thread, 4GiB, 5400s/job, 24000s total numerical budget. A real native failure
+stops the sequence without retry; changed code hash cannot create another attempt.
+Only verified read-only reparsing may recover a successfully finished native job.
+
+All six actual CCX cases and both full-period 1D runs are complete. Overall
+STRAIGHT_ROD_NONLINEAR_3D_FEM_VERIFICATION_COMPLETE_WITH_QUALIFICATIONS, with
+qualified full-horizon w/evolving-correction differences 9.45%/10.07%. The all8 1D spatial qualification remains PARTIAL, energy PARTIAL,
+EXPLORATORY_NOT_CERTIFIED/admitted=False and strict float64 PARTIAL remain visible.
+Full-period results are illustrative; quarter-period robustness is not a
+full-period convergence certificate. The seven-field view retains v=Phi=psi=0
+as the 1D planar subspace and labels 3D c_eff as an effective contraction proxy.
+
+Saved-data access and completed-cache reproduction:
+
+```powershell
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --validation --report-only results/nlsp_nonlinear_dynamic_validation/c6256269eb8143ef
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --validation --plot-only results/nlsp_nonlinear_dynamic_validation/c6256269eb8143ef
+```
+
+Report/plot use only existing native and comparison arrays. Matching completed
+compute starts no CCX/Gmsh/Radau/static/eigen/BVP work. Historical sources and
+failed ledgers are immutable; no next scientific stage is selected automatically.
+
+## FEM-3B: old-data diagnosis and one preselected longer horizon
+
+```powershell
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --long-horizon --preflight
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --long-horizon --compute
+```
+
+[Config](../data/input/nlsp_nonlinear_dynamic_long_horizon.json),
+[canonical section](../docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3b-nonlinear-correction-evolution-and-longer-horizon)
+and [D15](../docs/memory/decisions.md#nlsp-d15) define the distinct FEM-3B authorization.
+The explicit `--long-horizon` dispatch preserves the old FEM-3AR default and
+cache/ledger. The scoped helper reuses saved meshes/static coordinates and
+existing solvers; it contains no replacement physics. Preliminary 1D evidence
+and a frozen horizon decision precede the two sequential native jobs. Attempts
+are saved individually; the first failure stops the series without retry.
+
+`--run-1d` prepares only the permitted p64/optional-p48 stage and decision;
+`--run-3d` requires that frozen decision. `--report-only <bundle>` and
+`--plot-only <bundle>` read completed data; matching `--compute` performs zero
+new scientific calls. One medium mesh and one 3D time policy do not certify the
+evolving nonlinear correction. No fullT1, amplitude sweep, fine/refined dynamics,
+extra timestep level, angular joint or stability stage is selected.
+
+Completed output: `results/nlsp_nonlinear_dynamic_long_horizon/7d2b499e6a1eb990/`.
+The full Stage B retains .5T1 p64/p48 data; both native jobs reach the separately
+chosen .25T1. Existing-cache report and plot commands are:
+
+```powershell
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --long-horizon --report-only results/nlsp_nonlinear_dynamic_long_horizon/7d2b499e6a1eb990
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --long-horizon --plot-only results/nlsp_nonlinear_dynamic_long_horizon/7d2b499e6a1eb990
+```
+
+Native energy remains PARTIAL and the full1D all8 check remains PARTIAL;
+FEM3B_DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS is not physical validation PASS.
+
+## FEM-3AR: separate authorization after native output failure
+
+```powershell
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --preflight
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --run-pilot
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --report-only results/nlsp_nonlinear_dynamic_3d_fem_resume/f6ac2f2f38510893
+python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --plot-only results/nlsp_nonlinear_dynamic_3d_fem_resume/f6ac2f2f38510893
+```
+
+[Config](../data/input/nlsp_nonlinear_dynamic_3d_fem_resume.json) and
+[canonical continuation](../docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3ar-controlled-continuation-after-native-elke-output-path-failure).
+This thin diagnostic wrapper has a new explicit parent/authorization/ledger
+contract, preserving the old failed replay guard. It reuses the existing
+preload/dynamic generator, monitored solver, parser/recovery, frozen-state
+references and comparison; it adds no physics solver. Initial source/input
+checks precede one linear job, actual gates precede one nonlinear job, and both
+must succeed before the sole1D integration. No scientific retry; parser repair
+may re-read correct outputs without another native call.
+
+The completed bundle has2 CCX jobs, one nonlinear1D trajectory and one full
+linear semidiscrete factorization to .05T1, no Gmsh/modal/static-only jobs.
+Native energy diagnostics remain PARTIAL; correction evolution is not certified.
+Matching commands replay completed evidence with zero scientific calls.
+`--through-case linear` is the explicit first-gate orchestration option, not a
+new time/mesh level or permission to bypass a recorded failure. No fullT1,
+fine/refined dynamics or new parameter study is selected.
+
 ## FEM-3A: bounded static-preload/release/free-motion pilot
 
 ```powershell

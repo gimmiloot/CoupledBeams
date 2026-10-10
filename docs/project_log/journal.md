@@ -2,7 +2,58 @@
 
 Здесь ведётся рабочий журнал проекта: этапы, решения и важные исследовательские заметки.
 
+## 2026-10-10
+
+- FEM-3C продолжает отдельно разрешённую проверку прямого стержня, без подбора
+  коэффициентов, нагрузки или новых начальных равновесий. Все четыре C1
+  preload+dynamic jobs завершены: medium/fine при одном уточнённом времени,
+  собственные preload U/S/E/RF/section differences равны 0, warning/cutback нет.
+  Dt=5.40090e-10 и Dh=2.10750e-8 равны .00191202/.07460934 исходной модельной
+  разности; linear/PCHIP comparability PASS. Fine 1D/3D evolving-w difference
+  7.76472% собственного масштаба и 7.80362% старого масштаба сохраняет оба
+  знаменателя. Dt сопоставимо с округлением DAT, не отдельно разрешённая
+  чистая временная ошибка. Full-period p64/p48 complete, energy drift 7.27e-11/
+  4.85e-11, all8 spatial PARTIAL (2/8); main correction p-sensitivity мала с
+  correlated-cancellation qualification. Оба C2 medium jobs завершены на T1:
+  2002 increments/401 native frames каждый, preload/release/safety PASS. Full w
+  difference9.45%, evolving correction10.07%, total Delta16.20% на своих scales;
+  абсолютные разности выросли и не выдаются за full-period certification.
+  Overall STRAIGHT_ROD_NONLINEAR_3D_FEM_VERIFICATION_COMPLETE_WITH_QUALIFICATIONS,
+  energy/all8/strictfloat64 PARTIAL. Четыре PDF+PNG figures, bundle c6256269eb8143ef,
+  numerical cost15059s/24000s, ровно6 CCX/2 nonlinear1D и0 новых mesh/modal/static
+  jobs. [K17](../memory/knowledge.md#nlsp-k17) и current фиксируют завершение.
+  [Canonical section](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification),
+  [scientific summary](../numerics/nlsp_straight_rod_3d_fem_verification_summary.md),
+  [decision D16](../memory/decisions.md#nlsp-d16). Historical data/statuses intact.
+
 ## 2026-10-09
+
+- FEM-3B diagnoses the unchanged .05T1 parent, completes saved-state p64/p48
+  nonlinear dynamics to .5T1, then freezes .25T1 before two new medium native
+  preload+dynamic jobs. Both return real502-frame motion and repeat the101-frame
+  native prefix. Evolving w is3.58562e-6/3.86809e-6, model max difference7.30261%;
+  the signal exceeds observed recovery/output differences, without3D accuracy
+  certification. Raw+100%native energy reference jump stays PARTIAL; full1D
+  all8 p-comparison stays PARTIAL. Explicit --long-horizon preset, scoped helpers,
+  dense accepted-output capture, three figures, focused tests and append-only
+  NLSP-D15/K16 preserve physics/load/BC/IC and historical caches/ledgers.
+  Numericalstage2367.679s; no newmesh/modal/static-only job or automatic extension.
+
+
+- FEM-3AR controlled continuation completes two corrected medium C3D10
+  preload+dynamic jobs and one p64 nonlinear Radau trajectory to .05T1, plus
+  the full semidiscrete linear reference. Both repeated preload fields match
+  FEM-2R; actual release/restoring motion and102 shared native timestamps pass.
+  A parser-only lexical timestamp-rounding repair reparses the first valid
+  outputs without another CCX solve. Native energy remains PARTIAL: retained
+  STATIC-to-DYNAMIC bookkeeping jump and STATIC predictor pseudo-kinetic output
+  are source-qualified, never silently renormalized. Observed w correction
+  difference2.24247% mostly retains the initial static offset; dynamic accuracy
+  is not certified. Separate continuation CLI/config/ledger,173 targeted tests,
+  three figures and append-only NLSP-D14/K15; no physics/load/state/mesh changes
+  or automatic extension. Historical failed FEM-3A and all prior qualifications
+  remain unchanged.
+
 
 - FEM-3A source/input and saved-p64 acceleration preflight passed; release and
   velocity protocol remain PARTIAL (document/source support only). The

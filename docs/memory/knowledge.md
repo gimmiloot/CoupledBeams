@@ -1910,3 +1910,203 @@ retain failed-deck/log hashes and create no fake history/figure. The ledger keep
 the actual blocker despite a current generator hash change. Old D/K exact byte
 prefixes and the complete prior static canonical report are preserved; D13/K14
 anchors unique and `git diff --check` PASS. No further execution follows.
+
+
+## NLSP-K15
+
+**FEM-3AR result, 2026-10-09:** [D14](decisions.md#nlsp-d14),
+[canonical continuation](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3ar-controlled-continuation-after-native-elke-output-path-failure).
+Overall PILOT_COMPLETE_WITH_QUALIFICATIONS. The corrected linear native job
+and the separately gated nonlinear job both complete same-job preload/release
+and .05T1 free motion on the existing medium mesh. The historical FEM-3A
+BLOCKED_BY_SOLVER attempt and its manifest/ledger remain unchanged.
+
+**Established within scope:** repeated preload U/S/E/RF and section profiles
+match the saved medium FEM-2R fields exactly at output precision. Both3D jobs
+provide102 actual dynamic frames, restoring movement, fixed supports and zero
+native external/damping work after explicit instantaneous GRAV removal. Zero
+physical initial velocities are supported by input/source reset and the actual
+positive-time motion; STATIC pseudo-time is not dynamic time. Full linear
+p64 reference and one unchanged nonlinear Radau integration reach .05T1 using
+saved coordinates, without a new equilibrium/projection or fitted amplitude.
+
+**Observed comparison:** total w differences are about3.58% on declared common
+scales, retaining the initial static offsets. The sampled w NL-minus-L profile
+difference is max2.03472e-7/L2 1.21079e-7,2.24247%/1.33442% of common correction
+scale; signs agree. u-correction differs17.44%, theta1.31%; effective c remains
+nonidentical/diagnostic, with a much larger discrepancy. Paired final41/81
+Delta-w recovery change is7.78842e-9; printed output and one medium/time policy
+do not certify the whole dynamic correction or its continuum accuracy.
+
+**Technical and scientific qualifications:** permitted parser-only repair derives
+native time rounding intervals from lexical precision; valid outputs are reparsed
+without a solver retry, with both snapshots retained. Native energy remains
+PARTIAL: DYNAMIC initialization adds preload strain work to already stored
+internal energy, giving a retained approximately100% STATIC-reference jump.
+Separate small native-DYNAMIC-reference drift is bookkeeping only. Nonlinear
+STATIC ELKE uses predictor pseudo-velocities; the source zeros them before
+DYNAMIC, so that output is not physical initial kinetic energy or a memory fault.
+No energy data/RHS are corrected or silently renormalized.1D energy/mass/safety
+pass; strict float64 PARTIAL, EXPLORATORY_NOT_CERTIFIED/admitted=False remain.
+
+**Evidence / implication / stop:** bundlef6ac2f2f38510893 retains two actual CCX
+jobs, one nonlinear1D integration, the full linear reference, native fields,
+comparisons/source diagnostics and3 PDF/PNG figures. Recorded numerical stage
+429.379s, no new mesh/modal/static/root/symbolic jobs or hidden retry.173 focused
+new/historical tests pass; actual cached routes perform zero scientific calls.
+Practical short independent dynamics and a qualified physical comparison are
+now available, not PHYSICAL_DYNAMIC_VALIDATION_PASS for every V0 coefficient,
+inertia, geometry/frequency, periodic orbit or stability question. No fullT1,
+fine/refined dynamics, new amplitude/timestep, angular joint/Floquet or next
+scientific stage is selected automatically. LONG CLOSED; EB/RLB-KV
+PAUSED_FOR_SUPERVISOR_DIRECTION; angular same-clamp UNAVAILABLE; FEM-1R linear
+PASS, FEM-2R/physical-sanity qualified, prepared strict and oldzero-u/c PARTIAL
+remain unchanged. [K14](#nlsp-k14) is preserved as the earlier failed program.
+
+
+**Further resolution qualification in K15:** maximum midspan correction change
+from the initial static offset is7.92010e-12 (1D) and1.66047e-10 (3D), below
+native output resolution. Thus2.24247% mainly compares inherited static
+corrections; short free-motion feasibility does not independently resolve their
+nonlinear dynamic evolution or certify V0/inertia. No main metric is aligned,
+renormalized or removed to obtain this qualification.
+
+
+## NLSP-K16
+
+**FEM-3B result, 2026-10-09:** [D15](decisions.md#nlsp-d15),
+[canonical section](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3b-nonlinear-correction-evolution-and-longer-horizon).
+Overall FEM3B_DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS. Новый этап измерил
+эволюцию NL-minus-L отдельно от static initial offset, сохранив FEM-3AR
+PILOT_COMPLETE_WITH_QUALIFICATIONS и первоначальный FEM-3A failure.
+
+**Установлено в объявленном scope:** read-only проверены 959 parent artifacts.
+Старый midspan evolving signal 7.92010e-12/1.66047e-10 ниже historical output
+indicators; spatial max уже порядка 1e-8 вне середины. Сохранённые 1D w_tt(0)
+совпадают: одна transverse load и constant translational mass block объясняют
+отсутствие существенного t²-вклада в полную поправку. Taylor/characteristic-speed
+оценки согласуются с ранней стадией; точное время прихода фронта и единственная
+причина всех разностей не доказаны.
+
+**Предварительная 1D проверка / решение до FEM:** p64 и сохранённый p48 доходят
+до .5T1 без нового static solve/IC projection. S_midspan=.25T1:3.58562e-6,
+.5T1:1.80048e-5; evolving-w p sensitivity1.02443e-10/2.12706e-10.
+Заранее установленная tenfold planning heuristic выбрала .25T1 до новых
+3D результатов; это не validation threshold. Общий all-eight p48/p64 spatial
+check на .5T1 остаётся PARTIAL: только u,w displacement PASS. Строгие пороги,
+малые поля/velocities и прежние numerical qualifications не скрываются.
+
+**Actual native dynamics:** ровно два sequential medium C3D10 preload+dynamic
+jobs достигают .25T1=2.594570397637535, каждый даёт 502 actual frames.
+Preload U/S/E/RF воспроизводит FEM-2R; zero-GRAV release, zero external/damping
+work, fixed-end U/V и finite fields подтверждены. На всех retained times в
+14 volume points каждого элемента detF положителен; это sampled safety,
+не непрерывный supremum. 101 точно общих native prefix frames повторяют
+FEM-3AR без разности; его отдельный last endpoint не интерполирован.
+Новые L/NL schedules совпадают; interpolation не нужна.
+
+**Quantitative result:** evolving-w max1D=3.58562e-6,3D=3.86809e-6;
+max model difference2.82472e-7,L2 1.82118e-7,7.30261%/4.70822% фиксированного
+общего evolving scale. Полная Delta-w разность2.25363% меньше и включает
+static offsets; это другой показатель. Эволюция равна40.42%/42.63% initial
+correction scale. Signal превосходит paired initial/final41/81 difference
+9.38700e-9 примерно412 раз; это разрешённость относительно наблюдённых
+output/recovery diagnostics, не continuum-error bound. Theta/u не объявляются
+совпавшими автоматически; c_eff не тождественно M-H c.
+
+**1D decomposition:** при .25T1 Delta w=-5.28446e-6 складывается из
+-2.11263e-7 linear initial-state component и -5.07320e-6 same-IC nonlinear
+component. Это additive signed contributions в одной фиксированной точке,
+не energy/modal fractions или автоматически перенесённая 3D декомпозиция.
+Сумма проверена до arithmetic precision без ещё одной nonlinear integration.
+
+**Energy / limitations:** native STATIC-to-DYNAMIC +100% reference jump
+сохранён. Within-DYNAMIC drift1.33805e-7/1.34160e-7 — bookkeeping diagnostic,
+не physical continuity certificate. Independent mass-weighted K проверена
+существующей C3D10 quadrature; max differences около6.92e-14/6.46e-14.
+Independent StVK internal energy NOT_RUN, ENERGY_DIAGNOSTICS PARTIAL.
+Нет нового 1D temporal control и независимого 3D mesh/time convergence
+certificate. Strict float64 PARTIAL и EXPLORATORY_NOT_CERTIFIED остаются.
+
+**Evidence / stop:** bundle7d2b499e6a1eb990 содержит parent/provenance hashes,
+frozen pre-FEM decision, 2 CCX jobs/2 nonlinear 1D solves, dense accepted output,
+полные exact-time references, profiles/CSV/NPZ/3 PDF+PNG figures. Numerical
+stage2367.679s/6000s. V0/V4, variable mass/RHS/Jacobian, coefficients,
+geometry/material/load/BC и source static states не менялись. No meshes/modal/
+static-only jobs, fullT1, other amplitudes, fine/refined dynamics, automatic
+step refinement, angular joints/periodic orbits/Floquet/critical search.
+PHYSICAL_DYNAMIC_VALIDATION_PASS не присваивается; дальнейшее исполнение
+требует отдельного решения. LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION,
+angular same-clamp UNAVAILABLE, FEM-1R linear PASS, FEM-2R/physical sanity
+qualified, prepared strict и historical zero-u/c PARTIAL сохранены.
+
+
+**Дополнительное объяснение K16:** 1D same-IC nonlinear contribution на .05T1
+уже -5.25723e-7, но её сокращает +5.25730e-7 изменения линейной initial-state
+component. Поэтому total evolving correction лишь около7.54e-12. Малость
+старой полной разности не означает отсутствия nonlinear evolution. Такая
+cancellation установлена в1D; 3D same-IC decomposition не рассчитывалась.
+
+
+## NLSP-K17
+
+**FEM-3C completed result, 2026-10-10:** [D16](decisions.md#nlsp-d16),
+[technical report](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification),
+[dissertation summary](../numerics/nlsp_straight_rod_3d_fem_verification_summary.md).
+Overall STRAIGHT_ROD_NONLINEAR_3D_FEM_VERIFICATION_COMPLETE_WITH_QUALIFICATIONS.
+Завершено ограниченное независимое сопоставление прямого стержня. Исторические
+FEM-1R/2R/3AR/B, failed ledgers и old D/K не пересматриваются.
+
+**C1 numerical robustness:** четыре sequential preload+dynamic jobs на saved
+medium/fine C3D10 meshes и .25T1 проходят preload/release/recovery/equilibrium/
+finite/clamp/sampled-positive-detF gates. Initial/max increments T1/8000,T1/4000
+одинаковы для temporal medium и spatial fine. Dt=5.40090445e-10, Dh=2.10750270e-8,
+Rt=.001912016, Rh=.074609340 к baseline 2.824717e-7; оба <=.25 preset guide.
+Linear/PCHIP max difference 9.17254e-11=.169833 min(Dt,Dh), comparability PASS.
+Dt близок DAT nodal rounding: это observed refinement/output/interpolation change,
+не отдельно измеренная temporal error или строгая continuum-error bound.
+Updated fine evolving-w model difference 3.01851295e-7: 7.76472% own scale,
+7.80362% historical scale; прежние 7.30261% не переписаны.
+
+**Full-period illustration:** два medium CCX jobs и p64/p48 nonlinear 1D runs
+достигают T1=10.37828159055014. Original time policy/output5/INC3000 выбрана
+до full3D results по actual gates/resources. Каждый 3D job имеет 2002 accepted
+DYNAMIC increments/401 native frames; собственные preload U/S/E/RF/sections
+совпадают, external/damping work и fixed U/V равны 0, warnings/cutbacks нет.
+100 shared native quarter-prefix samples повторяют FEM-3B до arithmetic recovery
+accuracy. Full T1 остаётся иллюстративным: C1 controls не certificate на T1,
+nonlinear periodic orbit не предполагалась.
+
+**Physical comparison:** full nonlinear w max gap 4.84588e-4 (9.44911% scale .00512839445),
+Delta w gap 2.95542e-6 (16.19672% scale 1.82470e-5), evolving gap 2.75202e-6
+(10.07310%, L2 6.05731%, scale 2.73205e-5). Absolute evolving difference выросла
+примерно 9.74 раза против historical baseline; larger denominator не improvement.
+Final midspan w 1D/3D=.00512530995/.00487764630; Delta=-9.25962e-6/-1.22150e-5.
+Actual native times и 401-grid linear/PCHIP values различимы; interpolation
+sensitivity 5.55626e-8 — diagnostic, не самостоятельная time accuracy bound.
+
+**Four-field limitations:** full 1D all8 p48/p64 spatial PARTIAL 2/8 (u,w displacement).
+Theta/c max и все четыре velocity gates FAIL при прежних norms/floors/thresholds.
+Bending correction p-sensitivity 4.36862e-10 существенно меньше model difference,
+но correlated L/N cancellation не заменяет all8 certificate. Full nonlinear
+u/theta max differences 31.90%/9.59%; c/c_eff 59.18% — proxy only. Agreement всех
+четырёх active fields или семи nonlinear couplings не заявляется. v=Phi=psi=0
+в 1D — planar assumption, actual 3D remainders диагностические. c_eff содержит
+finite director-stretch measurement, не тождественную M-H DOF. Angular joint
+не проверялся.
+
+**Energy / evidence / stop:** own 1D p64/p48 drift 7.27249e-11/4.85343e-11;
+positive mass/min(1+c) и прежние safety PASS. Raw native STATIC/DYNAMIC +100%
+reference jump остаётся; within-DYNAMIC drift~1.34e-7. Independent mass-quadrature
+K согласуется с native до ~6.85e-14; internal StVK reconstruction NOT_RUN.
+ENERGY PARTIAL, strict float64 PARTIAL, EXPLORATORY_NOT_CERTIFIED/admitted=False
+сохраняются. Exactly 6 CCX/2 nonlinear 1D, 0 Gmsh/modal/static/eigen/BVP/root/symbolic
+jobs; native~12415.43545s, numerical 15059.22507s<24000s, per job<=3070.34s,
+peak<=210.22MiB<4GiB. Bundle c6256269eb8143ef сохраняет inputs/logs/NPZ/CSV,
+4 PDF+PNG figures, code/binary/runtime/provenance hashes. Коэффициенты, нагрузки,
+BC и IC не fitted. Нет full-period fine/time controls, other amplitudes,
+angular/Floquet/periodic-orbit/critical search или experimental validation.
+Не UNIVERSAL_NONLINEAR_MODEL_VALIDATION_PASS. LONG CLOSED, EB/RLB-KV
+PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp UNAVAILABLE, prepared strict/
+zero-u-c PARTIAL и physical sanity qualifications сохранены. Stop after report:
+вывод ограничен bending sign/scale/development при исследованных parameters.

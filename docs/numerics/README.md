@@ -5,6 +5,29 @@ policies define how calculations are organized, checked, resumed, and
 reported; they do not define the governing equations of individual physical
 models.
 
+- [FEM-3C numerical robustness and limited verification](nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification) --
+  four completed quarter-period time/mesh controls pass the predeclared guide;
+  updated evolving-w model difference 7.76472% on its own scale. Full-period
+  1D complete, all8 spatial PARTIAL; both medium full-period 3D jobs complete. Limited straight-rod verification
+  complete with qualifications; full-period comparison remains illustrative.
+  The [scientific summary](nlsp_straight_rod_3d_fem_verification_summary.md) keeps
+  linear/static/dynamic evidence, fixed denominators and limits of the claim.
+  No fitted coefficients/loads or universal/experimental validation; energy PARTIAL.
+
+- [FEM-3B nonlinear-correction evolution](nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3b-nonlinear-correction-evolution-and-longer-horizon) --
+  read-only old-data diagnostic, saved-state p64/p48 preliminary dynamics and one
+  horizon chosen before two medium preload+dynamic jobs. Static initial offsets,
+  nonlinear evolution and numerical/output qualifications are kept separate.
+  Both .25T1 native jobs complete; measured evolving-w difference7.30261%
+  and observed signal resolution are qualified by untested3D mesh/time accuracy,
+  full1D spatial PARTIAL and native energy PARTIAL. No physical validation PASS.
+
+- [FEM-3AR controlled short continuation](nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3ar-controlled-continuation-after-native-elke-output-path-failure) --
+  two corrected medium 3D jobs plus frozen-state p64 references complete .05T1;
+  transfer/release/motion pass, native energy PARTIAL. Observed correction
+  agreement mostly retains the static initial offset; no dynamic accuracy
+  certification or automatically extended study. Historical FEM-3A remains failed.
+
 - [FEM-3A short preload/release pilot](nlsp_nonlinear_dynamic_3d_fem_pilot.md) --
   source/protocol/input and1D saved-state preflight pass; first linear medium
   job aborts with native access violation before any accepted output can be

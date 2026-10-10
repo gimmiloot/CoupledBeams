@@ -1134,3 +1134,180 @@ preloads, new physical roots/meshes, angular joints/out-of-plane perturbations/
 Floquet. One medium timestep level is not dynamic convergence or
 PHYSICAL_DYNAMIC_VALIDATION_PASS. Existing strictPARTIAL and scoped stops remain.
 After report stop; future execution requires a separate explicit decision.
+
+
+## NLSP-D14
+
+**Decision / scope, 2026-10-09:** explicit user authorization for FEM-3AR,
+a separately recorded continuation of FEM-3A after the established CalculiX
+2.22 LINEAR STATIC ELKE/veold output-path failure. Permit one corrected linear
+medium preload+dynamic job; only after actual preload/release/output gates pass,
+one nonlinear medium job; only after both succeed, the complete semidiscrete
+linear 1D reference and one nonlinear p64 Radau trajectory. No solver retry.
+
+**Why:** finish the technical transfer/release/free-motion pilot without changing
+its physical question or confusing successful execution with physical accuracy.
+The historical FEM-3A failed attempt and authorization remain blocked and
+immutable; changing a generator hash does not itself authorize execution.
+The new authorization is tied to its own parent manifest, ledger and namespace.
+
+**Frozen / numerical scope:** L=1, b=.20, h=.10; E=rho=1, nu=.3,
+kappa=5/6; g=.0014224751066856333, q=2.844950213371267e-5. Reuse the saved
+medium C3D10 mesh and each model's own saved linear/nonlinear static state;
+no new equilibrium, mesh or modal reference calculations. Full same-job STATIC
+then DYNAMIC state transfer, zero physical initial velocities, OP=NEW and zero
+GRAV under STEP amplitude, ALPHA=0, unchanged supports and coordinate signs.
+Horizon .05*T1=.518914079527507 with T1=10.37828159055014; existing dynamic
+increments, tight componentwise 1D tolerances, V0, variable mass, inertial terms,
+RHS/Jacobian and four independent Shen-Legendre fields remain unchanged.
+EXPLORATORY_NOT_CERTIFIED and strict float64 PARTIAL remain explicit.
+
+**Basis / provenance:** direct user FEM-3AR request, 2026-10-09; initial clean
+main HEAD `51f9d69f13743c65b78ab763769fe8d8d31425a0`. No supervisor approval
+inferred. Historical parent `a69310e3bb30bab7` manifest SHA256
+`bf217d9c77d42170d1021b55c61873f8b2a94ed1fa67950d5ff9ed82c5cd257f`.
+[Continuation config](../../data/input/nlsp_nonlinear_dynamic_3d_fem_resume.json),
+[canonical continuation](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3ar-controlled-continuation-after-native-elke-output-path-failure),
+[historical D13](#nlsp-d13) / [K14](knowledge.md#nlsp-k14).
+
+**Stop / revisit condition:** source preservation, output safety and frozen-state
+gates precede execution. At most two sequential production CCX jobs and one
+nonlinear 1D integration; no technical fixture, new static-only job or automatic
+retry. <=1200s per CCX job, 4GiB, one thread, <=3600s numerical total. At the
+first solver failure retain actual evidence and stop; parser-only repair may
+re-read successful outputs without another solve. Missing frames/energy or
+unmatched native times remain visible, without fabricated interpolation.
+One mesh/time policy cannot certify dynamic correction accuracy. After reporting
+stop: full T1, fine/refined dynamics, new amplitudes, temporal refinement,
+angular joints, periodic orbits and Floquet require a separate decision.
+Preserve LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION, angular
+same-clamp UNAVAILABLE and all prior FEM/strict/physical-sanity qualifications.
+
+
+**Completed result under this authorization:** [NLSP-K15](knowledge.md#nlsp-k15),
+PILOT_COMPLETE_WITH_QUALIFICATIONS; native energy diagnostics PARTIAL.
+No further scientific execution is selected after this bounded report.
+
+
+## NLSP-D15
+
+**Решение / scope, 2026-10-09:** явное задание пользователя FEM-3B после
+[D14](#nlsp-d14)/[K15](knowledge.md#nlsp-k15). Разрешено отделить развитие
+поправки NL-minus-L от её начального статического значения и продлить ту же
+задачу без изменения физики, нагрузки, заделок или начальных равновесий.
+
+**Почему:** на прежнем .05T1 изменение midspan-поправки составляло лишь
+7.92010e-12 в 1D и 1.66047e-10 в 3D. Поэтому короткое сравнение преимущественно
+характеризовало уже установленную разность статических равновесий, а не
+независимо разрешённую эволюцию нелинейной динамической поправки.
+
+**Разрешённая последовательность:** read-only диагностика неизменного FEM-3AR;
+одна nonlinear p64 интеграция до .5T1 и, при наличии проверенных сохранённых
+p48 координат, одна p48 интеграция для spatial sensitivity. Полные exact-time
+семидискретные линейные решения дают основную пару и линейную эволюцию из
+nonlinear initial state. До новых FEM results фиксируется выбор .25T1 либо
+.5T1; затем максимум два sequential medium C3D10 preload+dynamic jobs,
+linear перед nonlinear. При первом solver failure остановка без retry.
+
+**Предварительное правило выбора горизонта:** предпочесть .25T1, если
+ожидаемый 1D midspan-сигнал эволюции не меньше десятикратного каждого из
+исторических DAT/FRD и 41/81-section различий и наблюдаемой p48/p64-разности.
+Иначе допустим .5T1 с safety/resource preflight и явными qualifications.
+Это planning heuristic, не порог физической валидации; правило фиксируется
+до анализа кандидатов и до новых 3D-результатов.
+
+**Frozen / numerical scope:** L=1, b=.20, h=.10; E=rho=1, nu=.3,
+kappa=5/6; g=.0014224751066856333, q=2.844950213371267e-5 до release.
+Сохраняются каждый собственный preload, нулевые начальные скорости,
+same-job STATIC/DYNAMIC transfer, OP=NEW/zero GRAV/STEP, ALPHA=0, saved medium
+mesh, четыре независимых Shen–Legendre поля, V0/V4, variable mass, RHS/Jacobian
+и прежние tight tolerances. Native initial/max increments остаются T1/4000
+и T1/2000. Strict float64 PARTIAL и EXPLORATORY_NOT_CERTIFIED сохраняются.
+Native STATIC/DYNAMIC energy discrepancy не исправляется сдвигом энергии.
+
+**Basis / provenance:** прямое задание пользователя FEM-3B, 2026-10-09;
+отдельная authorization `explicit_user_FEM3B_2026_10_09` с фактическим SHA256
+immutable parent manifest. [Новый config](../../data/input/nlsp_nonlinear_dynamic_long_horizon.json),
+[canonical FEM-3B](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3b-nonlinear-correction-evolution-and-longer-horizon).
+Переиспользуется существующий continuation CLI с отдельным `--long-horizon`
+режимом и scoped helper; исторические default/cache/failure guards сохраняются.
+Новый runnable FEM solver не создаётся. Supervisor approval не подразумевается.
+
+**Остановка / revisit condition:** максимум два CCX jobs, по одному p64/p48
+nonlinear 1D solve; 0 новых meshes, modal и static-only jobs. Один поток,
+4GiB, общий numerical budget 6000s; <=1200s/job для .25T1 и <=2400s/job
+для заранее выбранного .5T1. Native timestamps сохраняются; разрешённая
+postprocessing interpolation при несовпадении times отдельно маркируется,
+с линейной/PCHIP sensitivity и без extrapolation. Одна medium mesh и один
+3D time-step level не дают PHYSICAL_DYNAMIC_VALIDATION_PASS. После отчёта
+остановка: fullT1, новые amplitudes, fine/refined dynamics, timestep refinement,
+angular joints, nonlinear periodic orbits, Floquet и critical-amplitude search
+не запускаются автоматически. LONG CLOSED, EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION,
+angular same-clamp UNAVAILABLE и прежние qualified/PARTIAL статусы сохраняются.
+
+
+**Выполненный результат D15:** [NLSP-K16](knowledge.md#nlsp-k16),
+FEM3B_DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS. Эволюционный w-сигнал различим
+относительно наблюдённых diagnostics; energy и общая four-field spatial
+qualification остаются PARTIAL. После отчёта новые scientific runs не выбраны.
+
+
+## NLSP-D16
+
+**Решение / scope, 2026-10-09:** отдельное явное задание FEM-3C после
+[D15](#nlsp-d15)/[K16](knowledge.md#nlsp-k16): проверить устойчивость измеренной
+эволюции нелинейной изгибной поправки к одному temporal и одному spatial
+refinement, затем условно получить иллюстрации полного линейного периода
+и завершить ограниченный диссертационный verification block прямого стержня.
+
+**Разрешено / порядок:** четыре sequential preload+dynamic CCX jobs на .25T1:
+medium linear/NL с initial/max=T1/8000,T1/4000, затем сохранённая fine linear/NL
+с той же policy. Static preload каждого уровня сравнивается со своим FEM-2R
+reference. До всех четырёх valid jobs и numerical/resource gates full-period 3D
+не запускается. При их выполнении разрешены два medium jobs до T1 с original
+time policy и заранее заданной output cadence. Один p64 и максимум один p48
+nonlinear 1D solve до T1 используют saved static coordinates и прежнюю tight
+Radau policy; complete saved linear factors дают exact-time references без
+нового eigenanalysis. При C1 numerical stop допустима квалифицированная 1D
+иллюстрация без дорогого full-period 3D.
+
+**Заранее установленная диагностика:** 201 common physical times на [0,.25T1],
+confirmed STATIC datum при t=0, primary linear/diagnostic PCHIP transfer без
+extrapolation/phase/amplitude fitting. Baseline model max discrepancy 2.824717e-7
+сохраняется; Rt=Dt/baseline<=.25 и Rh=Dh/baseline<=.25. Interpolation difference
+<=.25 min(Dt,Dh) и<=.25 baseline. Это практические ориентиры observed numerical
+changes, не continuum error bounds и не универсальные physical thresholds.
+Новые denominators сохраняются отдельно от historical normalization.
+
+**Frozen task / provenance:** L=1,b=.20,h=.10; E=rho=1,nu=.3,kappa=5/6;
+g=.0014224751066856333,q=2.844950213371267e-5. Own linear/NL preload, zero velocities,
+fixed faces, OP=NEW/zeroGRAV/STEP, ALPHA=0, V0/V4, variable mass/RHS/Jacobian,
+полное Shen space и BC не меняются. Authorization explicit_user_FEM3C_2026_10_09
+отдельна; parent 7d2b499e6a1eb990 manifest SHA256
+`e4bcc291fab5f04a2fb73103c35a2fa6481aecf5f058b8ce6ae4a5661efa0c4e` неизменен.
+[Config](../../data/input/nlsp_nonlinear_dynamic_validation.json),
+[canonical section](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification),
+[scientific summary](../numerics/nlsp_straight_rod_3d_fem_verification_summary.md).
+Existing continuation CLI получает scoped --validation preset, без второго FEM
+solver и без изменения historical failure/cache contracts.
+
+**Stop / scope limit:** максимум 6 sequential CCX jobs, 2 nonlinear 1D calls,
+0 new Gmsh/modal/static-only jobs. Один поток, 4GiB, <=5400s/job, total<=24000s;
+actual planning estimate 18522.628s не гарантия. После первого реального solver
+failure остановка без automatic retry. Full-period data illustrative only;
+T1 не найденный nonlinear period, quarter-period robustness не certificate
+на всёмT1. v=Phi=psi=0 в 1D — planar-subspace assumption ; 3D c_eff proxy не
+тождественно c. Raw +100% native energy jump/ENERGY PARTIAL и strict float64 PARTIAL
+сохраняются. Нельзя присваивать UNIVERSAL_NONLINEAR_MODEL_VALIDATION_PASS,
+experimental validation, joint/out-of-plane/Floquet/periodic-orbit/critical-amplitude
+claims. После bounded report остановка; LONG CLOSED, EB/RLB-KV
+PAUSED_FOR_SUPERVISOR_DIRECTION, angular same-clamp UNAVAILABLE и старые
+qualified/PARTIAL scientific statuses сохраняются.
+
+
+**Completed result under D16, 2026-10-10:** [NLSP-K17](knowledge.md#nlsp-k17).
+Все 6 CCX jobs и 2 saved-state nonlinear 1D runs завершены; C1 robustness PASS,
+full-period illustration complete, all8 spatial и energy/strict float64 PARTIAL.
+Overall STRAIGHT_ROD_NONLINEAR_3D_FEM_VERIFICATION_COMPLETE_WITH_QUALIFICATIONS
+с ограниченным bending conclusion. Авторизация не расширяется; после отчёта
+нет автоматического нового FEM/geometry/amplitude/stability исследования.

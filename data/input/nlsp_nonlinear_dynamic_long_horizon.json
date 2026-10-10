@@ -1,0 +1,48 @@
+{
+  "schema": "nlsp-fem3b-long-horizon-v1",
+  "parent_completed": {
+    "bundle": "results/nlsp_nonlinear_dynamic_3d_fem_resume/f6ac2f2f38510893",
+    "manifest_sha256": "187870ece572dfe1b999b83d99016d01c1fdbe10e8835ed45543d1119d6f36ea"
+  },
+  "authorization": {
+    "id": "explicit_user_FEM3B_2026_10_09",
+    "maximum_production_CCX_jobs": 2,
+    "maximum_nonlinear_1D_integrations": 2,
+    "case_order": ["linear", "nonlinear"],
+    "automatic_retry": false,
+    "basis": "Explicit user FEM-3B request: old diagnostic, p64 and optional p48 to 0.5T1, then one preselected 3D horizon"
+  },
+  "horizon_selection": {
+    "candidate_T1_fractions": [0.25, 0.5],
+    "preferred_T1_fraction": 0.25,
+    "planning_multiplier": 10.0,
+    "historical_DAT_FRD_displacement_difference": 5e-9,
+    "historical_41_81_correction_profile_difference": 7.78842e-9,
+    "rule": "prefer_0p25_if_midspan_evolution_signal_ge_10_times_each_historical_indicator_and_observed_p48_p64_evolution_difference_otherwise_0p5",
+    "physical_validation_threshold": false
+  },
+  "threads": 1,
+  "job_timeout_seconds_by_horizon": {"0.25": 1200, "0.5": 2400},
+  "job_memory_limit_bytes": 4294967296,
+  "numerical_budget_seconds": 6000,
+  "one_d": {
+    "main_degree": 64,
+    "optional_spatial_degree": 48,
+    "target_T1_fraction": 0.5,
+    "initial_policy": "reuse_saved_static_coordinates_exactly_no_projection",
+    "time_level": "tight",
+    "preserve_accepted_Radau_dense_polynomials": true
+  },
+  "three_d_pairing": {
+    "preferred": "native_equal_timestamps",
+    "fallback": "fixed_grid_inside_actual_overlap_linear_and_shape_preserving_cubic_diagnostic",
+    "fixed_grid": "T1_over_2000_multiples_inside_overlap",
+    "phase_amplitude_alignment": false
+  },
+  "execution_mode": "EXPLORATORY_NOT_CERTIFIED",
+  "admitted": false,
+  "new_meshes": false,
+  "new_modal_jobs": false,
+  "new_static_only_jobs": false,
+  "new_time_or_space_levels": false
+}

@@ -1,0 +1,111 @@
+{
+  "schema": "nlsp-fem3c-validation-v1",
+  "parent_completed": {
+    "bundle": "results/nlsp_nonlinear_dynamic_long_horizon/7d2b499e6a1eb990",
+    "manifest_sha256": "e4bcc291fab5f04a2fb73103c35a2fa6481aecf5f058b8ce6ae4a5661efa0c4e"
+  },
+  "authorization": {
+    "id": "explicit_user_FEM3C_2026_10_09",
+    "maximum_production_CCX_jobs": 6,
+    "maximum_nonlinear_1D_integrations": 2,
+    "automatic_retry": false,
+    "basis": "Separate explicit FEM-3C request: four robustness jobs, conditionally two full-period illustration jobs; frozen physics and sources"
+  },
+  "stages": {
+    "medium_refined_time": {
+      "mesh_level": "medium",
+      "horizon_T1": 0.25,
+      "initial_T1_fraction": 0.000125,
+      "maximum_T1_fraction": 0.00025,
+      "output_frequency": 2,
+      "maximum_increments": 2000
+    },
+    "fine_refined_time": {
+      "mesh_level": "fine",
+      "horizon_T1": 0.25,
+      "initial_T1_fraction": 0.000125,
+      "maximum_T1_fraction": 0.00025,
+      "output_frequency": 2,
+      "maximum_increments": 2000
+    },
+    "full_period_medium": {
+      "mesh_level": "medium",
+      "horizon_T1": 1.0,
+      "initial_T1_fraction": 0.00025,
+      "maximum_T1_fraction": 0.0005,
+      "output_frequency": 5,
+      "maximum_increments": 3000,
+      "conditional_on_robustness": true
+    }
+  },
+  "dynamic": {
+    "alpha": 0,
+    "minimum_initial_fraction": 0.0001,
+    "release": "OP=NEW plus zero GRAV; STEP AMPLITUDE=STEP"
+  },
+  "comparison": {
+    "T1_fraction": 0.25,
+    "points": 201,
+    "primary_interpolation": "linear",
+    "diagnostic_interpolation": "PCHIP",
+    "baseline_model_discrepancy": 2.824717e-07,
+    "temporal_ratio_limit": 0.25,
+    "spatial_ratio_limit": 0.25,
+    "interpolation_ratio_to_effect_limit": 0.25,
+    "interpolation_ratio_to_baseline_limit": 0.25,
+    "phase_amplitude_fitting": false,
+    "interpretation": "Observed changes, not continuum error bounds; interpolation difference must be <= .25 min(Dt,Dh) and <= .25 baseline"
+  },
+  "one_d": {
+    "main_degree": 64,
+    "optional_spatial_degree": 48,
+    "target_T1_fraction": 1.0,
+    "initial_policy": "reuse_saved_static_coordinates_exactly_no_projection",
+    "time_level": "tight",
+    "preserve_accepted_Radau_dense_polynomials": true
+  },
+  "threads": 1,
+  "job_timeout_seconds": 5400,
+  "job_memory_limit_bytes": 4294967296,
+  "numerical_budget_seconds": 24000,
+  "planning": {
+    "medium_refined_time_CCX_multiplier": 2.0,
+    "fine_refined_time_CCX_multiplier": 4.5,
+    "full_period_CCX_multiplier": 4.0,
+    "postprocessing_allowance_seconds": 3600.0,
+    "estimate_is_not_guarantee": true
+  },
+  "execution_mode": "EXPLORATORY_NOT_CERTIFIED",
+  "admitted": false,
+  "new_meshes": false,
+  "new_modal_jobs": false,
+  "new_static_only_jobs": false,
+  "seven_field_observations": {
+    "u": 0.25,
+    "w": 0.5,
+    "v": 0.5,
+    "Phi": 0.25,
+    "psi": 0.25,
+    "theta": 0.25,
+    "c": 0.25,
+    "inactive_one_d_fields": [
+      "v",
+      "Phi",
+      "psi"
+    ],
+    "three_d_c": "effective_contraction_proxy_not_identical_generalized_coordinate"
+  },
+  "full_period_comparison": {
+    "points": 401,
+    "primary_interpolation": "linear",
+    "diagnostic_interpolation": "PCHIP",
+    "snapshot_T1_fractions": [
+      0.0,
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "phase_amplitude_fitting": false
+  }
+}

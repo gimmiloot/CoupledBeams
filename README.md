@@ -2,7 +2,45 @@
 
 CoupledBeams is a research repository for frequency models and computations for coupled beams. The repository combines analytic frequency calculations, a baseline FEM implementation of the same problem, and the local theory, literature notes, and consistency checks used to support them.
 
+## FEM-3C: limited straight-rod verification
+
+The [technical report](docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification)
+and [dissertation summary](docs/numerics/nlsp_straight_rod_3d_fem_verification_summary.md)
+combine the unchanged linear, static and dynamic comparisons. Explicit
+`python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --validation --compute`
+uses the [separate bounded config](data/input/nlsp_nonlinear_dynamic_validation.json)
+and preserves the old default and `--long-horizon` workflows. Four quarter-period
+medium/fine controls pass the predeclared robustness guide: the updated evolving
+bending-correction difference is 7.76472% on its own scale. Full-period p64/p48
+1D trajectories are complete; their all-eight spatial check remains PARTIAL
+(only u,w displacement pass). Both medium 3D full-period jobs reach T1. Full nonlinear w/evolving-correction
+max differences are 9.45%/10.07% on declared full-horizon scales; this comparison
+is illustrative. The straight-rod verification is complete with qualifications. Native energy bookkeeping remains PARTIAL; no coefficients,
+loads, initial equilibria or physics are fitted to FEM. Matching completed
+cache/report/plot perform no new scientific calls. Execution stays within the
+separate authorization; no automatic study follows this block.
+
 ## Project Layout
+
+- [FEM-3B: evolution of the nonlinear dynamic correction](docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3b-nonlinear-correction-evolution-and-longer-horizon)
+  -- `python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --long-horizon --compute`.
+  The separately authorized stage diagnoses the old .05T1 data, compares saved-state
+  p64/p48 dynamics to .5T1, fixes one longer horizon before 3D results and reuses
+  the medium mesh for one linear/nonlinear pair. Initial static offsets and evolving
+  corrections remain separate; no physics, load, mesh or temporal policy change.
+  Both new native jobs complete .25T1 with502 frames each. The evolving-w
+  model difference is7.30%; the signal exceeds observed output/recovery differences.
+  Native energy and full1D spatial qualifications remain PARTIAL. One 3D mesh/time
+  level does not certify nonlinear dynamic accuracy. Old workflows and their
+  authorization-bound caches remain unchanged.
+
+- [FEM-3AR: completed short preload/release continuation](docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3ar-controlled-continuation-after-native-elke-output-path-failure)
+  -- `python scripts/analysis/resume_nlsp_nonlinear_dynamic_3d_fem.py --run-pilot`.
+  Two corrected medium 3D jobs and the saved-state p64 references reach .05T1.
+  Preload/release gates pass; native energy bookkeeping remains PARTIAL.
+  The small NL-minus-L response is largely the inherited static offset, not
+  independent certification of nonlinear dynamic accuracy. Cached replay does
+  zero new solves; historical FEM-3A failure remains unchanged.
 
 - [FEM-3A: static preload and short free-motion pilot](docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md)
   -- `python scripts/analysis/pilot_nlsp_nonlinear_dynamic_3d_fem.py --run-pilot`

@@ -1,0 +1,28 @@
+{
+  "schema": "nlsp-fem3ar-continuation-v1",
+  "parent_failed": {
+    "bundle": "results/nlsp_nonlinear_dynamic_3d_fem_pilot/a69310e3bb30bab7",
+    "manifest_sha256": "bf217d9c77d42170d1021b55c61873f8b2a94ed1fa67950d5ff9ed82c5cd257f"
+  },
+  "corrected_generator_sha256": "8f1f7c8782543546b317cd3ba7cac30162c7fa9b136a101a9e198fdc1f1d2a2c",
+  "authorization": {
+    "id": "explicit_user_FEM3AR_2026_10_09",
+    "maximum_production_CCX_jobs": 2,
+    "maximum_nonlinear_1D_integrations": 1,
+    "case_order": [
+      "linear",
+      "nonlinear"
+    ],
+    "automatic_retry": false,
+    "basis": "Explicit user FEM-3AR continuation after native ELKE/static failure"
+  },
+  "threads": 1,
+  "job_timeout_seconds": 1200,
+  "job_memory_limit_bytes": 4294967296,
+  "numerical_budget_seconds": 3600,
+  "science_policy": "reuse_immutable_parent_science_config_and_p64_static_coordinates",
+  "new_meshes": false,
+  "new_modal_jobs": false,
+  "new_static_only_jobs": false,
+  "new_time_or_space_levels": false
+}

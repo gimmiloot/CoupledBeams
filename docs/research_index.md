@@ -4,6 +4,52 @@ This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
 
+## FEM-3C: bounded numerical robustness and dissertation verification (2026-10-10)
+
+[Technical continuation](numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification)
+and [scientific summary](numerics/nlsp_straight_rod_3d_fem_verification_summary.md)
+keep one straight-rod task and all historical evidence. The four actual C1 jobs
+pass preload/release/recovery and the preregistered temporal/spatial guide.
+Dt=5.40090e-10 and Dh=2.10750e-8 are .00191202 and .07460934 of the fixed
+2.824717e-7 baseline; interpolation comparability passes. The updated fine
+1D/3D evolving-w difference is 7.76472% on its own scale, not an artificially
+preserved 7.30%. These observed changes are not strict FEM error bounds.
+Both full-period 1D trajectories complete, with all8 spatial PARTIAL (2/8).
+Both medium full-period 3D jobs reach T1; nonlinear w difference is 9.45%,
+evolving-correction difference 10.07% on their full-horizon scales. Absolute
+model differences grow; quarter-period robustness is not full-period certification.
+The limited straight-rod verification is complete with qualifications. [D16](memory/decisions.md#nlsp-d16) and [K17](memory/knowledge.md#nlsp-k17)
+records the separate conditional authorization, preserved physics/load and
+no-retry stop. This does not validate every nonlinear seven-field coupling,
+angular joints or out-of-plane stability; native energy remains qualified.
+
+## FEM-3B: evolution of NL-minus-L beyond the static initial offset (2026-10-09)
+
+[Scoped continuation](numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3b-nonlinear-correction-evolution-and-longer-horizon)
+uses the same frozen preload/release problem. The old .05T1 result is diagnosed
+read-only; one p64 and optional saved-state p48 trajectory to .5T1 guide a
+predeclared choice of .25T1 or .5T1 before either new medium 3D job. Total
+correction, evolving correction and the additional 1D initial-state/same-state
+nonlinear decomposition are reported separately. Native energy bookkeeping
+remains qualified; no independent 3D time/mesh certification is implied.
+Both native jobs reach .25T1 with502 matching frames. Evolving w maxima are
+3.58562e-6/3.86809e-6, with7.30261% max model difference; the signal exceeds
+observed recovery/output differences. Energy and full1D spatial remain PARTIAL.
+[Decision D15](memory/decisions.md#nlsp-d15) and [evidence K16](memory/knowledge.md#nlsp-k16)
+preserve all earlier decisions and qualifications.
+
+## FEM-3AR: short independent free-motion pilot completed with qualifications (2026-10-09)
+
+[Controlled continuation](numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3ar-controlled-continuation-after-native-elke-output-path-failure)
+separately authorizes the corrected output route after the historical native
+ELKE failure. Both medium preload+dynamic jobs and the retained p64 linear/NL
+references reach .05T1. Actual preload repetition, instantaneous release and
+restoring motion pass. Native energy remains PARTIAL owing to source-localized
+bookkeeping/pseudo-time output semantics. The2.24247% sampled w-correction
+difference mostly reflects the inherited static offsets, not certified evolution
+of a dynamic nonlinear correction. No new physics/mesh/load or accuracy sweep;
+[decision D14](memory/decisions.md#nlsp-d14), [evidence K15](memory/knowledge.md#nlsp-k15).
+
 ## FEM-3A: source/preflight ready, native execution blocked (2026-10-09)
 
 [Dynamic pilot](numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md) preserves the

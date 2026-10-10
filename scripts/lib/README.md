@@ -2,6 +2,39 @@
 
 This directory contains reusable helper modules that are not meant to be run directly.
 
+- FEM-3C reuses the same public continuation CLI through `--validation`.
+  `nlsp_fem3c_validation.py` owns the six-case authorization/ledger, saved
+  medium/fine source selection and conditional full-period gates. Its I/O
+  adapter preserves each mesh-level preload and explicit dynamic output cadence.
+  `nlsp_fem3c_diagnostics.py` transfers saved profiles onto the fixed 201-time
+  grid, checks linear/PCHIP sensitivity, records fixed/updated metric scales,
+  maps all seven fields and plots saved data. `nlsp_fem3c_1d.py` restores own
+  static coordinates and complete linear factors, using the unchanged Radau
+  runner for at most one p64 and one p48 nonlinear full-period solve. No new
+  constitutive, element, mass, RHS/Jacobian, mesh or eigensolver implementation.
+  [Scoped contract](../../docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification).
+
+- FEM-3B `nlsp_fem3b_continuation.py` is a non-runnable scoped helper for the
+  existing resume command. It records the separate parent/authorization,
+  predeclared horizon decision, accepted Radau cubic output and actual native
+  attempt ledger, reusing the unchanged four-field RHS/Jacobian and C3D10
+  generation/recovery. Dense evaluation uses the accepted Radau polynomials,
+  without a second ODE solve or an extra step multiplier. Explicit interpolation
+  of differing 3D schedules stays separately marked with linear/PCHIP diagnostics.
+  `nlsp_fem3b_diagnostics.py` reads saved profiles/native velocities for comparison,
+  existing mass-weighted kinetic diagnostics and three figures; it never calls
+  native solvers, ODE integration, equilibrium or eigenanalysis.
+  [Contract](../../docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3b-nonlinear-correction-evolution-and-longer-horizon).
+
+- FEM-3AR reuses the FEM-3A helpers/physics and adds no new library solver.
+  A targeted repair in `nlsp_fem3a_transient_output.py` derives timestamp
+  rounding intervals from native lexical precision, preserving raw tokens,
+  unique actual increment association and rejection of inconsistent/ambiguous
+  data. Correct successful files are reparsed with both snapshots retained;
+  no interpolation, new dynamic constraint or changed scientific tolerance.
+  Native energy/pseudo-time output semantics remain explicitly qualified.
+  [Continuation evidence](../../docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3ar-controlled-continuation-after-native-elke-output-path-failure).
+
 - FEM-3A narrow helpers `nlsp_fem3a_1d_reference.py` and
   `nlsp_fem3a_transient_output.py` restore frozen p64 static coordinates into the
   unchanged four-field mass/RHS/Jacobian/Radau implementation and stream actual

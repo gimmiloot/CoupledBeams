@@ -20,6 +20,48 @@ map](analysis/thickness_mismatch/README.md).
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
 
+## FEM-3C: bounded robustness / conditional illustration
+
+`resume_nlsp_nonlinear_dynamic_3d_fem.py --validation` is a completed bounded diagnostic
+preset with separate parent/auth/config identity. Four actual C1 medium/fine
+refined-time jobs pass; fixed 201-grid temporal/spatial effects are much smaller
+than the declared model discrepancy, with interpolation qualification recorded.
+Full-period p64/p48 1D is complete and all8 spatial remains PARTIAL. Both full-period 3D jobs and final saved-data comparisons are complete. Overall
+STRAIGHT_ROD_NONLINEAR_3D_FEM_VERIFICATION_COMPLETE_WITH_QUALIFICATIONS;
+full-horizon w/evolution differences 9.45%/10.07% remain illustrative. The six-case attempt ledger,
+conditional full-period decision and 6 CCX/2 ODE ceilings are independent of old
+FEM-3A/3AR/3B failure guards. This adds scoped orchestration/read-only helpers,
+not a new physical solver. Cached completed compute/report/plot perform zero
+scientific calls. [Technical note](../docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification),
+[dissertation summary](../docs/numerics/nlsp_straight_rod_3d_fem_verification_summary.md).
+
+## FEM-3B: bounded longer-horizon diagnostic
+
+The same resume CLI exposes explicit `--long-horizon` dispatch with its own
+parent/auth/config identity. Read-only old evidence, p64/optional-p48 dynamics,
+pre-FEM horizon choice and a maximum of two medium native jobs remain distinct.
+Total NL-minus-L, evolving correction and 1D initial-state/nonlinear evolution
+components are compared without phase/amplitude fitting. Old FEM-3AR default
+and failed ledgers retain their historical scope. No further refinement or
+stability study follows automatically.
+[Canonical section](../docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3b-nonlinear-correction-evolution-and-longer-horizon).
+Actual completion: FEM3B_DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS,2 CCX jobs
+and2 degree-controlled nonlinear1D integrations;3D horizon.25T1/502frames.
+Observed evolving-w resolution passes its diagnostic comparison; native energy
+and full1D spatial qualifications remain PARTIAL. No new accuracy certificate.
+
+## FEM-3AR: controlled short pilot complete with qualifications
+
+`resume_nlsp_nonlinear_dynamic_3d_fem.py` is a thin authorized continuation,
+not a renamed/retried FEM-3A bundle. Two actual preload+dynamic cases and both
+p64 references reach .05T1. Source/input/preload/release/response gates pass;
+native energy remains PARTIAL because of documented initialization bookkeeping
+and STATIC pseudo-velocity output. Parser-only lexical print-precision repair
+preserves actual times/artifacts and never changes physics or thresholds.
+PILOT_COMPLETE_WITH_QUALIFICATIONS; no dynamic correction/time/mesh certification.
+Ledger survives code changes; cache/report/plot do zero scientific work.
+[Continuation](../docs/numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3ar-controlled-continuation-after-native-elke-output-path-failure).
+
 ## FEM-3A: native execution blocked
 
 `pilot_nlsp_nonlinear_dynamic_3d_fem.py` has the separate static-to-dynamic

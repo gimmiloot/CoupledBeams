@@ -198,7 +198,7 @@ def safety_check(disc, q, policy):
         raise ArithmeticError(f"Declared small-neighborhood safety gate: {conditions}")
 
 
-def integrate_case(disc, shape, initial, config, amplitude_ratio, level, times, deadline, *, initial_coordinates=None, history_buffer=None):
+def integrate_case(disc, shape, initial, config, amplitude_ratio, level, times, deadline, *, initial_coordinates=None, history_buffer=None, dense_output_observer=None):
     amplitude=amplitude_ratio*config["material_geometry"]["h"]
     if initial_coordinates is None:
         q0=disc.project(amplitude*shape(disc.x))
@@ -239,6 +239,10 @@ def integrate_case(disc, shape, initial, config, amplitude_ratio, level, times, 
         if solver.status=="failed":
             failure=message or "RADAU_FAILED";break
         steps.append(solver.t-old)
+        if dense_output_observer is not None:
+            dense=solver.dense_output()
+            dense_output_observer({"t_old":float(dense.t_old),"t":float(dense.t),
+                                   "y_old":dense.y_old.copy(),"Q":dense.Q.copy()})
         end=int(np.searchsorted(times,solver.t,side="right"))
         if end>cursor:
             history[cursor:end]=solver.dense_output()(times[cursor:end]).T

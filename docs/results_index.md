@@ -13,6 +13,52 @@ map](../scripts/STATUS.md), and [thickness-mismatch script
 map](../scripts/analysis/thickness_mismatch/README.md). No command in this
 index should be run without first reviewing its cost and output contract.
 
+## FEM-3C bounded robustness and full-period illustration
+
+`results/nlsp_nonlinear_dynamic_validation/c6256269eb8143ef/` retains the
+[separate continuation](numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification):
+immutable source hashes, pre-result policy/budget, actual input/code snapshots,
+attempt ledger, four completed medium/fine refined-time preload+dynamic jobs,
+full U/V/S/E/RF/ENER native output, 201-time robustness NPZ/CSV and linear/PCHIP
+sensitivity. C1 robustness PASS is restricted to the declared quarter-period
+comparison. Full-period saved-state p64/p48 histories and dense Radau polynomials
+are complete; full 1D all8 spatial remains PARTIAL. Both conditional medium full-period jobs complete with 2002 increments/401
+native frames each. Full-period all-seven observations, physical profiles,
+401-time linear/PCHIP comparison, NPZ/CSV, four PDF+PNG figures and the manifest
+are saved. Overall STRAIGHT_ROD_NONLINEAR_3D_FEM_VERIFICATION_COMPLETE_WITH_QUALIFICATIONS;
+full-horizon comparison is illustrative, energy and all8 spatial stay PARTIAL. Independent kinetic/native
+energy diagnostics preserve the raw STATIC/DYNAMIC jump without offsets.
+The [dissertation summary](numerics/nlsp_straight_rod_3d_fem_verification_summary.md)
+records scientific scope and qualifications. Old bundles/ledgers stay intact;
+matching completed cache/report/plot do zero new scientific solves.
+
+## FEM-3B longer-horizon nonlinear-correction diagnostic
+
+`results/nlsp_nonlinear_dynamic_long_horizon/7d2b499e6a1eb990/` retains the
+[actual bounded stage](numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3b-nonlinear-correction-evolution-and-longer-horizon):
+immutable parent hashes, old-data diagnostic, p64/p48 nonlinear trajectories
+to .5T1, complete linear factors/auxiliary same-IC references, accepted Radau
+polynomials, frozen .25T1 decision before FEM, two medium preload+dynamic jobs,
+502 matching native frames per case, all8 comparisons, correction/evolution
+histories, prefix/recovery/kinetic evidence, CSV/NPZ and three PDF/PNG figures.
+Overall FEM3B_DIAGNOSTIC_COMPLETE_WITH_QUALIFICATIONS; evolving-w resolution
+passes the observed-diagnostic comparison, energy and full1D spatial remain
+qualified/PARTIAL. No independent3D time/mesh certificate or V0 physical PASS.
+Matching cache/report/plot do zero new scientific calls; old bundles stay intact.
+
+## FEM-3AR completed controlled continuation
+
+`results/nlsp_nonlinear_dynamic_3d_fem_resume/f6ac2f2f38510893/` retains the
+[actual short pilot](numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3ar-controlled-continuation-after-native-elke-output-path-failure):
+immutable failed-parent/source hashes, separate authorization, two exact jobs,
+preload/release audits, native DAT/FRD/STA, original/repaired parser snapshots,
+102-frame histories, one nonlinear1D integration/full linear reference,
+comparisons,41/81 sensitivity, energy qualifications and3 PDF/PNG figures.
+Overall PILOT_COMPLETE_WITH_QUALIFICATIONS; ENERGY_DIAGNOSTICS PARTIAL.
+The native initialization offset is retained, not corrected; dynamic correction
+accuracy remains uncertified. Cache/report/plot perform zero scientific calls;
+old failed FEM-3A/static/linear results remain unchanged.
+
 ## FEM-3A blocked first execution evidence
 
 `results/nlsp_nonlinear_dynamic_3d_fem_pilot/a69310e3bb30bab7/` retains the

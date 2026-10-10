@@ -33,6 +33,9 @@
 
 | Тема | Ключевые записи |
 |---|---|
+| FEM-3C: limited straight-rod verification complete with qualifications; C1 PASS, full-period illustration, all8/energy PARTIAL | [NLSP-D16](decisions.md#nlsp-d16), [NLSP-K17](knowledge.md#nlsp-k17), [report](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification), [scientific summary](../numerics/nlsp_straight_rod_3d_fem_verification_summary.md) |
+| FEM-3B: .25T1 выбран по 1D до FEM; 2 native jobs/502 frames; evolving signal измерен, 3D accuracy и energy qualified | [NLSP-D15](decisions.md#nlsp-d15), [NLSP-K16](knowledge.md#nlsp-k16), [report](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3b-nonlinear-correction-evolution-and-longer-horizon) |
+| FEM-3AR: two corrected native jobs and p64 references complete .05T1; release/motion pass, energy PARTIAL; dynamic correction uncertified | [NLSP-D14](decisions.md#nlsp-d14), [NLSP-K15](knowledge.md#nlsp-k15), [continuation](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3ar-controlled-continuation-after-native-elke-output-path-failure) |
 | FEM-3A: preload/release protocol documented, p64 preflight PASS; first native job access violation, no trajectories | [NLSP-D13](decisions.md#nlsp-d13), [NLSP-K14](knowledge.md#nlsp-k14), [pilot](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md) |
 | FEM-2R: отдельное разрешённое продолжение static comparison; исторический input failure сохранён | [NLSP-D12](decisions.md#nlsp-d12), [NLSP-K13](knowledge.md#nlsp-k13), [continuation](../numerics/nlsp_nonlinear_static_3d_fem_validation.md#fem-2r-controlled-continuation-after-input-serialization-failure) |
 | FEM-2: 1D quartic static preflight PASS; first medium input-parser failure, 3D comparison not reached | [NLSP-D11](decisions.md#nlsp-d11), [NLSP-K12](knowledge.md#nlsp-k12), [static report](../numerics/nlsp_nonlinear_static_3d_fem_validation.md) |
