@@ -2,7 +2,66 @@
 
 Здесь ведётся рабочий журнал проекта: этапы, решения и важные исследовательские заметки.
 
+## 2026-10-11
+
+- Completed the separately authorized construction C modal experiment in
+  `results/nlsp_construction_C_modal_sensitivity/e7f729a57a8cdfcd/` with
+  `C_MODAL_SENSITIVITY_RESOLVED`. Both sections are b=.05,h=.10 at the
+  unchanged beta30/L.8/1.2 geometry. The complete first bending-dominant
+  planar mode (omega .3133893364) starts at max abs w=.005 and zero velocities,
+  without static preload. Three displacement-only OUT seeds retain every
+  output DOF. G16=1.0530286991/G12=1.0530316774; gain-curve spatial change
+  9.46e-4 is 56 times below G−1, and one tight response changes by 1.93e-9.
+  The full434-state finite control at fixed1% deformation agrees to1.545e-7
+  in the fixed relative energy norm. Physical v stays near its initial scale,
+  reaching3.17329e-5 (.634658% planar amplitude). Contraction and velocities
+  remain spatial PARTIAL; no infinite-time stability or real joint claim.
+  Actual3nonlinear/5matrix tangent IVPs complete2Tref in5551.842s; peak1.103GiB.
+  Streaming all native accepted states avoids dense-array duplication without
+  changing integration.99 regressions and actual zero-call cache replay pass.
+  5T is not run by the recorded growth/resource decision. D22/K23 preserve
+  older statuses and deferred two-parameter action/joint/maps/stability tasks.
+
 ## 2026-10-10
+
+- Отдельный A/B sensitivity continuation по D21/K22 завершён как
+  NUMERICAL_PARTIAL. Mixed/sign order1.99999; Gperp^(4)=1.00989868/1.03622225,
+  zero-base norm1 и full finite mismatches4.48692e-7/1.38537e-6 проходят.
+  Выполнены6full+5tangent IVPs,1B Newton,6520.03s,peak3.633GiB. A base reused,
+  physics/joint/source bundles frozen. P12 control не запускался: updated
+  forecast1316s против остатка680s. Independent spatial/long temporal
+  qualification не закрыта; observed contrast не является stability proof
+  или готовой applicability map. Four PDF+PNG,CSV/NPZ и source/ledger evidence;
+  75targeted tests PASS без hidden IVPs. [Отчёт](../numerics/nlsp_coupled_planar_sensitivity_resume.md).
+
+- Адресная torsional tangent диагностика по D20/K21 завершена:
+  NUMERICAL_FLOOR_IDENTIFIED. Parent d024ee84989ce6b5 неизменен. IC/norm/
+  dense checks воспроизводятся, pointwise order~2/Jac<=6.31e-14.
+  После независимого temporal refinement mismatch3.73877e-8/9.34778e-9,
+  order1.99987; Dfull5.81e-8/8.85e-8 значительно больше Dtan4.25e-10.
+  Один extra full delta/2 даёт change1.52e-10. Старый failure объясняется
+  full integration/tolerance floor после division by delta, преимущественно
+  psi_t; causal доли rtol/atol по отдельным jobs не разделены.
+  Ровно4 новых short ODE,681.87s/1200s,ноль base/static/eigen/FEM/gain.
+  ДваPDF+PNG,CSV/NPZ/source evidence в a10f1110ffbce7ca.
+  Исторический BLOCKED_BY_TANGENT_CHECK не переписан; E/F/maps не запущены.
+  [Отчёт](../numerics/nlsp_coupled_torsion_tangent_diagnostic.md).
+  После отчёта остановка; отложенные theory/joint/stability/3D вопросы сохранены.
+
+- Пилот малых начальных внеплоскостных возмущений двух стержней остановлен
+  со статусом BLOCKED_BY_TANGENT_CHECK по [D19](../memory/decisions.md#nlsp-d19)
+  и [K20](../memory/knowledge.md#nlsp-k20). Endpoint lifting/common7DOF
+  сохраняют прежний узел; A/B assembly и geometry gates PASS. A p16 дошла
+  до 2Tref с drift6.48e-12. Bending full/tangent control проходит, torsional
+  normalized error растёт6.90e-8→8.87e-8 при delta/2; planar change~delta².
+  Численный остаток скоростей вероятен, но независимая time check отсутствует.
+  Source Jacobian checks проходят; FAIL не снят. Все восемь фактических ODE
+  calls завершены,696.03s, без retry. G/mixed/negative/B/p24 не вычислялись.
+  Два PDF+PNG и CSV/NPZ в d024ee84989ce6b5; первый forecast и stopped
+  manifest сохранены.131 targeted tests PASS. Независимый двухпараметрический
+  вывод из S0 отложен. Физика, исторические результаты и статусы неизменны;
+  новых FEM/карт/Floquet нет. [Отчёт](../numerics/nlsp_coupled_planar_sensitivity_pilot.md).
+  После отчёта остановка; следующий расчёт требует отдельного решения.
 
 - Завершено отдельное семиполевое пространственное сопоставление по
   [D18](../memory/decisions.md#nlsp-d18)/[K19](../memory/knowledge.md#nlsp-k19).
@@ -952,3 +1011,40 @@
   operation-count diagnostics. Legacy source defaults remain unchanged; K-aware
   fields preserve the exact meaning of existing `first8` columns. Complete
   production K=10 source grids were not run as part of this implementation.
+
+
+## 2026-10-11 — C до низшего OUT периода и performance audit
+
+Продолжение saved physical state с2Tref до4.03126662Tref даёт приp12
+Gdisp3=1.07026572 at2.747Tref; physicalv max3.27566e-5=.65513%Apl.
+P16growthtrigger PASS,resourceforecast1562.680s>remaining1374.553s:NOT_RUN.
+New interval remains exploratory/numericalPARTIAL. Three IVPs include one
+explicitly authorized p12 repeat after zero-origin dense writer failure;
+failed bundle andoldC preserved, budgetcharge1325.447s/2700s. Writer fix
+retains sampled trajectories bitwise. RHS/safety/mass dominate base, OUT
+operator dominates tangent; one scoped column-assembly optimization keeps
+physics frozen. [Report](../numerics/nlsp_construction_C_longer_sensitivity.md),
+[D23](../memory/decisions.md#nlsp-d23),[K24](../memory/knowledge.md#nlsp-k24).
+No more C/geometries/amplitudes/FEM/maps/Floquet automatically.
+
+## 2026-10-11 — NLSP resonant spatial coupling diagnostic
+
+Completed the separately authorized pointwise screening, without new ODEs.
+C at p12 has Omega=0.31339016592943 and five low OUT modes; the historical
+selected 0.84179835 mode is sorted5. Complex E0-unit modes and dual rows
+retain both frequency signs and the full variable-mass Jacobian. Couplings
+on Omega/2Omega scale as a/a². Near 2Omega≈omega5−omega2 has negative pair
+product and exchange character; no resolved direct self/sum growth candidate.
+Actual saved-window coefficients differ from the harmonic ansatz; the
+previous gain remains causally unexplained. At its maximum modes1/3 account
+for 95.17%/4.44% of the squared reference norm, whereas modes2/5 give 0.31%.
+
+Five mu points completed. Equal-arm self2/Omega is symmetry-suppressed;
+local sum1+5/2Omega is nonzero but not a growth candidate. Mu=0 PL and
+OUT4/5 correspondence remains UNRESOLVED; overall NUMERICAL_PARTIAL.
+Budget charge25.862 s/900 s, 3537 Jacobian evaluations, 17 limited eigenproblems;
+zero nonlinear/tangent ODE, FEM, Floquet. Added two figures, targeted tests,
+cache and source evidence. No next nonlinear geometry selected.
+[Report](../numerics/nlsp_resonant_spatial_coupling_screening.md),
+[D24](../memory/decisions.md#nlsp-d24), [K25](../memory/knowledge.md#nlsp-k25).
+Historical results and deferred action/ideal-joint questions preserved; STOP.

@@ -2,6 +2,57 @@
 
 CoupledBeams is a research repository for frequency models and computations for coupled beams. The repository combines analytic frequency calculations, a baseline FEM implementation of the same problem, and the local theory, literature notes, and consistency checks used to support them.
 
+## Coupled-rod planar sensitivity pilot
+
+The [resonant coupling diagnostic](docs/numerics/nlsp_resonant_spatial_coupling_screening.md)
+adds `--resonant-screening` to the existing CLI. It projects the frozen full
+Jacobian on both frequency branches of five p12 OUT modes without new ODEs.
+C has nonzero difference interactions, but no direct growth candidate;
+five fixed length-asymmetry points retain unresolved modal correspondence at
+mu=0 (`NUMERICAL_PARTIAL`). Completed compute/report/plot uses saved data.
+
+The [C continuation to one lowest OUT period](docs/numerics/nlsp_construction_C_longer_sensitivity.md)
+restarts saved physical states at2Tref with unchanged initial seeds and norm.
+P12 gives restricted gain1.07026572; conditional p16 is NOT_RUN by the resource
+gate, so the new interval remains exploratory. The existing CLI uses
+`--construction-c-longer` with the separately authorized
+[output-repeat config](data/input/nlsp_construction_C_longer_sensitivity_output_retry.json).
+Completed compute/report/plot replay performs no new scientific solves.
+
+The [construction C modal experiment](docs/numerics/nlsp_construction_C_modal_sensitivity.md)
+uses the same CLI with `--construction-c` and its own frozen
+[config](data/input/nlsp_construction_C_modal_sensitivity.json).
+It initializes the entire lowest bending-dominant planar eigenmode at
+`max|w|=.005`, with no static preload. A displacement-only OUT input space,
+fixed energy norm and p12/p16 controls are separate from a stability claim.
+
+The separately authorized [sensitivity continuation](docs/numerics/nlsp_coupled_planar_sensitivity_resume.md)
+uses the existing CLI with `--resume-sensitivity`, its own
+[config](data/input/nlsp_coupled_planar_sensitivity_resume.json), and immutable
+parent references. Mixed/sign checks pass; restricted four-input gains are
+computed for A/B with every output DOF retained. Both finite-amplitude controls
+pass at p16; overall `NUMERICAL_PARTIAL` retains the missing spatial control
+and long temporal qualification. This is not a stability
+certificate or a parameter map. Historical pilot/diagnostic statuses remain intact.
+
+[The scoped report](docs/numerics/nlsp_coupled_planar_sensitivity_pilot.md)
+documents the new two-arm variational assembly and initial out-of-plane
+perturbation protocol. One [diagnostic CLI](scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py)
+reuses the frozen seven-field action and analytic Jacobian with endpoint
+lifting and seven common joint DOFs. Its [config](data/input/nlsp_coupled_planar_sensitivity_pilot.json)
+fixes two geometries, own static-release motions and 2Tref horizons.
+Restricted initial-state gain is separate from stability, imperfection
+sensitivity and independent 3D validity. Historical physics and results
+remain unchanged; no FEM or parameter map is launched by this pilot.
+Actual result is BLOCKED_BY_TANGENT_CHECK: A p16 reaches 2Tref, but the
+torsional normalized amplitude trend fails near a numerical residual.
+No restricted gain or geometry contrast is claimed; the failed gate is
+preserved and no automatic retry follows.
+The [separate torsional diagnostic](docs/numerics/nlsp_coupled_torsion_tangent_diagnostic.md)
+uses `--torsion-diagnostic` and immutable parent evidence. Four short controls
+identify the old full-solver numerical floor and recover observed delta-squared
+consistency; the historical pilot failure stays unchanged. No gain/map follows.
+
 ## Seven-field spatial nonlinear verification
 
 [The spatial report](docs/numerics/nlsp_spatial_nonlinear_3d_fem_verification.md)

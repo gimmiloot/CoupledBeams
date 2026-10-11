@@ -33,6 +33,12 @@
 
 | Тема | Ключевые записи |
 |---|---|
+| Резонансная диагностика C: связи разрешены, прямой механизм роста не найден; μ=0 correspondence UNRESOLVED, новых ODE нет | [NLSP-D24](decisions.md#nlsp-d24), [NLSP-K25](knowledge.md#nlsp-k25), [отчёт](../numerics/nlsp_resonant_spatial_coupling_screening.md) |
+| C to one OUT period: p12 Gdisp3=1.07027; p16 resource gate NOT_RUN, numerical PARTIAL, performance audit | [NLSP-D23](decisions.md#nlsp-d23), [NLSP-K24](knowledge.md#nlsp-k24), [report](../numerics/nlsp_construction_C_longer_sensitivity.md) |
+| C modal experiment: Gdisp3=1.05303,full consistency PASS; physical v near initial scale, c/velocity spatial PARTIAL | [NLSP-D22](decisions.md#nlsp-d22), [NLSP-K23](knowledge.md#nlsp-k23), [report](../numerics/nlsp_construction_C_modal_sensitivity.md) |
+| A/B continuation: E1–E4 PASS p16,G4A1.00990/G4B1.03622; numerical PARTIAL, p12 NOT_RUN по budget | [NLSP-D21](decisions.md#nlsp-d21), [NLSP-K22](knowledge.md#nlsp-k22), [report](../numerics/nlsp_coupled_planar_sensitivity_resume.md) |
+| Torsional tangent diagnostic: NUMERICAL_FLOOR_IDENTIFIED,4short ODE; full tolerance error объясняет old failure, pilot/maps не возобновлены | [NLSP-D20](decisions.md#nlsp-d20), [NLSP-K21](knowledge.md#nlsp-k21), [report](../numerics/nlsp_coupled_torsion_tangent_diagnostic.md) |
+| Двухплечевой initial-perturbation pilot: assembly PASS, A до2Tref; torsional gate FAIL, gain/geometry contrast NOT_RUN | [NLSP-D19](decisions.md#nlsp-d19), [NLSP-K20](knowledge.md#nlsp-k20), [report](../numerics/nlsp_coupled_planar_sensitivity_pilot.md) |
 | Семиполевое пространственное сопоставление: 6 1D/4 CCX завершены; NUMERICAL_PARTIAL, большая разность v-поправки, кручение не закрыто | [NLSP-D18](decisions.md#nlsp-d18), [NLSP-K19](knowledge.md#nlsp-k19), [report](../numerics/nlsp_spatial_nonlinear_3d_fem_verification.md) |
 | Postprocessing spatial-profile audit: c_eff recovery/sampling effects, local longitudinal teeth unresolved; 1D c remains PARTIAL | [NLSP-D17](decisions.md#nlsp-d17), [NLSP-K18](knowledge.md#nlsp-k18), [report](../numerics/nlsp_spatial_profile_audit.md) |
 | FEM-3C: limited straight-rod verification complete with qualifications; C1 PASS, full-period illustration, all8/energy PARTIAL | [NLSP-D16](decisions.md#nlsp-d16), [NLSP-K17](knowledge.md#nlsp-k17), [report](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification), [scientific summary](../numerics/nlsp_straight_rod_3d_fem_verification_summary.md) |

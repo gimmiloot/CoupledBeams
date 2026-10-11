@@ -1,5 +1,158 @@
 # Текущий контекст
 
+## Нелинейные модальные связи C — остановка, 2026-10-11
+
+[D24](decisions.md#nlsp-d24), [K25](knowledge.md#nlsp-k25),
+[отчёт](../numerics/nlsp_resonant_spatial_coupling_screening.md):
+NUMERICAL_PARTIAL; отдельный вывод C — COUPLING_PRESENT_NO_GROWTH_MECHANISM_IDENTIFIED.
+Нет новых ODE/FEM/Floquet; выполнены только p12 eigenpairs и full-Jacobian
+проекции. Ω=0.31339016592943; прежняя выбранная «OUT3» — sorted5.
+Близкая связь 2Ω≈ω5−ω2 ненулевая O(a²), но negative pair product означает
+изолированный обмен. Ω-связь1↔3 O(a) согласуется с их mixing в прежнем
+отклике; причина gain1.070265720 однозначно не установлена.
+
+Пять фиксированных μ выполнены. При μ=0 близкое Ω≈2ω2 подавлено симметрией;
+соответствие PL и OUT4/5 с соседней точкой UNRESOLVED. Убедительный кандидат
+для новой nonlinear dynamics не выбран. Бюджет25.862s/900s,0ODE;
+65 regression tests, source hashes и cache replay проверены.
+Полный second-order normal form не получен; c/velocity spatial PARTIAL сохранён.
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION и idealjoint/c1=c2 отложены.
+STOP: не запускать новые геометрии, amplitudes, ODE/FEM, Floquet или карты.
+
+## Предыдущий контекст, сохранённый полностью
+
+# Текущий контекст
+
+## Construction C до низшего OUT периода — остановка, 2026-10-11
+
+[D23](decisions.md#nlsp-d23),[K24](knowledge.md#nlsp-k24),
+[report](../numerics/nlsp_construction_C_longer_sensitivity.md):
+CONSTRUCTION_C_LONGER_EXPLORATORY_P12. Savedstates restarted at2Tref;
+no replay0...2Tref,no renormalization of tangent endpoint. p12 reaches
+80.82341119394=4.03126662Tref,Gdisp3=1.07026572 at2.747Tref,old1.05303.
+Late local gain rises butend1.04703 is belowglobalmax; no secular-growth proof.
+Maxphysicalv3.27566e-5=.65513%Apl,initial1% conventionunchanged.
+New p16trigger true,forecast1562.680s>remaining1374.553s,thus NOT_RUN.
+Newinterval spatial/time qualification PARTIAL; c/velocities remainPARTIAL.
+
+Firstp12 densewriter failed after savingcomplete physicalsamples; failed
+bundle2bd3ecdc5caa2f28 preserved. Userexplicitly authorized one outputrepeat,
+newbundle6f504c8b30b27df3. Bothsampled trajectories/energies bitwiseequal.
+Three newIVPs=2planar+1matrix tangent; budgetcharge1325.447s/2700 includes
+450s firstattempt;peak.641GiB,one thread,no newfull/FEM/static/maps.
+Basecost dominatedbyRHS/safety/mass,tangentbyOUToperator. One safecolumn
+assembly optimization/cold savedstate speedup1.26x; no newreducedmodel.
+PriorD22/K23/C_MODAL_SENSITIVITY_RESOLVED andallhistoricalstatuses retained.
+
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION,physical idealjoint/c1=c2,
+imperfections,fulloperator/true stability/applicability remain deferred.
+STOP further Ccalculations atthis geometry/amplitude; no automaticmaps,
+other amplitudes,geometries,FEM,Floquet. Futureperformance suggestions are
+proposals only.
+
+## Предыдущий контекст, сохранённый полностью
+
+# Текущий контекст
+
+## Construction C modal experiment — текущая остановка, 2026-10-11
+
+[D22](decisions.md#nlsp-d22),[K23](knowledge.md#nlsp-k23),
+[report](../numerics/nlsp_construction_C_modal_sensitivity.md):
+C_MODAL_SENSITIVITY_RESOLVED в одном displacement-only Sdisp3 эксперименте.
+Beta30,L.8/1.2,b.05/h.10 оба,Bpar/Bperp4; first bending-dominant PL mode
+omega.3133893364,Tref20.04913562,complete shape max|w|.005,all velocities0.
+Static load/Newton нет; physics/action/mass/RHS/Jacobian/basis/joint frozen.
+
+G16=1.0530286991 при.745Tref,G12=1.0530316774. Curve spatial change9.46e-4
+в56.07 раза меньшеG−1; tight optimal E0 change1.93e-9. Full434-state
+control at fixed1% physical deformation gives relative mismatch1.545e-7,
+energy drift8.32e-14. Maxv3.17329e-5=0.634658%Apl,near initial scale;
+zero-base sameinput maxv3.13266e-5. Norm growth не равенdisplacement growth
+и не является математической неустойчивостью.
+
+All-field spatial PARTIAL: c p12/p16 change16.78%,c-velocity153.36%
+of declared sampledp16 scales; baseline/full temporal refinements NOT_RUN.
+Actual3nonlinear+5matrix tangent IVPs,5551.842s/7200,peak1.103GiB,
+all8 complete2Tref,no retry. All native full159869x434 states/times saved
+with streaming; cached compute/report/plot0 scientific calls. 5T NOT_RUN
+по late-growth/resource decision. Current result is limited toC,amplitude,
+initial space and sampled2Tref; no physical angular-joint validation.
+
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION,physicalc1=c2/idealjoint,permanent
+imperfections,full operator/periodic stability/applicability boundary remain
+deferred. Historical A/B/failures/FEM/strict statuses,LONG CLOSED,EB/RLB-KV
+PAUSED иangular reference UNAVAILABLE не повышены. После отчёта остановка;
+новые geometry/amplitudes/maps/FEM/Floquet автоматически не запускаются.
+
+## Предыдущий контекст, сохранённый как основание C
+
+## Coupled sensitivity continuation — текущий итог
+
+[D21](decisions.md#nlsp-d21),[K22](knowledge.md#nlsp-k22),
+[report](../numerics/nlsp_coupled_planar_sensitivity_resume.md):
+NUMERICAL_PARTIAL. Mixed/sign checks, B base, restricted S4 gains и
+optimal finite full controls PASS приp16. G4A=1.00989868,G4B=1.03622225;
+full mismatches4.48692e-7/1.38537e-6. 6full+5tangent,6520.028s/7200s,
+peak3.633GiB;1B Newton. A base reused,physics/joint/coefficients frozen.
+P12 dynamic control NOT_RUN: updated forecast1316s при остатке680s.
+Long temporal qualification PARTIAL; observed A/B contrast ещё не имеет
+independent spatial/time certification. Карты/Floquet/FEM не запускаются.
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION,physical c1=c2/ideal joint,
+imperfections,full amplifier и applicability boundary остаются deferred.
+Все historical statuses сохраняются. Следующее решение — ограниченные
+numerical controls при отдельном budget/scope,не automatic map.
+
+## Предыдущий контекст, сохранённый как основание
+
+
+## Torsional diagnostic: NUMERICAL_FLOOR_IDENTIFIED, 2026-10-10
+
+[D20](decisions.md#nlsp-d20), [K21](knowledge.md#nlsp-k21) и
+[report](../numerics/nlsp_coupled_torsion_tangent_diagnostic.md) фиксируют
+4short ODE для A,p16,.1Tref,681.87s/1200s. Old failed parent неизменен.
+Primary mismatch3.73877e-8/9.34778e-9,observed order1.99987; extra full
+change1.52e-10. Independent Dfull5.81e-8/8.85e-8>>Dtan4.25e-10 объясняет
+old nonmonotone error full temporal/tolerance floor после division by delta.
+Остаток преимущественно psi_t,old atol dominates velocity control scale.
+IC/norm/dense/Jacobian checks проходят. rtol/atol causal доли не изолированы;
+2delta/oneextra и sampled H не дают universal convergence/physical validity.
+
+Есть основание отдельно вернуться к ограниченному A/B pilot с accuracy/cost
+preflight; mixed/sign/spatial/geometry checks не закрыты. StageE/F,G/maps
+не выполнены. Parent BLOCKED_BY_TANGENT_CHECK и старые thresholds сохранены.
+Новых base/static/eigen/FEM 0; quad action/mass/RHS/joint/lifting/IC unchanged.
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION,ideal-joint physical validation,
+sensitivity maps,stability и angular3D FEM остаются отложенными.
+LONG CLOSED,EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION,angular same-clamp
+UNAVAILABLE и все historical qualifications сохранены. После отчёта остановка;
+ничего автоматически не возобновляется. Исторические записи ниже неизменны.
+
+
+## Двухплечевой planar-sensitivity pilot: BLOCKED_BY_TANGENT_CHECK, 2026-10-10
+
+[D19](decisions.md#nlsp-d19), [K20](knowledge.md#nlsp-k20) и
+[отчёт](../numerics/nlsp_coupled_planar_sensitivity_pilot.md) фиксируют
+variational assembly двух lifted arms с прежним common7DOF узлом.
+A/B mathematical/geometry gates PASS. Плоская A p16 дошла до2Tref;
+четыре full seven-field bending/torsional short runs завершены. Bending PASS,
+torsional normalized error6.90e-8→8.87e-8 при delta/2 не проходит trend.
+Planar change~delta², actual-state Jacobian PASS; velocity numerical residual
+согласуется с данными, но independent time controls не выполнены.
+FAIL/floor/thresholds сохранены. Overall BLOCKED_BY_TANGENT_CHECK;
+C PARTIAL,D FAIL,E/F NOT_RUN. G,contrast,mixed/negative,B/p24 не получены.
+
+Ровно6NL+2tangent ODE calls,696.03s,zero FEM,zero automatic retry.
+ДваPDF+PNG,rawCSV/NPZ,first forecast и stopped manifest в d024ee84989ce6b5.
+131 tests PASS; cache replay zero new solves. Метод перспективен по
+assembly/operators, но к карте пока переходить нельзя. Новый этап не выбран.
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION обязателен перед окончательным
+теоретическим оформлением, сейчас не выполнен. c1=c2/ideal joint в3D open.
+LONG CLOSED,EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION,angular same-clamp
+UNAVAILABLE и все strict/FEM/physical-sanity qualifications сохранены.
+Исторические записи ниже не пересмотрены. После отчёта остановка;
+никаких retry/FEM/maps/Floquet автоматически не запускается.
+
+
 ## Семиполевое пространственное сопоставление: NUMERICAL_PARTIAL, 2026-10-10
 
 [D18](decisions.md#nlsp-d18), [K19](knowledge.md#nlsp-k19) и

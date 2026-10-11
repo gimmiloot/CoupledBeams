@@ -1,5 +1,26 @@
 # Generated Results Index
 
+`results/nlsp_resonant_spatial_coupling_screening/898f8968922f23c2/`
+contains [the resonant diagnostic](numerics/nlsp_resonant_spatial_coupling_screening.md):
+source manifests, p12 profiles and dual modal bases, complex harmonic matrices,
+interaction CSV, amplitude/phase controls, actual saved-window projection,
+five-point mu screening, two figures, cache verification and runtime evidence.
+Overall NUMERICAL_PARTIAL; historical bundles and statuses are unchanged.
+
+`results/nlsp_construction_C_modal_sensitivity/e7f729a57a8cdfcd/` contains the
+[modal C experiment](numerics/nlsp_construction_C_modal_sensitivity.md):
+frozen modal selection, complete initial fields, fixed norm and displacement
+seeds, planar/tangent histories, numerical controls, native accepted states
+and resource/provenance evidence. Its parent A/B and historical failure bundles
+are referenced by immutable manifests. No previous results are replaced.
+
+`results/nlsp_coupled_planar_sensitivity_resume/7588614fdb79e536/` contains the
+[authorized A/B continuation](numerics/nlsp_coupled_planar_sensitivity_resume.md):
+saved A references, new B equilibrium/base, mixed/sign evidence, fixed norm
+matrices, four-input propagators/gains, full nonlinear controls, resource ledger
+and numerical qualifications. Its independent authorization preserves both
+historical bundles and does not permit a parameter map or automatic retry.
+
 `results/` is generated and ignored by Git, apart from its tracked placeholder.
 A fresh clone therefore does not contain the output directories listed below.
 An absent result path is not automatically a broken documentation reference:
@@ -12,6 +33,25 @@ the [scripts guide](../scripts/README.md), [workflow status
 map](../scripts/STATUS.md), and [thickness-mismatch script
 map](../scripts/analysis/thickness_mismatch/README.md). No command in this
 index should be run without first reviewing its cost and output contract.
+
+## Torsional tangent diagnostic evidence
+
+`results/nlsp_coupled_torsion_tangent_diagnostic/a10f1110ffbce7ca/`
+contains [the separate diagnostic](numerics/nlsp_coupled_torsion_tangent_diagnostic.md):
+parent hashes, raw error decomposition, IC/metric/dense/pointwise checks,
+frozen primary/conditional decisions and four actual short ODE trajectories.
+All four old/tight pairings, native dense/timestamp checks, CSV/NPZ and two
+PDF+PNG figures preserve the numerical-floor conclusion and qualifications.
+Historical source bundle and status remain unchanged.
+
+## Coupled-rod planar sensitivity pilot evidence
+
+`results/nlsp_coupled_planar_sensitivity_pilot/d024ee84989ce6b5/`
+retains [the bounded pilot](numerics/nlsp_coupled_planar_sensitivity_pilot.md):
+source/action hashes, joint assembly gates, frozen loads/reference periods,
+cost probe and preserved first/corrected planning decisions, own-equilibrium
+histories, actual attempts and available tangent/perturbation diagnostics.
+Accepted prefixes remain explicit; no missing trajectory is manufactured.
 
 ## Seven-field spatial nonlinear verification evidence
 
@@ -397,3 +437,13 @@ The full per-file ignored-data manifest is intentionally kept only in the
 external local backup. Public documentation records aggregate result paths and
 statuses, not private paths. The [archive policy](archive_policy.md) defines
 the gates required before any future local-results move or cleanup.
+
+
+### Construction C longer sensitivity, 2026-10-11
+
+[Report](numerics/nlsp_construction_C_longer_sensitivity.md),
+`results/nlsp_construction_C_longer_sensitivity/6f504c8b30b27df3/manifest.json`.
+CONSTRUCTION_C_LONGER_EXPLORATORY_P12: Gdisp3=1.07026572 at2.747Tref;
+target4.03126662Tref reached. Three newIVPs with one user-authorized output
+repeat,1325.447s budgetcharge; p16NOT_RUN byresourcegate. Oldfailure in
+2bd3ecdc5caa2f28 immutable, oldCstatus unchanged; no full/FEM/maps.

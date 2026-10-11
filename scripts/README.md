@@ -1,5 +1,76 @@
 # Scripts guide
 
+## Construction C modal preset
+
+```powershell
+& 'D:\python\Pycharm\pythonProject\.venv\Scripts\python.exe' scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --construction-c --compute
+```
+
+Its [frozen preset](../data/input/nlsp_construction_C_modal_sensitivity.json)
+and [scoped report](../docs/numerics/nlsp_construction_C_modal_sensitivity.md)
+describe the mode initialization, displacement-only perturbations and budget.
+`--through-stage preflight|base|gain|controls|all` saves each completed prefix.
+Completed `--compute`, `--report-only BUNDLE` and `--plot-only BUNDLE` use
+verified cached artifacts, with zero new scientific calls. Original A/B and
+torsional-diagnostic routes and their historical guards remain separate.
+
+## Authorized coupled sensitivity continuation
+
+[Scoped report](../docs/numerics/nlsp_coupled_planar_sensitivity_resume.md),
+[config](../data/input/nlsp_coupled_planar_sensitivity_resume.json).
+The same CLI accepts `--resume-sensitivity`; default historical replay remains
+blocked. Source hashes and a separate authorization protect both old bundles.
+Only the initial four-dimensional space is restricted; all output OUT DOFs remain.
+
+```powershell
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --resume-sensitivity --compute --through-stage mixed
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --resume-sensitivity --compute --through-stage planning
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --resume-sensitivity --compute
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --resume-sensitivity --report-only results/nlsp_coupled_planar_sensitivity_resume/7588614fdb79e536
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --resume-sensitivity --plot-only results/nlsp_coupled_planar_sensitivity_resume/7588614fdb79e536
+```
+
+Use the recorded Python environment and one BLAS thread, as described in the
+report. Completed cache modes perform no new integrations. No FEM, maps,
+Floquet, geometry sweep or automatic failure retry is available in this mode.
+
+## Coupled-rod initial out-of-plane perturbation pilot
+
+The separate [torsional diagnostic](../docs/numerics/nlsp_coupled_torsion_tangent_diagnostic.md)
+uses the same CLI with `--torsion-diagnostic`; the old default remains blocked.
+Its [config](../data/input/nlsp_coupled_torsion_tangent_diagnostic.json) freezes
+A,p16,.1Tref, source initial states and maximum6 new ODE/1200s. Actual four
+runs identify the old full numerical floor; no original E/F stage follows.
+
+~~~powershell
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --torsion-diagnostic --compute --through-stage read-only
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --torsion-diagnostic --compute --through-stage primary
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --torsion-diagnostic --compute --through-stage all
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --torsion-diagnostic --report-only results/nlsp_coupled_torsion_tangent_diagnostic/a10f1110ffbce7ca
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --torsion-diagnostic --plot-only results/nlsp_coupled_torsion_tangent_diagnostic/a10f1110ffbce7ca
+~~~
+
+One new scoped [CLI](analysis/pilot_nlsp_coupled_planar_sensitivity.py)
+implements the new two-arm/tangent input-output contract, with
+[config](../data/input/nlsp_coupled_planar_sensitivity_pilot.json),
+[report](../docs/numerics/nlsp_coupled_planar_sensitivity_pilot.md) and
+[D19](../docs/memory/decisions.md#nlsp-d19). It reuses action/Newton/Radau
+kernels; existing straight-rod FEM workflows and their failure guards remain
+unchanged. Review the bounded cost and frozen horizon before a fresh compute.
+
+~~~powershell
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --compute --through-stage preflight
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --compute --through-stage cost
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --compute
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --report-only results/nlsp_coupled_planar_sensitivity_pilot/d024ee84989ce6b5
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --plot-only results/nlsp_coupled_planar_sensitivity_pilot/d024ee84989ce6b5
+~~~
+
+The saved attempt ledger prevents automatic retries after real integration
+failure. Report/plot use saved arrays and do not run scientific solvers.
+Only six initial states are restricted; the full out-of-plane response is
+propagated. No FEM, geometric map, Floquet or periodic-orbit study is included.
+
 ## Seven-field spatial nonlinear comparison
 
 The existing continuation CLI exposes `--spatial-verification`, with
@@ -1640,3 +1711,32 @@ These preserve old command paths and old output filenames.
 | `scripts/run/run_tracked_bending_descendant_shape_ru.py` | main user-facing command | Friendly wrapper for one tracked bending descendant shape at explicit `mu`, `epsilon`, `beta`, plot kind, scale, and diagnostics settings. | `python scripts/run/run_tracked_bending_descendant_shape_ru.py` | keep |
 | `scripts/run/run_tracked_bending_descendant_shapes_ru.py` | main user-facing command | Friendly wrapper for tracked bending descendant shapes. | `python scripts/run/run_tracked_bending_descendant_shapes_ru.py --branch-id bending_desc_01` | keep |
 | `scripts/run/run_branchwise_fem_audit.py` | main user-facing command | Friendly wrapper for the branchwise FEM audit. | `python scripts/run/run_branchwise_fem_audit.py` | keep |
+
+
+### C saved-state continuation to one OUT period
+
+Existing CLI: `python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --construction-c-longer --compute --config data/input/nlsp_construction_C_longer_sensitivity_output_retry.json`.
+Use one numerical thread (OPENBLAS/MKL/OMP=1). This authorization is already
+completed: compute replays its cache. `--report-only <bundle>` and
+`--plot-only <bundle>` also launch no new ODE/FEM.
+[Report](../docs/numerics/nlsp_construction_C_longer_sensitivity.md) explains
+the preserved dense-writer failure, single explicit repeat, unchangedt0 seeds
+and fixednorm,p12G1.07027,and p16resourceNOT_RUN. No new runnable script.
+
+## Resonant spatial coupling diagnostic
+
+The existing CLI reuses the frozen seven-field model for linear eigenpairs
+and pointwise Jacobian projections; it performs no trajectory integration.
+
+```powershell
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --resonant-screening --compute
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --resonant-screening --report-only results/nlsp_resonant_spatial_coupling_screening/898f8968922f23c2
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --resonant-screening --plot-only results/nlsp_resonant_spatial_coupling_screening/898f8968922f23c2
+```
+
+[Config](../data/input/nlsp_resonant_spatial_coupling_screening.json),
+[report](../docs/numerics/nlsp_resonant_spatial_coupling_screening.md).
+Use the working repository interpreter and one BLAS thread. The separate
+900 s authorization permits only the fixed p12/five-mu diagnostic. A completed
+compute reads cache; report and plot never rebuild scientific states or operators.
+No nonlinear experiment or adaptive parameter scan follows automatically.

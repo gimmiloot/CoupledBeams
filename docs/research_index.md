@@ -1,8 +1,53 @@
 # Research Directions and Status
 
+## Resonant spatial coupling diagnostic (2026-10-11)
+
+[Scoped report](numerics/nlsp_resonant_spatial_coupling_screening.md):
+C admits O(a) and O(a²) interactions, but the near difference 2↔5 on 2Omega
+has exchange sign, not direct growth. Five fixed mu points find no convincing
+candidate; mu=0 correspondence is unresolved. NUMERICAL_PARTIAL, no new ODEs.
+[NLSP-D24](memory/decisions.md#nlsp-d24)/[K25](memory/knowledge.md#nlsp-k25).
+
+## Construction C modal sensitivity (2026-10-11)
+
+The [scoped C experiment](numerics/nlsp_construction_C_modal_sensitivity.md)
+uses one bending-dominant planar mode at max abs w=.005 and a three-direction
+displacement-only OUT input space. Fixed-energy gain, zero-base conservation,
+p12/p16 physical comparison and one tangent temporal control remain separate
+from all-seven-field convergence and physical joint validation. The existing
+CLI provides --construction-c; no new FEM, amplitude or geometry map is included.
+
 This index is the public map of the repository's scientific directions. It
 describes the evidence visible in the tracked checkout; generated outputs and
 local article workspaces may be absent from a fresh clone.
+
+## Coupled sensitivity continuation (2026-10-10)
+
+The separately authorized [A/B continuation](numerics/nlsp_coupled_planar_sensitivity_resume.md)
+reuses the numerical-floor diagnosis and the saved A base. Mixed/sign checks
+pass; four-input restricted gains are measured for both geometries in fixed
+reference-energy norms. Both full finite controls pass at p16; the outcome is
+NUMERICAL_PARTIAL because the bounded programme did not perform the spatial
+control. [NLSP-D21](memory/decisions.md#nlsp-d21) and
+[NLSP-K22](memory/knowledge.md#nlsp-k22) freeze scope, outcome and
+resources; no applicability map, Floquet or angular FEM is started.
+
+## Torsional tangent diagnostic (2026-10-10)
+
+[The scoped continuation](numerics/nlsp_coupled_torsion_tangent_diagnostic.md)
+identifies the full-solver numerical floor by four short ODE controls;
+observed normalized error order is1.99987. The old pilot stays blocked in
+its historical record; this result does not compute gain, geometry contrast
+or parameter maps. NLSP-D20/K21 retain the limited numerical conclusion.
+
+## Coupled-rod planar sensitivity pilot (2026-10-10)
+
+[The report](numerics/nlsp_coupled_planar_sensitivity_pilot.md) and
+[NLSP-D19](memory/decisions.md#nlsp-d19) define a bounded two-geometry
+initial-perturbation pilot. Endpoint lifting preserves a free common rigid
+joint, while the frozen quartic action supplies the full Jacobian tangent
+system. Restricted finite-time gain is not a Floquet/imperfection/3D validity
+claim. The independent two-parameter action expansion is explicitly deferred.
 
 ## Seven-field nonlinear spatial comparison (2026-10-10)
 
@@ -461,3 +506,11 @@ damping, anisotropic-rod and other research statuses below are unchanged.
 When status records conflict, the newer stage-closure note or canonical report
 takes priority. Mathematical source-of-truth priority remains the policy in
 `AGENTS.md` and [project rules](project_rules.md).
+
+
+### Construction C — one lowest OUT period
+
+[Scoped continuation](numerics/nlsp_construction_C_longer_sensitivity.md):
+p12 restricted gain1.07027,conditionalp16 resourceNOT_RUN. Cost audit and
+output-only repair preserve original physics andhistoricalresults. Newinterval
+exploratory/numericalPARTIAL; no stability or applicability map. D23/K24.

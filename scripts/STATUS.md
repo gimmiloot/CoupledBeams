@@ -1,5 +1,23 @@
 # Script and Workflow Status
 
+`pilot_nlsp_coupled_planar_sensitivity.py --construction-c` is the scoped
+[C modal preset](../docs/numerics/nlsp_construction_C_modal_sensitivity.md).
+It reuses the same seven-field operators and IVPs with displacement-only
+initial perturbations, a fixed energy norm and p12/p16 controls. Optional
+streaming of all native accepted states keeps the full-control archive within
+the memory budget; default historical dense output and failure guards remain intact.
+Actual outcome: C_MODAL_SENSITIVITY_RESOLVED for the limited gain/response,
+with all-field spatial PARTIAL. Three nonlinear and five matrix tangent IVPs
+complete2Tref;5T is NOT_RUN. Completed cache compute/report/plot calls no
+scientific solver. See the report for actual data, controls and restrictions.
+
+`pilot_nlsp_coupled_planar_sensitivity.py --resume-sensitivity` is the separately
+authorized scoped A/B continuation. Its [report](../docs/numerics/nlsp_coupled_planar_sensitivity_resume.md)
+distinguishes method checks, restricted gain and numerical qualifications.
+Actual outcome: `NUMERICAL_PARTIAL`; E1–E4 pass at p16, p12 is NOT_RUN by
+updated resource preflight and the long temporal qualification remains partial.
+It preserves the old default failure guard, uses no native FEM and starts no maps.
+
 This file answers which workflow to use and how older commands should be
 interpreted. Detailed parameters and outputs remain in the [scripts
 guide](README.md) and the [thickness-mismatch script
@@ -19,6 +37,19 @@ map](analysis/thickness_mismatch/README.md).
 - `compatibility-wrapper`: stable old/public command forwarding to an existing
   implementation.
 - `manual-review`: usage or provenance is not clear enough for archive action.
+
+## Coupled-rod initial-perturbation pilot
+
+The scoped --torsion-diagnostic continuation is `completed` with
+NUMERICAL_FLOOR_IDENTIFIED; historical pilot BLOCKED_BY_TANGENT_CHECK stays
+unchanged. See [the report](../docs/numerics/nlsp_coupled_torsion_tangent_diagnostic.md).
+No gain/map or automatic A/B resume is included.
+
+`pilot_nlsp_coupled_planar_sensitivity.py` is a scoped `active-diagnostic`
+entrypoint for endpoint-lifted two-arm assembly and Jacobian tangent checks.
+The [report](../docs/numerics/nlsp_coupled_planar_sensitivity_pilot.md)
+records the actual completed prefix and numerical qualifications. Historical
+FEM routes are preserved; this command does not start a parameter map.
 
 ## Seven-field spatial nonlinear verification
 
@@ -409,3 +440,12 @@ is `manual-review`. The inventory found neither a Python importer nor a
 documentation path reference, but it writes into an adjacent scientific audit
 result family. It is not classified as unnecessary and must not be moved or
 deleted until its provenance and output relationship are reviewed manually.
+
+
+- `pilot_nlsp_coupled_planar_sensitivity.py --construction-c-longer`: completed scopedp12 physical-state continuation toT_OUT1,Gdisp3=1.07027,exploratory/numericalPARTIAL,p16resourceNOT_RUN. One explicit outputrepeat preserved;cache0scientificcalls. See[report](../docs/numerics/nlsp_construction_C_longer_sensitivity.md).
+
+- `pilot_nlsp_coupled_planar_sensitivity.py --resonant-screening`:
+  active-diagnostic, completed without ODE/FEM. C coefficients resolved;
+  no direct growth mechanism, five-point correspondence PARTIAL at mu=0.
+  Source hashes, 65 regression tests and zero-scientific-call cache replay
+  are recorded in [the report](../docs/numerics/nlsp_resonant_spatial_coupling_screening.md).

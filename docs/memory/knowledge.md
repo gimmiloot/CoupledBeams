@@ -2291,3 +2291,367 @@ UNAVAILABLE, FEM-3C qualified completion, prepared strict/zero-u-c PARTIAL,
 physical sanity и strict float64 qualifications сохранены.
 После отчёта остановка: full-period FEM, new p/amplitudes/time/mesh sweeps,
 angular/Floquet/periodic-orbit/critical search автоматически не запускаются.
+
+
+## NLSP-K20
+
+**Статус, 2026-10-10:** BLOCKED_BY_TANGENT_CHECK для пилота малых начальных
+внеплоскостных возмущений двух жёстко сопряжённых стержней.
+[D19](decisions.md#nlsp-d19),
+[отчёт](../numerics/nlsp_coupled_planar_sensitivity_pilot.md), bundle
+`results/nlsp_coupled_planar_sensitivity_pilot/d024ee84989ce6b5/`.
+
+**Сборка:** прежние Shen interiors+s/L lift, common7DOF, T7 variational
+pullbacks, полная quartic variable mass/inertia и analytic Jacobian.
+В M_q*a используется ускорение всей сборки. A1–A6/geometry PASS:
+weak/action relative<=3.50e-15, straight low-mode max1.44293e-5<1e-3,
+Jac directional1.043e-11<2e-7, nodal balance6.86e-20, joint work2.49e-24.
+Оси, внешние value BC и c1=c2 сохранены; derivative BC отсутствуют.
+Обмен b/h сохраняет массу и меняет Bp/Bb; CT series roundoff2.699e-12.
+Joint 3D validity не установлена, strict float64 PARTIAL не снят.
+
+**Frozen cases:** beta=30deg,mu=.2,L1=.8,L2=1.2; A оба b=.1,h=.05,
+B второе b=.05,h=.1. Body force -EY; p24 compliance фиксирует max|w|/minh=.05.
+gA=7.820867770536735e-5,gB=2.1428767135661873e-4;
+TrefA=35.40765544870329,TrefB=21.110243236568515. Нагрузки не подбирались
+после sensitivity. A p16 дошла до2Tref=70.81531089740658:
+36608steps/256288RHS/2Jac/16LU,458.375s,energy drift6.480e-12.
+Own static maxw=.00241284876 vs linear.00249999259; residual2.576e-13,
+zero velocities, instantaneous release. Safety: min(1+c)>=.9999452,
+mass lower>=.9992406,rot<=.0067482,grad<=.0068104,Li curvature<=.053145.
+В11 actual base points offblocks/RHSout равны0 без принудительного зануления.
+
+**Касательный контроль:** .1Tref A p16, шесть E0-orthonormal seeds,
+все186 OUT state components сохраняются. Autonomous Gram error1.461e-11<1e-8.
+delta0=7.958509826438746e-7,delta0/2=3.979254913219373e-7.
+Bending errors3.15544e-7→1.07047e-7,order1.55960 проходит preset>=1.5;
+planar change order2.000001. Torsional errors6.89523e-8→8.87139e-8
+не проходят trend, хотя absolute error<1e-5. First error<10*floor1e-8;
+разрешённый порядок предела не заявлен. Initial OUT loading error<=4.2e-15,
+native timestamps совпадают. Для меньшего delta99.28% квадратной error-нормы
+в максимуме приходится на скорости; physical Phi/v errors6.165e-13/2.701e-14.
+Read-only Jacobian checks на actual base: bending<=5.602e-12,torsion<=4.706e-14.
+Условное исключение delta² члена оставляет torsion residual~9.914e-8.
+Atol-vector norm/delta1.167e-6/2.334e-6 — только diagnostic scale, не error bound.
+Численный остаток согласуется с данными, но independent nonautonomous time
+controls не выполнены; его источники не разделены. FAIL не снят.
+
+**Scope/cost/stop:** фактически6 nonlinear calls (probe+base+4short) и
+2tangent calls завершены;696.032s/7200s. Первый forecast10078.50s и planning
+stop сохранены; corrected estimate5590.33s использует saved counters и
+matrix benchmarks, не меняет budget/horizon/tolerance и не повторяет probe.
+Observed process peak783.80MiB на18:57:04 не является final lifetime peak.
+C PARTIAL,D FAIL,E/F NOT_RUN. Нет mixed/negative,B/p24 dynamics,G,
+optimal finite trajectory или geometry contrast.131 tests PASS без hidden IVPs.
+ДваPDF+PNG, rawCSV/NPZ,dense output и stopped execution/source evidence
+сохранены. Cache/source/link checks — в verification.json, zero new solves.
+
+**Условие продолжения:** отдельным решением разрешить численный остаток
+крутильного контроля, затем завершить D/spatial controls до sensitivity maps.
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION остаётся обязательным отложенным
+заданием: original S0 по A и delta, члены delta²,A delta²,A² delta² против
+second variation quartic action, оценка A³ delta². Сейчас повторного вывода нет.
+c1=c2/ideal joint 3D applicability open. LONG CLOSED,EB/RLB-KV
+PAUSED_FOR_SUPERVISOR_DIRECTION,angular same-clamp UNAVAILABLE,предыдущий
+пространственный NUMERICAL_PARTIAL и все historical qualifications сохранены.
+После отчёта остановка; нет новых FEM/maps/Floquet/orbits/critical search/retry.
+
+
+## NLSP-K21
+
+**Статус, 2026-10-10:** NUMERICAL_FLOOR_IDENTIFIED, отдельная диагностика
+historical torsional tangent/full failure. [D20](decisions.md#nlsp-d20),
+[report](../numerics/nlsp_coupled_torsion_tangent_diagnostic.md), bundle
+`results/nlsp_coupled_torsion_tangent_diagnostic/a10f1110ffbce7ca/`.
+Parent d024ee84989ce6b5 manifest7a149b76f64165a300e27d33f7cb1f2876a5f3094d5193d72f0c591c57564d80
+не изменён; BLOCKED_BY_TANGENT_CHECK и thresholds/floor остаются historical.
+
+**Read-only:** errors6.89522758e-8/8.87138719e-8 восстановлены точно,
+IC и K/M norm совпадают; denominator1.0001689730987355 фиксирован.
+Native full velocities — прямые state variables. Dense-vs-saved<=4.25e-17.
+Pointwise symmetric RHS differences order~2 и Jacobian<=6.31e-14.
+При меньшем delta99.28% norm² — velocity,92.36% — psi_t,6.46% — Phi_t;
+94.21% norm² в10white velocity DOFs,70.40% вcoordinate214, что не означает
+physical joint localization после mass whitening. Raw internal/joint shares
+signed с cross terms, не положительные энергии massless point joint.
+Saved low-mode basis покрывает лишь.3678% error; Rayleigh velocity omega188,
+это не идентификация high-frequency torsional modes и не новый eigen scan.
+
+**Independent time controls:** A,p16,.1Tref,H3.540765544870329;
+exact saved initial states and one torsional initial direction. Full response
+186OUT/434fullstate сохранён. rtol1e-12, componentwise atol=old*.01,
+maxstep.0018023482469251596. Один tangent и две full trajectories.
+Dtan4.24537e-10, Dfull5.81116e-8/8.84865e-8. Four pairings показывают:
+oldfull/tighttan6.92912e-8/8.91001e-8;
+tightfull/oldtan3.73874e-8/9.34918e-9;
+tightfull/tighttan3.73877e-8/9.34778e-9. Таким образом основной источник
+old failure — full temporal/tolerance error, усиливаемый division by delta.
+Primary observed order1.999867 восстановлен на двух амплитудах.
+
+**Conditional variantB:** только наиболее temporal-sensitive full delta/2,
+rtol1e-13,atol=primary*.1,maxstep.0009011741234625798. Additional response
+change1.51940e-10,mismatch9.34626e-9. Остаток устойчив; uniform extra-level
+pair обеих amplitudes не рассчитана. Conditional zero-amplitude offset
+primary pair1.569e-10 — diagnostic cancellation, не exact limit/error bound.
+Old velocity error-weighted scale на99.9558%/99.9757% состоит изatol.
+Все full actual maxsteps ниже caps: непосредственно max_step не ограничивал
+адаптивные шаги. rtol/atol уточнялись вместе; отдельные causal доли не разделены.
+Native unions oldfull/tighttan7.04238e-8/8.99705e-8 сохраняют немонотонность;
+tightpair union maxima совпадают с sampled table. Old tangent native times/
+dense NOT_AVAILABLE. Ошибка mapping/metric/interpolation или tangent kernel
+как объяснение old failure не подтверждается.
+
+**Cost/provenance:**4actual ODE (3full+1tangent),681.869s/1200s,
+sequential one thread. 0new base/static/eigen/FEM/gain; all reachH безretry.
+Energy drift full<=1.14e-14,safety PASS; energy не заменяет temporal control.
+Frozen initial cost648.253s сохранён, corrected future planner uses installed
+Radau predictor exponent1/4; read-only revised816.102s, без новых solves.
+Exact configs/source snapshots/rawerrors/states/nativepolynomials/CSV/NPZ/
+2PDF+PNG/manifests сохранены. Focused diagnostic tests и previous targeted
+regressions PASS; cache/source/link/Git evidence — verification.json.
+
+**Граница вывода:** method consistency восстановлена в данном A,p16,.1Tref
+range, а historical D19/K20 FAIL не повышен. Есть основание отдельно вернуться
+к pilot A/B, но mixed/sign/spatial/geometry controls и costs ещё требуют
+решения; E/F/maps не запущены. 2delta и один extrafull не дают универсальной
+asymptotic/temporal/spatial или physical3D certification. Нет independent
+base refinement/floating-point bound, mathematical-model defect не обнаружен.
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION,ideal-joint/c1=c2 physical validation,
+sensitivity maps,stability и angular3D FEM отложены. LONG CLOSED,
+EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION,angular same-clamp UNAVAILABLE и
+все strict/FEM/physical-sanity qualifications сохранены. После отчёта остановка.
+
+
+## NLSP-K22
+
+**Статус, 2026-10-10:** NUMERICAL_PARTIAL для отдельного A/B continuation
+по [D21](decisions.md#nlsp-d21), [report](../numerics/nlsp_coupled_planar_sensitivity_resume.md).
+Bundle results/nlsp_coupled_planar_sensitivity_resume/7588614fdb79e536.
+Исторические BLOCKED_BY_TANGENT_CHECK (D19/K20) и NUMERICAL_FLOOR_IDENTIFIED
+(D20/K21), source manifests и старые reports не переписаны. Physics kernels,
+V0/quartic/cubic equations, variable mass/inertia,RHS/Jacobian,basis,axes,
+joint,c1=c2,coefficients и outer value BC совпадают с executed source hashes.
+
+**Method gates:** Mixed A p16,.1Tref errors1.470992e-7/3.677507e-8,order1.999990;
+OUT odd/plane even sign symmetry точна на saved101 timestamps. Tighter full
+Radau policy использует прежний resolved delta range. Independent short
+DOP853/Radau tangent difference4.170929e-10<1e-8; historical gates не ослаблены.
+Сохранённая A p16 base непосредственно переиспользована. B equilibrium/base
+выполнены при frozen g2.1428767135661873e-4,Tref21.110243236568515:
+static residual2.65942e-13,NLmaxw.002446142895,25446 steps до2Tref,
+energy drift3.19665e-12,safety/joint/invariance PASS.
+
+**Restricted comparison:** initial S4 содержит first bending и first torsional
+participation, coordinate/velocity states; all186 output state components
+сохраняются. Fixed SPD norm Kperp0/Mperp0 не меняется. Gperp^(4)(A)=1.0098986825
+при1.381Tref=48.89797217; B=1.0362222471 при1.060Tref=22.37685783.
+Zero-base Gram errors1.58917e-11/8.87568e-12 подтверждают unit gain.
+Observed contrast.0263235646 относится к matched excitation rule/own2Tref,
+не к одинаковым g/physical horizon и не к global amplification operator.
+Наиболее чувствительные inputs преимущественно bend velocity-like.
+Tor fractions в peak10.8317%/0.7226%; zero control при том же input/time
+10.9053%/0.7287%. Большая часть различия состава уже линейная; nonlinear
+transfer/parametric resonance как механизм не установлены.
+
+**Full seven-field confirmation:** одна optimal finite trajectory каждой
+геометрии,delta=.03sqrt(2Ebase),без retuning. Max relative mismatch
+4.486918e-7(A)/1.385366e-6(B)<historical1e-5; E4 PASS приp16. Full energy
+drift2.8331e-14/2.4930e-14. Actual maxv9.19650e-5/2.62052e-4,то есть
+3.67860%/10.48208% общего frozen displacement scale.0025. Скоростные
+возмущения являются частью S4; base initial velocities остаются0.
+
+**Qualification/cost:**6full+5tangent IVPs,1B Newton,6520.027594s/7200s.
+Scientific process peak3.632984GiB<4GiB,one thread,no failure/retry.
+Все11 IVPs complete. Before production сокращены6inputs→4,A p12 dynamic
+и long tight tangent control исключены. Updated read-only B p12 cost
+forecast1316.386s против остатка679.972s; p12 NOT_RUN до scientific call.
+Projection-only A c changes2.657e-6/5.438e-6 не заменяют dynamic control.
+Spatial qualification NOT_RUN,combined temporal PARTIAL. Наблюдаемый A/B
+contrast нельзя считать самостоятельно spatial/time-certified; итогNUMERICAL_PARTIAL,
+хотя E1–E4 passes приp16. 4PDF+PNG,full states/dense records,physical initial
+positions/velocities,CSV/NPZ,source snapshots/manifest;75targeted testsPASS.
+
+**Граница:** метод подтверждён на checked finite subspace/resolution;
+карта, critical amplitude,асимптотическая устойчивость,Floquet,permanent
+imperfections,3D angular joint или applicability для любого small disturbance
+не получены. DEFERRED_TWO_PARAMETER_ACTION_EXPANSION исходного S0 поA/delta
+(delta²,A delta²,A² delta²),physical c1=c2/point joint и full operator
+сохраняются deferred. LONG CLOSED,EB/RLB-KV PAUSED_FOR_SUPERVISOR_DIRECTION,
+angular same-clamp reference UNAVAILABLE и все прежние straight/spatial/
+strict float64/planar qualifications не повышены. Далее нужны ограниченные
+numerical controls,не автоматическая parameter map. После отчёта остановка.
+
+
+## NLSP-K23
+
+**Статус, 2026-10-11:** C_MODAL_SENSITIVITY_RESOLVED для одного
+модального C эксперимента по [D22](decisions.md#nlsp-d22),
+[report](../numerics/nlsp_construction_C_modal_sensitivity.md).
+Bundle results/nlsp_construction_C_modal_sensitivity/e7f729a57a8cdfcd.
+Geometry beta30,L.8/1.2,b.05/h.10 оба,E=rho1,nu.3,kappa5/6;
+Bpar/Bperp4 при прежних осях. Physical kernels/V0/V4/mass/inertia/Jacobian/
+basis/joint/value BC unchanged; historical A/B/failures не переписаны.
+
+**Initial mode:** lowest bending-dominant PL sorted1,omega.3133893364,
+Tref20.04913562,bending/shear potential fraction72.3852%. Whole eigenvector
+scaled to exact max|w|.005;u/theta/c kept,OUT0,all velocities0,no static load
+or Newton. Initial rotations<=.010183rad,mass positive,joint compatible.
+Sdisp3 содержит OUT sorted1/2/5 с omega.07773967/.21565349/.84179835;
+fixed SPD E0 norm иall186 response components p16,138 p12 сохранены.
+
+**Gain/physical response:** G16=1.05302869909 при.745Tref=14.93660604;
+G12=1.05303167743 при.746Tref. Zero Gram errors1.41e-10/7.84e-12.
+Optimum coefficients(.9969234,-.01354694,.07720229),first bending dominated.
+Max gain change2.97834e-6,complete gain-curve change9.45769e-4;
+signalG−1=.0530287 в56.0694 раза больше observed spatial change.
+Tight optimal response E0 change1.93350e-9; peak norm changes~5e-13.
+Обнаружен численно различимый finite-time signal в declared input space,
+без global/infinite-dimensional maximum или stability certificate.
+
+Physical normalization fixed max{|v|,Lref|Phi|,Lref|psi|}=5e-5,Lref1;
+delta_E0=1.5311445173942503e-7,all velocities0. Initial v3.13268e-5,
+maxv3.17329122e-5,Rv.00634658243 (=.634658% Apl);Phi/psi maxima
+3.70880e-5/5.11219e-5rad. Same-input zero v3.13265708e-5.
+Большого spatial departure за2Tref не наблюдается; angular maxima частично
+объясняются уже linear zero-base composition. E0 norm в peak на83.4693%
+kinetic,поэтому5.3% gain не равен5.3% displacement growth.
+
+**Full seven-field control:** same1% initial deformation convention,
+full434 states,rtol1e-12,atol(base)*.01,maxstep(base)*.5. Relative mismatch
+1.54505e-7<existing1e-5,coordinate/velocity error maxima1.36194e-7/1.35167e-7;
+physicalv error7.51338e-13. Full maxv3.17329114e-5,energy drift8.31872e-14.
+Plane differenceE0 norm1.26951e-10 включает finite feedback и different
+time accuracy; не изолирован новый asymptotic order поdelta для C.
+
+**Qualifications:** observed w spatial change3.68298e-6 (~.07363% sampled
+p16 max),theta3.93499e-5 (~.38472%). c change2.71126e-5 (~16.7787%),
+c-velocity change1.13993e-3 (~153.363% sampledp16 max): all-field spatial
+PARTIAL. Same-input_OUTv change5.33917e-9; functional gain robust despite
+these qualifications. Independent base/full temporal refinements NOT_RUN;
+maxima sampled2001times/201points,not strict error bounds. 5T NOT_RUN:
+no late new global maxima and forecast extension+full5T8704.963s exceeds
+remaining3730.109s. No infinite-time conclusion follows from twoTref.
+
+**Execution/cache:** 2planar+1full nonlinear IVPs,5matrix tangent IVPs
+(13column histories),actual5551.84185s/7200s,peak1.103024GiB/4GiB,
+one thread;static/eigenparameter scan/FEM/Gmsh/CCX0. All8 IVPs complete
+40.09827124 without retry. Full native archive159869x434float64 states,
+timestamps/native final verified; optional streaming avoids estimated5.08GiB
+dense duplication while retaining all data/solver settings. FourPDF+PNG,
+NPZ/CSV/source/environment manifests saved.99 focused regressions PASS;
+actual compute/report/plot replay with forbidden scientific calls instrumented
+gives0 calls and unchanged manifest. Source/user changes preserved.
+
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION,physical c1=c2/ideal joint,real3D
+angular connection,permanent imperfections,full operator/true stability/
+applicability boundary remain deferred. Старые D19/K20,D20/K21,D21/K22,
+FEM/strict/planar statuses,LONG CLOSED,EB/RLB-KV PAUSED,angular reference
+UNAVAILABLE не повышены. После этого C отчёта остановка; новых случаев нет.
+
+
+## NLSP-K24
+
+**Статус, 2026-10-11:** CONSTRUCTION_C_LONGER_EXPLORATORY_P12, new-interval
+numerical qualification PARTIAL under[D23](decisions.md#nlsp-d23),
+[report](../numerics/nlsp_construction_C_longer_sensitivity.md). Bundle
+results/nlsp_construction_C_longer_sensitivity/6f504c8b30b27df3. All six
+physical kernels match parentC; no new initial shape, basis or norm.
+
+**Continuation:** exact saved physical states at40.0982712395, full tangent
+endpoint matrix with originalt=0 normalization, no replay of0...2Tref.
+Both successful jobs reach80.82341119394; historical prefix G difference0.
+One output-only failure precedes the explicitly authorized repeat; first
+attempt and its manifest remain immutable. Sampled base arrays/energies are
+bitwise equal before/after output repair. Adaptive internals not saved;
+independent restart-error solve NOT_RUN, native/sample finalbase difference
+5.29e-23 and tangent difference0; initial matrix/basis retained exactly.
+
+**Response:** sampled Gdisp3=1.07026571974363 at2.747Tref=55.07497555,
+oldp12G1.05303167743216, increase.01723404231148; added-interval maxsame.
+AtendG1.0470263513. Last.2Tref rises1.02725225...1.04702635 (rise.01977410,
+slope+.10347110 perTref); local rising interval is not secular-instability proof.
+Original optimal combination becomes(.998701112,-.007947952,.050328112),
+energy angle1.56884deg to old optimum; still first bending dominated.
+Atpeak83.2034% squaredE0 norm is velocity, not a7.03% displacement increase.
+
+**Physical fixed input:** max{|v0|,Lref|Phi0|,Lref|psi0|}=5e-5,Lref1,velocities0;
+delta_E0=1.53563164962e-7. Sampledmaxv3.27565788514e-5,
+Rv.00655131577=.65513%Apl; maxPhi/psi4.0963109433e-5/5.4714200113e-5rad.
+Same new fixed optimal input has prefixmaxv3.18709953365e-5, so additional
+physical growth remains modest. No new full finite perturbation solve: old
+full consistency and tight temporal control cover only0...2Tref.
+
+**Qualifications:** p16trigger true, but forecast1562.680>remaining1374.553s,
+therefore new p16 NOT_RUN. Newmaximumincrease is18.22times historical sampled
+spatial curve difference9.45769e-4, which is not a bound on the new interval.
+Temporal and direct spatial checks there NOT_RUN; all-field spatial PARTIAL,
+especiallyc/velocities, retained fromK23. No globally resolved spatial gain,
+asymptotic stability, full-input-space supremum or physical3Djoint validation.
+
+**Costs/profiling:** actual3newIVPs=2planar(including authorizedoutputrepeat)
++1matrix tangent(3columns), full/FEM/static0. Successfulbase478.240s,
+39044steps,273790RHS,2Jac/326LU; tangent397.207s,6130steps,88154RHS,
+81316OUToperator evaluations. Budgetcharge1325.447/2700s includes450s
+firstattempt; actual firstelapsed-to-file443.621s is qualified, its native
+counters unavailable. Peak.641045GiB/4GiB,one thread,sequential. Base RHS
+327.589s andsafety116.388s dominate; RadauLU factor/solve12.727s(~2.66%).
+Variablemassassembly/factor113.408s is included inmasssolve andRHS.
+Tangentoperator391.612s(~98.59%) dominates. Same saved-state cold-cache
+optimization speedup1.2605; whole-IVP speedup on identical task NOT_RUN.
+Saved-polynomial FFT observes fastc velocities~5.8cycles/time compared
+withmainbend~.049, supporting a fast internal timescale without proving
+tolerances can safely be relaxed.
+
+Observed combinedp12 prefix+extensioncost1730.184s (~28.84min/point,
+7.15min/Tref),p16old2T1674.668s. Large maps need prior repeated-operator
+optimization; matrix-free tangent and reducedbase are future proposals only.
+ThreePDF+PNG,NPZ/CSV,source/native/resource/cache evidence; targeted tests
+and zero-scientific-call replay verified in bundle. No smoothing,phasefit
+or amplitude fitting. All historicalstatuses and deferred idealjoint/action
+questions preserved; afterreportCcalculations stop.
+
+## NLSP-K25
+
+**NUMERICAL_PARTIAL**, 2026-10-11, [D24](decisions.md#nlsp-d24),
+[отчёт](../numerics/nlsp_resonant_spatial_coupling_screening.md),
+bundle results/nlsp_resonant_spatial_coupling_screening/898f8968922f23c2.
+Для C: COUPLING_PRESENT_NO_GROWTH_MECHANISM_IDENTIFIED.
+
+Ωp12=0.31339016592943; OUT sorted frequencies:
+0.077739669905,0.215653485752,0.421095613258,0.631279124862,0.841798354590.
+Прежняя третья выбранная форма — sorted5. Вектор PL соответствует сохранённому
+p12 начальному направлению с MAC0.999999999829; p16 частота в операторе не используется.
+E0-unit complex R± и L=RᴴE0 имеют duality residual7.94e−13.
+
+Ведущая связь 1↔3 на Ω имеет порядок1.00009198, g0.00174563,
+Δ−0.02996578, negative pair product. Связь 2↔5 на 2Ω имеет порядок2.00000009,
+Δ+0.000635463,g0.000128918,P−1.66199e−8: изолированный обмен, не прямой рост.
+Постоянная projected поправка даёт Δmean−0.002432204; это не новые NLчастоты.
+Все resolved self/sum indicators C после прямой mean correction <0.091.
+Ω≈4ω1 не создаёт leading self parametric link: нужна отсутствующая Ω/2
+модуляция; direct one-PL/four-OUT action term имеет степень5, вне quartic.
+
+32/64-phase coefficient difference1.23e−15; Richardson difference2.24e−11.
+На сохранённом nonlinear окне первые две гармоники имеют relative L2 residual
+2.8975%; actual coefficient5←2/2Ω примерно на18% меньше harmonic ansatz.
+При прежнем G1.070265720 доли squaredE0 norm modes1/3=95.17%/4.44%,
+modes2+5≈0.31%. Это поддерживает mixing1/3, но не устанавливает причину gain.
+Косвенные двухшаговые связи O(a²), поправки основной орбиты и higher-mode
+paths не включены в полный normal form; новый динамический контроль не выполнен.
+
+Пять μ завершены. При μ=0 PL parity−1,OUT=(+,-,+,-,+), Jacobian symmetry
+residual5.30e−15. Частотная близость Ω≈2ω2 неактивна на первой гармонике:
+self coupling≈6.5e−14 подавлен симметрией. Nonzero sum1+5/2Ω имеет
+mean ratio≈0.520, но direct growth indicator отсутствует. MACPL0.368 и
+OUT4/5 MAC0.663/0.697 не дают уверенного correspondence с μ0.1.
+Среди resolved points лучший self/sum ratio≈0.172 при μ0.1 — всё ещё далеко.
+Убедительная геометрия для следующего nonlinear experiment не найдена.
+
+Затраты25.862 s/900 s, включая5s conservative preflight charge;
+3537 pointwiseJacobian,17 limitedeigenproblems,0ODE/FEM/Floquet.
+Две PDF+PNG, complex NPZ, CSV, source/amplitude/phase/cache evidence,
+65 targeted+related regression tests PASS. Все шесть физических kernels,
+родительские bundles/manifest hashes и научные статусы сохранены.
+Историческая spatial qualification c/velocities PARTIAL не закрыта;
+это не доказательство resonance, instability, critical amplitude или 3Djoint.
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION и idealjoint/c1=c2 отложены; STOP.

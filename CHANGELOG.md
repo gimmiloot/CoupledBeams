@@ -1,6 +1,93 @@
 # CHANGELOG
 
+## 2026-10-11
+
+- Added scoped `--resonant-screening` to the existing coupled sensitivity CLI:
+  p12 modal duality, both frequency signs, full-Jacobian Fourier projection,
+  amplitude-order controls and five fixed mu points; no new ODE/FEM/Floquet.
+  C has resolved O(a)/O(a²) couplings, including the near difference 2↔5 on
+  2Omega, but no direct parametric growth candidate. Equal-arm self coupling
+  is suppressed by symmetry; modal correspondence at mu=0 remains unresolved.
+  Overall NUMERICAL_PARTIAL; historical gain and all physical kernels retained.
+- Archived coefficients, profiles, actual-window diagnostics, two PDF+PNG
+  figures and 25.862 s numerical budget charge. Added targeted regression/cache
+  checks, canonical report and NLSP-D24/K25; no next nonlinear experiment chosen.
+
+- Continued C from saved2Tref states to one lowest OUT period at p12:
+  restricted Gdisp3=1.0702657197 at2.747Tref. P16 growth trigger passes,
+  but remaining1374.553s is below1562.680s reserved forecast; result remains
+  CONSTRUCTION_C_LONGER_EXPLORATORY_P12 with new-interval numerical PARTIAL.
+  Three new IVPs include one separately authorized repeat after a dense-output
+  writer rejected nonzero start time; the failed archive attempt is preserved.
+  Total budget charge1325.447s/2700s, peak.641GiB, no finite full/FEM/maps.
+- Added --construction-c-longer to the existing CLI, scoped configs/helper,
+  absolute-time restart options and explicit initial tangent matrix without
+  renormalization. Dense writer keeps its zero-origin default and accepts an
+  explicit t_start. One OUT-column assembly optimization preserves the frozen
+  kernels and agrees with the full Jacobian; cold saved-state speedup1.26x.
+  Profiling identifies RHS/safety/mass costs in the base and operator assembly
+  in tangent propagation. Three figures, NPZ/CSV, cache checks and D23/K24
+  preserve historical statuses and deferred scientific questions.
+
+- C experiment completed2Tref with Gdisp3=1.0530286991, p12=1.0530316774,
+  resolved limited functional gain and full seven-field relative mismatch
+  1.545e-7. Actual3nonlinear+5matrix tangent IVPs take5551.842s,peak1.103GiB.
+  Physical v stays near its initial scale; contraction/velocity spatial
+  qualifications remain PARTIAL. Four figures, raw arrays/native states,
+  source/resource/cache evidence and D22/K23 are archived; no5T/maps/FEM.
+
+- Added --construction-c as a preset of the existing coupled sensitivity CLI,
+  with a scoped config/helper/report and targeted regressions. C has identical
+  b=.05,h=.10 sections, a complete lowest bending-dominant planar mode at
+  max abs w=.005 and three energy-orthonormal displacement-only OUT seeds.
+  Frozen kernels, joint/basis conventions and historical bundles are preserved.
+  The limited p12/p16 and optimal-input temporal controls retain component
+  qualifications, including contraction and velocity spatial sensitivity.
+- Added an optional output-storage flag to the shared Radau helper: all native
+  accepted states can be streamed with exact timestamps and native final state,
+  preserving all requested comparison samples. Default dense archival and
+  numerical solver settings are unchanged; a mock regression checks equivalence.
+  C source, attempt, resource and cache evidence lives in its separate namespace.
+
 ## 2026-10-10
+
+- Authorized A/B sensitivity continuation adds --resume-sensitivity to the
+  existing CLI, a scoped config/helper and focused tests. Frozen physical
+  kernels and both historical bundles remain intact. Mixed/sign checks pass
+  with order1.99999; S4 gains1.00989868(A)/1.03622225(B), zero-base controls
+  and optimal finite seven-field confirmations pass at p16. Six nonlinear
+  and five tangent IVPs cost6520.03s/7200s,peak3.633GiB; one B Newton and no
+  new A base/FEM/map. Updated p12 preflight1316s exceeds the remaining680s,
+  so spatial control is NOT_RUN and the outcome is NUMERICAL_PARTIAL.
+  Native accepted times, raw/dense states, physical input velocities, five
+  CSV exports, four PDF+PNG figures and NLSP-D21/K22 preserve qualifications.
+  DOP853 tangent propagation uses the unchanged full Jacobian; historical
+  Radau defaults/guards and all scientific thresholds stay unchanged.
+
+- Scoped torsional tangent diagnostic extends the existing coupled-pilot CLI
+  with --torsion-diagnostic/config/helper/tests, native tangent dense archival
+  and an explicit optional max_step; historical defaults/guards stay intact.
+  Read-only checks reproduce the old failure, confirm IC/metric/dense/Jacobian
+  consistency and locate velocity error mainly in psi_t. One tangent and
+  three full short runs identify full temporal/tolerance error: primary
+  mismatch3.73877e-8/9.34778e-9,order1.99987; extra full change1.52e-10.
+  Numerical cost681.87s/1200s. NUMERICAL_FLOOR_IDENTIFIED is separate from
+  the unchanged historical BLOCKED_BY_TANGENT_CHECK. Two PDF+PNG figures,
+  CSV/NPZ/provenance and NLSP-D20/K21 preserve physics and deferred questions;
+  no static/base/eigen/FEM/gain/map calculation or automatic pilot resume.
+
+- NLSP two-arm planar-sensitivity pilot adds one scoped CLI, endpoint-lifted
+  variational assembly, frozen two-geometry config, Jacobian tangent/full
+  perturbation diagnostics and targeted tests. Assembly/geometry gates PASS;
+  A p16 base reaches 2Tref. Six nonlinear calls (including one cost probe) and
+  two tangent calls complete in 696.03 s; torsional normalized amplitude
+  trend fails (6.90e-8 to 8.87e-8), overall BLOCKED_BY_TANGENT_CHECK.
+  Read-only source/velocity/floor diagnostics preserve FAIL, first cost
+  forecast and stopped execution evidence. No gain/geometry contrast, B/p24
+  dynamics, FEM or parameter map is computed. Two PDF+PNG figures and raw
+  CSV/NPZ, report, NLSP-D19/K20 and deferred two-parameter action check retain
+  frozen physics/joint conditions and historical qualifications. 131 tests
+  pass without hidden physical integrations.
 
 - NLSP seven-field spatial verification adds --spatial-verification to the
   existing continuation CLI, scoped quartic Galerkin/static-release/native

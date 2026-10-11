@@ -294,7 +294,7 @@ def freeze_horizon(bundle, item, summary, candidate_metrics):
     return decision
 
 
-def save_dense_records(path, records):
+def save_dense_records(path, records, *, t_start=0.):
     if not records:
         raise ValueError("No accepted Radau dense records")
     payload = {name: np.array([record[name] for record in records])
@@ -303,7 +303,7 @@ def save_dense_records(path, records):
         raise ValueError("Expected the existing Radau cubic dense coefficients")
     if any(not np.isfinite(a).all() for a in payload.values()):
         raise ValueError("Nonfinite accepted Radau output")
-    if (payload["t_old"][0] != 0. or np.any(payload["t"] <= payload["t_old"])
+    if (payload["t_old"][0] != t_start or np.any(payload["t"] <= payload["t_old"])
         or not np.array_equal(payload["t_old"][1:], payload["t"][:-1])):
         raise ValueError("Accepted Radau intervals are not a contiguous actual prefix")
     np.savez_compressed(path, **payload)

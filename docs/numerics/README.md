@@ -1,9 +1,31 @@
 # Numerical Policies
 
+- [Resonant spatial coupling screening](nlsp_resonant_spatial_coupling_screening.md):
+  full-Jacobian modal/harmonic diagnostic without new ODEs; C interactions
+  resolved, no direct growth candidate, mu=0 correspondence unresolved.
+
+- [Construction C modal sensitivity](nlsp_construction_C_modal_sensitivity.md):
+  one modal amplitude, displacement-only OUT seeds, fixed-energy restricted
+  gain and bounded spatial/time controls; no new FEM or parameter map.
+
+- [Authorized two-arm sensitivity continuation](nlsp_coupled_planar_sensitivity_resume.md):
+  mixed/sign consistency, four-input reference-energy gain, independent full
+  nonlinear responses and bounded numerical qualifications. Historical results
+  remain separate; no parameter map or stability certificate.
+
 This directory contains project-wide numerical workflow policies. These
 policies define how calculations are organized, checked, resumed, and
 reported; they do not define the governing equations of individual physical
 models.
+
+- [Addressed torsional tangent diagnostic](nlsp_coupled_torsion_tangent_diagnostic.md) --
+  historical failure preserved; independent short temporal controls identify
+  the full-solver numerical floor and recover observed delta-squared response.
+
+- [Two-arm planar sensitivity pilot](nlsp_coupled_planar_sensitivity_pilot.md) --
+  endpoint lifting, common seven-DOF rigid joint, tangent/full nonlinear
+  checks and restricted reference-energy initial-state gain. Two frozen
+  geometries and bounded 2Tref programme; no new FEM or parameter map.
 
 - [Seven-field spatial nonlinear verification](nlsp_spatial_nonlinear_3d_fem_verification.md) --
   six 1D and four actual medium/fine 3D trajectories to .25T1; overall
@@ -76,3 +98,5 @@ models.
 
 Model-specific equations, root-quality thresholds, and physical assumptions
 remain in their own theory, implementation, and validation documents.
+
+- [Construction C to one OUT period and cost audit](nlsp_construction_C_longer_sensitivity.md) — saved-state p12 continuation,Gdisp3=1.07027; conditionalp16 NOT_RUN bybudget,newinterval numericalPARTIAL; immutable output failure/authorizedrepeat,no maps.
