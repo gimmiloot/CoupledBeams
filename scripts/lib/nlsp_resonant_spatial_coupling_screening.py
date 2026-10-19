@@ -18,6 +18,10 @@ CONFIG=p.ROOT/'data/input/nlsp_resonant_spatial_coupling_screening.json'
 OUTPUT=p.ROOT/'results/nlsp_resonant_spatial_coupling_screening'
 SMOKE=p.ROOT/'results/_smoke/nlsp_resonant_spatial_coupling_screening'
 AUTH='explicit_user_resonant_spatial_coupling_screening_2026_10_11'
+BETA_CONFIG=p.ROOT/'data/input/nlsp_beta_resonant_coupling_screening.json'
+BETA_OUTPUT=p.ROOT/'results/nlsp_beta_resonant_coupling_screening'
+BETA_SMOKE=p.ROOT/'results/_smoke/nlsp_beta_resonant_coupling_screening'
+BETA_AUTH='explicit_user_beta_resonant_coupling_screening_2026_10_11'
 
 def validate_scope(config):
     if config!=p.read(CONFIG) or config['authorization']!=AUTH:raise ValueError('Only the frozen screening is authorized')
@@ -65,8 +69,9 @@ def state_modes(K,M,omega,phi):
     R=np.block([[Q,Q],[V,-V]]);L=R.conj().T@E
     return R,L,E
 
-def modal_problem(model,mu,config,counter):
+def modal_problem(model,mu,config,counter,*,beta_deg=None):
     pc={**p.read(c.CONFIG),'lengths':[1-mu,1+mu],'planar_modes_inspected':config['planar_modes_inspected']}
+    if beta_deg is not None:pc['beta_deg']=beta_deg
     d=p.make_disc(pc,'C',config['degree'],model)
     q,modal=c.select_modal_state(d,pc);counter['linear_eigenproblems']+=1
     omega,phi=c.limited_modes(d,False,config['out_modes_retained']+config['out_modes_guard']);counter['linear_eigenproblems']+=1
@@ -92,7 +97,7 @@ def modal_problem(model,mu,config,counter):
     eigen=np.r_[1j*omega,-1j*omega];residual=float(np.linalg.norm(A0@R-R*eigen)/np.linalg.norm(R*eigen))
     if residual>2e-8:raise ArithmeticError('Zero-base state eigenpair residual')
     return {'d':d,'q':q,'Omega':modal['omega'],'modal':modal,'omega':omega,'phi':phi,'R':R,'L':L,'E':E,'A0':A0,
-        'profiles':np.array(profiles),'torsional_mass_fraction':torsion,'guard_omega':guard_omega,'mu':mu,'duality':duality,'eigen_residual':residual}
+        'profiles':np.array(profiles),'torsional_mass_fraction':torsion,'guard_omega':guard_omega,'mu':mu,'duality':duality,'eigen_residual':residual,'beta_deg':d.beta_deg}
 
 def harmonics(values,phases,orders):
     return np.array([np.einsum('t,tij->ij',np.exp(-1j*m*phases),values)/len(phases) for m in orders])
@@ -105,7 +110,7 @@ def projected_at(problem,state,counter):
 def harmonic_sample(problem,factor,count,orders,counter,deadline):
     phases=np.arange(count)*2*np.pi/count;values=[];d=problem['d'];q=problem['q']*factor
     for phase in phases:
-        if time.perf_counter()>deadline:raise TimeoutError('900-second screening ceiling')
+        if time.perf_counter()>deadline:raise TimeoutError('Screening numerical ceiling')
         state=np.r_[q*np.cos(phase),-problem['Omega']*q*np.sin(phase)]
         values.append(projected_at(problem,state,counter))
     return harmonics(np.array(values),phases,orders),np.array(values)
@@ -154,6 +159,7 @@ def save_problem(b,label,problem):
     np.savez_compressed(b/(label+'_modes.npz'),omega=problem['omega'],phi=problem['phi'],right=problem['R'],left=problem['L'],metric=problem['E'],
         planar_initial_shape=problem['q'],OUT_physical_profiles=problem['profiles'],x=np.linspace(0,1,201),M0=problem['d'].M0,K0=problem['d'].K)
     p.write(b/(label+'_mode_metadata.json'),{'mu':problem['mu'],'lengths':problem['d'].lengths,'degree':problem['d'].p,'Omega':problem['Omega'],
+        'beta_deg':problem['d'].beta_deg,
         'planar':problem['modal'],'omega':problem['omega'],'guard_omega':problem['guard_omega'],'torsional_mass_fraction':problem['torsional_mass_fraction'],
         'state_duality_max_error':problem['duality'],'zero_operator_eigen_residual':problem['eigen_residual'],
         'named_historical_modes':'historical omega1,omega2,omega3 correspond to OUT sorted1,2,5; p16 references are not projected here'})
@@ -371,6 +377,241 @@ def plot_saved(b):
         finish(fig,'mu_resonant_coupling_screening')
     p.write(b/'figure_provenance.json',{'figures':plots,'new_scientific_calls':0,'no_interpolation_of_parameter_map':True,
         'lines_between_five_points':'visual guides only, no adaptive search','modal_indices_are_sorted_positions':True});return plots
+
+def beta_validate_scope(config):
+    if config!=p.read(BETA_CONFIG) or config['authorization']!=BETA_AUTH:
+        raise ValueError('Only the frozen five-angle screening is authorized')
+    if (config['degree']!=12 or config['mu']!=.1 or config['lengths']!=[.9,1.1]
+        or config['beta_points']!=[15.,30.,45.,60.,75.] or config['amplitude']!=.005
+        or config['numerical_budget_seconds']>300 or config['new_ODE_integrations']
+        or config['new_FEM_jobs'] or config['automatic_retry']):raise ValueError('Beta scope expansion')
+    return config
+
+
+def beta_verify_sources(config):
+    parent=p.ROOT/config['parent']
+    if p.sha(parent/'manifest.json')!=config['parent_manifest_sha256']:
+        raise ValueError('Immutable resonant-screening parent changed')
+    return cache(parent)
+
+
+def beta_prepare(path=BETA_CONFIG):
+    config=beta_validate_scope(p.read(path));beta_verify_sources(config)
+    for old in BETA_OUTPUT.glob('*/provenance.json') if BETA_OUTPUT.exists() else []:
+        item=p.read(old)
+        if item['config']['authorization']==BETA_AUTH:
+            if item['config']!=config:raise ValueError('Authorization already used with different settings')
+            return old.parent,item,p.cache(old.parent)
+    parent=p.read(p.ROOT/config['parent']/'provenance.json')
+    files={**p.code_hashes(),Path(__file__).relative_to(p.ROOT).as_posix():p.sha(__file__),
+        BETA_CONFIG.relative_to(p.ROOT).as_posix():p.sha(BETA_CONFIG)}
+    item={'schema':'nlsp-beta-resonant-coupling-screening-v1','config':config,
+        'physical_source_config':parent['physical_source_config'],'source_artifacts':parent['source_artifacts'],
+        'source_manifests':{**parent['source_manifests'],'resonant_parent':{'path':config['parent'],'sha256':config['parent_manifest_sha256']}},
+        'code_hashes':files,'initial_state':p.read(BETA_SMOKE/'initial_state.json'),'interpreter':sys.executable,
+        'mathematical_operator':'unchanged full analytic Jacobian, E0 dual complex modes, direct resonant-term pair algebra',
+        'no_new_ODE_or_Floquet':True}
+    fp=hashlib.sha256(json.dumps(item,sort_keys=True).encode()).hexdigest()[:16];b=BETA_OUTPUT/fp
+    if b.exists():raise ValueError('Preserve interrupted beta attempt')
+    b.mkdir(parents=True);p.write(b/'provenance.json',item);p.write(b/'config.json',config)
+    folder=b/'execution_code';folder.mkdir()
+    for f in files:shutil.copyfile(p.ROOT/f,folder/Path(f).name)
+    summary={'overall':'PREPARED','completed':False,'hard_stop':False,'numerical_seconds':0.,
+        'calls':{'nonlinear_ODE':0,'tangent_ODE':0,'CCX':0,'Gmsh':0,'linear_eigenproblems':0,'pointwise_Jacobian':0,'low_subspace_Ritz':0,'isolated_pair_static_algebra':0},
+        'stages':{'source':'PASS','B':'NOT_RUN','C':'NOT_RUN','D':'NOT_RUN'},'points':{}}
+    p.finalize(b,item,summary);return b,item,summary
+
+
+def beta_cache(b):
+    beta_verify_sources(p.read(Path(b)/'config.json'));return p.cache(b)
+
+
+def beta_phase_invariance(problem,H,uncertainty,config):
+    """Change time origin and complex modal gauges; products/eigenvalues stay invariant."""
+    base=pair_rows(problem,H,uncertainty,config);k=len(problem['omega']);orders=config['harmonics']
+    alpha=np.arange(1,k+1)*.173;D=np.exp(1j*np.r_[alpha,-alpha]);transformed=[]
+    for m,h in zip(orders,H):transformed.append(np.exp(1j*m*.731)*(h/D[:,None])*D[None,:])
+    other=pair_rows(problem,np.array(transformed),uncertainty,config)
+    error=max(max(abs(complex(x['product']['real'],x['product']['imag'])-complex(y['product']['real'],y['product']['imag'])),
+        abs(x['isolated_pair_averaging_growth_proxy']-y['isolated_pair_averaging_growth_proxy'])) for x,y in zip(base,other))
+    if error>config['phase_invariance_absolute_gate']:raise ArithmeticError('Pair phase invariance failed')
+    return {'maximum_product_or_growth_difference':error,'time_origin_shift_radians':.731,'modal_gauges_radians':alpha,
+        'products_and_pair_eigenvalues_invariant':True,'new_Jacobian_or_ODE_calls':0}
+
+
+def beta_correspondence(previous,problem,config):
+    mac=physical_MAC(previous,problem);old,new=linear_sum_assignment(-mac)
+    assigned=mac[old,new];margin=np.array([mac[i,j]-max(np.delete(mac[i],j)) for i,j in zip(old,new)])
+    x1=np.r_[previous['q'],np.zeros(previous['d'].ndof)];x2=np.r_[problem['q'],np.zeros(problem['d'].ndof)]
+    f1=l.a.physical_observations(previous['d'],x1[None,:])[0][0]
+    f2=l.a.physical_observations(problem['d'],x2[None,:])[0][0]
+    co=previous['d'].arms[0].coefficients;weights=np.array([co.m,co.m,co.m,co.jp+co.jb,co.jb,co.jp,co.jp])
+    quad=np.ones(201);quad[[0,-1]]=.5;weight=np.array(problem['d'].lengths)[:,None,None]*quad[None,:,None]*weights/200
+    plmac=float(np.sum(weight*f1*f2)**2/(np.sum(weight*f1*f1)*np.sum(weight*f2*f2)))
+    valid=bool(min(assigned)>=config['correspondence_MAC_gate'] and min(margin)>=config['correspondence_margin_gate'] and plmac>=config['correspondence_MAC_gate'])
+    return {'status':'PASS' if valid else 'UNRESOLVED','from_beta_deg':previous['beta_deg'],'to_beta_deg':problem['beta_deg'],
+        'MAC_matrix':mac,'matching_sorted_indices':new+1,'assigned_MAC':assigned,'minimum_assigned_MAC':float(min(assigned)),
+        'row_assignment_margins':margin,'planar_MAC':plmac,
+        'comparison_contract':'common material coordinate and local physical fields with reference kinetic weights; no forced analytic branch_id'}
+
+
+def beta_enrich_rows(problem,H,full,uncertainty,config,correspondence):
+    rows=pair_rows(problem,H,uncertainty,config);k=len(problem['omega']);orders=config['harmonics']
+    for row in rows:
+        i=row['i_sorted']-1;j=row['j_sorted']-1;m=row['harmonic']
+        rindex,sindex=(j,i) if row['kind']=='difference' else (i,k+j)
+        observed=[]
+        for index,ridx,sidx in [(orders.index(m),rindex,sindex),(orders.index(-m),sindex,rindex)]:
+            h0=abs(full[0,index,ridx,sidx]);hhalf=abs(full[1,index,ridx,sidx])
+            observed.append(None if min(h0,hhalf)<=1e-13 else float(np.log2(h0/hhalf)))
+        expected=1 if m==1 else 2;order_pass=all(x is not None and abs(x-expected)<=config['amplitude_order_gate'] for x in observed)
+        hr=H[orders.index(0),rindex,rindex];hs=H[orders.index(0),sindex,sindex]
+        h=complex(row['coupling_forward']['real'],row['coupling_forward']['imag']);back=complex(row['coupling_reverse']['real'],row['coupling_reverse']['imag'])
+        eigen=np.linalg.eigvals([[hr-1j*row['signed_detuning']/2,h],[back,hs+1j*row['signed_detuning']/2]])
+        row.update(beta_deg=problem['beta_deg'],amplitude_order_expected=expected,amplitude_orders_observed=observed,
+            amplitude_order_gate='PASS' if order_pass else 'UNRESOLVED',modal_correspondence_status=correspondence['status'],
+            torsional_mass_fractions=[problem['torsional_mass_fraction'][i],problem['torsional_mass_fraction'][j]],
+            pair_eigenvalues=[complex_row(v) for v in eigen],mean_diagonal=[complex_row(hr),complex_row(hs)])
+        row['direct_term_candidate'] &= order_pass and correspondence['status']=='PASS'
+        growth=row['isolated_pair_averaging_growth_proxy']
+        row['characteristic_growth_time']=1/growth if row['direct_term_candidate'] else None
+        row['growth_time_in_reference_periods']=problem['Omega']/(2*np.pi*growth) if row['direct_term_candidate'] else None
+        row['pair_classification']='candidate_exponential_growth' if row['direct_term_candidate'] else 'unresolved' if not row['coupling_resolved'] or not order_pass else 'oscillatory_exchange' if row['kind']=='difference' and row['product']['real']<0 else 'oscillatory_pair_off_resonance'
+    return rows
+
+
+def beta_run(b,item,summary):
+    if summary['completed'] or summary['hard_stop']:return summary
+    config=item['config'];started=time.perf_counter();deadline=started+config['numerical_budget_seconds']-summary['numerical_seconds']
+    previous=None;anchor=None;allrows=[]
+    try:
+        model,_,_=p.sources(item['physical_source_config'])
+        for beta in (30.,15.,45.,60.,75.):
+            if time.perf_counter()>deadline:raise TimeoutError('300-second beta ceiling')
+            if beta==45.:previous=anchor
+            point_start=time.perf_counter();prob=modal_problem(model,.1,config,summary['calls'],beta_deg=beta)
+            summary['calls']['low_subspace_Ritz']+=1
+            case=b/f'beta_{beta:02.0f}';case.mkdir();save_problem(case,'C',prob)
+            planar_fields=l.a.physical_observations(prob['d'],np.r_[prob['q'],np.zeros(prob['d'].ndof)][None,:])[0][0]
+            np.savez_compressed(case/'planar_physical_profile.npz',fields=planar_fields,x=np.linspace(0,1,201))
+            physics={'beta_deg':beta,'lengths':prob['d'].lengths,'coefficients':[vars(a.coefficients) for a in prob['d'].arms],
+                'local_to_global_bases':prob['d'].bases,'T7':prob['d'].T7,'joint_checks':prob['d'].joint_diagnostics(prob['q'],np.zeros(prob['d'].ndof)),
+                'safety':prob['d'].safety(prob['q']),'actual_max_w':p.polynomial_w_max(prob['d'],prob['q'])[0]}
+            if not all(a['mass_positive'] for a in physics['safety']):raise ArithmeticError('Probe mass positivity failed')
+            if any(physics['joint_checks'][key]>2e-12 for key in ('translation_difference','orientation_difference','contraction_difference')):
+                raise ArithmeticError('Probe rigid-joint compatibility failed')
+            if anchor is not None and physics['coefficients']!=[vars(a.coefficients) for a in anchor['d'].arms]:
+                raise ArithmeticError('Physical coefficients changed across beta')
+            p.write(case/'geometry_and_safety.json',physics)
+            if anchor is None:
+                with np.load(p.ROOT/config['parent']/(config['reference_mu_label']+'_modes.npz')) as z:
+                    checks={'frequency_difference':float(max(abs(z['omega']-prob['omega']))),
+                        'M0_difference':float(max(abs(z['M0']-prob['d'].M0).flat)),
+                        'K0_difference':float(max(abs(z['K0']-prob['d'].K).flat)),
+                        'initial_shape_difference':float(max(abs(z['planar_initial_shape']-prob['q'])))}
+                if max(checks.values())>config['coefficient_reference_absolute_gate']:raise ArithmeticError('Saved beta30 source mismatch')
+                anchor=prob;correspondence={'status':'PASS','reference':'saved beta30 mu0.1','minimum_assigned_MAC':1.,'planar_MAC':1.}
+                p.write(case/'reference_checks.json',checks)
+            else:correspondence=beta_correspondence(previous,prob,config)
+            p.write(case/'mode_correspondence.json',correspondence)
+            summary['numerical_seconds']+=time.perf_counter()-point_start
+            stage_b(case,item,summary,prob,deadline)
+            post_start=time.perf_counter()
+            with np.load(case/'C_harmonic_coefficients.npz') as z:H=z['leading_at_full_amplitude'];full=z['full'];uncertainty=z['numerical_difference']
+            if beta==30.:
+                with np.load(p.ROOT/config['parent']/(config['reference_mu_label']+'_coefficients.npz')) as z:err=float(np.max(abs(H-z['leading_at_full_amplitude'])))
+                checks['harmonic_coefficient_difference']=err;p.write(case/'reference_checks.json',checks)
+                if err>config['coefficient_reference_absolute_gate']:raise ArithmeticError('Saved harmonic coefficient mismatch')
+            p.write(case/'pair_phase_invariance.json',beta_phase_invariance(prob,H,uncertainty,config))
+            rows=beta_enrich_rows(prob,H,full,uncertainty,config,correspondence)
+            reflection_errors=[];d=prob['d']
+            for phase in (0.,.7):
+                x=np.r_[prob['q']*np.cos(phase),-prob['Omega']*prob['q']*np.sin(phase)]
+                J=d.jacobian(0,x);summary['calls']['pointwise_Jacobian']+=1
+                reflection_errors.append(float(max(np.max(abs(J[np.ix_(d.state_out,d.state_plane)])),np.max(abs(J[np.ix_(d.state_plane,d.state_out)])))))
+            if max(reflection_errors)>1e-10:raise ArithmeticError('Planar reflection block selection failed')
+            p.write(case/'planar_reflection_selection.json',{'cross_blocks_max':max(reflection_errors),'no_equal_arm_exchange_symmetry_assumed':True})
+            # stage_b once, phase/gauge control twice, pair enrichment twice
+            # (base classification and explicitly retained eigenvalues).
+            summary['calls']['isolated_pair_static_algebra']+=5*len(rows)
+            p.write(case/'interaction_rows.json',rows);allrows+=rows
+            summary['points'][str(beta)]={'Omega':prob['Omega'],'omega':prob['omega'],'correspondence':correspondence,
+                'resolved_couplings':sum(r['coupling_resolved'] for r in rows),'candidates':sum(r['direct_term_candidate'] for r in rows)}
+            previous=prob;summary['numerical_seconds']+=time.perf_counter()-post_start
+            p.write(b/'interaction_rows.json',allrows);p.finalize(b,item,summary)
+        candidates=[row for row in allrows if row['direct_term_candidate']]
+        partial=any(v['correspondence']['status']!='PASS' for v in summary['points'].values())
+        summary.update(completed=True,overall='DIRECT_GROWTH_CANDIDATE_IDENTIFIED' if candidates else 'MODE_IDENTIFICATION_PARTIAL' if partial else 'COUPLING_PRESENT_NO_DIRECT_GROWTH_CANDIDATE',
+            no_direct_growth_status=None if candidates else 'NO_DIRECT_GROWTH_CANDIDATE_IN_TESTED_BETA_SET',candidate_count=len(candidates))
+        summary['stages'].update(B='PASS',C='PASS',D='PARTIAL' if partial else 'PASS')
+        summary['numerical_seconds']=time.perf_counter()-started
+        p.write(b/'candidate_rows.json',candidates);beta_export(b);beta_plot(b)
+    except Exception as error:
+        summary.update(hard_stop=True,overall='NUMERICAL_PARTIAL' if isinstance(error,TimeoutError) else 'BLOCKED',stop_reason=type(error).__name__+': '+str(error))
+        summary['numerical_seconds']=time.perf_counter()-started
+    p.finalize(b,item,summary);return summary
+
+
+def beta_export(b):
+    rows=p.read(b/'interaction_rows.json')
+    names=['beta_deg','Omega','kind','i_sorted','j_sorted','harmonic','signed_detuning','detuning_over_pump','sqrt_abs_product',
+        'mean_shifted_detuning','two_coupling_over_mean_shifted_detuning','coupling_resolved','amplitude_order_gate','modal_correspondence_status','pair_classification','isolated_pair_averaging_growth_proxy']
+    with (b/'interaction_coefficients.csv').open('w',encoding='utf8',newline='') as f:
+        writer=csv.DictWriter(f,fieldnames=names+['h_real','h_imag','k_real','k_imag','product_real','product_imag']);writer.writeheader()
+        for r0 in sorted(rows,key=lambda r:(r['beta_deg'],r['kind'],r['i_sorted'],r['j_sorted'],r['harmonic'])):
+            r1={key:r0[key] for key in names}
+            for key,source in [('h','coupling_forward'),('k','coupling_reverse'),('product','product')]:
+                for part in ('real','imag'):r1[key+'_'+part]=r0[source][part]
+            writer.writerow(r1)
+
+
+def beta_plot(b):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    rows=p.read(b/'interaction_rows.json');config=p.read(b/'config.json');plots=[]
+    # Include the two closest self channels and retain the historical difference
+    # pair. Lines assert correspondence only when every point passes its guide.
+    channels=[('self',2,2,1),('self',3,3,2),('sum',1,4,2),('difference',2,5,2)]
+    for metric,name,ylabel in [('mean_shifted_detuning','beta_resonant_detunings','direct mean-corrected detuning [1/time]'),
+        ('two_coupling_over_mean_shifted_detuning','beta_resonant_interactions','2 sqrt(abs(h k)) / abs(effective detuning)')]:
+        fig,axes=plt.subplots(2,2,figsize=(10,6.5),sharex=True)
+        for ax,(kind,i,j,m) in zip(axes.flat,channels):
+            data=sorted([r for r in rows if (r['kind'],r['i_sorted'],r['j_sorted'],r['harmonic'])==(kind,i,j,m)],key=lambda r:r['beta_deg'])
+            for r0 in data:
+                color='red' if r0['direct_term_candidate'] else 'tab:blue'
+                ax.plot(r0['beta_deg'],r0[metric],'o',color=color,mfc=color if r0['modal_correspondence_status']=='PASS' else 'none')
+            if all(r['modal_correspondence_status']=='PASS' for r in data):ax.plot([r['beta_deg'] for r in data],[r[metric] for r in data],color='tab:blue',alpha=.5)
+            if metric=='mean_shifted_detuning':ax.axhline(0,color='grey',ls=':')
+            else:
+                maximum=max(r[metric] for r in data)
+                ax.set_ylim(0,max(.01,maximum*1.12))
+                if kind!='difference':
+                    if maximum>=.9:ax.axhline(1,color='grey',ls=':')
+                    else:ax.text(.97,.92,'all ratios < 1',ha='right',transform=ax.transAxes,fontsize=8)
+                else:ax.text(.97,.92,'exchange; ratio is not a growth test',ha='right',transform=ax.transAxes,fontsize=8)
+            ax.grid(alpha=.2)
+            ax.set_title(f'{kind} {i},{j}, m={m}; local sorted modes');ax.set_ylabel(ylabel,fontsize=8);ax.set_xticks(config['beta_points'])
+        for ax in axes[-1]:ax.set_xlabel('beta [degree]')
+        fig.suptitle('Five angles only; open markers: identification unresolved; red: direct pair candidate',fontsize=10);fig.tight_layout()
+        for ext in ('pdf','png'):fig.savefig(b/(name+'.'+ext),dpi=180,bbox_inches='tight');plots.append(name+'.'+ext)
+        plt.close(fig)
+    p.write(b/'figure_provenance.json',{'figures':plots,'new_scientific_calls':0,'illustrated_channels':channels,
+        'sorted_positions_not_forced_branches':True,'difference_channel_ratio_not_a_growth_criterion':True});return plots
+
+
+def beta_main(argv=None):
+    parser=argparse.ArgumentParser(description='Five-angle pointwise diagnostic; no IVP')
+    mode=parser.add_mutually_exclusive_group(required=True);mode.add_argument('--compute',action='store_true')
+    mode.add_argument('--report-only',type=Path);mode.add_argument('--plot-only',type=Path);parser.add_argument('--config',type=Path,default=BETA_CONFIG)
+    args=parser.parse_args(argv)
+    if args.report_only or args.plot_only:
+        b=(args.report_only or args.plot_only).resolve();summary=beta_cache(b)
+        if args.plot_only:beta_plot(b);p.finalize(b,p.read(b/'provenance.json'),summary)
+    else:b,item,summary=beta_prepare(args.config);summary=beta_run(b,item,summary)
+    print(json.dumps(p.plain({'bundle':str(b),'overall':summary['overall'],'stages':summary['stages'],'calls':summary['calls'],
+        'seconds':summary['numerical_seconds'],'stop_reason':summary.get('stop_reason')}),indent=2))
+
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__);mode=parser.add_mutually_exclusive_group(required=True)

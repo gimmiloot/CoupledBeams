@@ -1048,3 +1048,205 @@ cache and source evidence. No next nonlinear geometry selected.
 [Report](../numerics/nlsp_resonant_spatial_coupling_screening.md),
 [D24](../memory/decisions.md#nlsp-d24), [K25](../memory/knowledge.md#nlsp-k25).
 Historical results and deferred action/ideal-joint questions preserved; STOP.
+
+## 2026-10-11 — NLSP five-angle resonant coupling diagnostic
+
+Completed fixed mu=.1, p12 screening at beta15/30/45/60/75 using the previous
+full-Jacobian modal projection. All250 channels pass coefficient resolution
+and leading a/a² order controls. No direct pair-growth candidate exists,
+even before filtering mode correspondence. At beta15 Omega≈2omega2 has
+bare ratio1.40654 but mean-corrected ratio0.96618 and imaginary pair eigenvalues;
+the selected second planar mode has MAC0.183917 with beta30 and is UNRESOLVED.
+Beta45 has2Omega≈2omega3, correctedratio0.29067. OUT correspondence passes.
+
+Actual scientific programme6.774714s/300s,10 limited eigenproblems,
+1015 Jacobian,1250 small pair solves;0ODE/FEM/Floquet. Saved beta30 K/M,
+frequencies and initial shape match exactly; coefficient difference6.62e-15.
+Counter-only audit corrects the preliminary pair counter750 to1250; no
+coefficients recomputed.22 scoped/related tests and real zero-scientific-call
+cache replay pass. TwoPDF+PNG and raw arrays/complex coefficients archived.
+[Report](../numerics/nlsp_beta_resonant_coupling_screening.md),
+[D25](../memory/decisions.md#nlsp-d25),[K26](../memory/knowledge.md#nlsp-k26).
+No nonlinear candidate selected; full second-order averaging and ideal-joint
+physical verification remain deferred. STOP after five angles.
+
+## 2026-10-11 — NLSP structural parametric-growth feasibility
+
+Selected the quadratic OUT part of the already retained quartic action:
+24kinetic/52potential monomials, exact reflection parity and zero polynomial
+residual against saved linear OUT cubic equations. Independent coupled action
+assembly matches the full Jacobian to1.44e-14; canonical Hamiltonian defect
+≤7.20e-17. No physical equations or coefficients changed.
+
+Canonical self2/beta15 has g.003821421827 and canonical sum1+2/historicalC
+has g1.611810432e-5. Both support positive formal eigenvalue at zero effective
+detuning; no universal mirror-symmetry ban. This is not an unstable actual
+geometry/orbit. Saved beta15 g.0038214554,detune−.007910428,ratio.966182,
+imaginary eigenvalues reproduce; margin.0002675172,requiredg+3.5002%,
+ideal e-fold261.6804time=18.1093Tref. Numerical indicators are much smaller.
+
+An initial diagnostic gate incorrectly tested raw velocity sum coefficients
+with a canonical metric; rejection retained in initial_gate_failure. GateA
+passed throughout. Correct momentum projection passes the unchanged frozen
+Hamiltonian threshold. No scientific trajectory was retried. Canonical direct
+mean detune−.007867007 gives ratio.971506,also oscillatory; missing second-order
+averaging and off-orbit harmonic acceleration prohibit physical threshold claims.
+Scientific programme1.393s,4Jacobian,201quadratic-action evaluations,0ODE/FEM/spectra.
+13tests and zero-scientific-call cache replay;1PDF+PNG,exactpolynomial/NPZ/CSV.
+[Report](../numerics/nlsp_out_of_plane_instability_feasibility.md),
+[D26](../memory/decisions.md#nlsp-d26),[K27](../memory/knowledge.md#nlsp-k27).
+Deferred two-parameter action expansion and physical ideal joint retained; STOP.
+
+## 2026-10-11 — β15 nonlinear planar resonance audit
+
+Fixed geometry, four physical amplitudes, p12, no ODE/FEM. Homogeneous
+weak mass-form action agrees with existing dynamics to3.96e-14; formal
+PL Omega1=0,Omega2=11.43829014. A near planar 1:3 denominator has resolved
+forcing and large third-harmonic corrections. Frozen gate B stops M1/M2;
+PLANAR_SINGLE_MODE_EXPANSION_UNRESOLVED. No dynamic candidate selected.
+Saved velocity/canonical M0 definitions remain separate; positive extrapolated
+M0 discriminants do not validate the corrected orbit.25tests PASS,cached
+scientific calls0,source bundles and physical kernels unchanged.
+[Report](../numerics/nlsp_beta15_nonlinear_planar_resonance.md),
+[D27](../memory/decisions.md#nlsp-d27),[K28](../memory/knowledge.md#nlsp-k28).
+Deferred original two-parameter expansion and physical ideal-joint audit retained.
+
+## 2026-10-11 — Fixed beta15 planar 1:3 internal resonance
+
+Two active planar modes,all90passivep12 modes and unchanged quartic action.
+Canonical gamma combines−5912.352883 direct,+3053.768713 indirect terms.
+Full-cubic algebraic phase-locked candidates at fourphysicalamplitudespass
+independent residual/energy/7-versus9harmonic/frequency controls.
+PLANAR_1TO3_RESONANT_REDUCTION_VALIDATED is limited to type-II approximation;
+type-I modulation indicated,not integrated. No OUT/Floquet/ODE/FEM.
+39tests;oldcachetest corrected to use temporarycopy and historicalPDF/manifest
+bytes restored exactly.135.056s scientific cost;no periodic solve repeated
+for writer/cache repairs. Original2parameterexpansion,physicaljoint and3Dvalidation
+remain deferred. [Report](../numerics/nlsp_beta15_planar_1to3_internal_resonance.md),
+[D28](../memory/decisions.md#nlsp-d28),[K29](../memory/knowledge.md#nlsp-k29).
+
+## 2026-10-11 — NLSP β15 full planar periodic HB / spatial Hill audit
+
+По явному заданию выполнены full92PL NewtonHB9/11 при четырёхA,
+толькоPsi0 TypeII,p12,β15/μ.1. Одна refined orbitA=.005 проходит
+строгийresidualgate8.86e-9. ДругиеA не квалифицированы,HillNOT_EVALUATED.
+Canonicalaction/Jac/Sdot identities,reflection,Fourier/alias checks проходят.
+All69OUT,N7/9 givesσ=.003411410066595,lastmodalchange1.48e-6;
+conditionale-folding20.3periods. Full92PLneutraldirection checked;
+noresolvednon-neutralgrowth. OUT_GROWTH_CANDIDATE_RESOLVED с GateB PARTIAL.
+
+About121s production/technicalchecks,0ODE/FEM. Writerqualification и
+replicaedge handling corrected безthreshold/modelchange и безповтораHB;
+initialevidence archived,alltechnical costs retained. Cache tests temporary
+copies,physicalkernels and historicalPDF/manifest hashes unchanged.
+ExistingCLI/scopedhelperextended,twofigures,tests/navigation/README/CHANGELOG,
+[D29](../memory/decisions.md#nlsp-d29),[K30](../memory/knowledge.md#nlsp-k30),
+[report](../numerics/nlsp_beta15_periodic_orbit_spatial_stability.md).
+Noautomaticspatialdynamics/typeI/scans/prefinement. Deferredissuespreserved.STOP.
+
+
+## 2026-10-11 — NLSP β15 direct dynamic OUT growth validation
+
+По отдельному явному заданию проверен один режим A=.005,Type-II Ψ=0,p12,
+β15/μ.1. Начальные HB11/Floquet states сохранены; все семь физических полей,
+масса, инерция, action, Jacobian и условия узла неизменны. За T nonlinear PL
+closure6.42e-10 в относительной E0-norm, до5T отличие от HB11≤7.84e-10.
+Negative real multiplier задаёт чередование знака; canonical-to-physical
+reconstruction учитывает массу и импульсы, OUT-скорости не обнулены.
+
+Direct tangent ODE на реальном интегрированном PL фоне даёт sigma=.0034114055,
+Hill difference4.57e-9. Full seven-field nonlinear gain5T=1.279292325,
+relative OUT/tangent error2.415e-6, energy drift3.02e-14, maxv=.735%A.
+Level2/3 numerical confirmation, не независимая physical validation.
+Short half-scale OUT error order≈2, но frozen floor gate сохраняет
+NUMERICAL_FLOOR_LIMITED; главным gates A/B/C/D/E соответствует PASS.
+
+12 ODE calls (5 PL,4 tangent,3 full segments),0 failed/retried integrations,
+0 new HB/Hill/FEM. Native endpoint writers дополнены без solver/modelchange;
+continuations не повторяют prefixes и не нормируют tangent заново на3T.
+Production+diagnostics1541.18s,regression runs34.61s,суммарно≈1575.79s/3600s.
+80 scoped tests PASS; cache tests только temporarycopies; все исторические
+PDF/manifests и user dirty changes сохранены. DYNAMIC_OUT_GROWTH_CONFIRMED_P12.
+[Report](../numerics/nlsp_beta15_dynamic_out_growth_validation.md),
+[D30](../memory/decisions.md#nlsp-d30),[K31](../memory/knowledge.md#nlsp-k31).
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION, idealjoint/c1=c2, independent3D,
+p-refinement,TypeI,large-amplitude/saturation отложены. STOP,дальнейших ODE нет.
+
+
+## 2026-10-11 — NLSP p14 spatial OUT growth check
+
+По отдельному заданию проверена та же Type-II Ψ=0 ветвь β15/μ.1,A=.005.
+p12 histories не пересчитывались. Physical seven-field resting-mass Galerkin
+projection переносит profiles/derivatives с relative error5.56e-16.
+PL2/PL4/OUT2 mode identity подтверждена MAC; full108PL HB11/13 проходит gate.
+Ω14=.435115458303789, fullindependentresidual9.01e-9,energyvariation4.29e-11.
+
+All81OUT N7/9 givesσ14=.003411315507706,ρ≈−1.0504937815;
+observedσdifference p12/p14 .00277%,stateMAC .999999999759.
+Initial48/full81 modal gate fail retained; one triggered72-mode control
+resolves the same unchanged gate,lastdifference1.05e-7. Reciprocal vector
+supports correct symplectic-dual projection of zero-velocity OUT2, nonzero.
+No new time trajectory of that state. Secondary all108PL control finds no
+resolved non-neutral growth, but N13 time-shift residual7.59e-8 fails2e-9
+neutral gate; keep PARTIAL without further HB or tolerance changes.
+
+Two p14linear eigenproblems,twoHB,eightHill solves,about157s production,
+regressions separately charged well within1800s.0ODE/FEM/p16/scans/otherbranches.
+Same kernels,coefficients,mass/inertia/maps and idealjoint/c1=c2.
+[Report](../numerics/nlsp_beta15_out_growth_p14_convergence.md),
+[D31](../memory/decisions.md#nlsp-d31),[K32](../memory/knowledge.md#nlsp-k32).
+
+### 2026-10-12 — NLSP: завершающие проверки и отчёт руководителю
+
+На сохранённой p14 Type-II β15/μ.1,A=.005 орбите установлено, что PL
+time-shift residual7.59e−8 обусловлен производной малой HB-невязки,
+преимущественно гармоникой12. Полный аналитический Jacobian, Ṡ/canonical
+transformation и независимые phase residual checks согласуются. Исходный
+2e−9 raw gate сохранён, PL stability остаётся PARTIAL. В saved resolved
+ненейтральном PL spectrum роста не найдено; global stability не заявляется.
+
+Воспроизведена симплектическая dual projection natural OUT2 state с нулевыми
+OUT velocities. Физическая растущая составляющая имеет43.28% combinedinitial
+и48.96% initialv scales, не energy fractions. Из-за отсутствия center
+Floquet eigenvectors архив не позволяет восстановить total response.
+Выполнен один short tangent IVP3T, продолженный native checkpoint до5T:
+component gain1.279285, totalE₀gain1.217986, maxv/A0.2864%.
+10T/20T даны только как spectral forecast; дальше динамика не запускалась.
+
+Подготовлены отдельный технический отчёт, русский научный LaTeX/PDF на5страниц,
+три рисунка из физических профилей/saved dynamic data, адресные regressions,
+source hashes и manifest. Physical kernels, исторические PDF/manifests,
+staging и чужие dirty changes сохранены. Новых full nonlinear/HB/Hill/FEM/p16 нет.
+Новых пакетов или runnable scripts не добавлено.
+[Technical report](../numerics/nlsp_beta15_pre_supervisor_checks.md),
+[Scientific report](../reports/nlsp_beta15_parametric_instability/README.md),
+[D32](../memory/decisions.md#nlsp-d32), [K33](../memory/knowledge.md#nlsp-k33).
+**STOP до обсуждения с руководителем.** Deferredoriginalaction, idealjoint/c1=c2,
+independent3D, furtherp-refinement, TypeI, damping/observability и saturation сохранены.
+P14_OUT_GROWTH_REPRODUCED is spatial evidence,not fullp-convergence or level4
+physical validation. Original2parameteraction,idealjoint,3D,p-refinement,
+TypeI and saturation deferred. STOP afterp14.
+
+
+### 2026-10-12 — переработка математического отчёта руководителю
+
+Канонический LaTeX/PDF полностью перестроен вокруг вывода принятой модели: M–H независимая поперечная координата и два reduced constitutive вклада, семь линейных уравнений, объективные пространственные энергии, quartic action, coordinate cubic system, явная плоская кубическая форма, вариационные условия узла и задача Флоке. Добавлена собственная схема сечения, увеличены шрифты трёх saved-data рисунков, введены четыре проверенных источника. Оригинал Mindlin–Herrmann не заявляется прочитанным.
+
+Все семь линейных и четыре плоских кубических residual coefficient-exact MATCH с сохранённым polynomial artifact; действие не выводилось заново. Новых научных вычислений, изменений kernels или исторических результатов нет. Научная квалификация OUT и PL PARTIAL прежняя; D32/K33 не переписаны. [Отчёт и аудит](../reports/nlsp_beta15_parametric_instability/README.md).
+
+### 2026-10-12 — механическое изложение семиполевой модели
+
+По новому замечанию пользователя отчёт перестроен от одного прямого стержня:
+положительные перемещения и повороты, изменение толщины при постоянной ширине,
+сдвиг Тимошенко, скалярные деформации, энергии и промежуточные шаги вариации.
+Добавлены пять собственных схем и таблица всех физических коэффициентов.
+Семь нелинейных балансов и семь фактически решаемых кубических координатных
+уравнений даны покомпонентно; плоские силы, момент и инерция раскрыты полностью.
+В приложении заданы все необходимые скалярные кинематические ряды.
+
+36 точных проверок напечатанных формул совпали с историческими коэффициентами;
+новых научных решений нет. XeLaTeX PDF содержит 26 страниц, восемь рисунков;
+все страницы просмотрены. Исторические данные, физические kernels, D32/K33
+и PL PARTIAL сохранены. [Канонический отчёт](../reports/nlsp_beta15_parametric_instability/README.md),
+аудит `results/nlsp_supervisor_mechanical_rewrite/863fe0e928b012d5/`.
+`DEFERRED_TWO_PARAMETER_ACTION_EXPANSION` и ранее отложенные вопросы не менялись.

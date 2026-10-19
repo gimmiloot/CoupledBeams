@@ -1805,3 +1805,193 @@ config и bundle отделены от исторических C/A/B резул
 Кандидат для нового nonlinear experiment не выбран; дополнительные динамические
 проверки не запускаются. DEFERRED_TWO_PARAMETER_ACTION_EXPANSION и вопросы
 физического обоснования идеального узла/c₁=c₂ остаются отложенными.
+
+## NLSP-D25
+
+**Решение:** 2026-10-11 по отдельному явному заданию проверить только пять
+углов β={15°,30°,45°,60°,75°} при μ=0.1,L₁=0.9,L₂=1.1,p12 и max|w|=0.005.
+Материал, сечения b=0.05/h=0.10, действие, масса, RHS/Jacobian, узел/c₁=c₂
+и базис заморожены. Бюджет300s; допускаются low eigenpairs, точечные
+Jacobian, harmonic/modal projections и алгебра малых парных матриц.
+
+Запрещены новые ODE/FEM/Floquet, дополнительные углы/μ/амплитуды,
+адаптивная сетка, новые формы возбуждения и независимый вывод действия.
+Переиспользован прежний scoped helper; новый runnable script не создаётся.
+MAC0.8, margin0.03 и amplitude-order0.1 зафиксированы до результатов.
+
+**Остановка:** пять углов завершены; MODE_IDENTIFICATION_PARTIAL,
+NO_DIRECT_GROWTH_CANDIDATE_IN_TESTED_BETA_SET. [K26](knowledge.md#nlsp-k26),
+[отчёт](../numerics/nlsp_beta_resonant_coupling_screening.md).
+Ни одной геометрии для новой dynamics не выбрано. Сохранены
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION и вопросы физической применимости
+идеального узла/c₁=c₂. Дальнейшее расширение не разрешается автоматически.
+
+## NLSP-D26
+
+**Решение:**2026-10-11 по явному заданию проверить принципиальную возможность
+параметрического роста в уже принятой кубической семиполевой модели.
+Выделить OUT second variation из saved quartic action, проверить Jacobian,
+каноническую парную структуру и сохранённый β15/μ.1 случай. Бюджет180s,
+без ODE, новых спектров/геометрий, Floquet, periodic orbit или action rederivation.
+Формальная настройка расстройки — только аналитический параметр парной модели.
+
+**Границы:** physical kernels, V0,coefficients,mass,inertia,basis,axes,joint/c1=c2
+заморожены. Отдельный library helper содержит action/pair audit, переиспользует
+существующий CLI и source/mapping helpers, не создаёт новый runnable solver.
+Hard gateA обязателен; при physical action/Jacobian mismatch остановка.
+
+**Итог и остановка:**STRUCTURAL_PARAMETRIC_GROWTH_CHANNEL_CONFIRMED в ведущем
+каноническом парном приближении; реальная неустойчивая геометрия/орбита не доказана.
+Initial diagnostic rejection raw velocity sum metric сохранён; корректный
+momentum gate проходит без ослабления порога, GateA проходил всё время.
+[K27](knowledge.md#nlsp-k27),[отчёт](../numerics/nlsp_out_of_plane_instability_feasibility.md).
+Не запускать автоматически новую dynamics,геометрию или амплитуду.
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION и physical idealjoint/c1=c2 отложены.
+
+## NLSP-D27
+
+**Решение:** 2026-10-11 по явному заданию исследовать только β15/μ.1,
+p12,A={.005,.006,.008,.010}: PL/HB свободной плоской формы и, лишь после
+hard gate B, канонический прямой/непрямой второй порядок OUT. Бюджет600s;
+0 новых ODE/FEM/Floquet, геометрий или исходного двухпараметрического вывода.
+Physical kernels,узел/c1=c2,базис,масса и constitutive coefficients заморожены.
+
+До результатов зафиксированы mass-form gate2e-10,harmonic solve gate1e-8
+и internal-resonance trigger: gap<1%,resolved forcing>1e-8,
+correction stiffness-energy norm ratio>=5% при a=.010.
+Это численные критерии остановки isolated PL,не пороги физической неустойчивости.
+
+**Итог и остановка:** PLANAR_SINGLE_MODE_EXPANSION_UNRESOLVED.
+Близкая плоская sorted4 на третьей гармонике имеет ненулевой forcing;
+исправленная частота дополнительно приближает её к3Ω. Formal PL coefficients
+сохранены, но не приняты как надёжная орбита четырёх конечных амплитуд.
+M1/M2 NOT_AVAILABLE; новая amplitude/dynamics не выбрана.
+[K28](knowledge.md#nlsp-k28),[отчёт](../numerics/nlsp_beta15_nonlinear_planar_resonance.md).
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION и physical idealjoint/c1=c2 отложены.
+Не переходить автоматически к multimode PL,HB,новым ODE или scans.
+
+## NLSP-D28
+
+**Решение:**2026-10-11 по явному заданию исследовать только PL формы2/4
+при β15/μ.1,p12,A=.005/.006/.008/.010. Активный резонансный блок1:3;
+nonresonant contributions из прежнего action,алгебраические periodic candidates,
+independent full-system residual. Budget600s,0ODE/FEM/OUT/Floquet/geometryscans.
+Физика,coefficients,mass,inertia,local/globalmaps,узел/c1=c2 заморожены.
+
+До результатов gates: massform/projection2e-10,reality2e-9,
+fullrelative residual1e-3,energyvariation1e-4,frequencycontrol2e-5,
+passive harmonic coefficient norm ratio.2. Primary0..9/control0..7 harmonics,
+64coefficient phases/53independent phases,8passive algebraic iterations.
+Ни один active mode4/harmonic3 denominator не обращается.
+
+**Итог и остановка:**PLANAR_1TO3_RESONANT_REDUCTION_VALIDATED для
+контролируемого p12 Type-II Psi0 approximation. Gamma direct/indirect
+существенно различаются; все90passive modes учтены. Type-I puremodal initial
+state не заменяется periodic branch: указаны modulation source и passive
+transients,но модулированная fulltrajectory не получена.
+[K29](knowledge.md#nlsp-k29),[отчёт](../numerics/nlsp_beta15_planar_1to3_internal_resonance.md).
+Следующий OUT этап не разрешается автоматически. Deferred original
+TWO_PARAMETER_ACTION_EXPANSION,physicalidealjoint/c1=c2,independent3Dvalidation.
+Cache-test mutation historicalPDF metadata исправлена через temporarycopy;
+originalPDF/manifest hashes точно восстановлены,ничего не переименовано в PASS.
+
+## NLSP-D29
+
+**Решение:**2026-10-11 по явному заданию уточнить только основную Type-II
+Psi0 ветвь β15/μ.1,p12,A=.005/.006/.008/.010 в полной92-coordinate PL system,
+затем canonical OUT/PL Fourier/Hill algebra. Budget900s;0ODE/FEM/p16/scans,
+без других фазовых ветвей или dynamicsTypeI. Заморожены accepted action,
+cubic equations,mass/inertia,coefficients/maps,joint/c1=c2.
+
+До спектральных результатов HB full residual1e-7,energy1e-8,frequency
+control2e-7; operator/Hamiltonian2e-9,Hill residual1e-9,edgeweight1e-6,
+spectralcontrol5e-6,numericalfloor1e-8,growth>5×observeduncertainty.
+H9/11allPLunknowns,64AFT/53independentphases. Absolutegate относитсяк
+refinedHB11;HB9 — comparator. Qualificationwriter correction и replica
+selection fixes архивированы; thresholds не менялись,HBнеповторялся.
+
+**Итог:**один OUT_GROWTH_CANDIDATE_RESOLVED приA=.005; GateB1из4,
+прочиеA NOT_EVALUATED_HB_GATE. Limited OUT8/16/24 controls потребовали
+48/69 fullp12 control,N7/9. Полный92PL neutralcontrol отделяет малые
+splittings от роста. Newtrajectories не запускаются и не разрешаются
+автоматически. [K30](knowledge.md#nlsp-k30),
+[отчёт](../numerics/nlsp_beta15_periodic_orbit_spatial_stability.md).
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION,physicalidealjoint/c1=c2,
+independent3Dvalidation,TypeI dynamics и spatialp-refinement отложены. STOP.
+
+
+## NLSP-D30
+
+**Решение, 2026-10-11:** по отдельному явному заданию динамически проверить
+только β15/μ=.1,p12,A=.005,Type-II Ψ=0, сохранённые HB11 и Floquet mode.
+Нормировка OUT max(|v|,Lref|Φ|,Lref|ψ|)=5e-5,Lref=1; исходные OUT-скорости
+сохранить. Бюджет3600s; gates и допуски зафиксировать до результатов.
+Порядок: nonlinear PL1T, direct tangent3T, conditional full3T,
+conditional physical continuation5T и один short half-scale1T control.
+Не менять физическую модель и не запускать новые HB/Hill/FEM/scans/p16.
+
+**Итог:** DYNAMIC_OUT_GROWTH_CONFIRMED_P12; gates A/B/C/D/E PASS.
+Продления с native endpoints сохранили исходную нормировку; повторов/failures
+ODE нет. Восемь nonlinear и четыре tangent calls,≈1575.79s включая tests.
+Half-scale OUT order остаётся NUMERICAL_FLOOR_LIMITED без снижения порога.
+80 regression tests PASS, cache только temporarycopies; все historical
+PDF/manifests и исходный staging сохранены. [K31](knowledge.md#nlsp-k31),
+[отчёт](../numerics/nlsp_beta15_dynamic_out_growth_validation.md).
+
+**Остановка:** уровни2/3 внутри p12-модели достигнуты, physicallevel4 нет.
+Новое p-refinement или nonlinear/3D experiment требует отдельного задания.
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION,physicalidealjoint/c1=c2,
+independent3Dvalidation,TypeI dynamics,spatialp-refinement и saturation отложены.
+
+
+## NLSP-D31
+
+**Решение, 2026-10-11:** по отдельному заданию перенести и уточнить ту же
+Type-II Ψ=0 ветвь β15/μ.1,A=.005 с p12 на p14, затем проверить OUT Hill
+и physical mode identity. Budget1800s; frozen kernels/coefficients/joint/c1=c2.
+Никаких новых p12 расчётов, p16, FEM, геометрий, амплитуд или nonlinear ODE.
+Zero-velocity OUT2 проверять через согласованную dual projection; PL stability
+control имеет вторичный приоритет.
+
+**Итог:** P14_OUT_GROWTH_REPRODUCED; gates A/B/C/D/E PASS,F PARTIAL.
+Physical mass Galerkin lifting,full108PL HB11/13,all81OUT N7/9.
+Initial48/full81 convergence FAIL сохранён; одна дополнительная72-mode
+проекция проходит тот же5e-6 gate без повторов и изменения порогов.
+Zero-velocity displacement-only initialization has resolved nonzero symplectic
+projection. PL non-neutral growth not found,neutral residual gate not passed.
+[Отчёт](../numerics/nlsp_beta15_out_growth_p14_convergence.md),
+[K32](knowledge.md#nlsp-k32). Historical bundles/PDF/manifests сохранены.
+
+**Остановка:** после p14 нет автоматического p16,3D или dynamic experiment.
+Два p не доказывают fullp-convergence; PLneutral qualification отдельно
+остаётся PARTIAL. DEFERRED_TWO_PARAMETER_ACTION_EXPANSION,physicalidealjoint,
+independent3Dvalidation,furtherp-refinement,TypeI и saturation отложены.
+
+## NLSP-D32
+
+**Решение, 2026-10-11–12:** перед обсуждением с руководителем выполнить
+два фиксированных адресных контроля на сохранённой p14 Type-II Ψ=0 орбите
+β15/μ=0.1,A=0.005 и подготовить самостоятельный русский отчёт 3–5 страниц.
+Budget600s; исходные physical kernels, узел/c₁=c₂, staging и historical bundles
+заморожены. Новые full nonlinear/HB/Hill/FEM/p16 запрещены. Один short OUT2
+tangent IVP разрешён только при недостаточности spectral reconstruction.
+
+**Итог:** причина raw neutral residual установлена как производная малой
+HB-невязки, преимущественно в гармонике12. Variational/Jacobian/Ṡ consistency
+PASS; исходный 2e−9 raw gate не пройден, PL_STABILITY_REMAINS_PARTIAL.
+Сохранённый resolved non-neutral spectrum не показывает PL growth; это
+не доказательство полной PL stability. OUT growth p12/p14 не пересмотрен.
+Natural OUT2 zero-velocity state имеет ненулевой symplectic-dual projector;
+его физический growing scale43.28% initialcombined и48.96% initialv,
+не energy fractions. Только critical/reciprocal eigenvectors сохранены,
+поэтому выполнен один selected tangent IVP3T с native continuation5T.
+Component gain1.279285, totalE₀gain1.217986, physical maxv/A0.2864%.
+
+[Технический отчёт](../numerics/nlsp_beta15_pre_supervisor_checks.md),
+[научный LaTeX/PDF, 5 страниц](../reports/nlsp_beta15_parametric_instability/README.md),
+[K33](knowledge.md#nlsp-k33). Нет package installations или новых runnable scripts.
+Historical files/PDF/manifests и пользовательские изменения сохранены.
+
+**Остановка:** дальнейшие исследования только после обсуждения с руководителем.
+DEFERRED_TWO_PARAMETER_ACTION_EXPANSION, idealjoint/c₁=c₂, independent3D,
+p-refinement, Type-I, damping/observability и largeOUT/saturation отложены.

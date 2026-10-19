@@ -289,6 +289,12 @@ def integrate_attempt(b,item,s,label,d,initial,times,timing,deadline,plane=False
         final=initial.copy() if solver is None else d.embed_plane(solver.y) if plane else solver.y
         np.savez_compressed(case/'accepted_times.npz',times=np.r_[t_start,native_times],actual_final_state=final)
         record['actual_min_step']=float(min(steps)) if steps else None;record['actual_max_step']=float(max(steps)) if steps else None
+    elif dense_archive:
+        # Initial runs need the same exact physical restart checkpoint as
+        # continued runs. This writer does not change the solver path.
+        final=initial.copy() if solver is None else d.embed_plane(solver.y) if plane else solver.y.copy()
+        np.savez_compressed(case/'accepted_times.npz',times=np.r_[t_start,native_times],actual_final_state=final)
+        record['actual_min_step']=float(min(steps)) if steps else None;record['actual_max_step']=float(max(steps)) if steps else None
     write(case/'integration.json',record);attempt.update(status=record['status']);s['cases'][label]=record;s['numerical_seconds']+=record['seconds']
     if record['status']!='PASS':s.update(hard_stop=True,overall='NUMERICAL_FEASIBILITY_PARTIAL',stop_reason=failure or 'Incomplete prefix')
     finalize(b,item,s);return full,record
@@ -513,6 +519,30 @@ def run_program(b,item,s,model,through='all'):
 
 def main(argv=None):
     argv=list(sys.argv[1:] if argv is None else argv)
+    if '--pre-supervisor-checks' in argv:
+        from scripts.lib.nlsp_planar_1to3_internal_resonance import supervisor_main
+        return supervisor_main([arg for arg in argv if arg!='--pre-supervisor-checks'])
+    if '--beta15-p14-convergence' in argv:
+        from scripts.lib.nlsp_planar_1to3_internal_resonance import p14_main
+        return p14_main([arg for arg in argv if arg!='--beta15-p14-convergence'])
+    if '--beta15-dynamic-out-growth' in argv:
+        from scripts.lib.nlsp_planar_1to3_internal_resonance import dynamic_main
+        return dynamic_main([arg for arg in argv if arg!='--beta15-dynamic-out-growth'])
+    if '--beta15-periodic-spatial-stability' in argv:
+        from scripts.lib.nlsp_planar_1to3_internal_resonance import stability_main
+        return stability_main([arg for arg in argv if arg!='--beta15-periodic-spatial-stability'])
+    if '--planar-1to3-internal-resonance' in argv:
+        from scripts.lib.nlsp_planar_1to3_internal_resonance import main as internal_main
+        return internal_main([arg for arg in argv if arg!='--planar-1to3-internal-resonance'])
+    if '--beta15-nonlinear-planar-resonance' in argv:
+        from scripts.lib.nlsp_beta15_nonlinear_planar_resonance import main as resonance_main
+        return resonance_main([arg for arg in argv if arg!='--beta15-nonlinear-planar-resonance'])
+    if '--instability-feasibility' in argv:
+        from scripts.lib.nlsp_instability_feasibility import main as feasibility_main
+        return feasibility_main([arg for arg in argv if arg!='--instability-feasibility'])
+    if '--beta-resonant-screening' in argv:
+        from scripts.lib.nlsp_resonant_spatial_coupling_screening import beta_main
+        return beta_main([arg for arg in argv if arg!='--beta-resonant-screening'])
     if '--resonant-screening' in argv:
         from scripts.lib.nlsp_resonant_spatial_coupling_screening import main as screening_main
         return screening_main([arg for arg in argv if arg!='--resonant-screening'])

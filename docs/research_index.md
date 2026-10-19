@@ -1,5 +1,70 @@
 # Research Directions and Status
 
+## Mathematical supervisor report rewrite (2026-10-12)
+
+[The canonical report](reports/nlsp_beta15_parametric_instability/README.md)
+now derives the accepted model before presenting its instability result:
+independent M–H contraction, Timoshenko/torsion, seven-field objective energies,
+quartic-action/cubic equations, rigid-joint virtual work and Floquet.
+Four figures and a separate text audit; no new scientific computation or
+change of the historical D32/K33 qualifications.
+
+## Beta15 final checks and supervisor report (2026-10-12)
+
+[Technical checks](numerics/nlsp_beta15_pre_supervisor_checks.md) explain the
+p14 PL neutral residual by the approximate HB-orbit residual derivative.
+The strict raw2e-9 gate remains PARTIAL; no non-neutral PL growth was found
+in the saved resolved spectrum. Natural displacement-only OUT2 excites the
+unstable subspace, with modest physical deflection through5T.
+[Five-page scientific report](reports/nlsp_beta15_parametric_instability/README.md),
+[D32](memory/decisions.md#nlsp-d32), [K33](memory/knowledge.md#nlsp-k33).
+No new full nonlinear/HB/Hill/FEM/p16. STOP pending supervisor discussion.
+
+## Beta15 type-II periodic orbit and spatial spectrum (2026-10-11)
+
+[Full p12 HB / Hill report](numerics/nlsp_beta15_periodic_orbit_spatial_stability.md):
+one resolved OUT growth candidate atA=.005, sigma=.0034114101, all69OUTmodes.
+HB gate passes1of4points; other amplitudes NOT_EVALUATED. Full92PL-mode
+control resolves neutral time shift and finds no non-neutral growth in the
+resolved spectrum. No ODE/FEM or automatic nonlinear follow-up.
+[D29](memory/decisions.md#nlsp-d29),[K30](memory/knowledge.md#nlsp-k30).
+
+
+## Beta15 planar 1:3 internal resonance (2026-10-11)
+
+[Two-active-mode report](numerics/nlsp_beta15_planar_1to3_internal_resonance.md):
+PLANAR_1TO3_RESONANT_REDUCTION_VALIDATED for the phase-locked type-II p12
+approximation at four amplitudes. Substantial true mode4 participation remains;
+passive third-harmonic correction is small. No stability claim or automatic OUT
+continuation. [D28](memory/decisions.md#nlsp-d28), [K29](memory/knowledge.md#nlsp-k29).
+
+## Beta15 nonlinear planar resonance (2026-10-11)
+
+[Scoped PL audit](numerics/nlsp_beta15_nonlinear_planar_resonance.md):
+PLANAR_SINGLE_MODE_EXPANSION_UNRESOLVED. Formal frequency correction is
+available, but a resolved near 1:3 planar interaction blocks controlled
+single-mode orbit and M1/M2 averaging. No amplitude chosen for dynamics.
+[NLSP-D27](memory/decisions.md#nlsp-d27), [K28](memory/knowledge.md#nlsp-k28).
+
+## Structural parametric-growth feasibility (2026-10-11)
+
+[Scoped action audit](numerics/nlsp_out_of_plane_instability_feasibility.md):
+exact quadratic OUT action agrees with the existing Jacobian. Canonical self/sum
+pairs have nonzero opposite-frequency coupling and formal growth at zero effective
+detuning. This does not select an unstable geometry or prove full-orbit instability.
+Saved beta15 remains oscillatory; second-order normal form and true base motion
+are missing. [NLSP-D26](memory/decisions.md#nlsp-d26), [K27](memory/knowledge.md#nlsp-k27).
+
+
+## Five-angle spatial coupling diagnostic (2026-10-11)
+
+[Scoped beta report](numerics/nlsp_beta_resonant_coupling_screening.md):
+fixed mu=.1 and p12; all 250 direct coupling channels resolved, no growth
+candidate in the mean-corrected pair approximation. Planar correspondence
+at beta15 is unresolved (MODE_IDENTIFICATION_PARTIAL). No new trajectories.
+[NLSP-D25](memory/decisions.md#nlsp-d25), [K26](memory/knowledge.md#nlsp-k26).
+
+
 ## Resonant spatial coupling diagnostic (2026-10-11)
 
 [Scoped report](numerics/nlsp_resonant_spatial_coupling_screening.md):
@@ -514,3 +579,23 @@ takes priority. Mathematical source-of-truth priority remains the policy in
 p12 restricted gain1.07027,conditionalp16 resourceNOT_RUN. Cost audit and
 output-only repair preserve original physics andhistoricalresults. Newinterval
 exploratory/numericalPARTIAL; no stability or applicability map. D23/K24.
+
+
+### β15 — dynamic confirmation of one OUT growth regime
+
+[Scoped report](numerics/nlsp_beta15_dynamic_out_growth_validation.md),
+[D30](memory/decisions.md#nlsp-d30), [K31](memory/knowledge.md#nlsp-k31).
+DYNAMIC_OUT_GROWTH_CONFIRMED_P12 for A=.005 Type-II Ψ=0: direct tangent
+sigma=.0034114055, full nonlinear projected gain1.279292 at5T.
+Same accepted model; physical validation, p-refinement and Type-I dynamics deferred.
+Stop after this addressed experiment; no further calculations automatically.
+
+
+### β15 — p14 spatial confirmation
+
+[Report](numerics/nlsp_beta15_out_growth_p14_convergence.md),
+[D31](memory/decisions.md#nlsp-d31), [K32](memory/knowledge.md#nlsp-k32).
+P14_OUT_GROWTH_REPRODUCED for the same A=.005 Type-II branch, with physical
+Galerkin transfer,all81OUT modes and N7/9 controls. Displacement-only OUT2 has
+nonzero adjoint projection; secondary PL neutral qualification PARTIAL.
+No ODE/FEM/p16; two spatial resolutions are not a proof of full p-convergence.

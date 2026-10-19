@@ -1,5 +1,14 @@
 # Script and Workflow Status
 
+`pilot_nlsp_coupled_planar_sensitivity.py --pre-supervisor-checks` reuses the
+scoped HB/Hill helper for final saved-orbit diagnostics and report assets.
+PL neutral cause is established but raw gate remains PARTIAL. One selected
+zero-velocity OUT2 tangent IVP through3T and native continuation to5T confirms
+accessibility, with small physical deflection. Completed replay has no
+scientific calls; plot rendering reads saved arrays. No full nonlinear,
+new HB/Hill eigensolves, FEM, p16 or automatic follow-up. See
+[the technical report](../docs/numerics/nlsp_beta15_pre_supervisor_checks.md).
+
 `pilot_nlsp_coupled_planar_sensitivity.py --construction-c` is the scoped
 [C modal preset](../docs/numerics/nlsp_construction_C_modal_sensitivity.md).
 It reuses the same seven-field operators and IVPs with displacement-only
@@ -449,3 +458,52 @@ deleted until its provenance and output relationship are reviewed manually.
   no direct growth mechanism, five-point correspondence PARTIAL at mu=0.
   Source hashes, 65 regression tests and zero-scientific-call cache replay
   are recorded in [the report](../docs/numerics/nlsp_resonant_spatial_coupling_screening.md).
+
+- `pilot_nlsp_coupled_planar_sensitivity.py --beta-resonant-screening`:
+  active-diagnostic, five angles complete, no ODE/FEM. No direct growth
+  candidate in the mean-corrected pair approximation; planar correspondence
+  at beta15 is unresolved (MODE_IDENTIFICATION_PARTIAL). See
+  [the report](../docs/numerics/nlsp_beta_resonant_coupling_screening.md).
+
+- `pilot_nlsp_coupled_planar_sensitivity.py --instability-feasibility`:
+  active-diagnostic, STRUCTURAL_PARAMETRIC_GROWTH_CHANNEL_CONFIRMED within the
+  leading canonical pair approximation. No actual unstable geometry or orbit
+  proven; beta15 remains oscillatory. Exact action/Jacobian and source/cache
+  checks are recorded in [the report](../docs/numerics/nlsp_out_of_plane_instability_feasibility.md).
+
+- `pilot_nlsp_coupled_planar_sensitivity.py --beta15-nonlinear-planar-resonance`:
+  fixed beta15/p12 algebraic PL audit, no ODE/FEM. Near planar1:3 forcing
+  blocks controlled isolated orbit; PLANAR_SINGLE_MODE_EXPANSION_UNRESOLVED.
+  M1/M2 not computed, no amplitude selected. Existing action/Jacobian and
+  source kernels preserved; cache regression tests pass.
+  [Report](../docs/numerics/nlsp_beta15_nonlinear_planar_resonance.md).
+
+- `pilot_nlsp_coupled_planar_sensitivity.py --planar-1to3-internal-resonance`:
+  fixedbeta15,p12,fouramplitudes. PLANAR_1TO3_RESONANT_REDUCTION_VALIDATED
+  for numerical type-II candidates;canonical direct/indirectterms and full
+  residual/harmonic controls pass. Type-I modulation indicated,not integrated.
+  No ODE/FEM/OUT/Floquet. Historicalcachetests render only a temporarycopy.
+  [Report](../docs/numerics/nlsp_beta15_planar_1to3_internal_resonance.md).
+
+- `pilot_nlsp_coupled_planar_sensitivity.py --beta15-periodic-spatial-stability`:
+  fixed beta15/mu.1,p12,Psi0 type-II,four amplitudes. Full HB9/11 and canonical
+  Hill spectrum give OUT_GROWTH_CANDIDATE_RESOLVED atA=.005 with69OUTmodes;
+  three HB gates fail. Full92PL control has only unresolved neutral splitting
+  below the numerical floor and no resolved non-neutral growth. No ODE/FEM.
+  [Report](../docs/numerics/nlsp_beta15_periodic_orbit_spatial_stability.md).
+
+
+- `pilot_nlsp_coupled_planar_sensitivity.py --beta15-dynamic-out-growth`:
+  completed fixed beta15/mu.1,A=.005,Psi0 Type-II,p12 dynamic experiment.
+  Planar/Tangent/Full gates PASS through5T; DYNAMIC_OUT_GROWTH_CONFIRMED_P12.
+  Half-perturbation order check numerical-floor limited. Completed cache
+  compute/report/plot has zero scientific calls; no further ODE authorized.
+  [Report](../docs/numerics/nlsp_beta15_dynamic_out_growth_validation.md).
+
+
+- `pilot_nlsp_coupled_planar_sensitivity.py --beta15-p14-convergence`:
+  complete fixed beta15/mu.1,A=.005 Type-II p14 spatial check.
+  P14_OUT_GROWTH_REPRODUCED; all81OUT N7/9 and physical identity PASS;
+  zero-velocity OUT2 symplectic-dual projection nonzero. Secondary PL neutral
+  gate PARTIAL. No ODE/FEM/p16 or automatic further work.
+  [Report](../docs/numerics/nlsp_beta15_out_growth_p14_convergence.md).

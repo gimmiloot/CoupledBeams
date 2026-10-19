@@ -1,5 +1,13 @@
 # Память исследования сопряжённых стержней
 
+- Завершающие β15 проверки и отчёт руководителю:
+  [NLSP-D32](decisions.md#nlsp-d32), [NLSP-K33](knowledge.md#nlsp-k33),
+  [технический отчёт](../numerics/nlsp_beta15_pre_supervisor_checks.md),
+  [научный исходник/PDF](../reports/nlsp_beta15_parametric_instability/README.md).
+  PL neutral причина установлена, raw gate остаётся PARTIAL;
+  natural OUT2 возбуждает рост, но physical maxv/A за5T лишь0.2864%.
+  STOP до обсуждения с руководителем.
+
 ## Назначение
 
 Память — вторичный слой навигации и восстановления контекста: что известно,
@@ -33,6 +41,10 @@
 
 | Тема | Ключевые записи |
 |---|---|
+| β15, внутреннее плоское 1:3: контролируемая p12 Type-II ветвь; Type-I модуляция только указана, OUT не запускался | [NLSP-D28](decisions.md#nlsp-d28), [NLSP-K29](knowledge.md#nlsp-k29), [отчёт](../numerics/nlsp_beta15_planar_1to3_internal_resonance.md) |
+| β15: формальная PL-поправка выявила близость к внутреннему плоскому 1:3; одномодовая орбита не принята, M1/M2 не вычислены | [NLSP-D27](decisions.md#nlsp-d27), [NLSP-K28](knowledge.md#nlsp-k28), [отчёт](../numerics/nlsp_beta15_nonlinear_planar_resonance.md) |
+| Принципиальная возможность parametric growth: канонический ведущий канал подтверждён, но неустойчивая физическая геометрия/орбита не доказана | [NLSP-D26](decisions.md#nlsp-d26), [NLSP-K27](knowledge.md#nlsp-k27), [отчёт](../numerics/nlsp_out_of_plane_instability_feasibility.md) |
+| Пять β при μ=0.1: прямой рост в парном приближении не найден; выбранная PL форма β15 имеет correspondence UNRESOLVED | [NLSP-D25](decisions.md#nlsp-d25), [NLSP-K26](knowledge.md#nlsp-k26), [отчёт](../numerics/nlsp_beta_resonant_coupling_screening.md) |
 | Резонансная диагностика C: связи разрешены, прямой механизм роста не найден; μ=0 correspondence UNRESOLVED, новых ODE нет | [NLSP-D24](decisions.md#nlsp-d24), [NLSP-K25](knowledge.md#nlsp-k25), [отчёт](../numerics/nlsp_resonant_spatial_coupling_screening.md) |
 | C to one OUT period: p12 Gdisp3=1.07027; p16 resource gate NOT_RUN, numerical PARTIAL, performance audit | [NLSP-D23](decisions.md#nlsp-d23), [NLSP-K24](knowledge.md#nlsp-k24), [report](../numerics/nlsp_construction_C_longer_sensitivity.md) |
 | C modal experiment: Gdisp3=1.05303,full consistency PASS; physical v near initial scale, c/velocity spatial PARTIAL | [NLSP-D22](decisions.md#nlsp-d22), [NLSP-K23](knowledge.md#nlsp-k23), [report](../numerics/nlsp_construction_C_modal_sensitivity.md) |
@@ -115,3 +127,19 @@ D/K остаются append-only с устойчивыми номерами и �
 записи и текущая остановка в разрешённом объёме. Сейчас файлы не разделяются:
 если поиск по decisions/knowledge станет неудобен, тематическое разделение
 потребует отдельной миграции с сохранением якорей и истории.
+
+- β15 Type-II full p12 HB / Hill: [NLSP-D29](decisions.md#nlsp-d29), [NLSP-K30](knowledge.md#nlsp-k30), [отчёт](../numerics/nlsp_beta15_periodic_orbit_spatial_stability.md). Один OUT-кандидатA=.005; триамплитудыHB-gated,0ODE/FEM.
+
+
+- β15 dynamic OUT growth: [NLSP-D30](decisions.md#nlsp-d30),
+  [NLSP-K31](knowledge.md#nlsp-k31),
+  [отчёт](../numerics/nlsp_beta15_dynamic_out_growth_validation.md).
+  Type-II A=.005 p12, direct tangent/full nonlinear confirmation through5T;
+  physical validation deferred, no further ODE automatically.
+
+
+- β15 p14 spatial OUT check: [NLSP-D31](decisions.md#nlsp-d31),
+  [NLSP-K32](knowledge.md#nlsp-k32),
+  [отчёт](../numerics/nlsp_beta15_out_growth_p14_convergence.md).
+  P14_OUT_GROWTH_REPRODUCED,zero-velocity OUT2 accessible; PLneutral PARTIAL,
+  no ODE/FEM/p16 or fullp-convergence claim.

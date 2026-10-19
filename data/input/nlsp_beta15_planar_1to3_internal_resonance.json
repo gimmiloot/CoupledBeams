@@ -1,0 +1,72 @@
+{
+  "authorization": "explicit_user_beta15_planar_1to3_internal_resonance_2026_10_11",
+  "planar_parent": "results/nlsp_beta15_nonlinear_planar_resonance/4faf1f36cd1017cd",
+  "degree": 12,
+  "beta_deg": 15.0,
+  "mu": 0.1,
+  "lengths": [
+    0.9,
+    1.1
+  ],
+  "sections": [
+    [
+      0.05,
+      0.1
+    ],
+    [
+      0.05,
+      0.1
+    ]
+  ],
+  "material": {
+    "E": 1.0,
+    "rho": 1.0,
+    "nu": 0.3,
+    "kappa": 0.8333333333333334
+  },
+  "active_planar_sorted_modes": [
+    2,
+    4
+  ],
+  "amplitudes": [
+    0.005,
+    0.006,
+    0.008,
+    0.01
+  ],
+  "coefficient_phase_samples": 64,
+  "independent_residual_phases": 53,
+  "independent_phase_offset": 0.173,
+  "primary_harmonics": 9,
+  "control_harmonics": 7,
+  "fixed_point_iterations": 8,
+  "algebraic_ratio_seeds": [
+    -1.0,
+    -0.25,
+    -0.05,
+    0.0,
+    0.05,
+    0.25,
+    1.0
+  ],
+  "max_root_evaluations": 60,
+  "linear_eigenpair_relative_gate": 2e-08,
+  "mass_duality_gate": 2e-10,
+  "action_relative_gate": 2e-10,
+  "canonical_reality_relative_gate": 2e-09,
+  "full_planar_residual_relative_gate": 0.001,
+  "energy_relative_variation_gate": 0.0001,
+  "frequency_control_absolute_gate": 2e-05,
+  "nonresonant_energy_ratio_gate": 0.2,
+  "numerical_budget_seconds": 600.0,
+  "new_ODE_integrations": 0,
+  "new_FEM_jobs": 0,
+  "OUT_reduction": false,
+  "automatic_geometry_or_amplitude_extension": false,
+  "deferred": [
+    "DEFERRED_TWO_PARAMETER_ACTION_EXPANSION",
+    "physical_ideal_joint",
+    "independent_3D_validation"
+  ],
+  "planar_parent_manifest_sha256": "2365f2b0c8d566808c4ebbdcba372f1f51f31171e501fa86f35b7f424b3f2562"
+}

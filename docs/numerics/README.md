@@ -1,5 +1,28 @@
 # Numerical Policies
 
+- [Beta15 final checks before supervisor discussion](nlsp_beta15_pre_supervisor_checks.md):
+  neutral residual cause identified with the unchanged PL gate still PARTIAL;
+  displacement-only OUT2 projection and one short p14 tangent control through5T.
+  [Standalone Russian report and editable source](../reports/nlsp_beta15_parametric_instability/README.md).
+
+- [Beta15 planar 1:3 internal resonance](nlsp_beta15_planar_1to3_internal_resonance.md):
+  canonical direct/indirect coupling and controlled algebraic type-II candidates;
+  type-I modulation remains separate, no OUT/Floquet or new ODE.
+
+- [Beta15 nonlinear planar resonance](nlsp_beta15_nonlinear_planar_resonance.md):
+  formal PL correction encounters a resolved near 1:3 planar denominator;
+  isolated-orbit gate fails, M1/M2 are not available. No ODE or new geometry.
+
+- [Out-of-plane instability feasibility](nlsp_out_of_plane_instability_feasibility.md):
+  action/Jacobian agreement and canonical formal growth channel confirmed;
+  beta15 actual direct pair remains oscillatory, true-orbit instability unproved.
+
+
+- [Five-angle resonant coupling screening](nlsp_beta_resonant_coupling_screening.md):
+  fixed mu=.1, no ODE; no direct pair-growth candidate, planar correspondence
+  at beta15 unresolved. Mean terms are decisive for the closest self channel.
+
+
 - [Resonant spatial coupling screening](nlsp_resonant_spatial_coupling_screening.md):
   full-Jacobian modal/harmonic diagnostic without new ODEs; C interactions
   resolved, no direct growth candidate, mu=0 correspondence unresolved.
@@ -100,3 +123,17 @@ Model-specific equations, root-quality thresholds, and physical assumptions
 remain in their own theory, implementation, and validation documents.
 
 - [Construction C to one OUT period and cost audit](nlsp_construction_C_longer_sensitivity.md) — saved-state p12 continuation,Gdisp3=1.07027; conditionalp16 NOT_RUN bybudget,newinterval numericalPARTIAL; immutable output failure/authorizedrepeat,no maps.
+
+- [β15 periodic orbit and spatial stability](nlsp_beta15_periodic_orbit_spatial_stability.md) — full p12 HB9/11, resolved OUT candidate atA=.005, sigma=.0034114101; three HB gates fail, no ODE/FEM or automatic dynamics.
+
+
+- [β15 dynamic OUT growth validation](nlsp_beta15_dynamic_out_growth_validation.md) —
+  A=.005 Type-II Ψ=0, p12: direct tangent and full seven-field dynamics confirm
+  saved Floquet growth through5T; gain1.279292, max OUT deflection .735%A.
+  Half-scale error-order qualification remains numerical-floor limited; no physical validation.
+
+
+- [β15 OUT growth, p14 spatial check](nlsp_beta15_out_growth_p14_convergence.md) —
+  same A=.005 Type-II Ψ=0 branch; σ=.0034113155, p12/p14 difference .00277%,
+  physical mode matching and full81OUT controls pass. Zero-velocity OUT2
+  excites the growing subspace; PL neutral control PARTIAL,0ODE/FEM/p16.

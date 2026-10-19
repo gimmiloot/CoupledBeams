@@ -1,0 +1,68 @@
+{
+  "authorization": "explicit_user_beta_resonant_coupling_screening_2026_10_11",
+  "degree": 12,
+  "planar_modes_inspected": 4,
+  "out_modes_retained": 5,
+  "out_modes_guard": 1,
+  "phase_samples": 64,
+  "harmonics": [
+    -2,
+    -1,
+    0,
+    1,
+    2
+  ],
+  "amplitude": 0.005,
+  "amplitude_factors": [
+    1.0,
+    0.5,
+    0.25
+  ],
+  "modal_duality_gate": 2e-10,
+  "source_mode_MAC_gate": 0.99,
+  "correspondence_MAC_gate": 0.8,
+  "coupling_over_numerical_difference_gate": 10.0,
+  "numerical_budget_seconds": 300,
+  "new_ODE_integrations": 0,
+  "new_FEM_jobs": 0,
+  "automatic_retry": false,
+  "frequency_map_policy": "frequency-map-v1",
+  "calculation_mode": "fast_plot",
+  "spectrum_semantics": "sorted_positions",
+  "sweep_parameter": "beta_deg",
+  "parameter_grid": [
+    15.0,
+    30.0,
+    45.0,
+    60.0,
+    75.0
+  ],
+  "K_plot": 5,
+  "K_guard": 6,
+  "guard_root_role": "completeness_only",
+  "neighbour_audit": "local physical mass-weighted MAC from beta30 anchor to beta15 and beta45/60/75; ambiguous assignments remain unresolved",
+  "local_repair_policy": "UNRESOLVED if correspondence is ambiguous; no extra grid points or root scans",
+  "strict_audit_default": false,
+  "deferred_theory": "DEFERRED_TWO_PARAMETER_ACTION_EXPANSION",
+  "parent": "results/nlsp_resonant_spatial_coupling_screening/898f8968922f23c2",
+  "parent_manifest_sha256": "e7bea5446feaa9b726d03434b6acc78a2226dbbc3d36086254cef8c0c8abb6c4",
+  "mu": 0.1,
+  "lengths": [
+    0.9,
+    1.1
+  ],
+  "beta_points": [
+    15.0,
+    30.0,
+    45.0,
+    60.0,
+    75.0
+  ],
+  "reference_beta": 30.0,
+  "reference_mu_label": "mu_0.1",
+  "amplitude_order_gate": 0.1,
+  "correspondence_margin_gate": 0.03,
+  "coefficient_reference_absolute_gate": 1e-10,
+  "reference_relative_gate": 1e-08,
+  "phase_invariance_absolute_gate": 1e-10
+}

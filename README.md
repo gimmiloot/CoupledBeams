@@ -1,8 +1,88 @@
 # CoupledBeams
 
+## Results for supervisor discussion
+
+[Russian mechanics report, 26 pages](docs/reports/nlsp_beta15_parametric_instability/report.pdf)
+and [editable LaTeX](docs/reports/nlsp_beta15_parametric_instability/report.tex)
+start from the motion of one rod and its cross-section, then derive
+scalar strains, Mindlin–Herrmann/Timoshenko energies, seven linear and
+cubic equations, joint conditions, the Floquet problem and the confirmed
+Type-II OUT instability with its limits.
+The nonlinear extension is distinguished from published linear formulations;
+eight figures include five own mechanical schematics; the independent
+transverse coordinate changes thickness only, not width. See the
+[separate mathematical audit](docs/reports/nlsp_beta15_parametric_instability/model_audit.md).
+[Final checks](docs/numerics/nlsp_beta15_pre_supervisor_checks.md) identify the
+p14 PL neutral residual as the derivative of the approximate HB-orbit residual;
+the unchanged strict PL gate remains PARTIAL. A natural OUT2 displacement with
+zero velocities excites the growing mode, but its maximum deflection is only
+0.2864% of the main amplitude through5T. One short tangent control with restart
+was performed; no new full nonlinear, HB/Hill eigenproblem, FEM or p16.
+The existing CLI mode is `--pre-supervisor-checks`; completed replay is cached.
+Further scientific work is stopped pending discussion with the supervisor.
+
+## Beta15 p14 spatial confirmation
+
+[The p14 spatial check](docs/numerics/nlsp_beta15_out_growth_p14_convergence.md)
+reproduces the saved A=.005 Type-II Psi=0 OUT instability: sigma=.0034113155,
+negative multiplier−1.0504938, observed p12/p14 difference .00277%.
+Physical mode identity and HB/Hill resolution controls pass. A displacement-only
+OUT2 initial state has a nonzero symplectic-dual projection on the growing mode.
+The secondary PL neutral check remains PARTIAL. No new ODE, p16 or FEM.
+The existing CLI mode is `--beta15-p14-convergence`; completed replay reads cache.
+Two p values support the result without proving full spatial convergence.
+
+
+## Beta15 dynamic OUT growth validation
+
+[Direct dynamic validation](docs/numerics/nlsp_beta15_dynamic_out_growth_validation.md)
+confirms the saved A=.005, Psi=0 type-II orbit at beta15/mu.1 in the unchanged
+p12 seven-field model. Direct tangent growth sigma=.0034114055 agrees with
+saved Hill sigma=.0034114101; full nonlinear amplification is 1.279292 at5T.
+Maximum OUT deflection is only .735% of the main amplitude. This is numerical
+confirmation within the model, without independent 3D/experimental validation.
+The existing CLI provides `--beta15-dynamic-out-growth` and completed cache
+compute/report/plot modes. No automatic further ODE, geometry or p-refinement.
+
+
+## Beta15 periodic-orbit spatial stability
+
+[Full planar HB and Hill audit](docs/numerics/nlsp_beta15_periodic_orbit_spatial_stability.md)
+uses `--beta15-periodic-spatial-stability` on the existing CLI. At physical
+A=.005 the Psi=0 type-II p12 branch gives OUT_GROWTH_CANDIDATE_RESOLVED,
+sigma=.0034114101 (about20.3periods/e-folding), with all69OUTmodes.
+The other three amplitudes fail the stricter HB gate atH≤11; their spectra
+are NOT_EVALUATED. No nonlinear ODE/FEM or automatic dynamic control follows.
+
+
 CoupledBeams is a research repository for frequency models and computations for coupled beams. The repository combines analytic frequency calculations, a baseline FEM implementation of the same problem, and the local theory, literature notes, and consistency checks used to support them.
 
 ## Coupled-rod planar sensitivity pilot
+
+The [beta15 planar 1:3 reduction](docs/numerics/nlsp_beta15_planar_1to3_internal_resonance.md)
+uses `--planar-1to3-internal-resonance`: two active modes, all p12 passive
+corrections and algebraic phase-locked candidates. The type-II Psi=0 branch
+passes residual/frequency controls at four amplitudes; type-I modulation is
+indicated, not integrated. No OUT stability, Floquet or ODE follows automatically.
+
+The [beta15 nonlinear planar audit](docs/numerics/nlsp_beta15_nonlinear_planar_resonance.md)
+uses `--beta15-nonlinear-planar-resonance` for four fixed amplitudes without
+ODEs. Formal PL coefficients reveal a resolved near 1:3 planar interaction;
+PLANAR_SINGLE_MODE_EXPANSION_UNRESOLVED stops M1/M2 averaging and selects no
+new dynamic experiment. The structural OUT growth channel remains confirmed.
+
+The [instability feasibility audit](docs/numerics/nlsp_out_of_plane_instability_feasibility.md)
+uses `--instability-feasibility` without new ODEs or spectra. The exact second
+variation agrees with the full Jacobian; canonical opposite-frequency branches
+have a nonzero leading growth channel under formal detuning. This is structural
+possibility, not a proven unstable geometry/orbit. Saved beta15 remains oscillatory;
+raw velocity projections require the momentum map for Hamiltonian checks.
+
+The [five-angle resonant diagnostic](docs/numerics/nlsp_beta_resonant_coupling_screening.md)
+uses `--beta-resonant-screening` at fixed mu=.1 and p12, with no new ODEs.
+No direct pair-growth candidate was found. At beta15 the mean correction
+removes the bare-growth indication and the selected planar mode has unresolved
+correspondence with beta30 (`MODE_IDENTIFICATION_PARTIAL`). No new dynamics follows.
 
 The [resonant coupling diagnostic](docs/numerics/nlsp_resonant_spatial_coupling_screening.md)
 adds `--resonant-screening` to the existing CLI. It projects the frozen full

@@ -1,5 +1,52 @@
 # Generated Results Index
 
+`results/nlsp_beta15_pre_supervisor_checks/d3f6375a27dba883/` contains
+[final technical checks](numerics/nlsp_beta15_pre_supervisor_checks.md):
+pointwise Jacobian/time-shift identity, residual derivative and Fourier
+controls, physical dual Floquet projection, one short tangent IVP and native
+3→5T continuation, observables, three scientific figures, report sources/PDF,
+source hashes and manifest. PL neutral status remains PARTIAL.
+[Standalone supervisor report](reports/nlsp_beta15_parametric_instability/README.md)
+is separate from the technical verification. Historical outputs are preserved.
+
+`results/nlsp_beta15_periodic_orbit_spatial_stability/6b93bc782316296d/`
+contains [the full p12 HB / Hill diagnostic](numerics/nlsp_beta15_periodic_orbit_spatial_stability.md):
+HB9/11 at four fixed amplitudes; one accepted orbitA=.005, canonical OUT/PL
+Fourier coefficients, all69OUT/92PL spectral controls, alias/eigen-residual
+checks, dangerous-mode profiles, error/cost/provenance and two figures.
+Three HB-gated amplitudes have no stability claim. No ODE/FEM.
+
+
+`results/nlsp_beta15_planar_1to3_internal_resonance/b59944c2ef43d0b7/`
+contains [the two-active planar audit](numerics/nlsp_beta15_planar_1to3_internal_resonance.md):
+canonical coefficients with full-p12 cubic elimination, fixed-amplitude
+algebraic periodic waveforms, independent residual/energy/harmonic/frequency
+checks and type-I inverse-map diagnostics. Two figures; no ODE/FEM/OUT.
+Historical cache/PDF restoration evidence and temporary-copy regression are preserved.
+
+`results/nlsp_beta15_nonlinear_planar_resonance/4faf1f36cd1017cd/`
+contains [the fixed-beta15 PL audit](numerics/nlsp_beta15_nonlinear_planar_resonance.md):
+formal frequency/harmonic coefficients, full-p12 harmonic denominators,
+four physical-amplitude conventions, raw residual/energy diagnostics and
+separate historical M0 extrapolations. Gate B fails near planar 1:3;
+M1/M2 are NOT_AVAILABLE. Two diagnostic figures, no new ODE/FEM.
+
+`results/nlsp_out_of_plane_instability_feasibility/ab65b2c8cbb0aecf/`
+contains [the structural feasibility audit](numerics/nlsp_out_of_plane_instability_feasibility.md):
+exact second-variation polynomials, independent action/Jacobian matrices,
+canonical self/sum coefficients, saved beta15 margin and coordinate qualifications,
+one pair-boundary figure, initial gate-failure evidence and cache/source checks.
+No new ODE, spectra, geometry search or FEM; physical instability is not proven.
+
+
+`results/nlsp_beta_resonant_coupling_screening/7ba6ccdcba83844a/`
+contains [the five-angle diagnostic](numerics/nlsp_beta_resonant_coupling_screening.md):
+p12 frequencies/physical shapes, harmonic NPZ, complex coupling CSV/JSON,
+mean-corrected pair eigenvalues, mode-identification and amplitude/phase
+controls, source checks and two figures. No direct growth candidate;
+MODE_IDENTIFICATION_PARTIAL preserves the beta15 planar ambiguity.
+
+
 `results/nlsp_resonant_spatial_coupling_screening/898f8968922f23c2/`
 contains [the resonant diagnostic](numerics/nlsp_resonant_spatial_coupling_screening.md):
 source manifests, p12 profiles and dual modal bases, complex harmonic matrices,
@@ -447,3 +494,25 @@ CONSTRUCTION_C_LONGER_EXPLORATORY_P12: Gdisp3=1.07026572 at2.747Tref;
 target4.03126662Tref reached. Three newIVPs with one user-authorized output
 repeat,1325.447s budgetcharge; p16NOT_RUN byresourcegate. Oldfailure in
 2bd3ecdc5caa2f28 immutable, oldCstatus unchanged; no full/FEM/maps.
+
+
+### β15 dynamic OUT growth, 2026-10-11
+
+[Report](numerics/nlsp_beta15_dynamic_out_growth_validation.md),
+`results/nlsp_beta15_dynamic_out_growth_validation/49dc29161a5dda78/manifest.json`.
+DYNAMIC_OUT_GROWTH_CONFIRMED_P12 at beta15/mu.1,A=.005,Type-II Ψ=0.
+Tangent/full projected gains5T=1.279293578/1.279292325; full/tangent
+relative error2.415e-6, max|v|3.6735e-5. Twelve ODE calls, approximately1575.79s
+science including regression runs;80 tests PASS,all historical hashes preserved.
+Short half-scale order qualification NUMERICAL_FLOOR_LIMITED; no level4 validation.
+
+
+### β15 p14 OUT growth convergence, 2026-10-11
+
+[Report](numerics/nlsp_beta15_out_growth_p14_convergence.md),
+`results/nlsp_beta15_out_growth_p14_convergence/2f77d2952671122b/manifest.json`.
+P14_OUT_GROWTH_REPRODUCED: Ω=.435115458304,σ=.003411315508,
+ρ≈−1.050493782, physical p12/p14 unstable-state MAC=.999999999759.
+All81OUT N7/9 and triggered72/81 check pass; initial48-mode failure retained.
+Zero-velocity OUT2 projection resolved. PL neutral gate PARTIAL; no new ODE/FEM.
+Historical reference hashes unchanged; no automatic p16/3D validation.

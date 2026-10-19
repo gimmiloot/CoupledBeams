@@ -43,7 +43,7 @@ def reference_subspace(disc):
         'restriction':'six initial states only; every outplane response DOF is propagated','zero_state_spectrum':omega}
 
 
-def tangent_attempt(b,item,s,label,d,base_case,times,basis,metric,deadline,zero=False,*,max_step=None,dense_archive=False,method='Radau',sampled_dense_only=False,t_start=0.,initial_matrix=None,operator_override=None):
+def tangent_attempt(b,item,s,label,d,base_case,times,basis,metric,deadline,zero=False,*,max_step=None,dense_archive=False,method='Radau',sampled_dense_only=False,t_start=0.,initial_matrix=None,operator_override=None,base_evaluator=None):
     from scripts.lib import nlsp_coupled_sensitivity_pilot as p
     if method not in ('Radau','DOP853') or (dense_archive and method!='Radau'):raise ValueError('Unsupported tangent/dense method')
     if label in s['cases']:raise ValueError('A tangent attempt already exists')
@@ -53,7 +53,7 @@ def tangent_attempt(b,item,s,label,d,base_case,times,basis,metric,deadline,zero=
     case=b/label;case.mkdir(parents=True);p.snapshot_case(case)
     row={'label':label,'kind':'tangent_ODE','status':'STARTED','automatic_retry':False,'zero_base':zero}
     s['attempts'].append(row);s['calls']['tangent_ODE']+=1;s['cases'][label]={'status':'STARTED'};p.finalize(b,item,s)
-    base=None if zero else SavedPlane(base_case/'dense.npz',d)
+    base=None if zero else (base_evaluator if base_evaluator is not None else SavedPlane(base_case/'dense.npz',d))
     J0=d.jacobian(0,np.zeros(2*d.ndof))[np.ix_(d.state_out,d.state_out)]
     @lru_cache(maxsize=16)
     def operator(t):
@@ -93,6 +93,10 @@ def tangent_attempt(b,item,s,label,d,base_case,times,basis,metric,deadline,zero=
         'max_step':max_step,'rtol':item['config']['rtol'],'atol_componentwise':atol,
         'operator_cache':str(operator.cache_info()),'method':method,'sampled_dense_only':sampled_dense_only,
         'actual_min_step':float(min(steps)) if steps else None,'actual_max_step':float(max(steps)) if steps else None}
+    if operator_override is not None or base_evaluator is not None:
+        record['operator_source']='caller-supplied verified tangent operator; see scoped operator provenance'
+        record['caller_base_evaluator']=base_evaluator is not None
+        record['operator_override']=operator_override is not None
     if dense_archive and records:
         if t_start:p.save_dense_records(case/'dense.npz',records,t_start=float(t_start))
         else:p.save_dense_records(case/'dense.npz',records)
@@ -102,6 +106,10 @@ def tangent_attempt(b,item,s,label,d,base_case,times,basis,metric,deadline,zero=
     if t_start:
         record['physical_start']=float(t_start);record['original_initial_basis_preserved']=True
         record['operator_override']=operator_override is not None
+        np.savez_compressed(case/'restart_state.npz',initial_matrix=start_matrix,actual_final_matrix=solver.y.reshape(n,k,order='F') if solver is not None else start_matrix,original_basis=basis,metric=metric)
+    else:
+        # Preserve the native endpoint for a later physical-state restart;
+        # DOP853 has no saved Radau dense-coefficient archive.
         np.savez_compressed(case/'restart_state.npz',initial_matrix=start_matrix,actual_final_matrix=solver.y.reshape(n,k,order='F') if solver is not None else start_matrix,original_basis=basis,metric=metric)
     p.write(case/'integration.json',record);row['status']=record['status'];s['cases'][label]=record;s['numerical_seconds']+=record['seconds']
     if record['status']!='PASS':s.update(overall='NUMERICAL_FEASIBILITY_PARTIAL',hard_stop=True,stop_reason=failure or 'Incomplete tangent prefix')

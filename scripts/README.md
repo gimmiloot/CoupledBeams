@@ -1,5 +1,21 @@
 # Scripts guide
 
+## Beta15 final checks before supervisor discussion
+
+Use the existing module entry point:
+
+```powershell
+python -m scripts.analysis.pilot_nlsp_coupled_planar_sensitivity --pre-supervisor-checks --compute
+```
+
+The [fixed config](../data/input/nlsp_beta15_pre_supervisor_checks.json) authorizes
+only the PL neutral audit and one short natural OUT2 tangent IVP with conditional
+3→5T native continuation. No full nonlinear, new HB/Hill eigensolves or FEM.
+Completed compute/report/plot use cached scientific data; cache tests use
+temporary copies. See the [technical report](../docs/numerics/nlsp_beta15_pre_supervisor_checks.md)
+and [separate supervisor report](../docs/reports/nlsp_beta15_parametric_instability/README.md).
+No new runnable script or automatic further experiment.
+
 ## Construction C modal preset
 
 ```powershell
@@ -1740,3 +1756,111 @@ Use the working repository interpreter and one BLAS thread. The separate
 900 s authorization permits only the fixed p12/five-mu diagnostic. A completed
 compute reads cache; report and plot never rebuild scientific states or operators.
 No nonlinear experiment or adaptive parameter scan follows automatically.
+
+## Five-angle resonant coupling diagnostic
+
+Reuse the same CLI and modal helper; this preset changes beta only at mu=.1.
+
+```powershell
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --beta-resonant-screening --compute
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --beta-resonant-screening --report-only results/nlsp_beta_resonant_coupling_screening/7ba6ccdcba83844a
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --beta-resonant-screening --plot-only results/nlsp_beta_resonant_coupling_screening/7ba6ccdcba83844a
+```
+
+Use the working repository Python interpreter and one BLAS thread.
+[Config](../data/input/nlsp_beta_resonant_coupling_screening.json),
+[report](../docs/numerics/nlsp_beta_resonant_coupling_screening.md).
+Completed compute/report/plot replays scientific cache; plot-only renders two
+figures without eigenproblems, Jacobian or ODE calls. The independent300s
+scope permits five declared angles only, no retries or subsequent dynamics.
+
+## Structural instability feasibility audit
+
+```powershell
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --instability-feasibility --compute
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --instability-feasibility --report-only results/nlsp_out_of_plane_instability_feasibility/ab65b2c8cbb0aecf
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --instability-feasibility --plot-only results/nlsp_out_of_plane_instability_feasibility/ab65b2c8cbb0aecf
+```
+
+Use the working repository Python interpreter and one BLAS thread.
+[Config](../data/input/nlsp_out_of_plane_instability_feasibility.json),
+[report](../docs/numerics/nlsp_out_of_plane_instability_feasibility.md).
+The existing entrypoint dispatches to a scoped second-variation library; no new
+runnable solver. This180s authorization permits saved-action/pair checks only,
+not trajectories, eigenfrequency searches, geometry scans or Floquet.
+Cached compute/report/plot never rebuilds action matrices or calls solvers.
+
+### Fixed beta15 nonlinear planar resonance
+
+The existing entry point has a scoped PL mass-form mode:
+
+```powershell
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --beta15-nonlinear-planar-resonance --compute
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --beta15-nonlinear-planar-resonance --report-only results/nlsp_beta15_nonlinear_planar_resonance/4faf1f36cd1017cd
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --beta15-nonlinear-planar-resonance --plot-only results/nlsp_beta15_nonlinear_planar_resonance/4faf1f36cd1017cd
+```
+
+Only four prescribed amplitudes; no ODE/FEM or geometry scan. The completed
+local bundle caches formal PL/residual diagnostics and the hard stop at a
+resolved near planar1:3 denominator. M1/M2 are NOT_AVAILABLE after gate B.
+The dedicated library helper handles a new algebraic PL input/output contract;
+it reuses frozen action, arm maps and the existing CLI rather than adding
+another runnable solver. Cached compute/report/plot invokes no science.
+[Config](../data/input/nlsp_beta15_nonlinear_planar_resonance.json),
+[report](../docs/numerics/nlsp_beta15_nonlinear_planar_resonance.md).
+
+### Fixed beta15 planar 1:3 internal resonance
+
+```powershell
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --planar-1to3-internal-resonance --compute
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --planar-1to3-internal-resonance --report-only results/nlsp_beta15_planar_1to3_internal_resonance/b59944c2ef43d0b7
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --planar-1to3-internal-resonance --plot-only results/nlsp_beta15_planar_1to3_internal_resonance/b59944c2ef43d0b7
+```
+
+Scoped library mode reuses the saved action,full p12 modes and PL mass-form
+helper. Two active resonant slots and passive spectral corrections;
+three nonlinear root unknowns,not a universal new solver. Four fixedamplitudes,
+600s maximum numericalbudget,no ODE/FEM/OUT/Floquet. Completed compute/report/
+plot replay invokes no scientific routines. Type-IIperiodic candidates pass
+numericalgates;type-I modulation is not a saved dynamic trajectory.
+[Config](../data/input/nlsp_beta15_planar_1to3_internal_resonance.json),
+[report](../docs/numerics/nlsp_beta15_planar_1to3_internal_resonance.md).
+
+### Fixed beta15 periodic orbit and spatial spectrum
+
+```powershell
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --beta15-periodic-spatial-stability --compute
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --beta15-periodic-spatial-stability --report-only results/nlsp_beta15_periodic_orbit_spatial_stability/6b93bc782316296d
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --beta15-periodic-spatial-stability --plot-only results/nlsp_beta15_periodic_orbit_spatial_stability/6b93bc782316296d
+```
+
+Extends the existing1:3 scoped helper: full92-mode PL Newton HB, fixed Psi0
+branch, canonical Fourier operators and bounded Hill eigenproblems.
+Four amplitudes only,p12,900s budget,zero ODE/FEM. Completed cache replay
+makes no scientific calls; cache regression plots use temporary copies.
+[Config](../data/input/nlsp_beta15_periodic_orbit_spatial_stability.json),
+[report](../docs/numerics/nlsp_beta15_periodic_orbit_spatial_stability.md).
+One resolved candidateA=.005 does not authorize a new dynamic experiment.
+
+
+## Fixed β15 dynamic OUT validation
+
+`python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --beta15-dynamic-out-growth --compute`
+uses the saved A=.005 Type-II HB11/Floquet initial states and established
+physical Radau/DOP853 helpers. The only authorized experiment is complete;
+compute replays its verified cache. `--report-only <copy>` / `--plot-only <copy>`
+read saved results; use a temporary copy for rendering tests.
+No new runnable script or model is introduced. Source hashes and original
+PL/Floquet normalization remain fixed across physical restarts.
+[Report](../docs/numerics/nlsp_beta15_dynamic_out_growth_validation.md).
+
+
+## Fixed β15 p14 spatial check
+
+`python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --beta15-p14-convergence --compute`
+uses physical mass Galerkin projection,existing full-planar HB and canonical
+Hill helpers. One near-full72-mode control is triggered if48/full81 fails
+its unchanged resolution gate. No p12 recomputation, new ODE, FEM or p16.
+Completed compute and `--report-only <copy>` / `--plot-only <copy>` read cache;
+rendering tests use temporary copies. No new runnable script is introduced.
+[Report](../docs/numerics/nlsp_beta15_out_growth_p14_convergence.md).

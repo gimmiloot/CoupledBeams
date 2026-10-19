@@ -1,6 +1,120 @@
 # CHANGELOG
 
+## 2026-10-12
+
+- Reworked the canonical supervisor report from one-rod mechanics to
+  scalar strains, energies and explicit variational steps. Added five
+  explanatory schematics, a dimensional coefficient table, seven scalar
+  nonlinear/cubic coordinate equations and fully expanded planar cubic
+  forces and inertia. The 26-page XeLaTeX PDF has eight figures and all
+  pages were visually reviewed. Thirty-six exact printed-formula checks
+  match the saved expansion; no physical or numerical results changed.
+
+- Completely rewrote the canonical Russian supervisor report around the
+  model derivation: M–H/Timoshenko reduced energies, seven linear equations,
+  objective nonlinear kinematics, quartic action, coordinate cubic residuals,
+  explicit planar cubic equations, variational joint conditions and Floquet.
+  Added a section-kinematics schematic, enlarged saved-data figure fonts,
+  four verified literature records and a separate mathematical text audit.
+  Eleven printed equation comparisons match saved coefficients exactly.
+  No new scientific results, solver/kernel changes or historical overwrites.
+
+- Added fixed pre-supervisor diagnostics to the existing NLSP helper and CLI:
+  the p14 PL neutral residual is explained by the HB-orbit residual derivative,
+  chiefly harmonic12. Jacobian/canonical consistency passes; the original
+  2e-9 raw neutral gate and PARTIAL status are preserved.
+- Restored physical symplectic-dual OUT2 components and performed one
+  displacement-only, zero-velocity tangent IVP through3T, continued to5T.
+  Growing-component amplification1.279285 agrees with saved Hill data;
+  maximum physical v/A remains0.2864%. No new full nonlinear, HB/Hill solve,
+  FEM, p16, model change or historical bundle overwrite.
+- Added a standalone five-page Russian LaTeX/PDF report for the supervisor,
+  three saved-data figures, scoped regressions, technical report and D32/K33
+  memory/navigation. PDF built and rendered with existing tools, without
+  installing packages. Further scientific work is stopped pending discussion.
+
 ## 2026-10-11
+
+- Added fixed beta15/mu.1,A=.005 Type-II p14 spatial-check mode to the existing
+  HB/Hill helper and CLI. Physical resting-mass Galerkin transfer preserves
+  the p12 branch; full108PL HB11/13 and all81OUT N7/9 give
+  P14_OUT_GROWTH_REPRODUCED,sigma=.003411315508,observed difference .00277%.
+- Retained reciprocal Floquet vectors optionally, preserving old default
+  outputs. Symplectic-dual projection confirms accessibility from OUT2 with
+  zero initial velocities. One triggered72/full81 check resolves the initial
+  insufficient48-mode qualification; original evidence and thresholds retained.
+  Secondary PL neutral gate remains PARTIAL. No ODE/FEM/p16/model change.
+- Added two figures, scoped tests/report, navigation and D31/K32 memory;
+  historical bundles,PDF/manifests and prior statuses preserved.
+
+
+- Added one fixed beta15/mu.1, A=.005 type-II dynamic validation mode to
+  the existing CLI/helper. Nonlinear planar closure, physical Floquet
+  reconstruction and direct tangent integration pass; full seven-field
+  dynamics reproduces growth through5T (gain1.279292). No physical kernel,
+  model coefficient, historical bundle or initial branch was changed.
+- Added native initial-run endpoint/time-grid writer records for exact
+  physical restarts. Temporal tolerance and half-step controls pass;
+  the short half-perturbation error-order check remains NUMERICAL_FLOOR_LIMITED.
+  Twelve new ODE calls cost1527.638s; about1575.79s including diagnostics/tests
+  stays within3600s. Added three figures, scoped tests/report and D30/K31.
+  All80 scoped tests pass; cached replay uses temporary copies. No new HB/Hill,
+  FEM, p16, amplitude/geometry scan or subsequent long trajectory.
+
+
+- Added fixed-beta15 full-space HB/Hill mode to the existing1:3 helper and
+  CLI. HB11 passes the stricter orbit gate atA=.005; all69p12OUTmodes give
+  sigma=.0034114101, with temporal/modal/orbit/eigen-residual controls.
+  The other three amplitudes are NOT_EVALUATED_HB_GATE; full92PL neutral
+  control finds no resolved non-neutral growth. No new ODE/FEM/p16.
+- Added two figures, scoped regression/cache checks, report and NLSP-D29/K30.
+  Fixed replica selection and orbit/comparator qualification without changing
+  thresholds or physics; technical attempts remain archived. Old1:3 cache
+  regression now renders temporary copies and preserves historical hashes.
+
+- Added fixed-beta15 planar 1:3 mode to the existing CLI. Canonical quartic
+  coupling includes all 90 passive p12 modes: gamma=-2858.584170 combines
+  direct -5912.352883 and indirect +3053.768713. Two active resonant slots
+  stay outside passive resolvents. Algebraic type-II Psi=0 candidates at
+  four physical amplitudes pass full-system/harmonic/frequency gates;
+  PLANAR_1TO3_RESONANT_REDUCTION_VALIDATED is qualified to this p12 approximation.
+  Type-I modulation and passive transients remain distinct; no ODE/FEM/OUT/Floquet.
+- Added raw coefficients/waveforms, two figures, regression checks, report
+  and NLSP-D28/K29. Repaired the previous cache regression to render on a
+  temporary bundle: overwritten PDF metadata and its historical manifest
+  were restored to their exact original hashes. Archived initial Type-I
+  writer output and corrected its saved inverse-map array; no HB solve repeated.
+
+- Added fixed-beta15/p12 PL mass-form diagnostics at four physical initial
+  amplitudes through the existing CLI. Formal Omega2=11.43829014 includes
+  longitudinal/contraction fields and nonlinear inertia. A resolved near 1:3
+  planar denominator gives large third-harmonic corrections; frozen gate B
+  stops M1/M2 (PLANAR_SINGLE_MODE_EXPANSION_UNRESOLVED). No candidate selected.
+  Preserved separate velocity/canonical M0 definitions, source bundles and
+  physical kernels. Added two diagnostic figures, CSV/NPZ, cache regression
+  checks, report and NLSP-D27/K28; no new ODE/FEM or geometry search.
+
+- Added scoped `--instability-feasibility` to the existing CLI and a library
+  audit of the saved quartic action. Exact OUT second variation agrees with
+  saved cubic residuals and independently assembled Jacobian (relative1.44e-14).
+  Canonical self/sum opposite-frequency channels permit formal pair growth;
+  STRUCTURAL_PARAMETRIC_GROWTH_CHANNEL_CONFIRMED does not prove instability
+  of any actual geometry/orbit. Historical beta15 margin2.675e-4 is reproduced.
+- Preserved the initial diagnostic rejection of a raw velocity-coordinate
+  sum pair; the required momentum map restores Hamiltonian consistency with
+  the frozen threshold. Direct mean corrections remain representation-dependent
+  without complete second-order averaging. No physical kernels, source bundles
+  or old statuses changed; no ODE/FEM/spectral scan. Added one pair diagram,
+  exact polynomials/NPZ/CSV,13tests,cache checks and NLSP-D26/K27.
+
+- Added `--beta-resonant-screening` to the existing CLI/helper: five angles
+  at fixed mu=.1, p12 and max|w|=.005, both modal frequency signs, full analytic
+  Jacobian, amplitude/phase controls and mean-corrected isolated pair matrices.
+  No new ODE/FEM/Floquet. All 250 channels resolved; no direct growth candidate.
+  Beta15 bare ratio1.407 becomes0.966 with mean terms; beta45 self3 ratio0.291.
+  Selected planar correspondence at beta15 remains unresolved; overall
+  MODE_IDENTIFICATION_PARTIAL. Added config, tests, report, two figures and
+  NLSP-D25/K26. Numerical programme6.775s/300s; historical results preserved.
 
 - Added scoped `--resonant-screening` to the existing coupled sensitivity CLI:
   p12 modal duality, both frequency signs, full-Jacobian Fourier projection,

@@ -1,0 +1,48 @@
+{
+  "authorization": "explicit_user_beta15_nonlinear_planar_resonance_2026_10_11",
+  "beta_parent": "results/nlsp_beta_resonant_coupling_screening/7ba6ccdcba83844a",
+  "feasibility_parent": "results/nlsp_out_of_plane_instability_feasibility/ab65b2c8cbb0aecf",
+  "amplitudes": [
+    0.005,
+    0.006,
+    0.008,
+    0.01
+  ],
+  "reference_amplitude": 0.005,
+  "degree": 12,
+  "beta_deg": 15.0,
+  "mu": 0.1,
+  "lengths": [
+    0.9,
+    1.1
+  ],
+  "sections": [
+    [
+      0.05,
+      0.1
+    ],
+    [
+      0.05,
+      0.1
+    ]
+  ],
+  "PL_phases": 16,
+  "canonical_phases": 32,
+  "new_ODE_integrations": 0,
+  "new_FEM_jobs": 0,
+  "numerical_budget_seconds": 600.0,
+  "action_massform_relative_gate": 2e-10,
+  "harmonic_solve_relative_gate": 1e-08,
+  "internal_resonance_relative_gap_trigger": 0.01,
+  "internal_resonance_forcing_fraction_gate": 1e-08,
+  "internal_resonance_correction_energy_ratio_trigger": 0.05,
+  "expansion_correction_energy_ratio_gate": 0.25,
+  "residual_order_minimum": 3.5,
+  "Hamiltonian_relative_gate": 2e-10,
+  "automatic_retry": false,
+  "amplitude_convention": "A=max initial physical |w|; a is fundamental modal coefficient; phi mass gauge phi.T M q31=0",
+  "internal_resonance_policy": "gap <1% and resolved projected forcing and correction energy ratio >=5% at largest amplitude blocks isolated PL expansion; no forced multimode expansion",
+  "deferred": "DEFERRED_TWO_PARAMETER_ACTION_EXPANSION",
+  "beta_parent_manifest_sha256": "55e786eb81cd68391e675fc250b879d1a78df93a240903b303c64ca0f7b321b7",
+  "feasibility_parent_manifest_sha256": "bd0b006b7264e13fe0dedac0777faea5865f0f5ae8b075e4ffaa2ee28fd9e3db"
+}
