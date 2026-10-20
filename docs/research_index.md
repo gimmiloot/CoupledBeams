@@ -1,5 +1,67 @@
 # Research Directions and Status
 
+## Nonsymmetric laminated beams — NSL (2026-10-20)
+
+[Independent NSL direction](nonsymmetric_laminated_beams/README.md).
+NSL-1 is complete with PARTIAL_PASS: model/constitutive/numerical gates PASS;
+the printed Bachoo Eq.(11d) fails its own Eq.(9) determinant identity.
+One straight undamped FSDT beam, SOURCE_BACHOO and PROJECT_REDDY_COUPLED
+reductions, a complete 6+1 CC prefix and independent converged Ritz forms.
+Maximum frequency difference 4.26e-11; no joint or damping in this stage.
+NSL does not replace symmetric RLB or revise earlier scientific statuses.
+
+[NSL-VIS-1 comparative spectral curves](nonsymmetric_laminated_beams/comparative_spectral_curves.md):
+PASS for finite-dimensional Ritz research maps. BASE/MIRROR/SAME_LOCAL
+with equal A,D,S,m,j2: 91 angles, 61 stiffnesses, three separate RIGID
+constraints; N36/N44 at 456 unique systems, 912 eigenproblems.
+Eleven saved determinant/shape references agree to 6.98e-13 in frequency;
+two additional saved MIRROR limit spectra agree. Protected eta=-1 families
+remain constant in stiffness, while their sorted positions can exchange.
+Two PNG/PDF candidates, full coefficients and Delta/P/G are preserved.
+No new complex roots, continuum certification, tracking, veering or FRF.
+
+[NSL-2 elastic angular joint](nonsymmetric_laminated_beams/coupled_joint_theory.md):
+PARTIAL_PASS. Full covariant reference-axis and MIRROR reflection checks pass.
+Three beta30 first6+guard7 prefixes and independent Ritz pass, as does the
+MIRROR stiffness ordering. Straight length2 frequencies match6.78e-14,
+but endpoint-residual gates remain unresolved for coupled guard7 and
+single modes6/7. NSL-1 remains unchanged; damping was outside NSL-2.
+
+[NSL-2R numerical follow-up](nonsymmetric_laminated_beams/nsl2r_numerical_diagnostics.md):
+PASS in its limited technical scope. Column equilibration resolves those
+straight-control endpoint failures at unchanged saved roots and tolerance.
+All seven forms in both representations pass; an active SAME_LOCAL mode-4
+stiffness derivative is verified with exactly two local solves (relative
+difference 1.00e-8). This subsequent result preserves the original NSL-2
+PARTIAL_PASS record and does not begin NSL-3.
+
+[NSL-3A bounded complex pilot](nonsymmetric_laminated_beams/nsl3a_kelvin_voigt_pilot.md):
+PASS. A separate explicit request authorized exactly five states at beta30,
+kappa1,d=.001: protected MIRROR4/6 require no Newton; active MIRROR5,
+SAME_LOCAL4/6 pass with three complex solves and seven updates.
+SAME_LOCAL4/6 zeta=1.97059e-5/3.22225e-6 is nonzero but small.
+Elastic predictor errors .01291–.07295%; minimum seed MAC .999994916482.
+No new elastic spectra, auxiliary roots, maps, veering or FRF.
+Historical NSL-1/2/2R statuses remain unchanged. STOP after NSL-3A.
+
+[NSL-3A-ANGLE elastic angle screening](nonsymmetric_laminated_beams/nsl3a_elastic_angle_screening.md):
+PASS in the separately authorized five-angle scope. Eight new MIRROR/SAME_LOCAL
+prefixes (56 elastic roots) plus two unchanged beta30 prefixes. Exact MIRROR
+protected classes persist; 15-degree protected position2 replaces position1.
+Maximum predicted zeta=.00198552 at SAME_LOCAL15 position5, versus .000945519
+as the beta30 maximum. SAME_LOCAL75 position4 reaches .00112341, but identity
+with beta30 mode4 is UNRESOLVED. All residual/completeness gates pass.
+No new complex roots, broad map, NSL-3B, veering or FRF.
+
+[NSL-3A-ANGLE-C targeted confirmation](nonsymmetric_laminated_beams/nsl3a_angle_complex_confirmation.md):
+PASS in a separately authorized scope of two beta15 position5 complex roots
+and three exploratory figures. Existing NSL-3A solver reused unchanged:
+two calls, six Newton updates, no elastic solves or auxiliary viscosity.
+R_alpha=1.18950539, R_zeta=1.21035781; minimum seed MAC=.999987078.
+The ~21% zeta contrast is confirmed with small absolute zeta=.00164/.00199.
+Figures separate elastic grid maxima, exact beta30 protection and actual
+complex modal envelopes. No new parameter study, NSL-3B, FRF or article.
+
 ## Mathematical supervisor report rewrite (2026-10-12)
 
 [The canonical report](reports/nlsp_beta15_parametric_instability/README.md)

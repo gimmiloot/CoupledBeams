@@ -1,5 +1,113 @@
 # CoupledBeams
 
+## Nonsymmetric laminated beams — NSL
+
+[NSL](docs/nonsymmetric_laminated_beams/README.md) is a separate research
+direction. NSL-1 verifies one straight undamped beam with coupled
+extension/bending: model and numerical gates PASS, overall PARTIAL_PASS
+because a printed Bachoo polynomial coefficient contradicts its matrix.
+The complete 6+1 spectrum agrees with independent Ritz to 4.26e-11.
+Run `python scripts/analysis/nonsymmetric_laminated_beams/verify_single_beam.py --compute`;
+validated results are reused without new solves.
+The historical symmetric RLB model remains unchanged.
+
+[NSL-2](docs/nonsymmetric_laminated_beams/coupled_joint_theory.md) adds the
+elastic angular joint, covariant reference-axis shifts and full reflection.
+The beta30 BASE/MIRROR/SAME_LOCAL first6+guard7 pilot and independent Ritz
+pass. Overall **PARTIAL_PASS** retains endpoint-residual failures in the
+straight length2 control; no damping was introduced.
+Run `python scripts/analysis/nonsymmetric_laminated_beams/verify_coupled_joint.py --compute`;
+the verified bundle is reused with zero new solves.
+[Results and limitations](results/nonsymmetric_laminated_beams/coupled_joint_verification/README.md).
+NSL-2 did not include damping.
+
+[NSL-2R](docs/nonsymmetric_laminated_beams/nsl2r_numerical_diagnostics.md)
+is a completed numerical follow-up, **PASS**. Column equilibration before
+null-vector extraction brings all seven straight-control forms below the
+original residual tolerance without changing frequencies. Two local roots
+confirm the active SAME_LOCAL mode-4 stiffness derivative to 1.00e-8 relative.
+Run `python scripts/analysis/nonsymmetric_laminated_beams/diagnose_mode_recovery.py --compute`;
+[validated data](results/nonsymmetric_laminated_beams/nsl2r_numerical_diagnostics/README.md)
+are reused with zero new solves. Historical NSL-2 status and bundles remain unchanged.
+
+[NSL-3A](docs/nonsymmetric_laminated_beams/nsl3a_kelvin_voigt_pilot.md)
+is a completed bounded Kelvin–Voigt pilot, **PASS**. At beta30, kappa1,
+d=.001, MIRROR modes4/6 remain exactly protected; three active complex
+roots pass with seven Newton updates. SAME_LOCAL4/6 have
+alpha=1.36387e-5/4.52120e-6 and zeta=1.97059e-5/3.22225e-6.
+The elastic predictor differs by at most .07295% for the three active modes.
+Run `python scripts/analysis/nonsymmetric_laminated_beams/verify_kelvin_voigt_pilot.py --compute`;
+[validated results](results/nonsymmetric_laminated_beams/nsl3a_kelvin_voigt_pilot/README.md)
+are reused without new solves. That pilot did not calculate parameter maps or forced response.
+
+[NSL-3A-ANGLE](docs/nonsymmetric_laminated_beams/nsl3a_elastic_angle_screening.md)
+completes the separate elastic screening, **PASS**: MIRROR/SAME_LOCAL at
+15/30/45/60/75 degrees, first6 plus guard7. Eight new points (56 roots);
+beta30 frequencies and forms are reused unchanged. Maximum predicted zeta
+is .00198552 at SAME_LOCAL15, position5, about 2.10 times its beta30 maximum.
+These are elastic predictors; no new complex roots were calculated.
+Run `python scripts/analysis/nonsymmetric_laminated_beams/screen_elastic_angles.py --compute`;
+[verified cache and commands](results/nonsymmetric_laminated_beams/nsl3a_elastic_angle_screening/README.md).
+NSL-3B and forced response have not started.
+
+[NSL-3A-ANGLE-C](docs/nonsymmetric_laminated_beams/nsl3a_angle_complex_confirmation.md)
+confirms the two beta15 position5 complex roots, **PASS**, with six Newton
+updates and no new elastic solves. Actual zeta=.00164015768/.00198517767
+for MIRROR/SAME_LOCAL: +21.03578% in zeta, +18.95054% in alpha.
+[Three exploratory figures and tables](results/nonsymmetric_laminated_beams/nsl3a_angle_complex_confirmation/README.md)
+show saved angle maxima, beta30 joint rotations and beta15 modal envelopes.
+Run `python scripts/analysis/nonsymmetric_laminated_beams/confirm_angle_complex.py --compute`;
+`--plot-only` renders saved tables with zero eigenvalue solves.
+
+[NSL-VIS-1](docs/nonsymmetric_laminated_beams/comparative_spectral_curves.md)
+adds two converged elastic Ritz maps, **PASS for research figures**:
+BASE/MIRROR/SAME_LOCAL, 91 angles and 61 finite spring stiffnesses per case,
+plus separate exact-constraint RIGID controls. N36/N44 are checked at every
+point; 912 Ritz eigenproblems and zero new boundary or complex root solves.
+The two [PNG/vector-PDF candidates and modal data](results/nonsymmetric_laminated_beams/comparative_spectral_curves/README.md)
+show sorted positions in Lambda=sqrt(omega*t_ref), with protected eta=-1
+families identified separately. No continuum-completeness or veering claim.
+Run `python scripts/analysis/nonsymmetric_laminated_beams/comparative_spectral_curves.py --compute`;
+validated cache is reused. `--plot-only` performs no eigenvalue computation.
+
+## Linear spatial split at a one-axis Kelvin–Voigt joint
+
+The [limited spatial diagnostic](docs/theory/uniaxial_kelvin_voigt_split.md)
+proves that the normal-axis spring/damper changes only the in-plane block
+when the other two relative rotations remain rigid. The out-of-plane
+Timoshenko/torsion operator equals the same-BC rigid operator exactly.
+Matrix checks at beta0/45/90 and one complete G20 beta45 first6+guard7
+spectrum pass; the pure OUT modes have zero damping.
+Run `python scripts/analysis/check_uniaxial_kelvin_voigt_split.py --compute`;
+a verified cache returns without new spectral solves.
+[Data and commands](results/uniaxial_kelvin_voigt_split/README.md).
+This is a separate linear idealization, with existing rectangular C_T and
+section-rotation clamps; historical spatial and planar models are unchanged.
+
+## Longitudinal theory at a Kelvin–Voigt joint
+
+The [fixed G20 comparison](docs/theory/longitudinal_kelvin_voigt_comparison.md)
+uses elementary, planar Rayleigh–Love and MH-FREE with common Timoshenko
+bending at beta45, kappa_theta=1, d_theta=.001. The verified previous bundle
+supplies all 18 elastic modes and two MH complex roots. Exactly four new E/RL
+complex roots pass; frequency differences are below .135615%, active damping
+predictor differences below .811694%. Run
+`python scripts/analysis/compare_longitudinal_kelvin_voigt.py --compute`;
+a matching complete bundle is reused with zero new solves. The required
+previous local bundle is checked and is never regenerated automatically.
+
+## Contraction conditions at a rotational spring joint
+
+The [limited G20 sensitivity study](docs/theory/contraction_joint_sensitivity.md)
+compares FREE, CONTINUOUS and BLOCKED c conditions at beta0/45,
+kappa_theta=1, with unchanged Mindlin–Herrmann/Timoshenko arms and clamps.
+All elastic/count/min-max gates pass. The largest first-six frequency shift
+is 0.01861%, while the c/R fields change more near the joint. Two active
+forms receive local weak-KV confirmation at d_theta=.001.
+Run `python scripts/analysis/check_contraction_joint_sensitivity.py --compute`;
+`--plot-only` redraws saved data. Results are separate from historical rigid
+models, EB/RLB-KV and nonlinear studies; their statuses are unchanged.
+
 ## Results for supervisor discussion
 
 [Russian mechanics report, 26 pages](docs/reports/nlsp_beta15_parametric_instability/report.pdf)

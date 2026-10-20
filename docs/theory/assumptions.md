@@ -7,6 +7,196 @@ diagnostic workflow, and model-extension checks, see `../project_rules.md`.
 
 ## Working Notes
 
+## NSL-3A-ANGLE-C: two complex targets and modal envelopes, 2026-10-20
+
+- [The targeted confirmation](../nonsymmetric_laminated_beams/nsl3a_angle_complex_confirmation.md)
+  uses the unchanged passive NSL-3A pencil KJ=k_theta+c_theta*p at beta15,
+  kappa1,d=.001, only MIRROR5/SAME_LOCAL5 from the validated ANGLE seeds.
+  No constitutive, internal damping, support or joint assumption changes.
+- Figure1 uses elastic predictors only; anglewise maxima among positions1–6
+  are not one tracked branch. Figure2 uses saved mass-normalized elastic
+  profiles with signed mass-overlap alignment and shared ordinate ranges.
+- Figure3 is the envelope of ONE complex eigenmode in each construction:
+  exp(-2*pi*alpha*N/omega_d), N=omega_d*t/(2*pi). Equal N is not equal time.
+  Accumulated separation over200 cycles is not evidence of strong per-cycle
+  damping, a forced response or behavior with other loss mechanisms.
+- Three new exploratory figures are not approved article illustrations.
+  Previously completed stages, their qualifications and bundles stay unchanged.
+
+## NSL-3A-ANGLE: elastic angle screening, 2026-10-20
+
+- [The separate screening](../nonsymmetric_laminated_beams/nsl3a_elastic_angle_screening.md)
+  keeps the NSL-2 PROJECT_REDDY_COUPLED model, coefficients, clamps and point
+  spring unchanged; c_theta=0 in every spectral operator, kappa_theta=1.
+- Only beta15/30/45/60/75 and MIRROR/SAME_LOCAL are compared. The first six
+  sorted positions are observations, not branch labels. The seventh is a
+  completeness guard. Beta30 forms/frequencies are reused unchanged.
+- P, s, G, alpha_pred and zeta_pred are elastic energy indicators.
+  Illustrative d_theta=.001 enters postprocessing only; no new damped
+  eigenvalue or finite-viscosity accuracy is inferred.
+- Exact zeros require MIRROR reflection class eta=-1. Small SAME_LOCAL
+  values are not rounded to structural zeros. Comparisons at different
+  angles use global physical displacements/rotations at common arm coordinates;
+  the diagnostic common mass metric is justified here by equal densities,
+  equal m,j2 and j1=0. MAC does not imply continuous branch continuation.
+- Maxima are restricted to the fixed grid/first six positions. No physical
+  assumption or historical NSL/RLB/LONG/NLSP status is revised.
+
+## NSL-3A: one passive rotational Kelvin–Voigt element, 2026-10-20
+
+- [NSL-3A note](../nonsymmetric_laminated_beams/nsl3a_kelvin_voigt_pilot.md)
+  adds only R_J=c_theta*(Delta psi_dot)^2/2 to the accepted NSL-2 model.
+  The node remains massless, concentric and translationally rigid; rods
+  remain linearly elastic PROJECT_REDDY_COUPLED FSDT with full B_e,j1.
+- The time convention is exp(p*t), K_J=k_theta+c_theta*p, including the
+  real part of p. No material or distributed damping is added.
+  Rayleigh dissipation here denotes a single joint loss function, not
+  proportional mass/stiffness damping.
+- Complete Hermitian modal energies give p^2*M+p*C+K=0 and exactly
+  alpha=C/(2*M) for an oscillatory eigenpair. Elastic-form prediction is
+  only first order in c. omega_d=Im(p), zeta=alpha/abs(p).
+- MIRROR eta=-1 is structurally protected for both k and c; SAME_LOCAL
+  cannot use that reduction. Only MIRROR4/6 and the active MIRROR5,
+  SAME_LOCAL4/6 are evaluated, at beta30,kappa1,d=.001 and saved NSL-2 units.
+  NSL-2R column equilibration is required; fixed scales preserve analyticity.
+- This limited diagnostic is PASS. It does not model a finite physical
+  joint or authorize NSL-3B, other viscosities, maps, veering, FEM or FRF.
+  Historical assumptions and qualifications below remain unchanged.
+
+## NSL-2: separate elastic angular joint, 2026-10-20
+
+- [NSL-2 theory](../nonsymmetric_laminated_beams/coupled_joint_theory.md)
+  extends the accepted PROJECT_REDDY_COUPLED NSL-1 state only. Both arm
+  coordinates run from section-rotation clamps to the massless point joint.
+  RLB physical maps d=u*t+w*n, rotation=-psi*k, F=N*t+Q*n, moment=-M*k
+  are retained. The local NSL material z in Ux=u+z*psi is embedded along n;
+  stack order is increasing local z. The source-coordinate conversion
+  z_P=-z_R is not applied a second time to accepted NSL coefficients.
+- RIGID imposes common translation/rotation and force/moment equilibrium.
+  SPRING keeps common translation and independent rotations with
+  U_J=k_theta*(psi1-psi2)^2/2, no extra mass, eccentricity, prestress,
+  translational spring or damping. k_theta=0 is the hinge; RIGID is exact.
+- Reference-axis shifts are representation changes only: u*=u+z0*psi,
+  M*=M-z0*N and the transformed B,D,j1,j2 are accompanied by the
+  pullback of the full joint and clamp rows to the ORIGINAL physical point.
+  Neutral-axis B*=0 does not authorize dropping the induced j1*.
+- For equal arms, physical reflection exchanges states by Tr=diag(1,-1,-1,1,-1,-1).
+  MIRROR pairs reflected stacks; SAME_LOCAL does not in general preserve
+  reflection. Eta=-1 has Delta_psi=0 and is spring-independent.
+  A continuous straight HHLL rod requires local HHLL/LLHH on opposite axes.
+- Only the fixed H/L pilot at beta30,kappa1 and prescribed hinge/rigid
+  and beta0 controls are performed. D_ref=.20*.05^3/12,l_ref=1,m_ref=.01
+  remain common. beta90 is structural only. No Kelvin–Voigt NSL-3 work.
+- Overall PARTIAL_PASS preserves strict endpoint failures in the straight
+  control, despite matching frequencies. Main pilot prefixes pass.
+  Earlier NSL-1, RLB, LONG and NLSP assumptions/statuses are not revised.
+
+## NSL-1: separate nonsymmetric single-beam FSDT direction, 2026-10-20
+
+- [NSL theory](../nonsymmetric_laminated_beams/single_beam_theory.md)
+  is a new direction, not a change to symmetric RLB or the MH/Timoshenko
+  line. It uses Ux=u+z*psi, Uz=w, gamma_xz=w'+psi; state
+  (u,w,psi,N,Q,M), project z increasing bottom-to-top. The Reddy source
+  coordinate is z_R=-z_project; Bachoo Fig.1 uses the upward coordinate
+  but lists its [0/90]_n stack top-to-bottom.
+- SOURCE_BACHOO directly integrates b*Qbar11 times 1,z,z² and K*b*Qbar55.
+  PROJECT_REDDY_COUPLED retains ABD strain coordinates (xx membrane,
+  xx curvature) and jointly eliminates the other four strains under zero
+  Ny,Nxy,My,Mxy. No independent inertia is assigned to those eliminated
+  strains; kinetic energy is the declared three-field FSDT energy with
+  m=b*I0, j1=b*I1, j2=b*I2. This is a chosen reduced model, not a unique
+  deduction from 3D elasticity. Source and project coefficients are labeled.
+- Only coaxial/cross-ply 0/90 layers, perfect bonds, initially straight
+  unstressed constant sections and positive constitutive/mass forms are
+  accepted. Off-axis spatial couplings are explicitly rejected. K is an
+  explicit input, applied once; 5/6 is printed by Bachoo and inherited
+  from the previous H/L diagnostic for the project control.
+- NSL-1 has one CC single beam, u=w=psi=0 at x=0,L, with no angular joint,
+  spring, damping, forced response or FEM. The only spectral case is
+  PROJECT_REDDY_COUPLED H/H/L/L, chi=.4,L=1,b=.20,h=.05.
+- Joint Schur reduction, a future KV law and future frame results are not
+  attributed to Bachoo. Printed Eq.(11d) differs from the determinant of
+  Eq.(9) by the missing density power; the determinant governs the local
+  model. Eq.(4b) also conflicts with orthotropic reciprocity, although its
+  Q12 contribution vanishes in Qbar11 for the admitted 0/90 plies.
+  See [source comparison](../nonsymmetric_laminated_beams/source_comparison.md).
+- B_e,j1 are local NSL coupling notation. At B_e=j1=0 the project operator
+  recovers the unchanged symmetric RLB operator exactly. Historical
+  equations.tex and src/my_project/analytic/ have no NSL block and remain
+  unchanged. Earlier RLB, LONG, NLSP statuses retain their original scopes.
+
+## Separate linear one-axis spatial KV joint, 2026-10-19
+
+- The explicitly authorized [diagnostic](uniaxial_kelvin_voigt_split.md)
+  extends the planar MH-FREE/KV idealization to initially planar, unstrained,
+  isotropic rectangular rods with aligned principal section axes. It uses
+  only the quadratic part of the accepted seven-field action. This is a new
+  stated joint idealization, not an inferred property of a real 3D joint.
+- The full center displacement is continuous. For the physical rotation
+  `vartheta=Phi*t-psi*n+theta*k`, both relative components in the initial
+  plane are constrained, while only `theta1-theta2` carries the existing
+  spring/damper. The joint is massless and has no eccentricity, translational
+  compliance or other damping. Contraction uses only `R1=R2=0`.
+- In this diagnostic `P=I-k*k.T` is the planar projector; the historical
+  named-rotation sign matrix is called `D_z=diag(1,-1,1)` locally. This
+  explicit distinction does not rename frozen historical notation/code.
+  Physical moments are `MT*t-Mpsi*n+Mtheta*k`, as fixed by virtual work.
+- External clamps prescribe independent section rotations, in particular
+  `v=psi=Phi=0`, not `book_slope_clamp`. Rectangular torsion retains the
+  existing generalized C_T, not G*I_p. The same theory and BC are used on
+  both sides of the rigid/KV comparison.
+- The exact linear OUT independence relies on these assumptions and the
+  absence of mixed quadratic terms. It makes no nonlinear, real-joint or
+  3D-accuracy claim. Historical rigid `c1=c2`, NLSP and EB/RLB assumptions
+  remain unchanged. Only matrices at beta0/45/90 and one beta45 spectrum
+  were authorized; this completed diagnostic does not open a wider study.
+
+## Fixed longitudinal/Kelvin–Voigt comparison, 2026-10-19
+
+- The separately authorized [comparison](longitudinal_kelvin_voigt_comparison.md)
+  uses only G20 beta45, kappa_theta1, d_theta.001 and the existing physical
+  k_theta,c_theta,l_ref,t_ref. Elementary, planar RL and MH-FREE share the
+  unchanged Tim block, translation/force conditions and Jang rotation signs.
+  External MH c=0 and reduced-model absence of c remain different boundary
+  representations; MH is not 3D ground truth. No new constitutive assumption.
+- At exp(p*t), the energy-derived RL natural force is N=(EA+J*p^2)*U',
+  J=nu^2*rho*Iy. Each theory retains its own full modal mass; common u,w,theta
+  projection is solely a fixed-case geometric correspondence diagnostic.
+  The algebraic factor M_common/M_full does not introduce a new shape or
+  reference normalization. Complex zeta means alpha/abs(p); its elastic
+  predictor is alpha_pred/omega0.
+- Only saved positions1–6 enter elastic predictions; only positions1/6 enter
+  local complex comparison. Accepted elastic/complex MH bundles are reused,
+  not recomputed. New E/RL local matrices preserve the state and analytic
+  characteristic zeros with fixed nonsingular numerical scales and pivots.
+  Positive finite k_theta,c_theta represent a passive point rotational element.
+  No other c closure, geometry, viscosity, spectral search or parameter map.
+
+## Separate contraction-closure sensitivity, 2026-10-19
+
+- Explicitly authorized [bounded diagnostic](contraction_joint_sensitivity.md):
+  unchanged Jang-project MH/Tim arms and full external u=c=w=theta=0 clamps;
+  massless point joint with common centroid displacement, independent rotations
+  and U_J=k_theta(theta1-theta2)^2/2. G20 equal halves, beta0/45,
+  kappa_theta=1 only. Old rigid production closure is preserved.
+- Alternative c trace spaces are FREE (R1=R2=0), CONTINUOUS (c1=c2,
+  R1+R2=0), BLOCKED (c1=c2=0, reactive R allowed). All retain the other
+  six scalar conditions. R=Hc' is conjugate to contraction, not ordinary
+  bending moment. Its effective shear-stress first-moment interpretation
+  does not assert a pointwise 3D stress solution or necessary point-joint transfer.
+- U_c=k_c(c1-c2)^2/2 is described analytically only: zero/infinite k_c
+  gives FREE/CONTINUOUS, never BLOCKED without a common-mode constraint.
+  No k_c sweep. Strict potential positivity follows from positive bulk
+  coefficients and external clamps; min-max uses nested MH domains.
+- Elementary/planar RL comparators retain the same Tim block and spring,
+  but omit independent c and its external clamp. Their differences from
+  MH include boundary representations; MH is not an exact reference theory.
+- Weak KV uses exp(p t), k_theta+c_theta p and full MH mass including j c^2;
+  t_ref=l_ref^2 sqrt(rho A/B_ref), l_ref=.5 and d_theta=.001. Only two
+  accepted fixed-case modal correspondences at beta45 may receive complex
+  confirmation after elastic gates. No production EB/RLB changes or new maps.
+
+
 ## Separate prepared planar initial-data control (NLSP)
 
 - The [prepared-state audit](planar_prepared_initial_state.md) defines the
@@ -369,3 +559,23 @@ diagnostic workflow, and model-extension checks, see `../project_rules.md`.
 - Случай `\mu=0` фиксирует симметричный эталон для рабочей нумерации ветвей. Нумерация относится к отслеживаемой ветви, а не к текущему месту этой ветви в отсортированном спектре.
 - Пунктирные reference-линии на графиках `\Lambda(\mu)` соответствуют одиночным стержням с закреплением заделка--шарнир: `\Lambda_n^{(1)}(\mu)=\alpha_n/(1-\mu)` и `\Lambda_n^{(2)}(\mu)=\alpha_n/(1+\mu)`, где `\alpha_n` — корни `\tan\alpha=\tanh\alpha`. Эти линии используются только как ориентиры для интерпретации, а не как замена анализу форм колебаний.
 - При использовании `docs/literature/pdf/2003JSVb.pdf` знаки в матрице `T` формулы `(39)` нужно сверять вручную с уравнениями непрерывности `(10)--(11)`; печатную запись этого определителя не стоит переносить в теорию или код без дополнительной проверки.
+
+## NSL-VIS-1: scope of the finite-dimensional spectral maps
+
+The [NSL-VIS-1 maps](../nonsymmetric_laminated_beams/comparative_spectral_curves.md)
+use the unchanged PROJECT_REDDY_COUPLED physical model, homogeneous BASE
+and the HHLL/LLHH family with common A,D,S,m,j2. BASE is not H/L/L/H.
+For these figures the explicit local frequency coordinate is
+\(\Lambda=\sqrt{\Omega}=\sqrt{\omega t_{\rm ref}}\), with the common NSL-2
+reference values. This does not redefine another model's determinant parameter.
+Finite spring stiffness adds only its elastic quadratic form; RIGID imposes
+equal section rotations as a separate essential constraint.
+
+`frequency-map-v1 / fast_plot / sorted_positions` is implemented by the
+existing Ritz method at N36/N44. Seven finite-dimensional eigenvalues are
+retained; the guard is not a proof of continuum completeness. Saved analytic
+references and two-order convergence support the research figures within
+their declared accuracy. Lines through calculated points do not establish
+modal branch identity, crossing or veering. Modal P/G are elastic quantities,
+with exact eta=-1 zeros distinguished from numerical residues; no positive
+viscosity or forced response is computed in this stage.

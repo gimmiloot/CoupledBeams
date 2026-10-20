@@ -4,6 +4,43 @@
 
 Citation keys синхронизированы с `docs/literature/bibliography.bib`.
 
+## NSL-1: Bachoo и проектная редукция Reddy, 2026-10-20
+
+### `bachoo_2021_nonsymmetric_cross_ply_frame`
+
+- Richard Bachoo (2021), *Free vibration analysis of nonsymmetrically
+  laminated cross-ply L-shaped frames*, Proc IMechE Part L: Journal of
+  Materials: Design and Applications. DOI 10.1177/14644207211016888.
+- Полный локальный [PDF](pdf/14644207211016888.pdf), 16 страниц; SHA256
+  `97250466e47d50a9b0ddfb5132840ac578333112d2539cd9de6c5dec7e30903d`.
+  PDF печатает 0(0),1–16; окончательные том/номер не угадывались.
+- Непосредственно проверены изображения стр.2–4: (1)–(11), Fig.1;
+  стр.11: Table 1 AS/3501-6 и K=5/6; стр.12: Table 2.
+  Таблица 1 находится на стр.11, а не 12.
+- SOURCE_BACHOO воспроизводит (6), локальные (5)–(9), полином (10) и
+  коэффициенты (11a–c). В (11d) напечатано rho*A² вместо (rho*A)²,
+  получающегося из (9); буквальное равенство не проходит символьную
+  проверку. В (4b) напечатано nu12*E1 вместо взаимного nu12*E2 при (4e).
+  Для 0/90 последнее не влияет на Qbar11. Источник и старый код не правились.
+- [Сопоставление и точный вывод](../nonsymmetric_laminated_beams/source_comparison.md).
+  Table 2 — будущий benchmark опубликованной L-рамы, NOT_RUN в NSL-1;
+  это не эталон будущего точечного KV узла.
+- Связанная проектная Schur-редукция не приписывается Bachoo.
+  NSL-1 overall PARTIAL_PASS квалифицирует печатную несогласованность,
+  тогда как модельные и численные критерии одиночного стержня прошли.
+
+### `reddy_2004_laminated_plates_shells`
+
+- J. N. Reddy, *Mechanics of Laminated Composite Plates and Shells:
+  Theory and Analysis*, 2nd ed., CRC Press, 2004. Title/copyright checked
+  in the local PDF front matter; detailed mathematical use follows the
+  existing [source contract](../laminated_beams/reddy_ch4_source_contract.md).
+- [PDF](pdf/EB__Mechanics_of_Laminated_Composite_Plates_and_Shells_-JN_Reddy.pdf),
+  SHA256 `a8d4d0fa67c7073d6eb48903b868bfa157875dc60f54484376a5b510547b37ea`.
+  Source matrix/layer conventions and existing integration are reused.
+  NSL jointly condenses the computed ABD; this extension does not change
+  the historical symmetric-beam implementation or its source qualifications.
+
 См. также отдельную заметку по новым источникам для Timoshenko theory, shear
 coefficient и circular rods:
 `docs/literature/timoshenko_shear_sources.md`.
@@ -316,6 +353,13 @@ rectangular sources не подтверждено. Имена и байты PDF 
   Q₁₁*=E, Q₅₅*=G. κ_b включён в оба shear terms (5) и resultants
   (A8)–(A9); его численный default в проверенном тексте не установлен.
   Нельзя описывать это как применение единого полного 3D law без редукций.
+- Отдельная проверка 2026-10-19: (A8), PDF12/p.259, прямо определяет
+  R_b как `integral(kappa_b*tau_xz^(a)*z dA)`, (A9) — как
+  `kappa_b*C55*I0b*psi_b'`. Это обобщённый первый момент касательных
+  напряжений, сопряжённый ψ_b, а не изгибающий момент M_b.
+  [Вывод и ограничение эффективной stress interpretation](../theory/contraction_joint_sensitivity.md).
+  Повторно проверены (1),(5),(6),(12),(28),(36),(A1)–(A9) и Rucka
+  (1)–(15),(26)–(28). Новых коэффициентов/исправлений source не принято.
 - **Source warnings:** (A3), p. 258: справа напечатано σ_xx^(b) вместо
   ожидаемой strain ε_xx^(b), что несовместимо с размерностью Q₁₁*=E;
   (A10), p. 259: напечатано `A_b=b∫ z dz=b h_b` при симметричных пределах,

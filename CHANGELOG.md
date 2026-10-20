@@ -1,5 +1,138 @@
 # CHANGELOG
 
+## 2026-10-20
+
+- Completed NSL-VIS-1, PASS for two exploratory elastic Ritz maps:
+  three constitutively comparable layouts, 273 angle and 183 stiffness
+  appearances plus three exact-constraint RIGID controls. N36/N44 at
+  456 unique systems, 912 eigenproblems, no new boundary/complex roots.
+  Eleven saved determinant/shape checks agree to 6.98e-13 in frequency;
+  two saved limit spectra also agree. Monotonicity/RIGID bounds pass.
+  Added fixed map preset, checkpointed runner reusing NSL-2, two PNG/PDF
+  candidates, modal Delta/P/G data, seven new tests, NSL-D07/K07 and docs.
+  Thirty-two targeted tests pass; prior models/results/statuses preserved.
+  Continuum completeness and branch/veering identity are not claimed.
+
+- Completed NSL-3A-ANGLE-C, PASS: two beta15 position5 complex roots through
+  the unchanged parameterized NSL-3A provider/corrector; six Newton updates,
+  no elastic solves, auxiliary viscosity or additional targets.
+  R_alpha=1.18950539 and R_zeta=1.21035781 confirm distinct 18.95%/21.04%
+  contrasts; predictor-alpha differences <=.01538%, minimum MAC=.999987078.
+  Added fixed preset/orchestration, three PNG/vector-PDF exploratory figures
+  with CSV inputs and a zero-solve plot-only helper. Old heatmap unchanged.
+  Added scientific note, NSL-D06/K06, commands and navigation; 46 regressions
+  pass and 206 protected files remain unchanged. STOP before NSL-3B/FRF.
+
+- Completed NSL-3A-ANGLE elastic screening, PASS: fixed beta15/30/45/60/75,
+  MIRROR/SAME_LOCAL, first6+guard7, frequency-map-v1 fast_plot/sorted_positions.
+  Eight new prefixes/56 roots reuse NSL-2 physics/count and NSL-2R recovery;
+  beta30's 14 roots/forms remain unchanged. No new complex roots or Ritz solves.
+  Exact MIRROR zeros persist. Maximum predicted zeta=.00198552 at
+  SAME_LOCAL15 position5, 2.09993 times the beta30 maximum. Cross-angle
+  identity with beta30 modes4/6 remains unresolved at 60/75; no tracking claim.
+  Added checkpoint/cache CLI, fixed input, 60-row table, one overview figure,
+  scientific note, NSL-D05/K05 and navigation. Forty targeted tests pass;
+  163 protected files and prior D/K records are unchanged.
+
+- Completed NSL-3A bounded KV pilot, PASS: isolated complex NSL adapter with
+  unchanged B/j1 physics, fixed NSL-2R column scaling, analytic boundary
+  derivatives and the existing augmented Newton. Elastic, conjugate,
+  reflection, passive-power and covariant-axis checks pass before roots.
+  MIRROR4/6 remain structurally protected without Newton. Exactly three
+  active roots (MIRROR5, SAME_LOCAL4/6) pass with seven updates, no auxiliary
+  or elastic solves. SAME_LOCAL4/6 zeta=1.97059e-5/3.22225e-6; elastic
+  predictor error at most .07295%. Added fixed config, seed provenance,
+  complex profiles, energy/residual diagnostics, 10 tests, theory and
+  NSL-D04/K04 memory; 38 targeted regressions pass. All 139 protected files
+  and historical statuses remain unchanged. STOP before NSL-3B/maps/FRF.
+
+- Completed NSL-2R numerical follow-up, PASS: isolated poor column scaling
+  during null-vector recovery and added local equilibration without changing
+  physical operators, tolerances, saved frequencies or historical bundles.
+  All seven straight-control forms in both representations pass; maximum
+  clamp residual 4.13e-11. Exactly two local roots verify the active SAME_LOCAL
+  mode-4 stiffness derivative to 1.00e-8 relative against a preset 1e-5 gate.
+  Added diagnostic config/CLI, five regression tests, before/after artifacts,
+  technical note and NSL-D03/K03 memory. Historical NSL-2 remains PARTIAL_PASS.
+  All 51 targeted regressions and both zero-solve cache checks pass.
+
+- Added isolated NSL-2 elastic angular-joint helper/config/verification CLI,
+  reusing unchanged NSL-1 physics, RLB geometry, physical joint rows and Ritz basis.
+  Proved work/rank, covariant reference-axis assembly, MIRROR reflection and
+  spring-independent eta=-1 modes; checked matrices at beta0/30/90.
+- Certified three beta30 first6+guard7 prefixes and MIRROR HINGE/SPRING/RIGID
+  ordering with independent energy-based Ritz. Preserved the initial raw
+  LAPACK monotonicity diagnostic, reusing its roots without changed tolerances.
+  Main frequency agreement is 4.02e-13; MIRROR/SAME_LOCAL positions1/2 remain
+  individually unassigned by the preset MAC gate.
+- Compared the beta0 continuous HHLL/LLHH pair with one length2 beam:
+  frequencies agree to 6.78e-14, but strict endpoint residuals fail for the
+  coupled guard and single-beam modes6/7. Overall NSL-2 PARTIAL_PASS retains
+  those failures. Added theory, result manifest, tests and NSL-D02/K02 memory.
+  46 targeted tests and zero-solve cache verification pass.
+  No historical model/status/bundle changes, damping, new branch or NSL-3.
+
+- Registered NSL as a separate nonsymmetric laminated-beam direction, without
+  creating a Git branch or changing symmetric RLB, LONG, NLSP or EB/RLB-KV.
+- Added NSL-1 direct SOURCE_BACHOO and coupled PROJECT_REDDY_COUPLED
+  reductions reusing the existing layer integrator, full m/j1/j2 inertia,
+  energy-derived FSDT state operator and explicit cross-ply-only validation.
+- Checked the complete local Bachoo PDF. Reproduced Eq.(6), Eq.(9) and
+  coefficients(11a-c); documented the missing density power in printed(11d)
+  and the Q12 reciprocity discrepancy in(4b). Registered source/bibliography.
+- Verified one CC H/H/L/L beam by analytic propagation and independent Ritz,
+  with certified complete first6+guard7, reflected-stack invariance and all
+  physical gates. Maximum frequency difference4.26e-11. Added 23 tests and
+  seven existing RLB algebraic regressions; no historical spectral reruns.
+- Saved config, source/working-tree hashes, fixed thresholds, diagnostics,
+  modes, commands and cache reuse. Overall NSL-1 PARTIAL_PASS records the
+  source-print limitation; numerical/model gates PASS. Updated theory,
+  assumptions, journal, navigation and separate NSL-D01/K01 memory; stopped
+  before any angular joint, damping, forced response or broader study.
+
+## 2026-10-19
+
+- Completed the separate linear one-axis spatial KV diagnostic. Derived the
+  14 joint conditions, physical moment signs and power balance; proved the
+  in-plane/out-of-plane split and exact OUT equality with the same-BC rigid
+  operator. Verified matrices at beta0/45/90, arm exchange and negative controls.
+- Computed one complete first6+guard7 G20 beta45 Tim/torsion OUT prefix with
+  the existing rectangular C_T and independent-section-rotation clamps.
+  All physical gates pass; alpha_OUT=0 follows from the conservative block.
+  Preserved an initial arithmetic-comparison stop and reused its certified
+  prefix after correcting common row scaling; no repeated root search.
+- Added isolated config/helper/CLI, scientific note, reproducible bundle and
+  24 tests; 44 tests including the previous KV comparison pass. Updated
+  LONG-D05/K04, assumptions, journal and navigation. Previous models, sources,
+  result bundles and historical research statuses remain unchanged.
+
+- Completed the separate fixed-beta45 longitudinal/Kelvin–Voigt comparison:
+  reused 18 hash-verified E/RL/MH-FREE elastic modes and two MH complex roots;
+  computed exactly four E/RL damped roots for positions1/6. Added the natural
+  RL complex force, analytic fixed-basis derivative, full theory-specific
+  masses, activity/correspondence checks and complete energy acceptance.
+- Added cache-only-input CLI/config, isolated results, quantitative scientific
+  note and 20 limited tests (no repeated spectral solves). Documented frequency
+  differences up to .135615% and active alpha-predictor differences up to
+  .811694%; all target gates pass. Updated LONG-D04/K03, journal and navigation.
+  Completed contraction bundles/code and production MH/Tim, rigid and EB/RLB-KV
+  physics/results remain unchanged; no wider study was run.
+
+- Added an isolated G20 c-closure sensitivity workflow and scientific note:
+  verified R=Hc' and its effective shear-stress first-moment interpretation,
+  FREE/CONTINUOUS/BLOCKED variational conditions, positive energy, trace-space
+  root counts and nested-spectrum ordering. Reused unchanged MH/Tim and
+  elementary/planar RL arm helpers and historical certified pole catalogs.
+- Computed first six sorted modes plus guard7 for ten beta0/45 spring cases,
+  exact beta0 rigid/direct recovery, full physical mode fields and residuals,
+  fixed-case shape correspondences and six local complex confirmations for
+  two active beta45 modes at d_theta=.001. Added reproducible data/cache/plot
+  commands and 16 scientific gate tests; 47 tests including existing MH
+  source tests pass. Production models and historical result bundles unchanged.
+- Recorded the separate authorization/results in scoped LONG memory and
+  assumptions; clarified Jang (A8) R provenance without changing coefficients,
+  earlier study statuses or unrelated research scopes.
+
 ## 2026-10-12
 
 - Reworked the canonical supervisor report from one-rod mechanics to

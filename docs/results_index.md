@@ -1,5 +1,93 @@
 # Generated Results Index
 
+`results/nonsymmetric_laminated_beams/comparative_spectral_curves/5b7c19f677940011/`:
+[NSL-VIS-1](nonsymmetric_laminated_beams/comparative_spectral_curves.md), PASS
+for research Ritz maps. Three layouts, 273 angle and 183 spring appearances,
+three RIGID controls; 456 unique systems at N36/N44 =912 eigenproblems.
+Two three-panel PNG/vector PDFs, spectrum/participation CSVs, full Ritz
+coefficients, benchmark, audits, manifests and zero-solve plot-only.
+No strict continuum-prefix certification or new complex calculation.
+[Data and commands](../results/nonsymmetric_laminated_beams/comparative_spectral_curves/README.md).
+
+`results/nonsymmetric_laminated_beams/nsl3a_angle_complex_confirmation/96d75d2e7d679cfc/`:
+[NSL-3A-ANGLE-C](nonsymmetric_laminated_beams/nsl3a_angle_complex_confirmation.md), PASS.
+Two beta15 complex position5 roots, MIRROR/SAME_LOCAL, d=.001, kappa1.
+Alpha=.00153838603/.00182991847, zeta=.00164015768/.00198517767,
+R_alpha=1.18950539, R_zeta=1.21035781. Two solves, six Newton updates.
+Three PNG/vector-PDF figures, their CSVs, full complex shapes and diagnostics;
+prior ANGLE heatmap referenced unchanged. N1/e=97.03624/80.17148 periods.
+[Figure links, manifests and plot-only](../results/nonsymmetric_laminated_beams/nsl3a_angle_complex_confirmation/README.md).
+
+`results/nonsymmetric_laminated_beams/nsl3a_elastic_angle_screening/1ca9f9a592b7b34f/`:
+[NSL-3A-ANGLE](nonsymmetric_laminated_beams/nsl3a_elastic_angle_screening.md), PASS.
+Five fixed angles, MIRROR/SAME_LOCAL, sorted first6+guard7: 56 new elastic roots,
+14 reused beta30 roots/forms, zero complex roots. Full coefficients, profiles,
+count-one intervals, 60 predictor rows and a two-panel figure are preserved.
+Maximum SAME_LOCAL P=25359.7459, alpha_pred=.00183018202, zeta_pred=.00198552140,
+at beta15 position5; these are predictors only. New max physical residual8.06e-12,
+energy5.64e-13; saved beta30 residuals remain within original tolerances.
+[Manifest and commands](../results/nonsymmetric_laminated_beams/nsl3a_elastic_angle_screening/README.md).
+
+`results/nonsymmetric_laminated_beams/nsl3a_kelvin_voigt_pilot/f77b82bbfa9e1fc9/`:
+[NSL-3A complex pilot](nonsymmetric_laminated_beams/nsl3a_kelvin_voigt_pilot.md),
+PASS. Two exact protected MIRROR states and three accepted active complex
+roots at beta30,kappa1,d=.001; seven Newton updates, zero auxiliary or elastic
+root solves. SAME_LOCAL4/6 alpha=1.36387e-5/4.52120e-6,
+zeta=1.97059e-5/3.22225e-6; predictor difference at most .07295%.
+Full complex profiles, energy terms, individual residuals, frozen acceptance
+contract and seed provenance are preserved.
+[Manifest and commands](../results/nonsymmetric_laminated_beams/nsl3a_kelvin_voigt_pilot/README.md).
+
+`results/nonsymmetric_laminated_beams/nsl2r_numerical_diagnostics/de35ae8dcf5ac831/`:
+[NSL-2R recovery diagnosis](nonsymmetric_laminated_beams/nsl2r_numerical_diagnostics.md),
+PASS. Saved straight frequencies unchanged; seven forms of each representation
+pass the original physical gates after column equilibration before SVD.
+Maximum clamp residual 4.13e-11. Exactly two local SAME_LOCAL mode-4 roots
+verify the nonzero stiffness derivative to 1.00e-8 relative (tolerance 1e-5).
+[Manifest, before/after diagnostics and commands](../results/nonsymmetric_laminated_beams/nsl2r_numerical_diagnostics/README.md).
+No historical result overwrite or new prefix search.
+
+`results/nonsymmetric_laminated_beams/coupled_joint_verification/61842957b5e4d8d1/`:
+[NSL-2 elastic joint](nonsymmetric_laminated_beams/coupled_joint_theory.md),
+overall PARTIAL_PASS. Certified beta30 BASE/MIRROR/SAME_LOCAL 6+1 spectra,
+MIRROR HINGE≤SPRING≤RIGID, physical Ritz agreement4.02e-13 in main pilot,
+full reflection and covariant-axis checks pass. Straight length2 comparison
+agrees in frequency6.78e-14 but retains endpoint failures for coupled guard7
+and single modes6/7. First two cross-layout identities remain unassigned.
+[Manifest, diagnostics and commands](../results/nonsymmetric_laminated_beams/coupled_joint_verification/README.md).
+No damping, no NSL-3, no historical bundle overwrite.
+
+`results/nonsymmetric_laminated_beams/single_beam_verification/8004648ae38d120e/`:
+[NSL-1 single beam](nonsymmetric_laminated_beams/README.md), overall PARTIAL_PASS
+for the printed Bachoo Eq.(11d) discrepancy; all model/numerical gates PASS.
+One PROJECT_REDDY_COUPLED H/H/L/L CC spectrum, complete first6+guard7:
+.312463525705, .843191102654, 1.608799862275, 2.575169375598,
+3.293917570521, 3.711227628725; guard4.987661196639.
+Independent Ritz N12/20/28/36, max frequency difference4.26e-11.
+Source-6/reversal/symmetric controls and exact dispersion audit included.
+[Bundle guide](../results/nonsymmetric_laminated_beams/single_beam_verification/README.md).
+No joint, KV or historical spectrum reruns; earlier research statuses preserved.
+
+`results/uniaxial_kelvin_voigt_split/486f5256e2baf728/` contains the
+[one-axis KV linear split](theory/uniaxial_kelvin_voigt_split.md): exact
+quadratic extraction, beta0/45/90 structural checks and one certified G20
+beta45 OUT first6+guard7 prefix. The Tim/torsion OUT block equals the rigid
+same-BC block exactly; alpha_OUT=0. Frequencies run from .751102883643 to
+3.463148607275, guard 3.712572060543. All physical gates PASS, COMPLETE.
+The initial arithmetic-comparison diagnostic and the original single
+root-search ledger are retained in `a6d3406fef5bd4a9`; the accepted run reuses
+those roots with verified unchanged search methods. See the
+[bundle guide](../results/uniaxial_kelvin_voigt_split/README.md).
+Prior nonlinear spatial, planar and EB/RLB models/results are preserved.
+
+`results/longitudinal_kelvin_voigt_comparison/7e6c2fa00cb4ee04/` contains the
+[fixed G20 longitudinal/KV comparison](theory/longitudinal_kelvin_voigt_comparison.md):
+18 reused elastic modes, physical mass/predictor tables and common-field
+correspondences; two reused MH-FREE roots and exactly four new E/RL complex
+roots at positions1/6. beta45, kappa_theta1, d_theta.001 only. COMPLETE,
+all physical/energy gates PASS, 20 tests, hash-verified zero-solve cache.
+Prior `contraction_joint_sensitivity` data and statuses are preserved.
+
 `results/nlsp_beta15_pre_supervisor_checks/d3f6375a27dba883/` contains
 [final technical checks](numerics/nlsp_beta15_pre_supervisor_checks.md):
 pointwise Jacobian/time-shift identity, residual derivative and Fourier

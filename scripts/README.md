@@ -1,5 +1,195 @@
 # Scripts guide
 
+## NSL-VIS-1: two finite-dimensional Ritz maps
+
+```powershell
+python scripts/analysis/nonsymmetric_laminated_beams/comparative_spectral_curves.py --benchmark
+python scripts/analysis/nonsymmetric_laminated_beams/comparative_spectral_curves.py --compute
+python scripts/analysis/nonsymmetric_laminated_beams/comparative_spectral_curves.py --plot-only
+```
+
+Fixed diagnostic preset: BASE/MIRROR/SAME_LOCAL, beta0:1:90 at kappa1,
+61 log1p-spaced stiffnesses including exact0/1/100 at beta30, separate RIGID.
+Reuses unchanged NSL-2 Ritz assembly/solver, with N36/N44 and physical
+Rayleigh evaluation. Benchmark/checkpoints/cache prevent repeated solves;
+plot-only reads saved tables without matrix assembly or eigenvalue calls.
+This is not a new universal solver or a continuum certification runner.
+[Results and limits](../results/nonsymmetric_laminated_beams/comparative_spectral_curves/README.md).
+
+## NSL-3A-ANGLE-C: two complex targets and three fixed figures
+
+```powershell
+python scripts/analysis/nonsymmetric_laminated_beams/confirm_angle_complex.py --compute
+python scripts/analysis/nonsymmetric_laminated_beams/confirm_angle_complex.py --plot-only
+```
+
+The fixed preset parameterizes the existing NSL-3A Provider/evaluate_target,
+without changing or copying solver/physics. Inputs are the validated ANGLE
+beta15 position5 seeds. Exactly two corrector calls are allowed; no elastic
+search or auxiliary viscosity. Three plots read prepared saved-data tables.
+Script Proliferation Control: this narrow orchestration adds ANGLE provenance
+and the three-source figure contract while preserving historical runner hashes.
+[Results, figure links and scope](../results/nonsymmetric_laminated_beams/nsl3a_angle_complex_confirmation/README.md).
+
+## NSL-3A-ANGLE: saved-centre elastic angle screening
+
+```powershell
+python scripts/analysis/nonsymmetric_laminated_beams/screen_elastic_angles.py --compute
+python scripts/analysis/nonsymmetric_laminated_beams/screen_elastic_angles.py --plot-only
+```
+
+Fixed diagnostic-only workflow: two layouts, five angles, first6+guard7;
+beta30 reads unchanged NSL-2 coefficients. Eight missing points reuse the
+NSL-2 prefix/count and NSL-2R column-balanced recovery. No complex roots.
+Checkpointed points and a validated complete cache avoid repeated solves.
+Script Proliferation Control: this saved/new-data contract replaces neither
+the frozen NSL-2 verification CLI (with Ritz/straight controls) nor the
+NSL-3A complex runner. No physical solver is duplicated.
+[Scope, data and commands](../results/nonsymmetric_laminated_beams/nsl3a_elastic_angle_screening/README.md).
+
+## NSL-3A: five-state complex Kelvin–Voigt pilot
+
+```powershell
+python scripts/analysis/nonsymmetric_laminated_beams/verify_kelvin_voigt_pilot.py --structural-only
+python scripts/analysis/nonsymmetric_laminated_beams/verify_kelvin_voigt_pilot.py --compute
+python -m pytest tests/test_nonsymmetric_laminated_kelvin_voigt.py -q
+```
+
+Script Proliferation Control: the complex NSL seed/result contract differs
+from the real NSL-2 prefix workflow and the uncoupled RLB operator.
+The narrow NSL provider reuses unchanged NSL physics/geometry and the generic
+KV Newton. Fixed NSL-2R column equilibration is retained. Two protected modes
+use substitution; only the three configured active roots are corrected.
+Historical bundles are verified, never rebuilt. Completed cache gives zero
+solves; an unfinished ledger blocks automatic replay.
+[Theory, data and prerequisites](../results/nonsymmetric_laminated_beams/nsl3a_kelvin_voigt_pilot/README.md).
+
+## NSL-2R: saved-mode recovery and one active derivative
+
+```powershell
+python scripts/analysis/nonsymmetric_laminated_beams/diagnose_mode_recovery.py --compute
+python -m pytest tests/test_nsl2r_mode_recovery.py -q
+```
+
+This diagnostic consumes the validated NSL-1/NSL-2 bundles. It reuses their
+unchanged state matrices, boundary operators and physical evaluators.
+Script Proliferation Control: the saved-data recovery workflow and two fixed
+local roots are separate from the historical prefix-search scenarios; keeping
+this entry isolated preserves their source hashes. No universal solver is added.
+`--diagnose-only` compares recovery at saved frequencies without root solves.
+A matching completed bundle returns with zero solves, including with `--compute`.
+Requires NumPy/SciPy and mpmath for the high-precision diagnostic.
+[Data, prerequisites and scope](../results/nonsymmetric_laminated_beams/nsl2r_numerical_diagnostics/README.md).
+
+## NSL-2: bounded elastic angular-joint verification
+
+```powershell
+python scripts/analysis/nonsymmetric_laminated_beams/verify_coupled_joint.py --structural-only
+python scripts/analysis/nonsymmetric_laminated_beams/verify_coupled_joint.py --compute
+python -m pytest tests/test_nonsymmetric_laminated_joint.py -q
+```
+
+New workflow: coupled trace space, covariant reference-axis shifts, full
+reflection, one beta30 pilot and prescribed straight/minmax controls.
+Reuses NSL-1 physics/prefix isolation and RLB geometry/outer-clamped Ritz basis;
+it is not a symmetric-RLB preset, universal solver or parameter map.
+Hash-validated NSL-1 bundle is required and never regenerated automatically.
+[Config/results/partial gates](../results/nonsymmetric_laminated_beams/coupled_joint_verification/README.md).
+No damping or NSL-3. A matching completed bundle returns with zero solves.
+
+## NSL-1: one nonsymmetric laminated beam
+
+```powershell
+python scripts/analysis/nonsymmetric_laminated_beams/verify_single_beam.py --algebra-only
+python scripts/analysis/nonsymmetric_laminated_beams/verify_single_beam.py --compute
+python -m pytest tests/test_nonsymmetric_laminated_beam.py -q
+```
+
+Separate diagnostic entry point: nonzero B_e and j1 are explicitly rejected
+by the old symmetric RLB reducer, so this cannot be a safe parameter preset.
+It reuses OrthotropicLamina/Ply, transformed stiffnesses, laminate integration
+and the old single-beam essential Legendre basis. No old physics is edited.
+SOURCE_BACHOO and PROJECT_REDDY_COUPLED are explicit distinct inputs.
+One CC H/H/L/L spectrum only; no joint, damping, forced response or FEM.
+
+Config: `data/input/nonsymmetric_laminated_beam_single_rod.json`.
+[Theory and status](../docs/nonsymmetric_laminated_beams/README.md),
+[data, prerequisites and manifest](../results/nonsymmetric_laminated_beams/single_beam_verification/README.md).
+The accepted PARTIAL_PASS is a source-print qualification, with numerical
+gates PASS. Matching caches return without new eigenvalue solves.
+
+## One-axis spatial Kelvin–Voigt linear split
+
+```powershell
+python scripts/analysis/check_uniaxial_kelvin_voigt_split.py --structure-only
+python scripts/analysis/check_uniaxial_kelvin_voigt_split.py --compute
+python -m pytest tests/test_uniaxial_kelvin_voigt_split.py -q
+```
+
+Requires the verified local spatial-action and longitudinal-KV bundles named
+in `data/input/uniaxial_kelvin_voigt_split.json`. Checks the exact quadratic
+action, 14 physical-vector joint conditions, signs/work/power, rank, arm swap,
+negative controls, block separation and planar FREE/KV matrix regression.
+Only beta0/45/90 matrices and one beta45 OUT first6+guard7 prefix are allowed.
+Uses the existing generalized rectangular C_T and section-rotation clamps;
+the Yartsev `book_slope_clamp` spectrum is not a same-BC reference.
+
+Script Proliferation Control: the new 14-condition spatial operator proof
+and one OUT prefix have a different contract from nonlinear action audits
+and the completed planar comparison. The CLI reuses their verified action,
+frames, finite Tim/scalar bases, count bound and I/O; it does not duplicate
+rod physics or replace completed runners. Fixed search/gate limits are in
+the config. A failure is preserved without an automatic wider search.
+Validated COMPLETE results are returned with zero solves. The explicit
+`--reuse-prefix` path requires source, parameter and search-method hashes;
+its use for the saved arithmetic-comparison stop is documented in the
+[result README](../results/uniaxial_kelvin_voigt_split/README.md).
+[Scientific note](../docs/theory/uniaxial_kelvin_voigt_split.md).
+
+## Fixed longitudinal-theory / Kelvin–Voigt comparison
+
+```powershell
+python scripts/analysis/compare_longitudinal_kelvin_voigt.py --stage-a
+python scripts/analysis/compare_longitudinal_kelvin_voigt.py --compute
+python -m pytest tests/test_longitudinal_kelvin_voigt_comparison.py -q
+```
+
+Diagnostic-only: G20 beta45, kappa_theta1, d_theta.001; E/RL/MH-FREE.
+Requires the accepted `contraction_joint_sensitivity/0fb0146e2cc1ba36` local
+bundle and matching source/reference hashes. Missing or mismatched input
+stops the command; there is no fallback elastic search. Stage A evaluates
+18 saved forms; stage B reuses two MH roots and computes only E/RL positions
+1/6. A complete matching cache uses zero correctors. All thresholds are fixed
+in `data/input/longitudinal_kelvin_voigt_comparison.json`.
+
+This new entry point has a different input/output contract from the completed
+closure study: cache-only elastic inputs and four reduced-model complex
+targets. A preset in the previous CLI would require modifying frozen work
+and exposing its full elastic search. Reuses its physical quadrature, joint
+assembly and coefficient bases, plus the generic KV Newton corrector.
+The narrow new helper adds analytic six-state E/RL continuation only.
+[Scientific note](../docs/theory/longitudinal_kelvin_voigt_comparison.md),
+[result files](../results/longitudinal_kelvin_voigt_comparison/README.md).
+
+## Limited c-closure sensitivity at a rotational spring joint
+
+```powershell
+python scripts/analysis/check_contraction_joint_sensitivity.py --compute
+python scripts/analysis/check_contraction_joint_sensitivity.py --plot-only
+```
+
+Fixed G20 beta0/45, kappa_theta=1, three MH closures and two reduced axial
+comparators, six sorted frequencies plus guard7. All elastic gates precede
+at most two active-mode KV confirmations across the three closures.
+`--elastic-only` stops before KV; no option gives arbitrary parameter sweeps.
+The [scientific note](../docs/theory/contraction_joint_sensitivity.md) and
+[config](../data/input/contraction_joint_sensitivity.json) define the contract.
+This separate diagnostic entry point is justified by changed trace spaces,
+root-count/ordering gates and conditional complex outputs. It reuses arm
+bases/DtN maps, historical poles, atomic writers and the existing KV corrector;
+extending the frozen rigid workflow would conflate physical boundary contracts.
+Results: `results/contraction_joint_sensitivity/`, with hash-validated reuse.
+
 ## Beta15 final checks before supervisor discussion
 
 Use the existing module entry point:

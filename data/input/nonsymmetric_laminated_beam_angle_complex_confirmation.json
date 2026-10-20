@@ -1,0 +1,35 @@
+{
+  "schema": "nsl-3a-angle-c-v1",
+  "variant": "PROJECT_REDDY_COUPLED",
+  "source_bundles": ["8004648ae38d120e", "61842957b5e4d8d1", "de35ae8dcf5ac831", "f77b82bbfa9e1fc9", "1ca9f9a592b7b34f"],
+  "beta_deg": 15.0,
+  "kappa_theta": 1.0,
+  "d_theta": 0.001,
+  "states": [
+    {"id": "C1", "case": "MIRROR", "position": 5, "role": "ACTIVE"},
+    {"id": "C2", "case": "SAME_LOCAL", "position": 5, "role": "ACTIVE"}
+  ],
+  "policy_from": "data/input/nonsymmetric_laminated_beam_kelvin_voigt_pilot.json",
+  "policy_overrides": {
+    "primary_corrector_calls": 2,
+    "max_auxiliary_per_failed_mode": 0,
+    "failure_policy": "Save diagnostics and stop on the first failed target; no repeat, auxiliary viscosity, elastic root or other mode."
+  },
+  "max_complex_solves": 2,
+  "max_elastic_solves": 0,
+  "reference": "Read exact dimensional k,c,t_ref and materials through validated ANGLE/NSL-2 provenance",
+  "figures": {
+    "new_figure_count": 3,
+    "frequency_map_policy": "frequency-map-v1",
+    "calculation_mode": "plot_only",
+    "spectrum_semantics": "sorted_positions",
+    "figure1": "Max elastic predicted zeta among positions1-6 at saved beta15/30/45/60/75; markers only",
+    "figure2": "Saved NSL-2 beta30 psi fields, pairs4/6, mass normalization and signed physical mass overlap; common y-range per pair",
+    "figure3": "Two accepted complex roots: exp(-2*pi*alpha*N/omega_d), N=0..200",
+    "envelope_samples": 401,
+    "envelope_max_periods": 200,
+    "dpi": 220,
+    "old_heatmap": "Reference ANGLE figure unchanged; do not render it",
+    "no_extra_eigenvalue_solves": true
+  }
+}

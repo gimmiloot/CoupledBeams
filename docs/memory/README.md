@@ -1,5 +1,12 @@
 # Память исследования сопряжённых стержней
 
+- NSL-VIS-1, две сравнительные упругие Ritz-карты:
+  [NSL-D07](decisions.md#nsl-d07), [NSL-K07](knowledge.md#nsl-k07),
+  [заметка](../nonsymmetric_laminated_beams/comparative_spectral_curves.md).
+  PASS в объёме fast_plot/sorted_positions; 456 систем N36/N44,
+  912 Ritz-задач, без нового комплексного спектра или строгой
+  сертификации непрерывного префикса. STOP после двух рисунков.
+
 - Завершающие β15 проверки и отчёт руководителю:
   [NLSP-D32](decisions.md#nlsp-d32), [NLSP-K33](knowledge.md#nlsp-k33),
   [технический отчёт](../numerics/nlsp_beta15_pre_supervisor_checks.md),
@@ -38,6 +45,71 @@
 - [knowledge.md](knowledge.md) — дополняемая история научных результатов, оснований и ограничений.
 
 ## Темы
+
+NSL-3A-ANGLE-C — два комплексных корня и три исследовательских рисунка:
+[NSL-D06](decisions.md#nsl-d06), [NSL-K06](knowledge.md#nsl-k06),
+[заметка](../nonsymmetric_laminated_beams/nsl3a_angle_complex_confirmation.md).
+PASS: beta15 позиции5 MIRROR/SAME_LOCAL, R_alpha=1.18950539,
+R_zeta=1.21035781. Два solves/шесть Newton; новых упругих решений нет.
+Три рисунка с CSV/PNG/PDF и plot-only; старая heatmap сохранена.
+Прежние результаты и статусы ниже не пересмотрены.
+
+NSL-3A-ANGLE — упругий обзор пяти углов, 2026-10-20:
+[NSL-D05](decisions.md#nsl-d05), [NSL-K05](knowledge.md#nsl-k05),
+[заметка](../nonsymmetric_laminated_beams/nsl3a_elastic_angle_screening.md).
+PASS: восемь новых префиксов6+1, 56 упругих корней; 30° переиспользован.
+Максимум ζ_pred=.00198552 у SAME_LOCAL15°, позиции5; точные нули MIRROR
+сохранены. Новых комплексных расчётов нет; идентичность с исходными4/6
+при60°/75° UNRESOLVED. Остановка после фиксированного screening.
+
+NSL-3A — ограниченный комплексный KV-пилот, 2026-10-20:
+[NSL-D04](decisions.md#nsl-d04), [NSL-K04](knowledge.md#nsl-k04),
+[заметка](../nonsymmetric_laminated_beams/nsl3a_kelvin_voigt_pilot.md).
+PASS: MIRROR4/6 защищены структурно; три активных корня приняты
+при β30,κθ1,dθ=.001. Три solves, семь обновлений, без вспомогательных
+корней. SAME_LOCAL4/6 имеют малые ненулевые ζ≈1.97e−5/3.22e−6.
+История ниже сохранена. После пилота STOP; NSL-3B и FRF не начаты.
+
+NSL-2R — последующая техническая диагностика, 2026-10-20:
+[NSL-D03](decisions.md#nsl-d03), [NSL-K03](knowledge.md#nsl-k03),
+[заметка](../nonsymmetric_laminated_beams/nsl2r_numerical_diagnostics.md).
+PASS: прямые формы восстановлены при прежних частотах и допуске;
+активная производная подтверждена двумя локальными корнями.
+Исторические статусы NSL-1/NSL-2 ниже сохранены. NSL-3 не начат.
+
+NSL — отдельное направление несимметрично-слоистых стержней, 2026-10-20:
+[NSL-D01](decisions.md#nsl-d01), [NSL-K01](knowledge.md#nsl-k01),
+[навигация](../nonsymmetric_laminated_beams/README.md).
+Упругое продолжение NSL-2:
+[NSL-D02](decisions.md#nsl-d02), [NSL-K02](knowledge.md#nsl-k02),
+[теория и численные ограничения](../nonsymmetric_laminated_beams/coupled_joint_theory.md).
+Основной угловой пилот6+1 PASS; общий PARTIAL_PASS сохраняет невязки
+прямого контроля. NSL-3 не начат.
+NSL-1: одиночный CC FSDT стержень, model/numerical PASS, overall PARTIAL_PASS
+из-за печатной (11d) Bachoo. Полный префикс 6+1, независимый Ritz и
+отражение стопки проверены. Следующий угловой KV этап не разрешён
+автоматически; старые RLB/LONG/NLSP статусы не пересматриваются.
+
+Одноосный пространственный KV узел: отдельная линейная проверка, 2026-10-19:
+[LONG-D05](decisions.md#long-d05), [LONG-K04](knowledge.md#long-k04),
+[научная заметка](../theory/uniaxial_kelvin_voigt_split.md).
+Разделение доказано, OUT оператор тождественно равен same-BC RIGID, α_OUT=0.
+Матрицы β0/45/90 и один полный G20 β45 префикс 6+1 прошли; COMPLETE.
+Это не изменение исторической нелинейной модели или разрешение иных узлов.
+
+Ограниченное сравнение продольных теорий при KV, 2026-10-19:
+[LONG-D04](decisions.md#long-d04), [LONG-K03](knowledge.md#long-k03),
+[научная заметка](../theory/longitudinal_kelvin_voigt_comparison.md).
+G20 β45,κθ1,dθ.001, E/RL/MH-FREE; 18 готовых упругих форм,
+два готовых MH корня и четыре новых E/RL корня. COMPLETE, все gates PASS.
+Сравнение завершено; расширение параметров или числа мод не разрешено.
+
+Отдельное ограниченное исследование условий на c, 2026-10-19:
+[LONG-D03](decisions.md#long-d03), [LONG-K02](knowledge.md#long-k02),
+[научная заметка](../theory/contraction_joint_sensitivity.md).
+G20 β0/45, поворотная пружина: elastic/order gates PASS, две активные
+формы с локальным weak-KV подтверждением. Production rigid, EB/RLB-KV
+и NLSP статусы не пересматриваются; дальнейшего расширения не разрешено.
 
 | Тема | Ключевые записи |
 |---|---|

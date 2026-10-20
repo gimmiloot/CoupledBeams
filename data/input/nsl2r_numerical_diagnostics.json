@@ -1,0 +1,26 @@
+{
+  "schema": "nsl-2r-local-recovery-v1",
+  "source_bundle": "results/nonsymmetric_laminated_beams/coupled_joint_verification/61842957b5e4d8d1",
+  "source_config": "data/input/nonsymmetric_laminated_beam_coupled_joint.json",
+  "scope": "saved straight modes and one active stiffness derivative; no prefix searches",
+  "problem_cases": [["COUPLED", 7], ["SINGLE", 6], ["SINGLE", 7]],
+  "recovery": "minimal column equilibration before SVD in the ORIGINAL centered fundamental basis; physical evaluator unchanged",
+  "basis_diagnostic": "bounded spatial eigenvector columns of unchanged H, comparison only; not required for accepted recovery",
+  "high_precision_dps": 50,
+  "derivative": {
+    "case": "SAME_LOCAL_SPRING", "position": 4,
+    "kappa": 1.0, "delta_kappa": 0.0001,
+    "relative_tol": 0.00001,
+    "one_minus_mac_tol": 0.0000001,
+    "root_xtol": 1e-14, "root_rtol": 8.881784197001252e-16,
+    "local_halfwidth_rule": "min(saved isolation margin, saved nearest-mode gap/4, max(10*predicted_abs_frequency_shift,1e-8))",
+    "rationale": "Inherited 1e-5 derivative tolerance. Central difference delta^2=1e-8; omega~.69 and predicted slope~4e-4 give conservative solver-error amplification <4e-7 relative with xtol1e-14. Record actual error bounds and decimal-rounding effects.",
+    "max_root_solves": 2
+  },
+  "straight_refinement": {
+    "max_per_problem_root": 1,
+    "allowed_only_if": "same-frequency bounded recovery and high-precision diagnostic establish root error as the remaining cause",
+    "use_saved_isolating_interval": true
+  },
+  "failure_policy": "Retain original physical tolerances. No extra angles, modes, basis sweeps, interval enlargement, new physical model or damping."
+}

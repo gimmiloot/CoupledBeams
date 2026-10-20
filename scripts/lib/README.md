@@ -2,6 +2,41 @@
 
 This directory contains reusable helper modules that are not meant to be run directly.
 
+- `nonsymmetric_laminated_kelvin_voigt.py` is the bounded NSL-3A complex
+  adapter: unchanged coupled NSL H, centered propagation, analytic Frechet
+  derivatives, full node and complete Hermitian energies including B/j1.
+  Row/column scales are frozen at an elastic seed; SVD coefficients are
+  transformed back as in NSL-2R. It reuses the old KV corrector and physical
+  node rows, without importing the EB/RLB internal operator for NSL arms.
+- `nonsymmetric_laminated_joint.py` is the isolated NSL-2 elastic angular
+  adapter: NSL-1 physics, existing RLB physical node rows, covariant reference
+  shifts, coupled exact-segment inertia and independent direct-energy Ritz.
+  No material integration copy, damping or universal solver.
+- `nonsymmetric_laminated_beam.py` is the isolated NSL-1 three-field FSDT
+  model: labeled direct-source and coupled-ABD Schur reductions, m/j1/j2,
+  energy-derived state operator and one CC propagation/count adapter.
+  It imports the old layer integrator and essential Ritz basis; the new
+  Ritz energy assembly includes B and j1 without calling a transfer API.
+  Principal-axis 0/90 plies only; no angular joint or damped-spectrum code.
+- `uniaxial_kelvin_voigt_split.py` extracts the saved seven-field quadratic
+  action and implements the separate linear 14-condition one-axis KV joint.
+  It checks physical vector/work duality, the exact block split and same-BC
+  rigid OUT identity, then reuses finite Tim and scalar torsion bases for
+  one G20 OUT prefix. Its three-trace Schur count has its own energy proof;
+  old MH trace spaces and the Yartsev slope clamp are not substituted.
+- `longitudinal_kelvin_voigt_comparison.py` provides the narrow elementary/RL
+  complex continuation used by the fixed G20 comparison. It preserves the
+  Tim/Jang signs, uses N=(EA+J*p^2)*U', differentiates a fixed bounded basis
+  analytically and reuses existing assembly, physical masses and KV Newton.
+  MH complex results and all elastic coefficients are read from verified
+  completed data; this helper is not a universal solver or production change.
+
+- `contraction_joint_sensitivity.py` is the isolated G20 FREE/CONTINUOUS/
+  BLOCKED c diagnostic: variational trace maps, physical spring conditions,
+  energy-index prefix isolation and local complex MH basis. It reuses the
+  unchanged MH/Tim and reduced axial arms, DtN helpers and KV Newton corrector.
+  It does not modify production dispatch or define a general sweep framework.
+
 - Seven-field spatial verification reuses --spatial-verification on the
   existing continuation CLI. `weakly_nonlinear_spatial_dynamics.py` compiles
   the saved quartic action; `nlsp_spatial_verification_checks.py` retains exact

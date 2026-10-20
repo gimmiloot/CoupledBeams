@@ -1,0 +1,63 @@
+{
+  "schema": "nsl-1-single-beam-v1",
+  "scope": "one straight undamped clamped-clamped beam; no joint",
+  "stack_order": "bottom_to_top",
+  "thickness_coordinate": "z_project=-z_Reddy; z_Bachoo=z_project",
+  "source_pdf": "docs/literature/pdf/14644207211016888.pdf",
+  "source_sha256": "97250466e47d50a9b0ddfb5132840ac578333112d2539cd9de6c5dec7e30903d",
+  "bachoo": {
+    "material": {
+      "E1": 145000000000.0, "E2": 9600000000.0, "nu12": 0.3,
+      "G12": 4100000000.0, "G13": 4100000000.0, "G23": 3400000000.0,
+      "rho": 1520.0, "name": "AS/3501-6; Bachoo Table 1, PDF/printed page 11"
+    },
+    "width": 0.005, "thickness": 0.001, "K": 0.8333333333333334,
+    "repetitions": [1, 2, 3],
+    "source_stack_top_to_bottom": [0, 90],
+    "project_stack_bottom_to_top": [90, 0],
+    "units": "SI: Pa, kg/m^3, m",
+    "table2_role": "future source-frame benchmark only; NOT_RUN in NSL-1"
+  },
+  "spectral_case": {
+    "variant": "PROJECT_REDDY_COUPLED",
+    "stack": ["H", "H", "L", "L"],
+    "angle_deg": 0.0, "chi": 0.4,
+    "length": 1.0, "width": 0.20, "thickness": 0.05,
+    "K": 0.8333333333333334,
+    "base_material": {
+      "E1": 1.1, "E2": 0.9, "nu12": 0.3,
+      "G12": 0.3846153846153846, "G13": 0.3846153846153846,
+      "G23": 0.3846153846153846, "rho": 1.0,
+      "name": "RLB-2E weakly orthotropic M0; all H/L elastic moduli scaled"
+    },
+    "units": "consistent normalized units inherited from RLB-2E; omega is angular frequency",
+    "boundary": "u=w=psi=0 at both endpoints"
+  },
+  "policy": {
+    "fixed_before_spectrum": true,
+    "spectrum_semantics": "sorted_positions",
+    "reported_roots": 6, "guard_roots": 1,
+    "omega_lower": 0.000001, "omega_upper": 14.0,
+    "upper_rationale": "Seven pure-w sine trial functions with u=psi=0 imply omega7<=7*pi*sqrt(S/m)/L<14.",
+    "count_segments": 64,
+    "count_proof": "Exact segment Dirichlet-to-Neumann assembly; coercivity lower bound excludes all segment poles below the preset ceiling. Count is negative inertia on interior traces.",
+    "count_query_budget": 128, "isolation_depth": 32,
+    "count_symmetry_tol": 1e-10, "count_margin_min": 1e-12,
+    "root_xtol": 1e-12, "root_rtol": 1e-12,
+    "ritz_orders": [12, 20, 28, 36],
+    "ritz_quadrature": 64,
+    "mode_quadrature": 160, "mode_quadrature_check": 240,
+    "coefficient_tol": 1e-11,
+    "operator_tol": 1e-11,
+    "frequency_relative_tol": 1e-8,
+    "ritz_convergence_tol": 1e-8,
+    "ritz_monotonicity_tol": 1e-10,
+    "boundary_tol": 1e-9, "ode_tol": 1e-9,
+    "energy_tol": 1e-8, "mass_gram_tol": 1e-8,
+    "one_minus_mac_tol": 1e-7,
+    "signed_shape_mass_error_tol": 1e-3,
+    "reverse_tol": 1e-9,
+    "failure_policy": "Save diagnostics and PARTIAL_PASS/FAIL. No automatic range, order, tolerance or geometry changes.",
+    "precedent": "RLB-0A independent Ritz: frequency/convergence 1e-8, boundary 1e-9; RLB-1C-ISO energy 1e-8, shapes 1e-6. Larger fixed orders address seven modes rather than only a fundamental."
+  }
+}
