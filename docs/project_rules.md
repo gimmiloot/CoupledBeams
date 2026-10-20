@@ -7,6 +7,40 @@ FEM diagnostics, theory notes, and exploratory studies. Detailed derivations and
 case-specific parameters stay in their local documents; this file records the
 global conventions that should not be rediscovered or redefined in each script.
 
+## Documentation Responsibilities
+
+Update each document only when the information it owns changes. A new result,
+D/K record, or figure does not require updating every navigation document.
+Explicit task requirements and necessary model/source warnings still apply.
+
+| Document | Responsibility |
+| --- | --- |
+| Root `README.md` | Project description, structure, and main entry points |
+| `docs/research_index.md` | Research directions, their states, and navigation |
+| Thematic README | Current model, accepted results, limitations, and source links |
+| Scientific report | Equations, methods, evidence, parameters, results, qualifications |
+| `docs/results_index.md` | Locations and use of computational results |
+| `docs/memory/current.md` | Short current state and stopping points |
+| `docs/memory/decisions.md` | History of scientific decisions and their origins |
+| `docs/memory/knowledge.md` | History of established results and their evidence |
+| Project journal | Chronology of work performed |
+| `CHANGELOG.md` | Meaningful project and usage changes |
+
+Keep detailed numbers in the scientific report. Navigation may retain the few
+values necessary to understand the result, with its scope and limitations.
+Replacing current context must first account for negative results, failed
+criteria, deferred questions, and unique claims in the old text. Use the
+[memory rules](memory/README.md); do not keep successive full snapshots in
+`current.md`. Navigation maintenance creates no new scientific D/K record.
+
+Distinguish Git-visible scientific context, local scientific evidence, and
+historical records. A committed scientific summary must be understandable
+without ignored CSV/NPZ/figures; a local result link is not proof of GitHub
+availability. Publishing every numerical array is not required. Historical
+reports and D/K retain their qualifications; a current summary can explain
+which specific limitation a later stage resolved without changing the old
+status. The [archive policy](archive_policy.md) remains in force.
+
 ## Branch Identity and Mode Descendants
 
 - `sorted mode k` or `k-th sorted frequency` means the k-th eigenfrequency in
@@ -167,9 +201,13 @@ user explicitly asks for a mathematical revision.
 - Record assumptions and new notation in the appropriate theory or diagnostic
   documentation.
 
-For theory-facing work, verified formulas in `docs/theory/equations.tex` have
-priority over assumptions, literature notes, and code. If theory and code
-disagree, record the mismatch first; do not silently "fix" either side.
+For the baseline model covered by `docs/theory/equations.tex`, its verified
+formulas retain priority over assumptions, literature notes, and code.
+Separate models use their own canonical theory and implementation, located
+through the research index and thematic README; the baseline file is not a
+universal source for absent NSL/NLSP or other model blocks. Preserve the
+existing source hierarchy within each model. If theory and code disagree,
+record the mismatch first; do not silently "fix" either side.
 
 ## Eta-Model Rules
 

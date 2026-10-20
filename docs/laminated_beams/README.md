@@ -1,8 +1,40 @@
 # Симметрично слоистая балка Reddy
 
-Раздел содержит первую автономную модель одного прямого симметрично
-слоистого стержня. Реализованы изгибная FSDT-подсистема, независимая
-продольная подсистема и их блочно-диагональное объединение.
+## Паспорт направления
+
+- **Модель:** RLB — симметричный ламинат Reddy/FSDT с независимыми
+  продольной и изгибной подсистемами, B≈0 и I1≈0. EB используется как
+  сопоставимый контроль. NSL с B≠0 — [отдельное направление](../nonsymmetric_laminated_beams/README.md).
+- **Канонические источники:** [source contract](reddy_ch4_source_contract.md),
+  [жёсткий узел](reddy_symmetric_rigid_joint.md),
+  [координаты](reddy_inplane_coordinate_contract.md),
+  [пружина](inplane_rotational_spring_joint.md),
+  [Kelvin–Voigt](inplane_kelvin_voigt_joint_theory.tex).
+- **Реализация:** [один стержень](../../scripts/lib/reddy_symmetric_laminated_beam.py),
+  [два плеча](../../scripts/lib/reddy_symmetric_coupled_beams.py),
+  [KV solver](../../scripts/lib/inplane_kelvin_voigt_solver.py).
+- **Текущий научный итог:** [сводка руководителю](inplane_kelvin_voigt_research_status_for_supervisor.md),
+  [RLB-D22](../memory/decisions.md#rlb-d22) / [RLB-K23](../memory/knowledge.md#rlb-k23):
+  ограниченное сравнение EB/RLB завершено; `PAUSED_FOR_SUPERVISOR_DIRECTION`.
+  Упругость и вязкость уже исследованы. Позднейшие рисунки не снимают паузу.
+- **Квалификации:** последующая [архитектура](inplane_kelvin_voigt_solver_architecture.md)
+  и [завершение A/C](inplane_kelvin_voigt_targeted_weak_damping_completion.md)
+  отделены от первоначальных физических невязок и singular flag.
+  Source-print, исторические Ritz/спектральные ограничения сохраняются.
+  [Circular EB diagnostic](circular_eb_rotational_spring_rigid_limit.md)
+  завершён отдельно с high-spectrum/direct-matching квалификациями;
+  реальный 3D-узел этим не откалиброван.
+- **Доказательства и команды:** в итоговой сводке и
+  [комплексном подтверждении](inplane_kelvin_voigt_eb_rlb_complex_confirmation.md).
+  `results/laminated_beams/` содержит локальные данные, не обязательные
+  для чтения научного смысла отчётов через Git. Новый расчёт требует задания.
+
+## Исторические этапы и источники
+
+Исходная автономная модель одного прямого стержня содержала изгибную
+FSDT-подсистему, независимую продольную подсистему и их блочное объединение.
+Ниже сохранены сведения отдельных этапов; «не выполнено» относится к их
+исходному объёму, а не отменяет последующее пружинное/KV-продолжение.
 
 All frequency-versus-parameter maps in this direction inherit the project-wide
 [`frequency-map-v1` policy](../numerics/frequency_map_computation_policy.md)
@@ -472,6 +504,9 @@ root search, direct fixed--fixed solver или Ritz solve.
 `PARTIAL_PASS`, а внутренний статус — `NOT_RUN`.
 
 ## Границы этапа
+
+Этот раздел сохраняет границы исходных RLB-0/RLB-1C; актуальное состояние
+всего направления приведено в паспорте в начале файла.
 
 Продольная подсистема является project derivation from symmetric CLT и
 стандартной динамики стержня, а не результатом, напечатанным в §4.3.4.

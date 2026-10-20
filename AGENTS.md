@@ -18,23 +18,32 @@ rule in `docs/project_rules.md`.
 
 ## Scoped research memory
 
-For continuation or status questions about RLB-2I/RLB-2J or the EB/RLB
-rotational-spring theory stage and its limited EB pilot, start with
+For continuation or status questions about the independent NSL, RLB/EB-KV,
+NLSP, LONG, and other documented research directions, start with
 [memory entry](docs/memory/README.md) and [current context](docs/memory/current.md),
 then read only relevant records and their sources. Memory does not replace
 model-specific contracts, theory, code, or data, or authorize new actions.
 An absent record means incomplete memory coverage, not absent research.
 After a substantive result or decision, update only affected records within
 authorized documentation scope; cosmetic edits need no new scientific record.
-The pilot's scientific conclusions do not automatically apply to other directions.
+Use the thematic entry points to select the relevant model before reading
+history. Historical conclusions and permissions do not transfer between
+directions. Keep current.md replaceable and short; preserve D/K history.
 
 ## Source of truth
 
-When there is a conflict, use this priority:
+For the baseline model represented in `docs/theory/equations.tex`, use this priority:
 1. verified formulas in `docs/theory/equations.tex`
 2. explicitly recorded assumptions in `docs/theory/assumptions.md`
 3. source notes in `docs/literature/source_index.md`
 4. code in `src/my_project/`
+
+For separate models (including NSL, RLB, NLSP, and LONG), first identify their
+canonical theory, assumptions, coordinate contract, and implementation through
+`docs/research_index.md` and the thematic README. `equations.tex` is not a
+universal source for models absent from it. Apply the existing hierarchy within
+the selected model; do not transfer equations or change scientific authority
+merely because another document is newer.
 
 Do not silently "fix" mathematics in code if the theory files say otherwise.
 Do not silently "fix" theory if the code differs.
@@ -136,8 +145,10 @@ Record all new assumptions in `docs/theory/assumptions.md`.
 ## Theory/code consistency workflow
 
 When touching theory or analytic code:
-1. identify the corresponding block in `docs/theory/equations.tex`
-2. identify the corresponding block in `src/my_project/analytic/`
+1. identify the corresponding canonical theory block for the selected model
+   (`docs/theory/equations.tex` for the baseline)
+2. identify its implementation (`src/my_project/analytic/` for the baseline,
+   or the documented model-specific library)
 3. compare formulas, parameter definitions, and unknown ordering
 4. check at least one limiting case
 5. report consistency or mismatch explicitly
@@ -174,6 +185,9 @@ Update documentation when relevant:
 
 Do not update `README.md` mechanically if nothing user-visible changed.
 Keep changelog entries factual, concise, and tied to actual edits.
+Each document is updated only when the information it owns changes; use the
+responsibility table in `docs/project_rules.md`. Do not duplicate a scientific
+report across every index or create D/K records for navigation-only edits.
 
 At the end of any substantial Codex task, before finishing:
 - check whether `CHANGELOG.md` needs an entry

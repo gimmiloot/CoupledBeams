@@ -1,5 +1,54 @@
 # Research Directions and Status
 
+## Current entry points
+
+Synchronized 2026-10-20. Read the [short context](memory/current.md) for current
+stops; use one model passport below for equations, implementation, accepted
+results, and limitations. Stage summaries later in this index retain their
+historical scope and are not a sequence that every new reader must read.
+
+| Direction | Canonical entry point | Current scope |
+| --- | --- | --- |
+| NSL — nonsymmetric laminated FSDT beams | [NSL passport](nonsymmetric_laminated_beams/README.md#паспорт-направления) | NSL-VIS-1 exploratory Ritz maps complete; NSL-2R resolves specific old recovery failures; source-print/identity qualifications remain |
+| RLB / EB–KV — symmetric laminates and Euler–Bernoulli comparison | [RLB passport](laminated_beams/README.md#паспорт-направления) | Limited complex comparison complete; paused for supervisor direction; circular EB reviewer diagnostic is separate |
+| NLSP — nonlinear spatial seven-field rods | [NLSP passport](numerics/README.md#nlsp) | One Type-II OUT-growth case numerically confirmed, PL neutral gate still PARTIAL; stopped for supervisor discussion |
+| LONG — longitudinal theories and M–H/Timoshenko | [LONG passport](#long) | Theory choice closed in adopted 1D scope; subsequent bounded c/KV/splitting diagnostics complete |
+| Baseline isotropic EB; thickness mismatch | [Equations](theory/equations.tex), [thickness passport](thickness_mismatch/README.md) | Frozen baseline; scoped diagnostics, safe-prefix counterexamples and interrupted-map qualifications retained |
+| Anisotropic rods | [Current boundary and sources](anisotropic_rods/README.md#current-boundary) | UT one-dimensional phase complete with PARTIAL_PASS; sampled AP studies; separate 3D readiness blocker |
+| Veering interpretation and theorem line | [Evidence criteria](veering/README.md), [local theory](theory/veering_bridge/README.md) | Conditional statements and scoped numerical evidence, not automatic claims for new sorted curves |
+| Historical out-of-plane EB/torsion | [Canonical note](theory/out_of_plane_eb_torsion.md) | Different theory/clamp contracts must not be treated as interchangeable benchmarks |
+
+Scientific context in committed reports is intended to be readable without
+the ignored numerical arrays. [Results index](results_index.md) links local
+evidence; [memory rules](memory/README.md) distinguish that evidence from
+Git-visible context and immutable history.
+
+## LONG
+
+The rectangular isotropic production choice is reduced Jang-type
+Mindlin–Herrmann axial/contraction plus Timoshenko bending. Canonical
+[single-rod theory](theory/mindlin_herrmann_timoshenko_single_rod.md),
+[rigid joint and coordinates](theory/mindlin_herrmann_timoshenko_rigid_joint.md),
+and [hierarchy qualifications](theory/coupled_longitudinal_theory_hierarchy_screening.md)
+map to [axial physics](../scripts/lib/mindlin_herrmann_longitudinal.py) and
+[joint implementation](../scripts/lib/mindlin_herrmann_timoshenko_joint.py).
+
+[LONG-D02](memory/decisions.md#long-d02) closes the theory-choice question;
+[LONG-K01](memory/knowledge.md#long-k01) records its accepted finite checks.
+The source Jang coefficient was not numerically recovered; 5/6 is a project
+preset. Different contraction clamps qualify reduced-model comparisons;
+M–H is not a three-dimensional exact reference.
+
+Separate completed reports contain the parameters, commands and local bundles:
+[c-closure sensitivity](theory/contraction_joint_sensitivity.md),
+[longitudinal KV comparison](theory/longitudinal_kelvin_voigt_comparison.md),
+[uniaxial KV linear split](theory/uniaxial_kelvin_voigt_split.md).
+The latest [LONG-D05](memory/decisions.md#long-d05) /
+[LONG-K04](memory/knowledge.md#long-k04) establishes the OUT operator identity
+only for its stated isotropy, FREE closure and section-rotation clamps.
+It neither validates NLSP's nonlinear rigid joint nor reopens longitudinal
+applicability, close-pair or broad parameter studies.
+
 ## Nonsymmetric laminated beams — NSL (2026-10-20)
 
 [Independent NSL direction](nonsymmetric_laminated_beams/README.md).
@@ -596,6 +645,10 @@ damping, anisotropic-rod and other research statuses below are unchanged.
 
 ## Research directions
 
+The following registry records individual stages as well as broad directions.
+Use the current entry points above for present status; an older stage's
+NOT_RUN/PARTIAL qualification is not silently replaced by a later result.
+
 | Research direction | Status | Main question | Canonical documentation | Main implementation | Current conclusion |
 | --- | --- | --- | --- | --- | --- |
 | General-angle M-H/Timoshenko reduced joint | `completed` finite diagnostic | Does the project angle realization preserve duality/symmetries and a bounded finite inventory? | [general joint gate](theory/mindlin_herrmann_timoshenko_rigid_joint.md#9-general-angle-geometry-действующий-project-contract) | [general CLI](../scripts/analysis/verify_mindlin_herrmann_timoshenko_general_beta_joint.py), [common helper](../scripts/lib/mindlin_herrmann_timoshenko_joint.py) | All10 gates PASS; exact beta0, rank8, small angles/right angle and swap/reflection; fixed5/45/90 pilot12+guard13. No 3D joint proof, applicability/hierarchy study, sweep or tracking. |
@@ -630,9 +683,12 @@ damping, anisotropic-rod and other research statuses below are unchanged.
 | Local or historical article workspaces | `manual-review` | Locate the authoritative manuscript workspaces referenced by historical documentation | [refactoring status](refactoring/README.md) | no tracked workspace in this checkout | The referenced `paper_*` directories are absent from the tracked checkout. Their local ownership and current status must be resolved outside this index. |
 | Anisotropic rods | `active-research` | Validate the first ideal rigid angular-joint model and its rectangular orthotropic EB endpoint after the completed Chapter-2 single-rod source gates | [direction status](anisotropic_rods/README.md), [notation translation](anisotropic_rods/yartsev_ch2_notation_translation.md), [rigid-joint gate](anisotropic_rods/yartsev_ch2_rigid_angular_joint.md), [rectangular EB validation](anisotropic_rods/yartsev_ch2_rectangular_eb_validation.md) | [`yartsev_ch2_monoclinic_rod.py`](../scripts/lib/yartsev_ch2_monoclinic_rod.py), [`yartsev_ch2_coupled_rods.py`](../scripts/lib/yartsev_ch2_coupled_rods.py), [`yartsev_ch2_rectangular_eb.py`](../scripts/lib/yartsev_ch2_rectangular_eb.py) | The rigid-joint pilot passed. The finite `theta=0` rectangular EB/exact/unequal-length/1D-FEM validation remains `PARTIAL_PASS`: proportional refinement closes the original first-three accuracy threshold with raw error `6.18e-6`, but the targeted status is `FAIL_CONVERGENCE_ORDER` because mode 1 reaches a dense-eigensolver conditioning floor and violates the unchanged monotonicity allowance. No model coefficient or threshold changed. This is not a final coupled model, stable baseline, off-axis study, production API, unequal-thickness study, or 3D validation. |
 
-When status records conflict, the newer stage-closure note or canonical report
-takes priority. Mathematical source-of-truth priority remains the policy in
-`AGENTS.md` and [project rules](project_rules.md).
+Interpret status in its model, parameters and stage. A later canonical report
+may explicitly resolve a named limitation without changing the older status;
+recency alone does not resolve a scientific contradiction or transfer results
+between models. Record any unresolved conflict. Mathematical source priority
+within each model remains the policy in `AGENTS.md` and
+[project rules](project_rules.md).
 
 
 ### Construction C — one lowest OUT period

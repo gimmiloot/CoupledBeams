@@ -1,5 +1,21 @@
 # CoupledBeams
 
+## Start here
+
+CoupledBeams studies coupled-rod vibrations using several distinct physical
+models. For a new chat or reader, begin with the short
+[current scientific context](docs/memory/current.md), choose a direction in
+the [research index](docs/research_index.md#current-entry-points), then read
+its thematic README and linked canonical report. Reading the full stage
+history below is optional.
+
+[Memory rules](docs/memory/README.md) explain D/K records and stopping points.
+Scientific summaries in Git retain the conclusions and limitations;
+[computational evidence](docs/results_index.md) is mostly local under the
+ignored `results/` tree. A local data link does not imply GitHub availability
+or permission to regenerate data. Historical stage summaries below retain
+their original scopes; later qualified continuations do not rewrite them.
+
 ## Nonsymmetric laminated beams — NSL
 
 [NSL](docs/nonsymmetric_laminated_beams/README.md) is a separate research
@@ -425,7 +441,7 @@ separate authorization; no automatic study follows this block.
   Here 5/6 is an explicit source-control input, not a recovered Jang value;
   the project preset belongs to the separate finite command.
   Bishop stays a standalone reference and retains its closed kinematics gate.
-- [Scoped research memory](docs/memory/README.md) -- RLB-2I/RLB-2J and the EB/RLB rotational-spring theory stage, sources, and decisions.
+- [Scoped research memory](docs/memory/README.md) -- NSL, RLB/EB-KV, NLSP, LONG, and separate circular EB diagnostics; current state, sources, and decisions.
 - [M-H–Timoshenko reduced-joint beta0 gate](docs/theory/mindlin_herrmann_timoshenko_rigid_joint.md)
   -- qualified published common-DOF closure, three artificial splits reproduce
   one direct fixed--fixed rod including c/R and modal forms. Run

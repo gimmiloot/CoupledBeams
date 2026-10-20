@@ -1,5 +1,49 @@
 # Numerical Policies
 
+This directory contains shared numerical policies and model-specific numerical
+reports. Their presence together does not make their physical models interchangeable.
+For other directions use the [research index](../research_index.md#current-entry-points).
+
+## NLSP
+
+- **Модель:** nonlinear spatial seven-field rods — шесть движений сечения
+  и независимое сокращение толщины c; принятое действие V0, кубические
+  балансы и переменная инерция. Два плеча соединены идеальным жёстким
+  common-DOF узлом с c1=c2, без переноса NSL/KV-податливости.
+- **Каноническая теория:** [семиполевая модель](../theory/weakly_nonlinear_spatial_rod.md).
+  [Отчёт руководителю](../reports/nlsp_beta15_parametric_instability/README.md)
+  раскрывает механику и область результата; исходник/PDF доступен в Git.
+- **Реализация:** [энергия и состояния](../../scripts/lib/weakly_nonlinear_spatial_rod.py),
+  [пространственная динамика](../../scripts/lib/weakly_nonlinear_spatial_dynamics.py),
+  [двухплечевая сборка](../../scripts/lib/weakly_nonlinear_coupled_spatial_dynamics.py).
+- **Последнее состояние:** [NLSP-D32](../memory/decisions.md#nlsp-d32) /
+  [NLSP-K33](../memory/knowledge.md#nlsp-k33),
+  [завершающие проверки](nlsp_beta15_pre_supervisor_checks.md):
+  OUT-рост типа II при β15/μ.1/A.005 подтверждён в p12 и воспроизведён в p14.
+  Обычное OUT2-отклонение возбуждает рост, но физический прогиб за5T мал.
+  Причина PL neutral residual объяснена; строгий gate остаётся PARTIAL.
+- **Устранено адресно:** ошибки ввода FEM-2 и native output FEM-3A получили
+  продолжения FEM-2R/FEM-3AR. [Сводка прямого стержня](nlsp_straight_rod_3d_fem_verification_summary.md)
+  сохраняет историю и границы; исходные отказы не переписываются.
+- **Остаётся:** полная пространственная сходимость, подготовленные strict
+  критерии, [1D/3D нелинейное сравнение](nlsp_spatial_nonlinear_3d_fem_verification.md)
+  и нативная энергия FEM квалифицированы; c_eff — proxy.
+  Не закрыты DEFERRED_TWO_PARAMETER_ACTION_EXPANSION и физическая
+  обоснованность идеального углового узла/c1=c2. Результат одной ветви
+  не доказывает общей устойчивости, динамики типа I или насыщения.
+- **Остановка:** обсуждение с руководителем. Новые p/временные уточнения,
+  ODE/FEM/Floquet, параметры и физическая валидация не разрешены автоматически.
+- **Воспроизведение:** параметры, команды и source hashes — в
+  [техническом отчёте](nlsp_beta15_pre_supervisor_checks.md);
+  массивы — локально в `results/nlsp_beta15_pre_supervisor_checks/d3f6375a27dba883/`.
+  Читать научный итог можно без этих массивов; команды требуют своих входов.
+
+## Historical stage navigation
+
+The entries below describe their original bounded stages. Later continuations
+do not retroactively change PARTIAL/FAIL or NOT_RUN records. Use the passport
+above for the current stop; these historical links are optional evidence paths.
+
 - [Beta15 final checks before supervisor discussion](nlsp_beta15_pre_supervisor_checks.md):
   neutral residual cause identified with the unchanged PL gate still PARTIAL;
   displacement-only OUT2 projection and one short p14 tangent control through5T.

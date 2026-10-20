@@ -2,6 +2,13 @@
 
 ## 2026-10-20
 
+- Simplified research-memory navigation: compact current context, model
+  passports and scoped source authority, responsibility-based documentation
+  updates, and explicit Git-context/local-evidence distinction. Preserved
+  D/K, scientific reports, code, results and historical statuses; recorded
+  [source coverage and cold-start checks](docs/memory/navigation_review_2026_10_20.md)
+  without scientific calculations.
+
 - Completed NSL-VIS-1, PASS for two exploratory elastic Ritz maps:
   three constitutively comparable layouts, 273 angle and 183 stiffness
   appearances plus three exact-constraint RIGID controls. N36/N44 at

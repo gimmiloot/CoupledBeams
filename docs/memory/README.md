@@ -1,217 +1,115 @@
 # Память исследования сопряжённых стержней
 
-- NSL-VIS-1, две сравнительные упругие Ritz-карты:
-  [NSL-D07](decisions.md#nsl-d07), [NSL-K07](knowledge.md#nsl-k07),
-  [заметка](../nonsymmetric_laminated_beams/comparative_spectral_curves.md).
-  PASS в объёме fast_plot/sorted_positions; 456 систем N36/N44,
-  912 Ritz-задач, без нового комплексного спектра или строгой
-  сертификации непрерывного префикса. STOP после двух рисунков.
-
-- Завершающие β15 проверки и отчёт руководителю:
-  [NLSP-D32](decisions.md#nlsp-d32), [NLSP-K33](knowledge.md#nlsp-k33),
-  [технический отчёт](../numerics/nlsp_beta15_pre_supervisor_checks.md),
-  [научный исходник/PDF](../reports/nlsp_beta15_parametric_instability/README.md).
-  PL neutral причина установлена, raw gate остаётся PARTIAL;
-  natural OUT2 возбуждает рост, но physical maxv/A за5T лишь0.2864%.
-  STOP до обсуждения с руководителем.
-
 ## Назначение
 
-Память — вторичный слой навигации и восстановления контекста: что известно,
-при каких условиях, откуда это следует и где остановились. Она не заменяет
-теорию, model-specific contracts и отчёты и не разрешает новые действия.
-Отсутствие записи означает неполноту покрытия памяти, а не отсутствие
-исследования в проекте.
+Память — вторичный слой навигации: что установлено, при каких условиях,
+почему принято решение и где остановились. Она не заменяет каноническую
+теорию, модельные соглашения, научные отчёты и данные; не разрешает новые действия.
+Отсутствие записи означает неполное покрытие памяти, а не отсутствие исследования.
 
-Покрыты отдельные scoped линии: продольные модели и production M-H/Timoshenko
-(`LONG`), EB/RLB с поворотной пружиной и Kelvin–Voigt (`RLB`), а также
-завершённый circular EB reviewer diagnostic. Их решения и остановки не
-переносятся между моделями автоматически.
-
-Отдельное явное задание 2026-10-07 добавляет пространственную нелинейную
-семиполевую линию (`NLSP`); она не открывает заново выбор продольной модели.
+Покрыты независимые направления NSL (несимметричные ламинаты), RLB/EB–KV
+(симметричная Reddy/FSDT и контроль Эйлера–Бернулли с поворотным узлом),
+NLSP (нелинейная пространственная семиполевая модель), LONG (продольные
+модели M–H/Timoshenko) и отдельный circular EB reviewer diagnostic.
+Их выводы, ограничения и разрешения не переносятся между моделями автоматически.
+Остальные направления доступны в [индексе исследований](../research_index.md).
 
 ## Как читать
 
-Этот README → [текущий контекст](current.md) → относящиеся к задаче D/K
-→ отчёт, теория и данные по их ссылкам. Читать всю историю перед каждой
-задачей не требуется. Решение D задаёт разрешённый объём; результат K
-фиксирует фактически установленное и его ограничения.
+Новый чат: [краткий текущий контекст](current.md) → паспорт выбранного
+направления из таблицы ниже → прямо указанный итоговый научный отчёт.
+Это основной маршрут; последовательное чтение всей истории не требуется.
+Для причин решения и происхождения результата открыть соответствующие D/K.
+Для воспроизведения — входной контракт и команды в отчёте, затем локальные данные.
 
 ## Файлы
 
-- [current.md](current.md) — изменяемый текущий контекст, основания следующего решения и место остановки.
-- [decisions.md](decisions.md) — дополняемая история решений и их происхождения.
-- [knowledge.md](knowledge.md) — дополняемая история научных результатов, оснований и ограничений.
+- [current.md](current.md) — изменяемое действующее состояние, ограничения и остановки.
+- [decisions.md](decisions.md) — дополняемая история научных решений и происхождения.
+- [knowledge.md](knowledge.md) — дополняемая история результатов, оснований и ограничений.
+
+Вводные заголовки и указатели «последние записи» внутри D/K отражают прежний
+охват. Для актуальной навигации использовать этот README; ради косметики
+исторические файлы не переписывать. Номера D и K не обязаны совпадать.
 
 ## Темы
 
-NSL-3A-ANGLE-C — два комплексных корня и три исследовательских рисунка:
-[NSL-D06](decisions.md#nsl-d06), [NSL-K06](knowledge.md#nsl-k06),
-[заметка](../nonsymmetric_laminated_beams/nsl3a_angle_complex_confirmation.md).
-PASS: beta15 позиции5 MIRROR/SAME_LOCAL, R_alpha=1.18950539,
-R_zeta=1.21035781. Два solves/шесть Newton; новых упругих решений нет.
-Три рисунка с CSV/PNG/PDF и plot-only; старая heatmap сохранена.
-Прежние результаты и статусы ниже не пересмотрены.
+| Направление | Паспорт и актуальное основание | Исторические основания |
+| --- | --- | --- |
+| NSL | [README](../nonsymmetric_laminated_beams/README.md), [NSL-D07](decisions.md#nsl-d07), [NSL-K07](knowledge.md#nsl-k07) | [NSL-D01](decisions.md#nsl-d01), [NSL-K01](knowledge.md#nsl-k01); устранение конкретных невязок: [NSL-K03](knowledge.md#nsl-k03) |
+| RLB / EB–KV | [README](../laminated_beams/README.md), пауза [RLB-D22](decisions.md#rlb-d22), итог [RLB-K23](knowledge.md#rlb-k23) | [RLB-K01](knowledge.md#rlb-k01), [теория узла](../laminated_beams/inplane_rotational_spring_joint.md); рисунки [RLB-K24](knowledge.md#rlb-k24), [RLB-K25](knowledge.md#rlb-k25) |
+| Circular EB reviewer diagnostic | [Отчёт](../laminated_beams/circular_eb_rotational_spring_rigid_limit.md), [RLB-D25](decisions.md#rlb-d25), [RLB-K26](knowledge.md#rlb-k26) | [EB-JOINT-K01](knowledge.md#eb-joint-k01), [EB-JOINT-K02](knowledge.md#eb-joint-k02) |
+| NLSP | [Паспорт](../numerics/README.md#nlsp), [NLSP-D32](decisions.md#nlsp-d32), [NLSP-K33](knowledge.md#nlsp-k33) | [Модель](../theory/weakly_nonlinear_spatial_rod.md), [NLSP-D01](decisions.md#nlsp-d01), [NLSP-K01](knowledge.md#nlsp-k01); технические этапы перечислены в паспорте |
+| LONG | [Паспорт](../research_index.md#long), [LONG-D05](decisions.md#long-d05), [LONG-K04](knowledge.md#long-k04) | Выбор модели [LONG-K01](knowledge.md#long-k01), закрытие вопроса [LONG-D02](decisions.md#long-d02); отдельные диагностики [LONG-K02](knowledge.md#long-k02), [LONG-K03](knowledge.md#long-k03) |
 
-NSL-3A-ANGLE — упругий обзор пяти углов, 2026-10-20:
-[NSL-D05](decisions.md#nsl-d05), [NSL-K05](knowledge.md#nsl-k05),
-[заметка](../nonsymmetric_laminated_beams/nsl3a_elastic_angle_screening.md).
-PASS: восемь новых префиксов6+1, 56 упругих корней; 30° переиспользован.
-Максимум ζ_pred=.00198552 у SAME_LOCAL15°, позиции5; точные нули MIRROR
-сохранены. Новых комплексных расчётов нет; идентичность с исходными4/6
-при60°/75° UNRESOLVED. Остановка после фиксированного screening.
-
-NSL-3A — ограниченный комплексный KV-пилот, 2026-10-20:
-[NSL-D04](decisions.md#nsl-d04), [NSL-K04](knowledge.md#nsl-k04),
-[заметка](../nonsymmetric_laminated_beams/nsl3a_kelvin_voigt_pilot.md).
-PASS: MIRROR4/6 защищены структурно; три активных корня приняты
-при β30,κθ1,dθ=.001. Три solves, семь обновлений, без вспомогательных
-корней. SAME_LOCAL4/6 имеют малые ненулевые ζ≈1.97e−5/3.22e−6.
-История ниже сохранена. После пилота STOP; NSL-3B и FRF не начаты.
-
-NSL-2R — последующая техническая диагностика, 2026-10-20:
-[NSL-D03](decisions.md#nsl-d03), [NSL-K03](knowledge.md#nsl-k03),
-[заметка](../nonsymmetric_laminated_beams/nsl2r_numerical_diagnostics.md).
-PASS: прямые формы восстановлены при прежних частотах и допуске;
-активная производная подтверждена двумя локальными корнями.
-Исторические статусы NSL-1/NSL-2 ниже сохранены. NSL-3 не начат.
-
-NSL — отдельное направление несимметрично-слоистых стержней, 2026-10-20:
-[NSL-D01](decisions.md#nsl-d01), [NSL-K01](knowledge.md#nsl-k01),
-[навигация](../nonsymmetric_laminated_beams/README.md).
-Упругое продолжение NSL-2:
-[NSL-D02](decisions.md#nsl-d02), [NSL-K02](knowledge.md#nsl-k02),
-[теория и численные ограничения](../nonsymmetric_laminated_beams/coupled_joint_theory.md).
-Основной угловой пилот6+1 PASS; общий PARTIAL_PASS сохраняет невязки
-прямого контроля. NSL-3 не начат.
-NSL-1: одиночный CC FSDT стержень, model/numerical PASS, overall PARTIAL_PASS
-из-за печатной (11d) Bachoo. Полный префикс 6+1, независимый Ritz и
-отражение стопки проверены. Следующий угловой KV этап не разрешён
-автоматически; старые RLB/LONG/NLSP статусы не пересматриваются.
-
-Одноосный пространственный KV узел: отдельная линейная проверка, 2026-10-19:
-[LONG-D05](decisions.md#long-d05), [LONG-K04](knowledge.md#long-k04),
-[научная заметка](../theory/uniaxial_kelvin_voigt_split.md).
-Разделение доказано, OUT оператор тождественно равен same-BC RIGID, α_OUT=0.
-Матрицы β0/45/90 и один полный G20 β45 префикс 6+1 прошли; COMPLETE.
-Это не изменение исторической нелинейной модели или разрешение иных узлов.
-
-Ограниченное сравнение продольных теорий при KV, 2026-10-19:
-[LONG-D04](decisions.md#long-d04), [LONG-K03](knowledge.md#long-k03),
-[научная заметка](../theory/longitudinal_kelvin_voigt_comparison.md).
-G20 β45,κθ1,dθ.001, E/RL/MH-FREE; 18 готовых упругих форм,
-два готовых MH корня и четыре новых E/RL корня. COMPLETE, все gates PASS.
-Сравнение завершено; расширение параметров или числа мод не разрешено.
-
-Отдельное ограниченное исследование условий на c, 2026-10-19:
-[LONG-D03](decisions.md#long-d03), [LONG-K02](knowledge.md#long-k02),
-[научная заметка](../theory/contraction_joint_sensitivity.md).
-G20 β0/45, поворотная пружина: elastic/order gates PASS, две активные
-формы с локальным weak-KV подтверждением. Production rigid, EB/RLB-KV
-и NLSP статусы не пересматриваются; дальнейшего расширения не разрешено.
-
-| Тема | Ключевые записи |
-|---|---|
-| β15, внутреннее плоское 1:3: контролируемая p12 Type-II ветвь; Type-I модуляция только указана, OUT не запускался | [NLSP-D28](decisions.md#nlsp-d28), [NLSP-K29](knowledge.md#nlsp-k29), [отчёт](../numerics/nlsp_beta15_planar_1to3_internal_resonance.md) |
-| β15: формальная PL-поправка выявила близость к внутреннему плоскому 1:3; одномодовая орбита не принята, M1/M2 не вычислены | [NLSP-D27](decisions.md#nlsp-d27), [NLSP-K28](knowledge.md#nlsp-k28), [отчёт](../numerics/nlsp_beta15_nonlinear_planar_resonance.md) |
-| Принципиальная возможность parametric growth: канонический ведущий канал подтверждён, но неустойчивая физическая геометрия/орбита не доказана | [NLSP-D26](decisions.md#nlsp-d26), [NLSP-K27](knowledge.md#nlsp-k27), [отчёт](../numerics/nlsp_out_of_plane_instability_feasibility.md) |
-| Пять β при μ=0.1: прямой рост в парном приближении не найден; выбранная PL форма β15 имеет correspondence UNRESOLVED | [NLSP-D25](decisions.md#nlsp-d25), [NLSP-K26](knowledge.md#nlsp-k26), [отчёт](../numerics/nlsp_beta_resonant_coupling_screening.md) |
-| Резонансная диагностика C: связи разрешены, прямой механизм роста не найден; μ=0 correspondence UNRESOLVED, новых ODE нет | [NLSP-D24](decisions.md#nlsp-d24), [NLSP-K25](knowledge.md#nlsp-k25), [отчёт](../numerics/nlsp_resonant_spatial_coupling_screening.md) |
-| C to one OUT period: p12 Gdisp3=1.07027; p16 resource gate NOT_RUN, numerical PARTIAL, performance audit | [NLSP-D23](decisions.md#nlsp-d23), [NLSP-K24](knowledge.md#nlsp-k24), [report](../numerics/nlsp_construction_C_longer_sensitivity.md) |
-| C modal experiment: Gdisp3=1.05303,full consistency PASS; physical v near initial scale, c/velocity spatial PARTIAL | [NLSP-D22](decisions.md#nlsp-d22), [NLSP-K23](knowledge.md#nlsp-k23), [report](../numerics/nlsp_construction_C_modal_sensitivity.md) |
-| A/B continuation: E1–E4 PASS p16,G4A1.00990/G4B1.03622; numerical PARTIAL, p12 NOT_RUN по budget | [NLSP-D21](decisions.md#nlsp-d21), [NLSP-K22](knowledge.md#nlsp-k22), [report](../numerics/nlsp_coupled_planar_sensitivity_resume.md) |
-| Torsional tangent diagnostic: NUMERICAL_FLOOR_IDENTIFIED,4short ODE; full tolerance error объясняет old failure, pilot/maps не возобновлены | [NLSP-D20](decisions.md#nlsp-d20), [NLSP-K21](knowledge.md#nlsp-k21), [report](../numerics/nlsp_coupled_torsion_tangent_diagnostic.md) |
-| Двухплечевой initial-perturbation pilot: assembly PASS, A до2Tref; torsional gate FAIL, gain/geometry contrast NOT_RUN | [NLSP-D19](decisions.md#nlsp-d19), [NLSP-K20](knowledge.md#nlsp-k20), [report](../numerics/nlsp_coupled_planar_sensitivity_pilot.md) |
-| Семиполевое пространственное сопоставление: 6 1D/4 CCX завершены; NUMERICAL_PARTIAL, большая разность v-поправки, кручение не закрыто | [NLSP-D18](decisions.md#nlsp-d18), [NLSP-K19](knowledge.md#nlsp-k19), [report](../numerics/nlsp_spatial_nonlinear_3d_fem_verification.md) |
-| Postprocessing spatial-profile audit: c_eff recovery/sampling effects, local longitudinal teeth unresolved; 1D c remains PARTIAL | [NLSP-D17](decisions.md#nlsp-d17), [NLSP-K18](knowledge.md#nlsp-k18), [report](../numerics/nlsp_spatial_profile_audit.md) |
-| FEM-3C: limited straight-rod verification complete with qualifications; C1 PASS, full-period illustration, all8/energy PARTIAL | [NLSP-D16](decisions.md#nlsp-d16), [NLSP-K17](knowledge.md#nlsp-k17), [report](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3c-numerical-robustness-and-dissertation-verification), [scientific summary](../numerics/nlsp_straight_rod_3d_fem_verification_summary.md) |
-| FEM-3B: .25T1 выбран по 1D до FEM; 2 native jobs/502 frames; evolving signal измерен, 3D accuracy и energy qualified | [NLSP-D15](decisions.md#nlsp-d15), [NLSP-K16](knowledge.md#nlsp-k16), [report](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3b-nonlinear-correction-evolution-and-longer-horizon) |
-| FEM-3AR: two corrected native jobs and p64 references complete .05T1; release/motion pass, energy PARTIAL; dynamic correction uncertified | [NLSP-D14](decisions.md#nlsp-d14), [NLSP-K15](knowledge.md#nlsp-k15), [continuation](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md#fem-3ar-controlled-continuation-after-native-elke-output-path-failure) |
-| FEM-3A: preload/release protocol documented, p64 preflight PASS; first native job access violation, no trajectories | [NLSP-D13](decisions.md#nlsp-d13), [NLSP-K14](knowledge.md#nlsp-k14), [pilot](../numerics/nlsp_nonlinear_dynamic_3d_fem_pilot.md) |
-| FEM-2R: отдельное разрешённое продолжение static comparison; исторический input failure сохранён | [NLSP-D12](decisions.md#nlsp-d12), [NLSP-K13](knowledge.md#nlsp-k13), [continuation](../numerics/nlsp_nonlinear_static_3d_fem_validation.md#fem-2r-controlled-continuation-after-input-serialization-failure) |
-| FEM-2: 1D quartic static preflight PASS; first medium input-parser failure, 3D comparison not reached | [NLSP-D11](decisions.md#nlsp-d11), [NLSP-K12](knowledge.md#nlsp-k12), [static report](../numerics/nlsp_nonlinear_static_3d_fem_validation.md) |
-| FEM-1R: one .020 mesh; all8 matched and preset mesh criterion accepted; linear only | [NLSP-D10](decisions.md#nlsp-d10), [NLSP-K11](knowledge.md#nlsp-k11), [continuation](../numerics/nlsp_linear_rectangular_3d_fem_validation.md#fem-1r-one-additional-mesh-refinement) |
-| Full-family rectangular linear3D FEM-1:3 grids/4 families identified, mesh convergence PARTIAL | [NLSP-D09](decisions.md#nlsp-d09), [NLSP-K10](knowledge.md#nlsp-k10), [report](../numerics/nlsp_linear_rectangular_3d_fem_validation.md) |
-| Локальная3D FEM readiness: Gmsh/CCX confirmed, nonlinear support documented; без новых jobs | [NLSP-K09](knowledge.md#nlsp-k09), [readiness audit](../numerics/nlsp_3d_fem_environment_readiness.md) |
-| Семиполевая модель: V0 → exact/cubic audit → первый four-field planar time pilot PARTIAL; без stability/порога | [NLSP-D01](decisions.md#nlsp-d01), [NLSP-K01](knowledge.md#nlsp-k01), [NLSP-D02](decisions.md#nlsp-d02), [NLSP-K02](knowledge.md#nlsp-k02), [numerical note](../theory/weakly_nonlinear_planar_time_pilot.md) |
-| Адресная planar диагностика: physical L2 split / initial compatibility / lazy RHS recovery; full p48 отложен, PARTIAL | [NLSP-D03](decisions.md#nlsp-d03), [NLSP-K03](knowledge.md#nlsp-k03), [continuation](../theory/weakly_nonlinear_planar_time_pilot.md#14-адресная-диагностика-и-восстановление-вычислительного-пути-2026-10-07) |
-| Аналитический по времени leading u2,c2 контроль: все Shen coordinates p16…96, 0 ODE; diagnostic COMPLETE / spatial PARTIAL | [NLSP-D04](decisions.md#nlsp-d04), [NLSP-K04](knowledge.md#nlsp-k04), [note](../theory/planar_second_order_axial_response.md) |
-| Prepared initial state: stat/harm и O3 endpoint correction PASS; full projection PARTIAL,0 новых trajectories | [NLSP-D05](decisions.md#nlsp-d05), [NLSP-K05](knowledge.md#nlsp-k05), [note](../theory/planar_prepared_initial_state.md) |
-| Prepared numerical feasibility: initial-only endpoint L2 PASS;3 short exploratory trajectories; strict/spatial PARTIAL, temporal PASS | [NLSP-D06](decisions.md#nlsp-d06), [NLSP-K06](knowledge.md#nlsp-k06), [continuation](../theory/planar_prepared_initial_state.md#prepared-precision-feasibility) |
-| То же prepared движение до одного linear T1:3 exploratory runs; prefix/temporal/energy PASS, spatial7/8 PARTIAL | [NLSP-D07](decisions.md#nlsp-d07), [NLSP-K07](knowledge.md#nlsp-k07), [continuation](../theory/planar_prepared_initial_state.md#prepared-one-period-feasibility) |
-| Продольные модели: Bishop diagnostic → M-H/Timoshenko production selection → joint gates → hierarchy/thickness/Lambda checks → закрыта в принятом 1D scope | [LONG-D01](decisions.md#long-d01), [LONG-K01](knowledge.md#long-k01), [LONG-D02](decisions.md#long-d02) |
-| Базовая RLB, эквивалентность ламинатов и переносы | [K01](knowledge.md#rlb-k01), [K02](knowledge.md#rlb-k02), [K03](knowledge.md#rlb-k03), [K04](knowledge.md#rlb-k04) |
-| Поворотная пружина: теория, EB-пилот, RLB → EB, карты, формы, шарнир, устойчивость механизма | [K05](knowledge.md#rlb-k05), [K06](knowledge.md#rlb-k06), [K07](knowledge.md#rlb-k07), [K08](knowledge.md#rlb-k08), [K09](knowledge.md#rlb-k09), [K10](knowledge.md#rlb-k10), [K11](knowledge.md#rlb-k11) |
-| Отдельный reviewer diagnostic: круглые EB-стержни, SPRING → RIGID | [D25](decisions.md#rlb-d25), [K26](knowledge.md#rlb-k26), [научная заметка](../laminated_beams/circular_eb_rotational_spring_rigid_limit.md); прежние остановки [EB-JOINT-K01](knowledge.md#eb-joint-k01), [K02](knowledge.md#eb-joint-k02) |
-| Kelvin–Voigt: теория и внутренний пилот | [K12](knowledge.md#rlb-k12) |
-| Внешняя литературная проверка и точность печати | [K13](knowledge.md#rlb-k13), [K14](knowledge.md#rlb-k14) |
-| Упругий screening участия демпфера | [K15](knowledge.md#rlb-k15) |
-| Адресное слабое демпфирование, диагностика, production routing и завершение | [K16](knowledge.md#rlb-k16), [K17](knowledge.md#rlb-k17), [K18](knowledge.md#rlb-k18), [K19](knowledge.md#rlb-k19) |
-| Общая чётность по вязкости | [K20](knowledge.md#rlb-k20), [research note](../laminated_beams/inplane_kelvin_voigt_weak_damping_parity.md) |
-| Production RLB+KV и точный EB-предел | [K21](knowledge.md#rlb-k21) |
-| Sparse elastic RLB screening и сопоставление с EB | [K22](knowledge.md#rlb-k22) |
-| Заключительное complex-сравнение и остановка перед обсуждением | [D22](decisions.md#rlb-d22), [K23](knowledge.md#rlb-k23), [сводка для руководителя](../laminated_beams/inplane_kelvin_voigt_research_status_for_supervisor.md) |
-| Рисунки для будущей заметки: crossing/veering и формы | [D23](decisions.md#rlb-d23), [K24](knowledge.md#rlb-k24), [Figure 3](../laminated_beams/figure03_crossing_veering.md) |
-| Рисунки: упругие EB/RLB-формы и поворот у узла | [D24](decisions.md#rlb-d24), [K25](knowledge.md#rlb-k25), [Figure 4 revised, v1 сохранена](../laminated_beams/figure04_eb_rlb_shapes.md) |
-| Рисунки: огибающие затухания EB/RLB | [K23](knowledge.md#rlb-k23), [Figure 5, R2/R3 при d=.001](../laminated_beams/figure05_damping_envelopes.md); [прежние столбцы](../laminated_beams/figure05_frequency_damping_comparison.md) |
-
-Записи сохраняют ссылки на решения и подробные источники; таблица тем
-не заменяет их условия и статусы. Общая навигация:
-[исследования](../research_index.md), [результаты](../results_index.md),
-[тематический README](../laminated_beams/README.md).
+Таблица даёт вход в направление, а не заменяет область действия отдельной записи.
+[Индекс результатов](../results_index.md) указывает вычислительные материалы.
 
 ## Иерархия источников
 
-1. Математическая/source theory или публикация, с учётом проверенных формул, допущений и предупреждений источника.
-2. Tracked научный отчёт с результатом в объявленных границах.
-3. Код, тесты и сохранённые расчётные данные.
-4. Краткая запись памяти.
+Сначала установить физическую модель по паспорту направления.
+Для модели базового `equations.tex` его прежний приоритет сохраняется.
+Отдельные NSL/RLB/NLSP/LONG используют собственную указанную каноническую
+теорию, допущения, координаты и реализацию. Иерархия внутри модели
+не меняется; см. [AGENTS.md](../../AGENTS.md) и [правила проекта](../project_rules.md).
 
-Математический приоритет определяется [AGENTS.md](../../AGENTS.md)
-и [правилами проекта](../project_rules.md); эта навигация его не меняет.
-Расхождение источников отмечается явно, а не исправляется пересказом.
-Для локальных ignored CSV/JSON tracked Markdown-отчёт должен сохранять
-достаточный научный смысл и квалификации без наличия локальных файлов.
+Научные отчёты сохраняют выводы и квалификации, код/тесты/данные — их
+проверяемые основания, память — краткие утверждения со ссылками.
+Публикация учитывается вместе с зафиксированными предупреждениями о печати.
+Расхождение источников отмечается явно, не исправляется пересказом.
+Новизна даты сама по себе не делает результат каноническим для другой модели.
+
+## Git, локальные доказательства и история
+
+- **Git-visible scientific context:** модель, параметры области исследования,
+  принятые результаты, ограничения, причина остановки и ссылки в Markdown/TeX.
+  Новый читатель должен понимать научный итог без игнорируемых файлов.
+- **Local scientific evidence:** CSV, NPZ, графики, кеши и manifests в `results/`.
+  Ссылки на них обозначают локальные материалы; Git не обязан содержать массивы.
+  Наличие файла локально не доказывает доступность через GitHub. Некоторые
+  команды требуют уже сохранённых bundles; отсутствие данных не разрешает пересчёт.
+- **Historical records:** D/K, научные отчёты, исходные квалификации и результаты.
+  Их сохранность регулируется [archive policy](../archive_policy.md).
+
+При передаче контекста проверять отслеживаемость документов, незакоммиченные
+изменения и доступную версию `origin/main`; указывать, проверена ли удалённая
+версия или только локальная remote-tracking ссылка. Никакой автоматической
+публикации, миграции результатов или настройки резервного копирования это не требует.
 
 ## Соглашения о новых записях
 
 Компактные ориентиры, не обязательная бюрократическая схема:
 
-- **Decision:** Status / decision; Why; Scope; Stop/revisit condition; Result link when completed.
-- **Knowledge:** Status; Claim/result; Scope; Basis; Limitations; Implication; Extends/does-not-invalidate, когда это существенно.
+- **Decision:** решение, причина, область, условие остановки/возврата, ссылка на результат.
+- **Knowledge:** утверждение, область, основание, ограничения, следствие; связь с прежним результатом, когда существенна.
 
-Указывать дату и происхождение, различать разрешение, гипотезу и результат.
-Память хранит утверждение, условия и ссылку; большие таблицы корней,
-перечни невязок, счётчиков и тестов остаются в отчётах. Новый формат
-применяется к новым записям, без переоформления старой истории.
+Указывать дату и происхождение; различать разрешение, гипотезу и результат.
+Память хранит утверждение, условия и ссылку. Большие таблицы частот, полные
+невязки и перечни тестов остаются в отчёте. Навигационная или косметическая
+правка не создаёт научного D/K record. Старые записи не переоформляются.
 
 ## Правило роста
 
-current.md можно переписывать: это временный рабочий контекст.
-D/K остаются append-only с устойчивыми номерами и якорями; исторические
-записи меняются только для явной опечатки или битой ссылки. Новое решение
-или результат не снимает старые квалификации молча. Косметическая правка
-не требует новой научной записи.
+Каждый документ обновляется только при изменении информации, за которую он
+отвечает: [единая таблица ответственности](../project_rules.md#documentation-responsibilities).
+Новый результат не требует повторения чисел во всех README и индексах.
 
-Подробные источники — отчёты; raw CSV/JSON служат дополнительным основанием,
-а не единственным долговечным изложением. Обновляются только затронутые
-записи и текущая остановка в разрешённом объёме. Сейчас файлы не разделяются:
-если поиск по decisions/knowledge станет неудобен, тематическое разделение
-потребует отдельной миграции с сохранением якорей и истории.
+`current.md` можно переписывать: ориентир 100–200 строк, точность важнее лимита.
+Оставлять текущую модель, итог, открытые вопросы, остановку и прямые ссылки.
+Не добавлять в конец или начало полные прежние сводки. Перед сокращением
+прочитать удаляемое содержание и установить для каждого существенного
+утверждения источник, включая отказы, контрпримеры, границы и причины остановки.
+Единственное описание результата сохраняется до появления допустимого источника;
+при конфликте с неизменностью требуется явная квалификация, а не молчаливое удаление.
 
-- β15 Type-II full p12 HB / Hill: [NLSP-D29](decisions.md#nlsp-d29), [NLSP-K30](knowledge.md#nlsp-k30), [отчёт](../numerics/nlsp_beta15_periodic_orbit_spatial_stability.md). Один OUT-кандидатA=.005; триамплитудыHB-gated,0ODE/FEM.
+D/K остаются append-only с устойчивыми номерами и якорями. Исторические записи
+меняются только для явной опечатки или битой ссылки, если конкретная задача
+и проверки сохранности это допускают. В переработке 2026-10-20 они полностью
+неизменны. Данные некоторых bundle проверяют байты прежних D/K; механическая
+миграция файлов и исправление заголовков без проверки зависимостей недопустимы.
 
-
-- β15 dynamic OUT growth: [NLSP-D30](decisions.md#nlsp-d30),
-  [NLSP-K31](knowledge.md#nlsp-k31),
-  [отчёт](../numerics/nlsp_beta15_dynamic_out_growth_validation.md).
-  Type-II A=.005 p12, direct tangent/full nonlinear confirmation through5T;
-  physical validation deferred, no further ODE automatically.
-
-
-- β15 p14 spatial OUT check: [NLSP-D31](decisions.md#nlsp-d31),
-  [NLSP-K32](knowledge.md#nlsp-k32),
-  [отчёт](../numerics/nlsp_beta15_out_growth_p14_convergence.md).
-  P14_OUT_GROWTH_REPRODUCED,zero-velocity OUT2 accessible; PLneutral PARTIAL,
-  no ODE/FEM/p16 or fullp-convergence claim.
+Текущая сводка различает подтверждённое, нерешённое, устранённое последующим
+этапом и неисследованное обычным текстом, без нового набора статусов.
+Например, NSL-2 сохраняет PARTIAL_PASS, а NSL-2R отдельно закрывает его
+конкретные концевые невязки. Исследовательский PASS не становится общей валидацией.
+Разделение D/K сейчас не требуется; возможная миграция — отдельная задача.

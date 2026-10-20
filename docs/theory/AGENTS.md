@@ -5,10 +5,16 @@ This file applies only to `docs/theory/`.
 It governs work on `equations.tex`, `assumptions.md`, derived theory notes, and notation-consistency tables.
 
 ## Theory Source Of Truth
-For theory work, treat the following as the source of truth, in this order:
+For the baseline theory represented in `equations.tex`, use this order:
 1. Locally verified formulas in `docs/theory/equations.tex`
 2. Explicit assumptions in `docs/theory/assumptions.md`
 3. Source-specific notes fixed in `docs/literature/source_index.md`
+
+Separate model notes, including LONG and NLSP, retain their documented
+canonical equations and assumptions. Locate the relevant model through
+`docs/research_index.md`; do not apply baseline formulas to a model absent
+from `equations.tex`. This scope clarification changes no formula or
+source hierarchy within an existing model.
 
 If theory and code disagree, do not silently "fix" one from the other. Record the mismatch explicitly first.
 
@@ -59,6 +65,7 @@ Record every new assumption in `docs/theory/assumptions.md`.
 When working on theory, always look for the corresponding implementation in:
 - `src/my_project/analytic/`
 - `src/my_project/fem/` when relevant
+- the model-specific library linked by its canonical note (often `scripts/lib/`)
 
 For important formulas, check:
 - parameter consistency
