@@ -1,0 +1,104 @@
+{
+  "schema": "two-springs-leading-validation-v1",
+  "mu": 0.01,
+  "cases": {
+    "J0E4": [
+      0.1,
+      10.0
+    ],
+    "J4E0": [
+      10.0,
+      0.1
+    ]
+  },
+  "epsilon_values": [
+    0.0025,
+    0.005,
+    0.01
+  ],
+  "sources": {
+    "results/isotropic_two_springs_rl_timoshenko/epsilon_scaling/d925e14c6ff93605": "dd0bcb344bbfa864a3780340f1bebddf23b5f67c1fa5ceddd8e21e1b82879129",
+    "results/isotropic_two_springs_rl_timoshenko/growth_stiffness_5x5/361e9a839ef5be30": "edffda3081ab53afa6676b41368d7f585739fe466e7a1c448e134c24bb86ee42",
+    "results/isotropic_two_springs_rl_timoshenko/growth_thickness_comparison/c4a723a2de351365": "8a10d90f124e00c64a2db74c72450a6464993a549fb4ef669d4df6bd3554ee6d",
+    "results/isotropic_two_springs_rl_timoshenko/angle_asymptotics/1bc7f6d0c311a702": "054b2129d68e6fc5f0256dbd2891ba4a5211cd3ef560f1129263215bfef38c61"
+  },
+  "xi_primary": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    7.5,
+    10,
+    12.5,
+    15,
+    17.5,
+    20,
+    22.5,
+    25,
+    30
+  ],
+  "xi_curvature": [
+    0.01,
+    0.02,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "xi_limit": [
+    60,
+    120
+  ],
+  "xi_max_comparison": 30,
+  "ritz_orders": [
+    12,
+    16,
+    20
+  ],
+  "quadrature_order": 64,
+  "quadrature_check_order": 96,
+  "policy": {
+    "frequency_map_policy": "frequency-map-v1",
+    "calculation_mode": "fast_plot",
+    "spectrum_semantics": "sorted_positions",
+    "sweep_parameter": "xi",
+    "parameter_grid": "primary plus actual archive xi; small-xi curvature and two large-xi checks",
+    "K_plot": 2,
+    "K_guard": 3,
+    "guard_root_role": "completeness_in_Ritz_space",
+    "neighbour_audit": "enabled",
+    "local_repair_policy": "triggered_only",
+    "strict_audit_default": false,
+    "completeness_method": "lowest three symmetric Ritz eigenvalues; spatial convergence, no full-model root count",
+    "full_model_solves_allowed": false
+  },
+  "quality": {
+    "symmetry_tol": 1e-13,
+    "eigen_residual_tol": 1e-09,
+    "energy_tol": 5e-08,
+    "mass_gram_tol": 5e-07,
+    "constraint_tol": 1e-09,
+    "natural_boundary_tol": 1e-09,
+    "strong_ode_tol": 1e-09,
+    "essential_tol": 1e-09,
+    "frequency_convergence_rtol": 1e-08,
+    "C_convergence_rtol": 1e-07,
+    "monotonicity_rtol": 1e-10
+  },
+  "reference_selection": "actual saved nodes only; no interpolation; compare all and common-three-epsilon subsets",
+  "curvature_archive_windows": {
+    "0.0025": [
+      0.5,
+      0.75
+    ],
+    "0.005": [
+      1.0,
+      1.25
+    ],
+    "0.01": [
+      1.0,
+      1.25
+    ]
+  }
+}

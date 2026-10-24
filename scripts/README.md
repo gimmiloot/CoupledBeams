@@ -2,7 +2,22 @@
 
 ## Isotropic full Rayleigh–Love/Timoshenko: two rotational springs
 
-Latest preset: `thickness-grid`, canonical model with both exact translational constraints.
+Latest preset: `angle-limit`, the separate leading beta/epsilon problem derived from
+the canonical exact joint. [Quantitative check and curvature qualifications](../docs/theory/isotropic_two_springs_leading_validation.md).
+Only two finite rotational pairs are solved, with integrated-Legendre Ritz orders
+12/16/20. All full-model spectra at epsilon .0025/.005/.01 are archive reads.
+The existing physical solver is unchanged. The completed cache performs no solves;
+plot-only reads tables without matrix assembly. Fresh computation requires the four
+source bundles and their unchanged manifests specified in the input contract.
+
+```powershell
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset angle-limit
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset angle-limit --verify-cache results/isotropic_two_springs_rl_timoshenko/leading_validation/f1c670fe62102196
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset angle-limit --plot-only results/isotropic_two_springs_rl_timoshenko/leading_validation/f1c670fe62102196
+python -m pytest tests/test_isotropic_two_springs_rl_timoshenko.py -q -k leading_limit
+```
+
+Previous preset: `thickness-grid`, canonical model with both exact translational constraints.
 [Thickness comparison and normalization qualifications](../docs/theory/isotropic_two_springs_thickness_grid.md).
 Epsilon .01, the same 25 finite rotational pairs; 0:.5:24 and 26:2:90 degrees.
 The old .005 surface and 54 matching .01 points are reused; 1996 prefixes are new.

@@ -594,3 +594,66 @@ def test_angle_asymptotics_scaled_reference_radian_degree_cancellation():
         s0_rad = log_phi(xi_ref)/ref_rad
         assert s_rad/s0_rad == pytest.approx(expected)
         assert (s_rad*np.pi/180)/(s0_rad*np.pi/180) == pytest.approx(expected)
+
+
+def test_leading_limit_basis_space_and_curvature_gram():
+    from scripts.lib.isotropic_two_springs_leading import Ritz,fields
+    from scripts.lib.reddy_symmetric_coupled_beams_ritz import shifted_legendre_clamped_basis
+    m=Ritz(.1,10,order=8)
+    for arm,L in enumerate(m.lengths):
+        t=np.linspace(0,1,31);f=fields(m.order,t,L,arm)
+        old=shifted_legendre_clamped_basis(m.order,t).values.T
+        if arm==0:old=t[:,None]*old
+        # Independent old basis spans exactly the same polynomial space.
+        transform=np.linalg.lstsq(f[0],old,rcond=None)[0]
+        np.testing.assert_allclose(f[0]@transform,old,atol=2e-13)
+        expected=np.zeros(m.order)
+        offset=int(arm==1)
+        expected[offset:]=[1/(L**3*(2*n+1)) for n in range(m.order-offset)]
+        sl=slice(arm*m.order,(arm+1)*m.order)
+        np.testing.assert_allclose(m.Kb[sl,sl],np.diag(expected),atol=2e-14)
+        assert np.max(abs(f[0][0]))<1e-15
+        if arm==0:assert np.max(abs(f[1][0]))<1e-15
+
+
+def test_leading_limit_energy_factor_springs_and_exact_constraint():
+    from scripts.lib.isotropic_two_springs_leading import Ritz
+    m=Ritz(.1,10,order=8);c=m.Z@np.random.default_rng(7).normal(size=m.Z.shape[1]);xi=4.
+    bending=c@m.Kb@c;jump=m.jump@c;rotation=m.end_rotation@c;y=m.y@c
+    assert c@m.K0@c == pytest.approx(bending+.1*jump**2+10*rotation**2)
+    added_potential=.5*c@(xi**2/2*m.P)@c
+    assert added_potential==pytest.approx(xi**2*y*y/4)
+    assert abs((m.ends[0][0]+m.ends[1][0])@c)<1e-14
+    assert c@m.P@c>=0
+    assert np.linalg.matrix_rank(m.P)==1
+    np.testing.assert_allclose(m.K0,m.K0.T,atol=1e-14)
+    np.linalg.cholesky(m.Z.T@m.M@m.Z)
+
+
+@pytest.mark.parametrize('pair',[(.1,10),(10,.1)])
+def test_leading_limit_C_shape_independent_local_frequency(pair):
+    from scripts.lib.isotropic_two_springs_leading import Ritz
+    m=Ritz(*pair,order=20);r0=m.solve(0);r=m.solve(.01)
+    c=r0['coefficients'][:,0];zeta=r0['zeta'][0]
+    for scale in (1.,-3.,.02):
+        v=scale*c
+        C=(v@m.P@v)/(4*zeta*(v@m.M@v))
+        assert C==pytest.approx(r0['C_at_zero'],rel=1e-13)
+    local=np.log(r['omega_lim'][0]/r0['omega_lim'][0])/.01**2
+    assert local==pytest.approx(C,rel=2e-5)
+    assert r0['diagnostics']['gap12_relative']>1
+    assert r0['diagnostics']['natural_boundary']<1e-9
+    assert r0['diagnostics']['strong_ode']<1e-9
+
+
+@pytest.mark.parametrize('pair',[(.1,10),(10,.1)])
+def test_leading_limit_monotonicity_and_exact_fixed_node(pair):
+    from scripts.lib.isotropic_two_springs_leading import Ritz
+    m=Ritz(*pair,order=20);rows=[m.solve(x) for x in (0,5,30)]
+    fixed=m.solve(0,node_fixed=True)
+    assert np.all(np.diff([r['omega_lim'] for r in rows],axis=0)>=-1e-11)
+    assert np.all(rows[-1]['omega_lim']<=fixed['omega_lim']*(1+1e-12))
+    assert abs(fixed['node_value'][0])<1e-12
+    assert fixed['diagnostics']['constraint_rank']==2
+    assert fixed['diagnostics']['dimension']==2*m.order-2
+    assert abs(rows[-1]['node_value'][0])<abs(rows[0]['node_value'][0])

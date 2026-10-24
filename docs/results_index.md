@@ -1,5 +1,20 @@
 # Generated Results Index
 
+Reduced evidence package for the [scientific synthesis](theory/isotropic_two_springs_scientific_synthesis.md):
+[scientific_synthesis/8687f7eed5c3cc93](../results/isotropic_two_springs_rl_timoshenko/scientific_synthesis/8687f7eed5c3cc93/README.md).
+Seventeen report/source-manifest hashes, 12 814 verified unique source artifacts,
+scalar CSV checks and five reused figure pairs; no duplication of large arrays.
+No new full/leading spectral solves or reconstructions. Claim qualifications and
+minimal follow-up actions are in the [audit](theory/isotropic_two_springs_open_questions.md).
+
+`results/isotropic_two_springs_rl_timoshenko/leading_validation/f1c670fe62102196/`:
+[quantitative leading-model validation](theory/isotropic_two_springs_leading_validation.md).
+Two pairs, 178 actual archived full-model points, 366 saved Ritz problems plus six
+quadrature checks; zero full-model solves. Three PNG/PDF figures, signed errors,
+spatial convergence, independent curvature and archived-estimator bias diagnostics.
+Frequency agreement improves with thinning; raw curvature estimates retain a
+window limitation. Exact node-fixed limit is a leading-model check only.
+
 `results/isotropic_two_springs_rl_timoshenko/angle_asymptotics/1bc7f6d0c311a702/`:
 [formal beta/epsilon leading problem](theory/isotropic_two_springs_angle_asymptotics.md).
 Archive-only extracts: six curvature estimates, 25 angle comparisons and five

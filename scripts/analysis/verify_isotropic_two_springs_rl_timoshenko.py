@@ -46,6 +46,7 @@ VARIATION_CONFIG = ROOT/"data/input/isotropic_two_springs_angle_variation.json"
 EPSILON_CONFIG = ROOT/"data/input/isotropic_two_springs_epsilon_scaling.json"
 SLIP_CONFIG = ROOT/"data/input/isotropic_two_springs_longitudinal_slip.json"
 THICKNESS_CONFIG = ROOT/"data/input/isotropic_two_springs_thickness_grid.json"
+LEADING_CONFIG = ROOT/"data/input/isotropic_two_springs_leading_validation.json"
 
 
 def sha(p):
@@ -4101,10 +4102,276 @@ def thickness_main(args):
     print(folder,flush=True)
 
 
+def leading_sources(cfg):
+    """Read verified full-model archives; this function has no solver path."""
+    records={}; fits=[]; checked=0; source_hashes={}
+    for name,digest in cfg['sources'].items():
+        folder=ROOT/name;manifest=json.loads((folder/'manifest.json').read_text(encoding='utf8'))
+        if sha(folder/'manifest.json')!=digest:raise ValueError('Leading source manifest mismatch')
+        for rel,h in manifest['artifacts'].items():
+            if sha(folder/rel)!=h:raise ValueError(f'Leading source artifact mismatch: {rel}')
+            checked+=1
+        source_hashes[name+'/manifest.json']=digest
+        if 'angle_asymptotics' in name:continue
+        contract=manifest['identity']['config'];material=contract['material']
+        expected=dict(E=1.,rho=1.,l=1.,nu=.3,aspect=4.,ks=5/6)
+        if contract['variant']!='RL_FULL' or contract['mu']!=cfg['mu'] or any(material[k]!=v for k,v in expected.items()):
+            raise ValueError('Full-model physical contract differs')
+        with (folder/'spectrum.csv').open(encoding='utf8',newline='') as f:rows=list(csv.DictReader(f))
+        for raw in rows:
+            pair=raw.get('pair',raw['ID'])
+            if pair not in cfg['cases']:continue
+            epsilon=float(raw.get('epsilon',material['epsilon']));beta=float(raw['beta_deg'])
+            xi=math.radians(beta)/epsilon
+            if epsilon not in cfg['epsilon_values'] or xi>cfg['xi_max_comparison']+1e-12:continue
+            key=(pair,epsilon,beta)
+            omegas=[float(raw[f'omega{k}']) for k in (1,2,3)]
+            lambdas=[float(raw[f'Lambda{k}']) for k in (1,2,3)]
+            if not np.allclose(np.array(lambdas)**2*epsilon,omegas,rtol=2e-13,atol=0):
+                raise ArithmeticError('Full frequency normalization mismatch')
+            if key in records:
+                if not np.allclose([records[key][f'omega{k}'] for k in (1,2,3)],omegas,rtol=2e-12,atol=0):
+                    raise ArithmeticError('Overlapping archived spectra disagree')
+                continue
+            point=ROOT/raw['point_file']
+            if sha(point)!=raw['point_sha256']:raise ValueError('Archived point changed')
+            rec=json.loads(point.read_text(encoding='utf8'))
+            if rec['status']!='PASS' or rec['case']['variant']!='RL_FULL':raise ValueError('Unaccepted source point')
+            if any(rec['case'][field]!=val for field,val in zip(('k_joint','k_end'),cfg['cases'][pair])):
+                raise ValueError('Source rotational springs differ')
+            records[key]=dict(ID=pair,epsilon=epsilon,beta_deg=beta,xi=round(xi,12),
+                **{f'omega{k}':omegas[k-1] for k in (1,2,3)},
+                **{f'Lambda{k}':lambdas[k-1] for k in (1,2,3)},
+                s_full_xi=epsilon*float(raw['s_rad']) if raw.get('s_rad') else None,
+                source_bundle=name,point_file=raw['point_file'],point_sha256=raw['point_sha256'],interpolated=False)
+        if 'epsilon_scaling' in name:
+            with (folder/'curvature.csv').open(encoding='utf8',newline='') as f:fits=list(csv.DictReader(f))
+    return sorted(records.values(),key=lambda r:(r['ID'],r['epsilon'],r['xi'])),fits,checked,source_hashes
+
+
+def leading_postprocess(folder,cfg,full,fits,solutions):
+    final=cfg['ritz_orders'][-1];rows=[];comparison=[];convergence=[];curvature=[];local=[];mechanics=[];baseline=[]
+    get=lambda pair,xi,order=final,fixed=False:solutions[(pair,order,xi,fixed)]
+    for pair in cfg['cases']:
+        zero=get(pair,0.);C=zero['C_at_zero'];frequency0=zero['omega_lim'][0]
+        grid=sorted(x for p,o,x,f in solutions if p==pair and o==final and not f)
+        bound=get(pair,0.,fixed=True)['omega_lim']
+        for xi in grid:
+            r=get(pair,xi)
+            rows.append(dict(ID=pair,xi=xi,**{f'zeta{k}':r['zeta'][k-1] for k in (1,2,3)},
+                **{f'omega_lim{k}':r['omega_lim'][k-1] for k in (1,2,3)},F_lim=r['omega_lim'][0]/frequency0,
+                node_value=r['node_value'][0],s_xi=r['s_xi'][0],gap12_relative=r['diagnostics']['gap12_relative'],
+                primary=xi in cfg['xi_primary'],large_xi=xi in cfg['xi_limit']))
+            for old,new in zip(cfg['ritz_orders'][:-1],cfg['ritz_orders'][1:]):
+                a,b=get(pair,xi,old),get(pair,xi,new)
+                convergence.append(dict(ID=pair,xi=xi,order_low=old,order_high=new,
+                    **{f'rel_omega{k}':b['omega_lim'][k-1]/a['omega_lim'][k-1]-1 for k in (1,2,3)},
+                    relative_C=b['C_at_zero']/a['C_at_zero']-1 if xi==0 else None))
+            if xi in cfg['xi_curvature']:
+                c_local=math.log(r['omega_lim'][0]/frequency0)/(xi*xi)
+                local.append(dict(ID=pair,xi=xi,C_shape=C,C_local=c_local,relative_difference=c_local/C-1))
+            if xi in [0,3,5,10,20,30]+cfg['xi_limit']:
+                mechanics.append(dict(ID=pair,xi=xi,omega_lim=r['omega_lim'][0],node_abs=abs(r['node_value'][0]),
+                    node_ratio=abs(r['node_value'][0]/zero['node_value'][0]),s_xi=r['s_xi'][0],
+                    work_xi=xi*r['node_value'][0]**2/2,energy_twice=r['zeta'][0],
+                    omega_node_fixed=bound[0],relative_distance_to_limit=r['omega_lim'][0]/bound[0]-1))
+        for order in cfg['ritz_orders']:
+            r=get(pair,0.,order)
+            curvature.append(dict(ID=pair,order=order,zeta0=r['zeta'][0],omega_lim0=r['omega_lim'][0],
+                y0=r['node_value'][0],mass=1.,C=r['C_at_zero'],gap12_relative=r['diagnostics']['gap12_relative']))
+        for epsilon in cfg['epsilon_values']:
+            subset=[r for r in full if r['ID']==pair and r['epsilon']==epsilon];f0=next(r for r in subset if r['xi']==0)
+            baseline.append(dict(ID=pair,epsilon=epsilon,Omega_full0=f0['omega1']/epsilon,
+                omega_lim0=frequency0,relative_difference=(f0['omega1']/epsilon)/frequency0-1))
+            for r in subset:
+                leading=get(pair,r['xi']);F=r['omega1']/f0['omega1'];Fl=leading['omega_lim'][0]/frequency0
+                if not math.isclose(F,(r['Lambda1']/f0['Lambda1'])**2,rel_tol=2e-13):raise ArithmeticError('Relative normalization')
+                comparison.append(dict(**r,F_full=F,F_lim=Fl,E=F/Fl-1,abs_E=abs(F/Fl-1),
+                    s_lim_xi=leading['s_xi'][0],s_difference=None if r['s_full_xi'] is None else r['s_full_xi']-leading['s_xi'][0]))
+    stats=[];epsilon_check=[]
+    for pair in cfg['cases']:
+        common=set.intersection(*[{r['xi'] for r in comparison if r['ID']==pair and r['epsilon']==e} for e in cfg['epsilon_values']])
+        for epsilon in cfg['epsilon_values']:
+            for scope in ('all_actual','common_three_epsilon'):
+                rr=[r for r in comparison if r['ID']==pair and r['epsilon']==epsilon and (scope=='all_actual' or r['xi'] in common)]
+                stats.append(dict(ID=pair,epsilon=epsilon,scope=scope,nodes=len(rr),max_xi=max(r['xi'] for r in rr),
+                    max_abs_E=max(r['abs_E'] for r in rr),median_abs_E=float(np.median([r['abs_E'] for r in rr])),
+                    min_signed_E=min(r['E'] for r in rr),max_signed_E=max(r['E'] for r in rr),interpolated_nodes=0))
+        for xi in sorted(common):
+            rr=[next(r for r in comparison if r['ID']==pair and r['epsilon']==e and r['xi']==xi) for e in cfg['epsilon_values']]
+            epsilon_check.append(dict(ID=pair,xi=xi,**{f'abs_E_{e:g}':r['abs_E'] for e,r in zip(cfg['epsilon_values'],rr)},
+                error_decreases_with_thinning=all(a['abs_E']<=b['abs_E']+1e-12 for a,b in zip(rr[:-1],rr[1:]))))
+    archived=[]
+    for raw in fits:
+        pair=raw['ID'].split('_',1)[1];e=float(raw['epsilon']);degree=int(raw['degree']);window=float(raw['window_deg'])
+        C=get(pair,0.)['C_at_zero'];a2=float(raw['a2_epsilon_squared']);w0,w1=cfg['curvature_archive_windows'][str(e)]
+        archived.append(dict(**raw,C_shape=C,relative_difference=a2/C-1,
+            central=degree==6 and window==w0,
+            local_window_degree_band=(window==w0 and degree in (4,6)) or (window==w1 and degree==6)))
+    # Diagnose the archived estimator's finite-window bias without fitting C:
+    # C remains the independent shape derivative. Use exactly the same nodes,
+    # window and polynomial degree on the already solved leading frequencies.
+    synthetic=[dict(ID=f"E{r['epsilon']:g}_{r['ID']}",epsilon=r['epsilon'],beta_deg=r['beta_deg'],
+                    omega1=get(r['ID'],r['xi'])['omega_lim'][0]) for r in full]
+    trial=epsilon_curvature(synthetic,sorted({float(r['window_deg']) for r in fits}),
+                           sorted({int(r['degree']) for r in fits}))
+    index={(r['ID'],float(r['window_deg']),int(r['degree'])):r for r in trial}
+    estimator=[]
+    for r in archived:
+        control=index[(r['ID'],float(r['window_deg']),int(r['degree']))]
+        if int(r['positive_points'])!=control['positive_points']:raise ArithmeticError('Curvature control nodes differ')
+        estimator.append(dict(ID=r['ID'],epsilon=float(r['epsilon']),window_deg=float(r['window_deg']),degree=int(r['degree']),
+            central=r['central'],C_shape=r['C_shape'],archive_a2_scaled=float(r['a2_epsilon_squared']),
+            leading_same_window_estimate=control['a2_epsilon_squared'],
+            leading_estimator_relative_bias=control['a2_epsilon_squared']/r['C_shape']-1,
+            archive_minus_leading_estimator_relative=(float(r['a2_epsilon_squared'])-control['a2_epsilon_squared'])/r['C_shape']))
+    peaks=[]
+    for pair in cfg['cases']:
+        rr=[r for r in rows if r['ID']==pair and r['xi']<=cfg['xi_max_comparison']];peak=max(rr,key=lambda r:r['s_xi'])
+        peaks.append(dict(ID=pair,model='leading',epsilon=None,xi_sampled_peak=peak['xi'],s_xi_max=peak['s_xi']))
+        for epsilon in cfg['epsilon_values']:
+            rr=[r for r in comparison if r['ID']==pair and r['epsilon']==epsilon and r['s_full_xi'] is not None]
+            peak=max(rr,key=lambda r:r['s_full_xi'])
+            peaks.append(dict(ID=pair,model='archived_full_variation',epsilon=epsilon,xi_sampled_peak=peak['xi'],s_xi_max=peak['s_full_xi']))
+    tables={'spectrum.csv':rows,'comparison.csv':comparison,'spatial_convergence.csv':convergence,'curvature.csv':curvature,
+            'curvature_local.csv':local,'curvature_archive.csv':archived,'error_statistics.csv':stats,
+            'epsilon_comparison.csv':epsilon_check,'mechanics.csv':mechanics,'curvature_estimator_control.csv':estimator,
+            'baseline_frequency.csv':baseline,'sensitivity_peaks.csv':peaks}
+    for name,data in tables.items():csvwrite(folder/name,data)
+    monotonic=[];q=cfg['quality']
+    for pair in cfg['cases']:
+        rr=sorted([r for r in rows if r['ID']==pair],key=lambda r:r['xi'])
+        for a,b in zip(rr[:-1],rr[1:]):
+            for k in (1,2,3):
+                margin=b[f'omega_lim{k}']/a[f'omega_lim{k}']-1
+                monotonic.append(dict(ID=pair,xi_left=a['xi'],xi_right=b['xi'],position=k,relative_increment=margin,
+                                      passed=margin>=-q['monotonicity_rtol']))
+        if any(r[f'omega_lim{k}']>get(pair,0.,fixed=True)['omega_lim'][k-1]*(1+q['monotonicity_rtol']) for r in rr for k in (1,2,3)):
+            raise ArithmeticError('Node-fixed spectral upper bound violated')
+    csvwrite(folder/'monotonicity.csv',monotonic)
+    accepted=[r for r in convergence if r['order_high']==final]
+    maxfreq=max(abs(r[f'rel_omega{k}']) for r in accepted for k in (1,2,3))
+    maxC=max(abs(r['relative_C']) for r in accepted if r['relative_C'] is not None)
+    checks=dict(spatial_frequency_max=maxfreq,spatial_C_max=maxC,
+        monotonicity_checks=len(monotonic),monotonicity_min_margin=min(r['relative_increment'] for r in monotonic),
+        common_xi_checks=len(epsilon_check),thinning_non_decreasing_error=sum(not r['error_decreases_with_thinning'] for r in epsilon_check),
+        interpolated_points=0,full_model_solves=0,full_model_reconstructions=0,
+        minimum_gap12=min(r['gap12_relative'] for r in rows),
+        local_C_min_xi_max_relative=max(abs(r['relative_difference']) for r in local if r['xi']==min(cfg['xi_curvature'])))
+    if maxfreq>q['frequency_convergence_rtol'] or maxC>q['C_convergence_rtol'] or not all(r['passed'] for r in monotonic):
+        write(folder/'failed_checks.json',checks);raise ArithmeticError('Leading convergence or monotonicity gate')
+    write(folder/'checks.json',checks)
+
+
+def plot_leading(folder):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    read=lambda name:list(csv.DictReader((folder/name).open(encoding='utf8',newline='')))
+    spectrum,comparison,curvature,archive=map(read,('spectrum.csv','comparison.csv','curvature.csv','curvature_archive.csv'))
+    cfg=json.loads((folder/'contract.json').read_text(encoding='utf8'))['config']
+    out=folder/'figures';out.mkdir(exist_ok=True)
+    plt.rcParams.update({'font.family':'DejaVu Sans','font.size':10,'pdf.fonttype':42})
+    def save(fig,name):
+        fig.savefig(out/(name+'.png'),dpi=300,bbox_inches='tight')
+        fig.savefig(out/(name+'.pdf'),bbox_inches='tight',metadata={'CreationDate':None,'ModDate':None});plt.close(fig)
+    colors=['#0072B2','#D55E00','#009E73'];markers=['o','s','^']
+    for error in (False,True):
+        fig,axes=plt.subplots(1,2,figsize=(11,4.1),sharex=True,sharey=True)
+        for ax,(pair,ks) in zip(axes,cfg['cases'].items()):
+            if not error:
+                rr=sorted([r for r in spectrum if r['ID']==pair and float(r['xi'])<=30],key=lambda r:float(r['xi']))
+                ax.plot([float(r['xi']) for r in rr],[float(r['F_lim']) for r in rr],color='black',lw=1.8,label='Ведущая задача')
+            for e,color,marker in zip(cfg['epsilon_values'],colors,markers):
+                rr=[r for r in comparison if r['ID']==pair and float(r['epsilon'])==e]
+                xx=[float(r['xi']) for r in rr]; yy=[float(r['abs_E'])*100 if error else float(r['F_full']) for r in rr]
+                if error:
+                    mask=np.array(xx)>0;ax.semilogy(np.array(xx)[mask],np.array(yy)[mask],marker=marker,ms=3,lw=.85,color=color,label=fr'$\varepsilon={e:g}$')
+                else:ax.plot(xx,yy,ls='none',marker=marker,ms=3.7,mfc='none',color=color,label=fr'$\varepsilon={e:g}$')
+            ax.set_title(fr'$\kappa_{{joint}}={ks[0]:g},\ \kappa_{{end}}={ks[1]:g}$');ax.set_xlim(0,30)
+            ax.set_xlabel(r'$\xi=\beta_{rad}/\varepsilon$');ax.grid(alpha=.25);ax.legend(fontsize=8)
+        axes[0].set_ylabel(r'$|E|$, %' if error else r'$F_\omega$')
+        fig.suptitle('Расхождение на фактических архивных узлах' if error else 'Первая отсортированная частота: ведущая и полная модели')
+        fig.tight_layout();save(fig,'02_error' if error else '01_frequency')
+    fig,axes=plt.subplots(1,2,figsize=(11,4.2))
+    for ax,(pair,ks) in zip(axes,cfg['cases'].items()):
+        C=float(next(r for r in curvature if r['ID']==pair and int(r['order'])==cfg['ritz_orders'][-1])['C'])
+        ax.axhline(C,color='black',label='C из ведущей формы')
+        for e,color in zip(cfg['epsilon_values'],colors):
+            rr=[r for r in archive if r['ID'].endswith(pair) and float(r['epsilon'])==e]
+            center=float(next(r for r in rr if r['central']=='True')['a2_epsilon_squared'])
+            band=[float(r['a2_epsilon_squared']) for r in rr if r['local_window_degree_band']=='True']
+            ax.errorbar(e,center,yerr=[[center-min(band)],[max(band)-center]],fmt='o',color=color,capsize=5)
+        ax.set_xscale('log');ax.set_xticks(cfg['epsilon_values'],[str(e) for e in cfg['epsilon_values']]);ax.minorticks_off()
+        ax.set_xlabel(r'$\varepsilon$');ax.set_ylabel(r'$C,\ \varepsilon^2 a_2$');ax.grid(alpha=.25)
+        ax.set_title(fr'$\kappa_{{joint}}={ks[0]:g},\ \kappa_{{end}}={ks[1]:g}$');ax.legend(fontsize=8)
+    fig.suptitle('Кривизна: полосы показывают чувствительность к окну и степени, не доверительный интервал',fontsize=10)
+    fig.tight_layout();save(fig,'03_curvature')
+
+
+def leading_main(args):
+    from scripts.lib import isotropic_two_springs_leading as leading
+    cfg=json.loads(LEADING_CONFIG.read_text());full,fits,verified,sources=leading_sources(cfg)
+    numerical_files=[Path(leading.__file__),ROOT/'docs/theory/isotropic_two_springs_angle_asymptotics.md']
+    ident=dict(config=cfg,source_hashes=sources,numerical_files={p.relative_to(ROOT).as_posix():sha(p) for p in numerical_files},
+               versions=dict(numpy=np.__version__,scipy=scipy.__version__))
+    key=hashlib.sha256(json.dumps(ident,sort_keys=True).encode()).hexdigest()[:16];folder=OUTPUT/'leading_validation'/key
+    if args.verify_cache or (folder/'manifest.json').exists():
+        p=(args.verify_cache or folder).resolve();m=json.loads((p/'manifest.json').read_text(encoding='utf8'))
+        if m['identity']!=ident or any(sha(p/f)!=h for f,h in m['artifacts'].items()):raise ValueError('Leading cache mismatch')
+        print(f'REUSED {p}: 0 full-model and 0 leading solves');return
+    folder.mkdir(parents=True,exist_ok=True);(folder/'points').mkdir(exist_ok=True);write(folder/'contract.json',ident)
+    csvwrite(folder/'reused_full_points.csv',full)
+    start=time.perf_counter();solutions={};quality=[];new=0;reused=0
+    try:
+        for pair,ks in cfg['cases'].items():
+            grid=sorted(set(cfg['xi_primary']+cfg['xi_curvature']+cfg['xi_limit']+[r['xi'] for r in full if r['ID']==pair]))
+            for order in cfg['ritz_orders']:
+                model=leading.Ritz(*ks,mu=cfg['mu'],order=order,quadrature=cfg['quadrature_order'])
+                for xi,fixed in [(x,False) for x in grid]+[(0.,True)]:
+                    point=folder/'points'/f'{pair}_p{order}_{"fixed" if fixed else format(xi,".12g")}.json'
+                    if point.exists():
+                        rec=json.loads(point.read_text(encoding='utf8'));reused+=1
+                    else:
+                        rec=model.solve(xi,count=3,node_fixed=fixed);new+=1
+                        if order==cfg['ritz_orders'][-1]:
+                            for field in ('symmetry','eigen_residual','energy','mass_gram','constraint','natural_boundary','strong_ode','essential'):
+                                if rec['diagnostics'][field]>cfg['quality'][field+'_tol']:
+                                    write(folder/'failure.json',dict(ID=pair,xi=xi,order=order,field=field,result=rec));raise ArithmeticError('Leading quality gate')
+                        write(point,rec)
+                    solutions[(pair,order,xi,fixed)]=rec
+                    quality.append(dict(ID=pair,order=order,xi=xi,node_fixed=fixed,
+                        accepted_order=order==cfg['ritz_orders'][-1],**rec['diagnostics']))
+        spectral=time.perf_counter()-start;csvwrite(folder/'quality.csv',quality)
+        now=time.perf_counter();leading_postprocess(folder,cfg,full,fits,solutions);post=time.perf_counter()-now
+        now=time.perf_counter();plot_leading(folder);render=time.perf_counter()-now
+    except Exception as exc:
+        write(folder/'failure_ledger.json',dict(error=repr(exc),leading_solves_this_invocation=new,full_model_solves=0));raise
+    # One independent quadrature increase at representative xi, no full-model call.
+    quadrature=[]
+    for pair,ks in cfg['cases'].items():
+        model=leading.Ritz(*ks,mu=cfg['mu'],order=cfg['ritz_orders'][-1],quadrature=cfg['quadrature_check_order'])
+        for xi in (0.,5.,30.):
+            r=model.solve(xi);old=solutions[(pair,cfg['ritz_orders'][-1],xi,False)];new+=1
+            difference=float(np.max(abs(np.array(r['omega_lim'])/old['omega_lim']-1)))
+            quadrature.append(dict(ID=pair,xi=xi,max_relative_frequency=difference,
+                relative_C=r['C_at_zero']/old['C_at_zero']-1 if xi==0 else None))
+            if difference>cfg['quality']['frequency_convergence_rtol']:raise ArithmeticError('Quadrature convergence')
+    csvwrite(folder/'quadrature.csv',quadrature)
+    write(folder/'run.json',dict(leading_solves_this_invocation=new,leading_cached_points=reused,full_model_solves=0,
+        full_model_reconstructions=0,reused_full_points=len(full),source_artifacts_verified=verified,
+        spectral_seconds=spectral,postprocess_seconds=post,render_seconds=render,
+        cli_sha256=sha(Path(__file__)),command=sys.argv))
+    write(folder/'manifest.json',dict(status='PASS',identity=ident,git_head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
+        full_model_solves=0,leading_cached_solutions=len(solutions),
+        artifacts={p.relative_to(folder).as_posix():sha(p) for p in folder.rglob('*') if p.is_file() and p.name!='manifest.json'}))
+    print(folder,flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--stage', choices=['all', 'gates', 'reference', 'map', 'regression', 'preflight'], default='all')
-    parser.add_argument('--preset', choices=['verification', 'limit-angles', 'finite-angle-maps', 'saturation-analysis', 'plateau-criterion', 'plateau-grid', 'early-saturation', 'growth-transition', 'growth-refinement', 'growth-stiffness-grid', 'mechanical-interpretation', 'angle-variation', 'epsilon-scaling', 'longitudinal-slip', 'thickness-grid'], default='verification')
+    parser.add_argument('--preset', choices=['verification', 'limit-angles', 'finite-angle-maps', 'saturation-analysis', 'plateau-criterion', 'plateau-grid', 'early-saturation', 'growth-transition', 'growth-refinement', 'growth-stiffness-grid', 'mechanical-interpretation', 'angle-variation', 'epsilon-scaling', 'longitudinal-slip', 'thickness-grid', 'angle-limit'], default='verification')
     parser.add_argument('--plot-only', type=Path)
     parser.add_argument('--plot-set', choices=['original', 'lambda12', 'lambda12-ru'], default='original')
     parser.add_argument('--verify-cache', type=Path)
@@ -4141,6 +4408,8 @@ def main():
             plot_slip(args.plot_only)
         elif args.preset == 'thickness-grid':
             plot_thickness(args.plot_only)
+        elif args.preset == 'angle-limit':
+            plot_leading(args.plot_only)
         else:
             (plot_limits if args.preset == 'limit-angles' else plot)(args.plot_only)
         print('plot-only: 0 eigenvalue solves'); return
@@ -4172,6 +4441,8 @@ def main():
         slip_main(args); return
     if args.preset == 'thickness-grid':
         thickness_main(args); return
+    if args.preset == 'angle-limit':
+        leading_main(args); return
     cfg = json.loads(CONFIG.read_text()); key, ident = identity(cfg)
     folder = OUTPUT/key
     if args.verify_cache:

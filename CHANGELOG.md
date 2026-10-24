@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## 2026-10-24 — scientific synthesis of two-spring angular sensitivity
+
+- Added a unified Russian scientific report, claim-to-evidence table and critical
+  audit of publication limitations, separating discrete angle maps, reaction work,
+  the causal compliance experiment and the formal leading model.
+- Verified source hashes and selected CSV identities without new full or leading
+  spectral solves; reused five existing PNG/PDF figure pairs unchanged.
+- Added LONG-D23/K22, evidence manifest and scoped navigation. Preserved physical
+  code, historical reports/results and pre-existing uncommitted work; no new CLI.
+
+## 2026-10-24 — quantitative validation of the leading angular model
+
+- Added the specialized leading Ritz module and `angle-limit` preset to the existing
+  CLI; preserved the full RL_FULL/Timoshenko solver and historical spectral files.
+- Compared two pairs against 178 archived points at three epsilon values; saved
+  signed frequency errors, independent shape-derived curvature, convergence checks
+  and three PNG/PDF figures. Diagnosed finite-window bias in archived curvature fits.
+- Added six targeted tests, LONG-D22/K21 and scientific navigation. Guarded plot-only
+  and cache checks perform zero solves; no full-model solve or new angle surface.
+
 ## 2026-10-24 — formal angular asymptotics for the exact two-spring joint
 
 - Derived the leading beta/epsilon problem by variational elimination of axial

@@ -25,7 +25,23 @@ Git-visible context and immutable history.
 
 ## LONG
 
-Current exact-joint result: [formal beta/epsilon asymptotics](theory/isotropic_two_springs_angle_asymptotics.md),
+Current scientific synthesis: [angular sensitivity report](theory/isotropic_two_springs_scientific_synthesis.md)
+and [critical open-question audit](theory/isotropic_two_springs_open_questions.md),
+[LONG-D23](memory/decisions.md#long-d23) / [LONG-K22](memory/knowledge.md#long-k22).
+The report connects stiffness maps, variational reaction work, a separately scoped
+compliance experiment and the formal leading model. Discrete angle scaling and
+finite-window curvature remain qualified. Archive-only checks; no new full or
+leading solves. STOP after synthesis, without starting a journal manuscript.
+
+Previous exact-joint result: [quantitative leading-model validation](theory/isotropic_two_springs_leading_validation.md),
+[LONG-D22](memory/decisions.md#long-d22) / [LONG-K21](memory/knowledge.md#long-k21).
+Two swapped rotational pairs; only the leading Ritz problem was solved. On common
+archived xi nodes, frequency error decreases at each smaller epsilon; the largest
+sampled error is below .20%. Shape-derived curvature is independent, but raw archive
+curvature estimates do not converge monotonically because of finite-window bias.
+No full-model solves, new angle surface or convergence theorem; STOP after two pairs.
+
+Previous exact-joint result: [formal beta/epsilon asymptotics](theory/isotropic_two_springs_angle_asymptotics.md),
 [LONG-D21](memory/decisions.md#long-d21) / [LONG-K20](memory/knowledge.md#long-k20).
 Axial minimization gives a positive rank-one joint term; the reduced problem has
 bounded nondecreasing frequencies and suppressed joint motion. Curvature scaling
