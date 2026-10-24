@@ -1,5 +1,70 @@
 # CHANGELOG
 
+## 2026-10-24 — formal angular asymptotics for the exact two-spring joint
+
+- Derived the leading beta/epsilon problem by variational elimination of axial
+  fields, including energy/mass orders, rank-one joint stiffness, curvature and
+  conditional scaling of the growth-angle criterion. Distinguished tail and
+  derivative convergence assumptions from reduced-model min–max properties.
+- Checked the published Bauer et al. small-angle precedent and unchanged physical
+  conventions; added scoped assumptions, LONG-D21/K20 and scientific navigation.
+- Added four algebra/dimension tests and an archive-only evidence bundle. No
+  spectral solves, reconstructions, new CLI, physical changes or historical data edits.
+
+## 2026-10-24 — thickness dependence of the growth-angle surface
+
+- Added `thickness-grid` to the existing CLI for the canonical exact joint: epsilon
+  .01, 25 stiffness pairs, 1996 new three-root prefixes and 54 reused archive points.
+- Compared fixed/scaled reference intervals, 25 angle pairs, spring increments and
+  actual-node frequency similarity. Saved five PNG/PDF figures and quality/provenance tables.
+- Added two tests and LONG-D20/K19. All scaled angles double on the primary grid;
+  derivative-scheme sensitivity remains explicit. Physical library and old archives
+  unchanged; guarded plot-only/cache perform zero solves. No further grid expansion.
+
+
+## 2026-10-24 — directed longitudinal joint compliance
+
+- Added an explicitly separate physical branch with a finite longitudinal spring
+  and one exact transverse constraint; the canonical exact-joint library is unchanged.
+- Reused the existing CLI/solver with `longitudinal-slip`: 230 new prefixes, 26 archived
+  points, 24 independent Ritz checks, signed variational work and four PNG/PDF figures.
+- Verified the new derivative, chi monotonicity, zero/rigid limits and targeted FD
+  convergence. Added two tests, assumptions, report and LONG-D19/K18. No plateau or
+  stiffness-surface changes; plot-only has zero solves. Continuous peak locations remain qualified.
+
+## 2026-10-24 — two-spring epsilon scaling experiment
+
+- Added fixed `epsilon-scaling` preset to the existing CLI: six configurations,
+  146 new local prefixes / 438 roots, 48 archived points and eight separate pole roots.
+- Preserved full RL physics and dimensionless spring values; saved four PNG/PDF
+  figures, curvature/window diagnostics, reaction work, FD and quadrature checks.
+- Added two focused tests, scientific report and LONG-D18/K17. Curvature is consistent
+  with epsilon^-2 but retains methodological uncertainty; no new plateau criterion.
+  Historical evidence preserved; plot-only has zero spectral/field solves.
+
+## 2026-10-24 — variational angle sensitivity
+
+- Added bounded `angle-variation` postprocessing to the existing CLI: twenty archived
+  first modes, constraint reactions, virtual work, weak/trace checks and FD comparison.
+- Saved four PNG/PDF figures, scalar diagnostics, three focused tests and LONG-D17/K16.
+  Zero new spectral solves; retained the coarse-grid limitation of FD checks at 0–2°.
+
+## 2026-10-24 — two-spring mode shapes and energy interpretation
+
+- Extended the existing CLI with `mechanical-interpretation`: 29 archived first modes,
+  mass normalization, five energy components and eight bounded derivative-check prefixes.
+- Saved four PNG/PDF figures, quadrature and residual checks, two focused tests,
+  scientific report and LONG-D16/K15. Plot-only performs zero spectral or field solves;
+  physical library, previous spectra and historical records preserved.
+
+## 2026-10-24 — two-spring stiffness effects
+
+- Extended the existing CLI with fixed `growth-stiffness-grid`: sixteen new pairs,
+  1328 prefixes, composite-grid thinning check and unchanged physical gates.
+- Saved the 5×5 working-angle map, threshold controls, finite stiffness increments,
+  frequency levels, five PNG/PDF figures and guarded zero-solve plot reproduction.
+  Added two arithmetic tests, research report and LONG-D15/K14; archived data preserved.
+
 ## 2026-10-23 — local growth-transition refinement
 
 - Added the existing CLI's `growth-refinement` preset: 243 new fractional-angle

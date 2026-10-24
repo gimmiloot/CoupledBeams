@@ -2,17 +2,81 @@
 
 ## Isotropic full Rayleigh–Love/Timoshenko: two rotational springs
 
-Latest preset: `growth-refinement`, bounded to nine pairs and 3:0.25:12°.
-[Contract and limitations](../docs/theory/isotropic_two_springs_growth_transition_refinement.md).
+Latest preset: `thickness-grid`, canonical model with both exact translational constraints.
+[Thickness comparison and normalization qualifications](../docs/theory/isotropic_two_springs_thickness_grid.md).
+Epsilon .01, the same 25 finite rotational pairs; 0:.5:24 and 26:2:90 degrees.
+The old .005 surface and 54 matching .01 points are reused; 1996 prefixes are new.
+Both 0–5 and scaled 0–10 degree references retain q*=.15. No physical-module changes.
+
+```powershell
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset thickness-grid --stage preflight
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset thickness-grid
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset thickness-grid --verify-cache results/isotropic_two_springs_rl_timoshenko/growth_thickness_comparison/c4a723a2de351365
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset thickness-grid --plot-only results/isotropic_two_springs_rl_timoshenko/growth_thickness_comparison/c4a723a2de351365
+```
+
+
+Previous preset: `longitudinal-slip`, a separate directed-compliance branch at epsilon .005.
+[Physical branch, new angular derivative and causal limitations](../docs/theory/isotropic_two_springs_longitudinal_slip.md).
+Only chi=k_parallel*l/(EA) varies. c2 remains exact; RIGID uses both exact constraints.
+Two rotational pairs, local angles through 20°, bounded FD checks and one triggered chi10
+point per pair. The original physical library is unchanged; the existing runner accepts an
+explicit engine and defaults to the canonical model. No new universal solver or runnable script.
+
+```powershell
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset longitudinal-slip --stage preflight
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset longitudinal-slip
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset longitudinal-slip --verify-cache results/isotropic_two_springs_rl_timoshenko/longitudinal_slip/253c9655120041e1
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset longitudinal-slip --plot-only results/isotropic_two_springs_rl_timoshenko/longitudinal_slip/253c9655120041e1
+```
+
+Previous preset: `epsilon-scaling`, two finite pairs at epsilon .0025/.005/.01, angles up to 20°.
+[Consistent section scaling, virtual work and curvature qualifications](../docs/theory/isotropic_two_springs_epsilon_scaling.md).
+Dimensionless springs are fixed. The initial run uses 48 archived points and calculates
+146 new prefixes, including eight triggered thin-only refinement points. Separate
+epsilon folders protect physical cache identity. Complete cache and plot-only do no solves.
+
+```powershell
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset epsilon-scaling --stage preflight
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset epsilon-scaling
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset epsilon-scaling --verify-cache results/isotropic_two_springs_rl_timoshenko/epsilon_scaling/d925e14c6ff93605
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset epsilon-scaling --plot-only results/isotropic_two_springs_rl_timoshenko/epsilon_scaling/d925e14c6ff93605
+```
+
+Previous preset: `angle-variation`, twenty archived first modes for two swapped finite pairs.
+[Variational formula, reaction signs and FD qualification](../docs/theory/isotropic_two_springs_angle_variation.md).
+No new spectral solves; the initial run evaluates saved fields and local trace operators.
+Plot-only reads accepted tables without matrix assembly or field reconstruction.
+
+```powershell
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset angle-variation
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset angle-variation --verify-cache results/isotropic_two_springs_rl_timoshenko/angle_variation/58972c1ea3e25f6f
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset angle-variation --plot-only results/isotropic_two_springs_rl_timoshenko/angle_variation/58972c1ea3e25f6f
+```
+
+Previous preset: `mechanical-interpretation`, 29 archived first modes for five pairs.
+[Scope, energy checks and limitations](../docs/theory/isotropic_two_springs_mechanical_interpretation.md).
+The initial run also performs eight local three-root checks of spring derivatives.
+Completed cache is reused. Plot-only reads saved fields and tables without any solves,
+field reconstruction or energy calculation.
+
+```powershell
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset mechanical-interpretation
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset mechanical-interpretation --verify-cache results/isotropic_two_springs_rl_timoshenko/mechanical_interpretation/78a84927c1d68657
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset mechanical-interpretation --plot-only results/isotropic_two_springs_rl_timoshenko/mechanical_interpretation/78a84927c1d68657
+```
+
+Previous preset: `growth-stiffness-grid`, sixteen new pairs completing the finite 5×5 grid.
+[Contract, composite angular grid and limitations](../docs/theory/isotropic_two_springs_growth_stiffness_grid.md).
 Completed cache is reused; plot-only reads accepted derived CSVs and performs zero solves.
 
 ```powershell
-python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset growth-refinement --stage preflight
-python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset growth-refinement
-python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset growth-refinement --plot-only results/isotropic_two_springs_rl_timoshenko/growth_transition_refinement/d2effe067cbb25fe
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset growth-stiffness-grid --stage preflight
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset growth-stiffness-grid
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset growth-stiffness-grid --plot-only results/isotropic_two_springs_rl_timoshenko/growth_stiffness_5x5/361e9a839ef5be30
 ```
 
-Earlier presets retain their historical scope:
+Earlier presets, including `growth-refinement`, retain their historical scope:
 
 ```powershell
 python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset plateau-grid --stage preflight

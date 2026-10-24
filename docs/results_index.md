@@ -1,5 +1,54 @@
 # Generated Results Index
 
+`results/isotropic_two_springs_rl_timoshenko/angle_asymptotics/1bc7f6d0c311a702/`:
+[formal beta/epsilon leading problem](theory/isotropic_two_springs_angle_asymptotics.md).
+Archive-only extracts: six curvature estimates, 25 angle comparisons and five
+actual-node similarity summaries; source hashes and reproducible arithmetic.
+Zero new spectra or shapes. Main result is the mathematical report, with explicit
+derivative/tail limitations; no reduced eigensolver or convergence theorem.
+
+`results/isotropic_two_springs_rl_timoshenko/growth_thickness_comparison/c4a723a2de351365/`:
+[thickness dependence of the characteristic growth angle](theory/isotropic_two_springs_thickness_grid.md).
+2050 points at epsilon .01: 1996 new / 54 archived; original .005 map fully reused.
+Fixed/scaled references, 25 comparisons, signed increments and five PNG/PDF figures.
+All scaled discrete angles double; literal fixed-reference ratios are 1.70–2.00.
+PASS quality and 9840 min–max checks. Grid/scheme uncertainty retained, no universal law.
+
+
+`results/isotropic_two_springs_rl_timoshenko/longitudinal_slip/253c9655120041e1/`:
+[directed-compliance causal experiment](theory/isotropic_two_springs_longitudinal_slip.md).
+230 new prefixes / 690 roots, 26 archived points, 24 independent Ritz problems;
+four PNG/PDF figures, new signed work decomposition, FD and 468 monotonicity checks.
+Separate physical branch; exact RIGID is reused, not approximated by a large spring.
+PASS in the bounded scope; small-chi negative/compensating work and unresolved
+continuous peak positions retained. No new beta_pl surface or automatic grid expansion.
+
+`results/isotropic_two_springs_rl_timoshenko/epsilon_scaling/d925e14c6ff93605/`:
+[two-pair epsilon scaling experiment](theory/isotropic_two_springs_epsilon_scaling.md).
+194 local points: 146 new prefixes / 438 roots and 48 archived points; eight new pole roots
+counted separately. Consistent rectangular sections and dimensionless springs, four PNG/PDF
+figures, curvature/window checks, variational work, actual-node similarity and FD diagnostics.
+PASS for the bounded calculation; epsilon^-2 curvature remains an approximate, method-sensitive
+result. No isolated-causality claim, new plateau criterion or automatic compliance experiment.
+
+`results/isotropic_two_springs_rl_timoshenko/angle_variation/58972c1ea3e25f6f/`:
+[variational angle sensitivity and reaction work](theory/isotropic_two_springs_angle_variation.md).
+Two pairs, 20 archived first modes; zero new eigenvalues. Weak/trace checks pass;
+FD convergence confirmed at 3–12°, early 0–2° checks retain a coarse-grid limitation.
+Four PNG/PDF figures and scalar factor diagnostics. STOP after the two pairs.
+
+`results/isotropic_two_springs_rl_timoshenko/mechanical_interpretation/78a84927c1d68657/`:
+[five-pair mechanical interpretation](theory/isotropic_two_springs_mechanical_interpretation.md).
+29 archived first modes, full mass normalization, five potential-energy components,
+spring sensitivities and eight local derivative-check prefixes; four PNG/PDF figures.
+PASS within the selected-point scope; original spectra and physical library preserved.
+
+`results/isotropic_two_springs_rl_timoshenko/growth_stiffness_5x5/361e9a839ef5be30/`:
+[mechanical stiffness effects on the growth-transition angle](theory/isotropic_two_springs_growth_stiffness_grid.md).
+1328 new prefixes / 3984 roots, 747 archived nodes; 25 pairs, 75 transitions,
+finite increments, saved-field spring energies, five PNG/PDF figures. PASS within the
+discrete 5×5 scope; archived spectra and physics preserved. Working q*=.15, STOP.
+
 `results/isotropic_two_springs_rl_timoshenko/growth_transition_refinement/d2effe067cbb25fe/`:
 [locally refined normalized-slope transition](theory/isotropic_two_springs_growth_transition_refinement.md).
 243 new prefixes / 729 roots; 90 local nodes reused. Six PNG/PDF figures,

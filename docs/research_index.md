@@ -25,13 +25,62 @@ Git-visible context and immutable history.
 
 ## LONG
 
-Current two-spring result: [locally refined growth transitions](theory/isotropic_two_springs_growth_transition_refinement.md),
-[LONG-D14](memory/decisions.md#long-d14) / [LONG-K13](memory/knowledge.md#long-k13).
-243 new fractional points and 90 reused integers on 3–12° at .25°; all prefix gates pass.
-Working q*=.15 gives 5.00–6.50°. Reference/stencil sensitivity reaches .75°;
-monotone stiffness ordering of the angle is not preserved for every diagnostic normalization.
-Residual ranges remain 3.77–8.01%; this differs from beta_tol. No final physical criterion
-or continuous surface is accepted. STOP before further grid expansion or optimization.
+Current exact-joint result: [formal beta/epsilon asymptotics](theory/isotropic_two_springs_angle_asymptotics.md),
+[LONG-D21](memory/decisions.md#long-d21) / [LONG-K20](memory/knowledge.md#long-k20).
+Axial minimization gives a positive rank-one joint term; the reduced problem has
+bounded nondecreasing frequencies and suppressed joint motion. Curvature scaling
+and the criterion's angle scaling are distinguished: derivative convergence and
+late-tail control are additional requirements. No new solves; STOP after derivation.
+
+Previous exact-joint result: [thickness comparison of the 5×5 angle maps](theory/isotropic_two_springs_thickness_grid.md),
+[LONG-D20](memory/decisions.md#long-d20) / [LONG-K19](memory/knowledge.md#long-k19).
+At epsilon .01 the fixed 0–5 degree reference gives 8.5–13 degrees; the scaled
+0–10 reference gives 10–13 degrees. All 25 scaled discrete angles double the .005
+values; spring-direction trends and attenuation persist. This equality is resolution
+limited, with small derivative-scheme shifts and imperfect frequency similarity.
+Canonical physical module preserved; STOP after two epsilon maps.
+
+
+Previous separate-branch result: [directed longitudinal compliance experiment](theory/isotropic_two_springs_longitudinal_slip.md),
+[LONG-D19](memory/decisions.md#long-d19) / [LONG-K18](memory/knowledge.md#long-k18).
+Separate physical branch, two finite rotational pairs, seven chi values and local angles
+through 20°. Weakening only c1 transmission suppresses rapid positive growth; chi=0
+leaves a small negative slope from the remaining exact constraint. New derivative,
+Ritz/count/monotonicity checks pass. Causal conclusion is bounded to this idealized joint;
+sampled peak locations are not continuous extrema. STOP, no automatic expansion.
+
+Previous [epsilon scaling and the axial-work hypothesis](theory/isotropic_two_springs_epsilon_scaling.md),
+[LONG-D18](memory/decisions.md#long-d18) / [LONG-K17](memory/knowledge.md#long-k17).
+Two pairs at three epsilon values, local angles up to 20°: 146 new / 48 archived points.
+Thinner sections give stronger and earlier relative growth; curvature is consistent
+with epsilon^-2 but remains window dependent. Axial work dominates, and scaled
+node/reaction decay is similar. This is not an isolated EA intervention or a new beta_pl law.
+STOP after two epsilon series; longitudinal joint compliance is a recommendation only.
+
+Previous [variational angle derivative and reaction work](theory/isotropic_two_springs_angle_variation.md),
+[LONG-D17](memory/decisions.md#long-d17) / [LONG-K16](memory/knowledge.md#long-k16).
+Two finite pairs, 20 archived first modes, zero new eigenvalues. Weak/trace checks pass;
+frequency differences converge at 3–12°, with a retained resolution limitation at 0–2°.
+The decrease of node motion, reaction and their work relative to modal energy explains
+the slope reduction in this bounded sample; no universal transition-angle law is claimed.
+STOP after two pairs; no automatic new spectra, tracking, optimization or criterion change.
+
+Previous [mode shapes and mechanical interpretation](theory/isotropic_two_springs_mechanical_interpretation.md),
+[LONG-D16](memory/decisions.md#long-d16) / [LONG-K15](memory/knowledge.md#long-k15).
+PASS for five pairs and 29 archived first modes; eight local prefixes verify spring sensitivities.
+Energy redistribution and arm participation continue beyond the working transition;
+the exact mechanism of its weak stiffness dependence is not established.
+STOP after this bounded study: no automatic new maps, remaining-pair modes, FEM or tracking.
+
+Previous [stiffness effects on the 5×5 grid](theory/isotropic_two_springs_growth_stiffness_grid.md),
+[LONG-D15](memory/decisions.md#long-d15) / [LONG-K14](memory/knowledge.md#long-k14).
+Sixteen new pairs, 1328 new prefixes / 3984 roots, 747 archived nodes reused; PASS.
+Working q*=.15 with the 0–5° reference is fixed for this study. Angles are 5–6.5°,
+nondecreasing along both stiffness axes for all three tested thresholds.
+Equal discrete angles can accompany substantial frequency changes; no exact independence is claimed.
+The [local refinement](theory/isotropic_two_springs_growth_transition_refinement.md) retains its
+.25–.75° diagnostic sensitivity and qualified reversals under other reference intervals.
+No continuous monotonicity or universal criterion is established; the working criterion is unchanged.
 The [previous 1° analysis](theory/isotropic_two_springs_growth_transition.md) retains its scope.
 The [earlier growth analysis](theory/isotropic_two_springs_early_saturation.md)
 retains its historical scope and interpretation.

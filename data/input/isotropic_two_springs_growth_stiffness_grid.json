@@ -1,0 +1,338 @@
+{
+  "material": {
+    "E": 1.0,
+    "rho": 1.0,
+    "nu": 0.3,
+    "epsilon": 0.005,
+    "aspect": 4.0,
+    "l": 1.0,
+    "ks": 0.8333333333333334
+  },
+  "mu": 0.01,
+  "variant": "RL_FULL",
+  "reference": "results/two_springs_rl_timo",
+  "policy": {
+    "defined_before_computation": true,
+    "Lambda_lower": 0.05,
+    "Lambda_upper": 7.3,
+    "root_xtol": 2e-14,
+    "root_rtol": 2e-14,
+    "pole_exclusion": 1e-07,
+    "schur_tol": 1e-10,
+    "inertia_margin": 4e-14,
+    "condition_max": 10000000000.0,
+    "max_count_queries": 160,
+    "max_depth": 30,
+    "boundary_tol": 1e-09,
+    "ode_tol": 1e-09,
+    "singular_tol": 1e-09,
+    "energy_tol": 5e-08,
+    "mass_gram_tol": 5e-07,
+    "nonzero_condition_max": 100000000.0,
+    "same_physics_frequency_tol": 1e-08,
+    "reference_frequency_tol": 1e-08,
+    "ritz_frequency_tol": 1e-07,
+    "ritz_orders": [
+      16,
+      20
+    ],
+    "quadrature_order": 120,
+    "mac_min": 0.95,
+    "assignment_margin_min": 0.1,
+    "independent_scan_Lambda_step": 0.01,
+    "neighbour_relative_jump": 0.2,
+    "pole_scan_intervals": 240
+  },
+  "minimum_length_deg": 30,
+  "q_levels": [
+    0.1,
+    0.15,
+    0.2
+  ],
+  "primary_q_level": 0.15,
+  "numerical_checks": {
+    "normalization_relative": 2e-14,
+    "q_identity_absolute": 2e-12,
+    "derivative_identity_absolute": 2e-13
+  },
+  "comparison_relative_tolerance": 1e-08,
+  "catalog_bundle": "results/isotropic_two_springs_rl_timoshenko/51af749660af1df5",
+  "catalog_manifest_sha256": "cd83173000bc700b339156c2aafd94b990b4287ae518774b0fc9da2de8a18267",
+  "schema": "two-springs-growth-stiffness5x5-v1",
+  "defined_before_computation": true,
+  "stiffness_exponents": [
+    -1,
+    -0.5,
+    0,
+    0.5,
+    1
+  ],
+  "stiffness_values": [
+    0.1,
+    0.31622776601683794,
+    1,
+    3.1622776601683795,
+    10
+  ],
+  "cases": {
+    "J0E0": [
+      0.1,
+      0.1
+    ],
+    "J0E1": [
+      0.1,
+      0.31622776601683794
+    ],
+    "J0E2": [
+      0.1,
+      1
+    ],
+    "J0E3": [
+      0.1,
+      3.1622776601683795
+    ],
+    "J0E4": [
+      0.1,
+      10
+    ],
+    "J1E0": [
+      0.31622776601683794,
+      0.1
+    ],
+    "J1E1": [
+      0.31622776601683794,
+      0.31622776601683794
+    ],
+    "J1E2": [
+      0.31622776601683794,
+      1
+    ],
+    "J1E3": [
+      0.31622776601683794,
+      3.1622776601683795
+    ],
+    "J1E4": [
+      0.31622776601683794,
+      10
+    ],
+    "J2E0": [
+      1,
+      0.1
+    ],
+    "J2E1": [
+      1,
+      0.31622776601683794
+    ],
+    "J2E2": [
+      1,
+      1
+    ],
+    "J2E3": [
+      1,
+      3.1622776601683795
+    ],
+    "J2E4": [
+      1,
+      10
+    ],
+    "J3E0": [
+      3.1622776601683795,
+      0.1
+    ],
+    "J3E1": [
+      3.1622776601683795,
+      0.31622776601683794
+    ],
+    "J3E2": [
+      3.1622776601683795,
+      1
+    ],
+    "J3E3": [
+      3.1622776601683795,
+      3.1622776601683795
+    ],
+    "J3E4": [
+      3.1622776601683795,
+      10
+    ],
+    "J4E0": [
+      10,
+      0.1
+    ],
+    "J4E1": [
+      10,
+      0.31622776601683794
+    ],
+    "J4E2": [
+      10,
+      1
+    ],
+    "J4E3": [
+      10,
+      3.1622776601683795
+    ],
+    "J4E4": [
+      10,
+      10
+    ]
+  },
+  "new_case_ids": [
+    "J0E1",
+    "J0E3",
+    "J1E0",
+    "J1E1",
+    "J1E2",
+    "J1E3",
+    "J1E4",
+    "J2E1",
+    "J2E3",
+    "J3E0",
+    "J3E1",
+    "J3E2",
+    "J3E3",
+    "J3E4",
+    "J4E1",
+    "J4E3"
+  ],
+  "map": {
+    "frequency_map_policy": "frequency-map-v1",
+    "calculation_mode": "fast_plot",
+    "spectrum_semantics": "sorted_positions",
+    "sweep_parameter": "beta",
+    "parameter_grid": [
+      0,
+      1,
+      2,
+      3,
+      3.25,
+      3.5,
+      3.75,
+      4,
+      4.25,
+      4.5,
+      4.75,
+      5,
+      5.25,
+      5.5,
+      5.75,
+      6,
+      6.25,
+      6.5,
+      6.75,
+      7,
+      7.25,
+      7.5,
+      7.75,
+      8,
+      8.25,
+      8.5,
+      8.75,
+      9,
+      9.25,
+      9.5,
+      9.75,
+      10,
+      10.25,
+      10.5,
+      10.75,
+      11,
+      11.25,
+      11.5,
+      11.75,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      22,
+      24,
+      26,
+      28,
+      30,
+      32,
+      34,
+      36,
+      38,
+      40,
+      42,
+      44,
+      46,
+      48,
+      50,
+      52,
+      54,
+      56,
+      58,
+      60,
+      62,
+      64,
+      66,
+      68,
+      70,
+      72,
+      74,
+      76,
+      78,
+      80,
+      82,
+      84,
+      86,
+      88,
+      90
+    ],
+    "K_plot": 2,
+    "K_guard": 3,
+    "guard_root_role": "completeness_only",
+    "neighbour_audit": "enabled",
+    "local_repair_policy": "triggered_only",
+    "strict_audit_default": false
+  },
+  "source_bundle": "results/isotropic_two_springs_rl_timoshenko/plateau_grid_step_B/aecdfc99a8864e8f",
+  "source_manifest_sha256": "40c1b65a7fbe852ef88c90868240773535ffe1b785acd5a6cafaed1a90de2a62",
+  "refined_bundle": "results/isotropic_two_springs_rl_timoshenko/growth_transition_refinement/d2effe067cbb25fe",
+  "limit_bundle": "results/isotropic_two_springs_rl_timoshenko/limit_angle_maps/a941117650420b4b",
+  "expected_new_points": 1328,
+  "expected_reused_points": 747,
+  "expected_total_points": 2075,
+  "preflight_case_ids": [
+    "J1E1",
+    "J1E3",
+    "J3E1",
+    "J3E3"
+  ],
+  "preflight_angles": [
+    0,
+    3,
+    5.25,
+    6.25,
+    7.25,
+    12,
+    20,
+    60,
+    90
+  ],
+  "reference_end_deg": 5,
+  "derivative_contract": "centered h=.25 for 3<beta<12; h=1 at 3,12 and other interior integer beta<20; h=2 at 22..88; beta20 nonuniform three-point weights (-2/3,1/2,1/6) on (19,20,22); second-order one-sided at 0 and 90",
+  "tail_trigger": "Any q>=.10 at beta>=20, or any later q peak that delays a first post-5-degree local crossing: stop and inspect locally, no global automatic refinement.",
+  "neighbour_trigger_resolution": "Count-one isolation, independent midgap counts and unchanged physical gates resolve expected low-angle jumps; unresolved quality/count/minmax events stop, without broad rescans.",
+  "energy_case_ids": [
+    "J0E0",
+    "J2E2",
+    "J4E4",
+    "J1E3",
+    "J3E1"
+  ],
+  "energy_angles": "0, working beta_pl, 10; saved mass-normalized mode1 only",
+  "plot_frequency_sections": [
+    0,
+    2,
+    4
+  ],
+  "no_new_criterion": true,
+  "refined_manifest_sha256": "10e3c95a516b18bdccde850993e4b7d337d179b23e877165882ebd01b2ff52fb",
+  "limit_manifest_sha256": "bc336fc5b57877650fef08f4576e90076c9d7a9dc422ec5b6644020241cb802a"
+}
