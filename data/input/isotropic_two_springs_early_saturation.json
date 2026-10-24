@@ -1,0 +1,197 @@
+{
+  "schema": "isotropic-two-springs-early-saturation-v1",
+  "source_bundle": "results/isotropic_two_springs_rl_timoshenko/plateau_grid_step_B/aecdfc99a8864e8f",
+  "source_manifest_sha256": "40c1b65a7fbe852ef88c90868240773535ffe1b785acd5a6cafaed1a90de2a62",
+  "material": {
+    "E": 1.0,
+    "rho": 1.0,
+    "nu": 0.3,
+    "epsilon": 0.005,
+    "aspect": 4.0,
+    "l": 1.0,
+    "ks": 0.8333333333333334
+  },
+  "mu": 0.01,
+  "variant": "RL_FULL",
+  "cases": {
+    "A1": [
+      0.1,
+      0.1
+    ],
+    "A2": [
+      0.1,
+      1.0
+    ],
+    "A3": [
+      0.1,
+      10.0
+    ],
+    "B1": [
+      1.0,
+      0.1
+    ],
+    "B2": [
+      1.0,
+      1.0
+    ],
+    "B3": [
+      1.0,
+      10.0
+    ],
+    "C1": [
+      10.0,
+      0.1
+    ],
+    "C2": [
+      10.0,
+      1.0
+    ],
+    "C3": [
+      10.0,
+      10.0
+    ]
+  },
+  "beta_deg": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90
+  ],
+  "intervals_deg": [
+    [
+      0,
+      5
+    ],
+    [
+      5,
+      10
+    ],
+    [
+      10,
+      15
+    ],
+    [
+      15,
+      20
+    ],
+    [
+      20,
+      30
+    ]
+  ],
+  "control_angles_deg": [
+    10,
+    15,
+    20
+  ],
+  "example_ids": [
+    "A1",
+    "A3",
+    "C3"
+  ],
+  "example_selection": "Fixed before analysis: two low-joint corners and the stiffest finite pair.",
+  "illustrative_transition_window_deg": [
+    5,
+    15
+  ],
+  "displayed_tolerance_percent": 0.5,
+  "displayed_minimum_length_deg": 30,
+  "normalization": "Omega=200*omega=Lambda**2; signed log sensitivity in percent per degree",
+  "frequency_map_policy": "frequency-map-v1",
+  "calculation_mode": "saved_data_postprocessing",
+  "source_calculation_mode": "fast_plot",
+  "spectrum_semantics": "sorted_positions",
+  "numerical_checks": {
+    "normalization_relative": 2e-14,
+    "log_identity_absolute": 2e-13
+  },
+  "new_eigenvalue_solves": 0,
+  "beta_sat_estimator": null
+}

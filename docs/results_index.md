@@ -1,5 +1,92 @@
 # Generated Results Index
 
+`results/isotropic_two_springs_rl_timoshenko/growth_transition_refinement/d2effe067cbb25fe/`:
+[locally refined normalized-slope transition](theory/isotropic_two_springs_growth_transition_refinement.md).
+243 new prefixes / 729 roots; 90 local nodes reused. Six PNG/PDF figures,
+full point provenance, primary and diagnostic transitions. PASS within the discrete scope.
+
+
+`results/isotropic_two_springs_rl_timoshenko/growth_transition_sensitivity/99517d6fd5ab0e2e/`:
+[normalized-slope transition criterion](theory/isotropic_two_springs_growth_transition.md).
+819 reused points, 162 threshold/scheme/reference results, 4914 derivative-profile
+rows and six PNG/PDF figures. Three discrete maps at q*=.20/.15/.10, no final level
+selected. PASS for postprocessing; zero spectral calls, source artifacts preserved.
+
+`results/isotropic_two_springs_rl_timoshenko/early_saturation_analysis/abca7461b47ff168/`:
+[early angular-sensitivity analysis](theory/isotropic_two_springs_early_saturation.md).
+819 reused scalar points, 45 signed interval log sensitivities, 27 tail controls,
+nine comparisons and four PNG/PDF figures. PASS for saved-data postprocessing;
+no beta_sat estimate or new eigenvalues. Source hashes and guarded cache/plot-only replay verified.
+
+`results/isotropic_two_springs_rl_timoshenko/plateau_grid_step_B/aecdfc99a8864e8f/`:
+[Step B: nine finite-pair plateau maps](theory/isotropic_two_springs_plateau_grid.md).
+819 accepted points, first two sorted frequencies plus guard3; 818 new prefixes /
+2454 roots and one reused verification point. Twelve independent Ritz problems,
+13 104 min–max comparisons, 54 criterion records for three tolerances and two
+minimum lengths, three common-scale heatmaps, discrete 3D nodes and two frequency
+panel figures. PASS on the stated grid; cache and plot-only perform zero solves.
+
+`results/isotropic_two_springs_rl_timoshenko/plateau_criterion_step_A/324625e51dc0885a/`:
+[Step A: plateau-criterion sensitivity](theory/isotropic_two_springs_plateau_criterion_sensitivity.md).
+Ten saved maps, 300 tolerance/length combinations with explicit missing-value
+statuses, frequency levels, preceding-node witnesses, existence thresholds,
+pair-order intervals, and three step-curve PNG/PDF figures. PASS for discrete
+postprocessing; 910 reused spectral points, zero new eigenvalue solves.
+
+`results/isotropic_two_springs_rl_timoshenko/saturation_diagnostics/63655a083c6f5b8e/`:
+[descriptive saturation analysis](theory/isotropic_two_springs_saturation_diagnostics.md).
+All 910 saved angle points, F, discrete remaining range with extrema,
+signed/log-frequency differences at 1/2/3-degree halfwidth, two transition
+methods across 40/60/90-degree windows, comparison CSV and seven PNG/PDF
+figures. PASS for postprocessing; zero eigenvalue solves, no accepted beta_pl.
+
+`results/isotropic_two_springs_rl_timoshenko/finite_one_parameter_angle_maps/1db0f368ab18d447/`:
+[six finite-stiffness angle maps](theory/isotropic_two_springs_finite_angle_maps.md).
+546 accepted points, first two sorted frequencies plus guard3; one spring at
+.1/1/10 and the other RIGID. PASS: 543 new points / 1629 roots, three reused
+verification points, unchanged limit spectra, full physical/count/min–max
+checks, ten PNG/PDF figures and separate plot-only replay. No beta_pl or tracking.
+Russian labels for the six earlier pair visualizations are saved separately in
+`limit_angle_maps/a941117650420b4b/visualizations/lambda12_ru/`, with zero solves.
+
+`results/isotropic_two_springs_rl_timoshenko/limit_angle_maps/a941117650420b4b/`:
+[four rotational-restraint limits and first-frequency angular sensitivity](theory/isotropic_two_springs_limit_angle_maps.md).
+364 common-grid points, first two positions and guard3, discrete omega tail
+ranges with extrema, three PNG/PDF figures and checked fields/counts. PASS;
+95 predecessor points reused, 269 new grid points and 3 targeted RH checks,
+816 new roots total. No plateau-angle definition or finite-stiffness sweep.
+
+`results/isotropic_two_springs_rl_timoshenko/51af749660af1df5/`:
+[two-spring full RL/Timoshenko verification](theory/isotropic_two_springs_rl_timoshenko.md).
+240-point rigid angle map, first two positions plus guard3, independent counts,
+full mass-normalized fields, reference/legacy/theory-comparison CSVs, finite-end
+Ritz checks, local MAC evidence, two PNG/PDF figures and hash-checked manifest.
+PASS within the stated scope; no two-stiffness map or plateau-angle selection.
+The input reference in `results/two_springs_rl_timo/` is preserved unchanged.
+
+`results/nlsp_six_vs_seven_out_stability/6a1ea9b77854c027/`:
+[bounded six-field OUT stability](numerics/nlsp_six_vs_seven_out_stability.md).
+Four Hill spectra on saved HB11/HB13, signed exponents, reciprocal vectors,
+Fourier operators, physical recovery, operator/pointwise/resolution checks,
+comparison tables and two figures. Positive matched growth is qualified at
+p14/A=.005; no new HB, linear spectrum, ODE, FEM or p-refinement.
+
+`results/nlsp_six_vs_seven_planar_orbit/ae2dd272a43bb92b/`:
+[six-field quartic action and p14 planar orbit](numerics/nlsp_six_vs_seven_planar_orbit.md).
+Checked manifest, full HB11/HB13 coefficients, operator checks, recovery maps,
+PL/OUT embeddings, arbitrary-time replay, comparison tables and two figures.
+Operator and orbit PASS; spatial stability NOT_EVALUATED. Reuses the following
+linear bundle and the saved seven-field p14 orbit; no new eigenproblems.
+
+`results/nlsp_six_vs_seven_linear_comparison/d67a8ed081c05709/`:
+[bounded NLSP linear comparison](numerics/nlsp_six_vs_seven_linear_comparison.md),
+six/seven fields at p12/p14 and one justified p16. Spectrum, mode-match and
+detuning CSVs; full PL modal coefficients, raw/scaled K/M, W, local maps,
+physical profiles, MAC matrices, provenance and one PNG/PDF comparison.
+Seven-field p12/p14 data reused; cached compute and saved-data reporting.
+This is local numerical evidence; the scientific tables are in the Git-visible
+report. No six-field nonlinear orbit or stability result is included.
+
 `results/nonsymmetric_laminated_beams/comparative_spectral_curves/5b7c19f677940011/`:
 [NSL-VIS-1](nonsymmetric_laminated_beams/comparative_spectral_curves.md), PASS
 for research Ritz maps. Three layouts, 273 angle and 183 spring appearances,

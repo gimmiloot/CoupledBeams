@@ -124,6 +124,41 @@ Run `python scripts/analysis/check_contraction_joint_sensitivity.py --compute`;
 `--plot-only` redraws saved data. Results are separate from historical rigid
 models, EB/RLB-KV and nonlinear studies; their statuses are unchanged.
 
+## NLSP six-field / seven-field linear comparison
+
+The [bounded linear comparison](docs/numerics/nlsp_six_vs_seven_linear_comparison.md)
+retains first-order axial motion and EA in the six-field model. At the fixed
+beta15 geometry, p12/p14 and one justified p16 establish unambiguous PL2/PL4
+matches, a resolved detuning increase, and identical full linear OUT blocks.
+Run `python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --six-vs-seven-linear --compute`.
+Completed inputs are cached; `--report-only BUNDLE` and `--plot-only BUNDLE`
+use saved data. This stage stops before constructing a six-field nonlinear orbit
+or testing its spatial stability; historical seven-field qualifications remain.
+
+## NLSP six-field nonlinear planar orbit
+
+The subsequent [quartic-action and planar-orbit stage](docs/numerics/nlsp_six_vs_seven_planar_orbit.md)
+provides a checked six-field spatial residual and its three tangents. At p14,
+A=0.005, both full planar HB11/HB13 orbits pass the prescribed checks.
+The own six-field frequency is 0.435101995915649. Saved linear bases and
+the seven-field orbit are reused; this stage itself does not test stability.
+Run `python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --six-vs-seven-planar-orbit --compute`.
+Completed inputs are cached; `--report-only BUNDLE` and `--plot-only BUNDLE`
+read saved data. This mode performs no linear eigensolves, ODE or stability
+calculations. The report documents arbitrary-time orbit recovery and tangents.
+
+## NLSP six-field OUT stability
+
+The separate [OUT comparison](docs/numerics/nlsp_six_vs_seven_out_stability.md)
+qualifies positive growth of the matched mode at p14/A=.005:
+sigma=0.003401213896108, about 0.2961% below the seven-field value.
+The negative real multiplier and physical mode correspond. Four bounded
+Hill decompositions reuse the saved HB11/HB13 orbits; no new HB, linear
+spectrum, ODE or FEM is run. Further p-convergence remains open.
+Run `python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --six-vs-seven-out-stability --compute`.
+Completed compute and `--report-only BUNDLE` / `--plot-only BUNDLE` use
+saved results with zero new eigenproblems.
+
 ## Results for supervisor discussion
 
 [Russian mechanics report, 26 pages](docs/reports/nlsp_beta15_parametric_instability/report.pdf)

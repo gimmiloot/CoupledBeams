@@ -1,5 +1,144 @@
 # Scripts guide
 
+## Isotropic full Rayleigh–Love/Timoshenko: two rotational springs
+
+Latest preset: `growth-refinement`, bounded to nine pairs and 3:0.25:12°.
+[Contract and limitations](../docs/theory/isotropic_two_springs_growth_transition_refinement.md).
+Completed cache is reused; plot-only reads accepted derived CSVs and performs zero solves.
+
+```powershell
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset growth-refinement --stage preflight
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset growth-refinement
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset growth-refinement --plot-only results/isotropic_two_springs_rl_timoshenko/growth_transition_refinement/d2effe067cbb25fe
+```
+
+Earlier presets retain their historical scope:
+
+```powershell
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset plateau-grid --stage preflight
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset growth-transition
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset growth-transition --verify-cache results/isotropic_two_springs_rl_timoshenko/growth_transition_sensitivity/99517d6fd5ab0e2e
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset growth-transition --plot-only results/isotropic_two_springs_rl_timoshenko/growth_transition_sensitivity/99517d6fd5ab0e2e
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset early-saturation
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset early-saturation --verify-cache results/isotropic_two_springs_rl_timoshenko/early_saturation_analysis/abca7461b47ff168
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset early-saturation --plot-only results/isotropic_two_springs_rl_timoshenko/early_saturation_analysis/abca7461b47ff168
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset plateau-grid
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset plateau-grid --verify-cache results/isotropic_two_springs_rl_timoshenko/plateau_grid_step_B/aecdfc99a8864e8f
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset plateau-grid --plot-only results/isotropic_two_springs_rl_timoshenko/plateau_grid_step_B/aecdfc99a8864e8f
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset plateau-criterion
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset plateau-criterion --verify-cache results/isotropic_two_springs_rl_timoshenko/plateau_criterion_step_A/324625e51dc0885a
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset plateau-criterion --plot-only results/isotropic_two_springs_rl_timoshenko/plateau_criterion_step_A/324625e51dc0885a
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset saturation-analysis --plot-only results/isotropic_two_springs_rl_timoshenko/saturation_diagnostics/63655a083c6f5b8e
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset finite-angle-maps --plot-only results/isotropic_two_springs_rl_timoshenko/finite_one_parameter_angle_maps/1db0f368ab18d447
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset limit-angles --plot-only results/isotropic_two_springs_rl_timoshenko/limit_angle_maps/a941117650420b4b
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset limit-angles --plot-only results/isotropic_two_springs_rl_timoshenko/limit_angle_maps/a941117650420b4b --plot-set lambda12
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset limit-angles --plot-only results/isotropic_two_springs_rl_timoshenko/limit_angle_maps/a941117650420b4b --plot-set lambda12-ru
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --plot-only results/isotropic_two_springs_rl_timoshenko/51af749660af1df5
+```
+
+Diagnostic-only; [physical scope and numerical gates](../docs/theory/isotropic_two_springs_rl_timoshenko.md).
+The `growth-transition` preset reads the accepted Step B spectra and evaluates
+persistent normalized-slope thresholds .20/.15/.10, h=1/2-degree differences and
+0–4/5/6-degree references. It produces three discrete maps and three diagnostic
+figures, with no spectral calls, fitting or final threshold choice. Cache checks
+exact identity; plot-only reads derived CSVs without reanalysis.
+[Definitions, results and limitations](../docs/theory/isotropic_two_springs_growth_transition.md).
+The earlier `early-saturation` preset is scalar postprocessing of the accepted Step B
+bundle: signed interval log changes, tail ranges, endpoint changes and four
+figures. It estimates no beta_sat and performs no spectral calls or mode recovery.
+Cache reuses completed diagnostics; plot-only reads saved CSVs without reanalysis.
+[Results and interpretation](../docs/theory/isotropic_two_springs_early_saturation.md).
+The earlier `plateau-grid` preset covers exactly nine pairs with both springs
+at .1/1/10, beta0:1:90, first two sorted positions plus guard3. It reuses the
+verified solver, count and Step A criterion; preflight and independent Ritz
+checks precede the full grid. Completed points are checkpointed and the final
+cache is reused. Plot-only reads saved scalar CSVs without solves or reanalysis.
+[Step B scope, figures and qualifications](../docs/theory/isotropic_two_springs_plateau_grid.md).
+Under Script Proliferation Control this is a preset, not a new executable.
+The earlier `plateau-criterion` preset reads accepted maps and prior range
+diagnostics. It evaluates only the discrete first-hit tolerance criterion and
+minimum-length restriction; missing plateaus remain missing, never clamped.
+[Step A results and qualifications](../docs/theory/isotropic_two_springs_plateau_criterion_sensitivity.md).
+The earlier `saturation-analysis` preset reads both accepted angle bundles,
+checks their provenance and computes only scalar diagnostics and descriptive
+least-squares fits. It performs no spectral assembly, SVD, root search or
+shape recovery. Its `plot-only` path reads derived CSVs without even refitting.
+[Methods, qualifications and results](../docs/theory/isotropic_two_springs_saturation_diagnostics.md).
+Do not invoke a spectral preset to repeat this postprocessing. Historical
+compute/cache commands require their original CLI identity; the
+saved-data figure command above remains usable with the extended CLI.
+The `finite-angle-maps` preset covers exactly six
+[one-spring maps](../docs/theory/isotropic_two_springs_finite_angle_maps.md):
+.1/1/10 on one spring, RIGID on the other, beta0:1:90, first two sorted
+positions plus guard3. Its completed cache is reused without new roots.
+Ten figures include saved hinge/RIGID limits and 0–20° pair panels.
+`lambda12-ru` changes only Russian restraint titles/legends and writes to
+`visualizations/lambda12_ru/`; earlier visualizations are preserved.
+The one CLI has gates/reference/map/regression stages. Existing completed data
+are checked and reused. Plot-only performs no assembly or eigenvalue solve.
+`--plot-set lambda12` requires `--plot-only` and checks saved manifests, accepted
+point records and all 91 angles per restraint. It writes four individual
+Lambda1/Lambda2 figures, a Lambda2 comparison and a 0–15° panel figure under
+`visualizations/lambda12/`, in PNG 300 dpi and vector PDF. The last figure uses
+the already accepted dense RR archive. The original Lambda1 comparison and
+all source CSV/NPZ/manifests remain unchanged. Use this explicit plot-only
+command for the presentation follow-up; do not start a new computation because
+the CLI source hash changed when rendering options were added. Historical
+`--verify-cache` calls also require their original CLI identity; use the
+explicit plot-only commands above to check and render historical spectra
+with this extended CLI, rather than recomputing their maps.
+The `limit-angles` preset implements the separately requested
+[RR/HR/RH/HH map](../docs/theory/isotropic_two_springs_limit_angle_maps.md), with
+preflight, the unchanged solver and a targeted RH extremum diagnostic. Its
+replay checks both its own bundle and the frozen verification artifacts and
+physical dependencies. Historical verification retains its original CLI hash;
+the default verification workflow is a separate full calculation, not required
+to replay the new map. Do not rerun it merely because the CLI gained a preset.
+The separate entry is necessary because external rotational compliance changes
+the admissible trace space; it reuses LONG bases/geometry and pole certification.
+It is not a new universal spectral runner or a replacement for the old G20 CLI.
+
+## NLSP: six-field OUT stability on saved planar orbits
+
+```powershell
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --six-vs-seven-out-stability --compute
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --six-vs-seven-out-stability --report-only results/nlsp_six_vs_seven_out_stability/6a1ea9b77854c027
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --six-vs-seven-out-stability --plot-only results/nlsp_six_vs_seven_out_stability/6a1ea9b77854c027
+```
+
+Exactly four OUT Hill tasks at fixed p14/A=.005; saved HB11/HB13, full
+variational/canonical operator, physical matching to the saved seven-field
+mode. No new HB, linear spectrum, PL spectrum, ODE or FEM. Completed replay
+and reports/plots perform zero eigensolves. [Scope and results](../docs/numerics/nlsp_six_vs_seven_out_stability.md).
+
+## NLSP: six-field quartic action and one planar orbit
+
+```powershell
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --six-vs-seven-planar-orbit --compute
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --six-vs-seven-planar-orbit --report-only results/nlsp_six_vs_seven_planar_orbit/ae2dd272a43bb92b
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --six-vs-seven-planar-orbit --plot-only results/nlsp_six_vs_seven_planar_orbit/ae2dd272a43bb92b
+```
+
+Fixed p14/A=.005, full 81-DOF HB11/HB13, saved seven-field seed and complete
+linear bases. The internal helper supplies full spatial mass-form residual
+and tangents; no new eigensolves, ODE or stability calculations. A checked
+complete bundle is reused; reports and plots read saved data only.
+[Model, results and recovery API](../docs/numerics/nlsp_six_vs_seven_planar_orbit.md).
+
+## NLSP: bounded six-field / seven-field linear comparison
+
+```powershell
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --six-vs-seven-linear --compute
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --six-vs-seven-linear --report-only results/nlsp_six_vs_seven_linear_comparison/d67a8ed081c05709
+python scripts/analysis/pilot_nlsp_coupled_planar_sensitivity.py --six-vs-seven-linear --plot-only results/nlsp_six_vs_seven_linear_comparison/d67a8ed081c05709
+```
+
+Fixed beta15 geometry, EA six-field assembly, unchanged seven-field sources,
+full PL eigensolver and physical-field MAC. p12/p14 with at most one
+documented conditional p16; no HB/Hill/ODE/FEM or parameter maps.
+Complete matching inputs are reused; report/plot read saved arrays only.
+[Model, verified results and interpreter-specific commands](../docs/numerics/nlsp_six_vs_seven_linear_comparison.md).
+
 ## NSL-VIS-1: two finite-dimensional Ritz maps
 
 ```powershell

@@ -11,7 +11,7 @@ historical scope and are not a sequence that every new reader must read.
 | --- | --- | --- |
 | NSL — nonsymmetric laminated FSDT beams | [NSL passport](nonsymmetric_laminated_beams/README.md#паспорт-направления) | NSL-VIS-1 exploratory Ritz maps complete; NSL-2R resolves specific old recovery failures; source-print/identity qualifications remain |
 | RLB / EB–KV — symmetric laminates and Euler–Bernoulli comparison | [RLB passport](laminated_beams/README.md#паспорт-направления) | Limited complex comparison complete; paused for supervisor direction; circular EB reviewer diagnostic is separate |
-| NLSP — nonlinear spatial seven-field rods | [NLSP passport](numerics/README.md#nlsp) | One Type-II OUT-growth case numerically confirmed, PL neutral gate still PARTIAL; stopped for supervisor discussion |
+| NLSP — spatial rods, preserved seven-field model and six-field candidate | [NLSP passport](numerics/README.md#nlsp) | Six-field p14 Type-II orbit has qualified positive OUT growth of the matched mode; no new p-convergence or time integration. Historical seven-field PL PARTIAL remains scoped to that model |
 | LONG — longitudinal theories and M–H/Timoshenko | [LONG passport](#long) | Theory choice closed in adopted 1D scope; subsequent bounded c/KV/splitting diagnostics complete |
 | Baseline isotropic EB; thickness mismatch | [Equations](theory/equations.tex), [thickness passport](thickness_mismatch/README.md) | Frozen baseline; scoped diagnostics, safe-prefix counterexamples and interrupted-map qualifications retained |
 | Anisotropic rods | [Current boundary and sources](anisotropic_rods/README.md#current-boundary) | UT one-dimensional phase complete with PARTIAL_PASS; sampled AP studies; separate 3D readiness blocker |
@@ -24,6 +24,65 @@ evidence; [memory rules](memory/README.md) distinguish that evidence from
 Git-visible context and immutable history.
 
 ## LONG
+
+Current two-spring result: [locally refined growth transitions](theory/isotropic_two_springs_growth_transition_refinement.md),
+[LONG-D14](memory/decisions.md#long-d14) / [LONG-K13](memory/knowledge.md#long-k13).
+243 new fractional points and 90 reused integers on 3–12° at .25°; all prefix gates pass.
+Working q*=.15 gives 5.00–6.50°. Reference/stencil sensitivity reaches .75°;
+monotone stiffness ordering of the angle is not preserved for every diagnostic normalization.
+Residual ranges remain 3.77–8.01%; this differs from beta_tol. No final physical criterion
+or continuous surface is accepted. STOP before further grid expansion or optimization.
+The [previous 1° analysis](theory/isotropic_two_springs_growth_transition.md) retains its scope.
+The [earlier growth analysis](theory/isotropic_two_springs_early_saturation.md)
+retains its historical scope and interpretation.
+
+The preceding [Step B discrete plateau maps](theory/isotropic_two_springs_plateau_grid.md),
+[LONG-D11](memory/decisions.md#long-d11) / [LONG-K10](memory/knowledge.md#long-k10),
+PASS for all 9 finite stiffness pairs and 819 integer-angle points. Three
+conditional criteria (.1/.2/.5%, minimum remaining length 30° or 45°) give
+54 qualifying results. Frequency ordering passes, but plateau angles can be
+nonmonotone in stiffness. No continuous surface or universal criterion is claimed.
+STOP before grid expansion, optimization, modal or viscous studies.
+The following earlier records retain their historical scope and stopping points.
+
+Separate user-authorized verification (2026-10-22):
+[full-polar Rayleigh–Love/Timoshenko with two rotational springs](theory/isotropic_two_springs_rl_timoshenko.md),
+[LONG-D06](memory/decisions.md#long-d06) / [LONG-K05](memory/knowledge.md#long-k05),
+PASS in its bounded scope. Reproduced the rigid μ=.01 reference, local pair
+veering and same-physics legacy checks. It does not replace the production
+choice below. Its original stopping point and scope are preserved.
+
+The separately authorized [limit-angle maps](theory/isotropic_two_springs_limit_angle_maps.md),
+[LONG-D07](memory/decisions.md#long-d07) / [LONG-K06](memory/knowledge.md#long-k06),
+are PASS for RR/HR/RH/HH on the 0–90° integer grid, first two positions plus
+guard3. RR is reused; physical/count/min–max gates pass. Tail ranges are
+discrete estimates of omega variation, not a plateau criterion. That stage
+stopped before finite-stiffness studies and retains its original scope.
+
+A subsequent authorized [finite-angle preset](theory/isotropic_two_springs_finite_angle_maps.md),
+[LONG-D08](memory/decisions.md#long-d08) / [LONG-K07](memory/knowledge.md#long-k07),
+is PASS for six 0–90° maps: one spring at .1/1/10, the other RIGID.
+All 546 prefixes and stiffness ordering pass; 543 new points and three reused
+verification points. Ten PNG/PDF figures compare the first two sorted positions.
+STOP before a two-stiffness map, plateau-angle definition, further local modal
+studies, viscosity or FEM. Previous LONG statuses remain unchanged.
+
+The later [saturation diagnostic](theory/isotropic_two_springs_saturation_diagnostics.md),
+[LONG-D09](memory/decisions.md#long-d09) / [LONG-K08](memory/knowledge.md#long-k08),
+is PASS as saved-spectrum postprocessing, with zero new eigenvalue solves.
+Chord and segmented-fit transition angles differ by 1–4 degrees; a transition
+can leave nearly 13% frequency variation. F, remaining range and sensitivity
+are useful jointly, but no single engineering plateau angle is established.
+STOP for discussion of the engineering criterion, without further calculations.
+
+The authorized [Step A criterion sensitivity](theory/isotropic_two_springs_plateau_criterion_sensitivity.md)
+(2026-10-23), [LONG-D10](memory/decisions.md#long-d10) / [LONG-K09](memory/knowledge.md#long-k09),
+is PASS as postprocessing: 300 criterion combinations, 257 qualifying and 43
+explicitly missing plateaus, zero new roots. A .1–.5% tolerance interval
+preserves existence and selected pair ordering, but angles remain sensitive
+to tolerance. Several labeled tolerance slices are recommended for discussion;
+no two-stiffness surface or final engineering tolerance has been selected.
+STOP after Step A; historical stage statuses and physics are unchanged.
 
 The rectangular isotropic production choice is reduced Jang-type
 Mindlin–Herrmann axial/contraction plus Timoshenko bending. Canonical

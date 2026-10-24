@@ -1,0 +1,203 @@
+{
+  "schema": "two-springs-plateau-criterion-step-A-v1",
+  "defined_before_analysis": true,
+  "calculation_mode": "postprocess_saved_spectra",
+  "render_mode": "plot_only",
+  "frequency_map_policy": "frequency-map-v1",
+  "spectrum_semantics": "sorted_positions",
+  "sorted_position": 1,
+  "new_eigenvalue_solves": 0,
+  "sources": [
+    {
+      "bundle": "results/isotropic_two_springs_rl_timoshenko/limit_angle_maps/a941117650420b4b",
+      "manifest_sha256": "bc336fc5b57877650fef08f4576e90076c9d7a9dc422ec5b6644020241cb802a"
+    },
+    {
+      "bundle": "results/isotropic_two_springs_rl_timoshenko/finite_one_parameter_angle_maps/1db0f368ab18d447",
+      "manifest_sha256": "a9bc4d924defde2c14b4f625587edc4080fad0381945037741f391bb56df15bb"
+    }
+  ],
+  "beta_deg": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90
+  ],
+  "delta_percent": [
+    0.01,
+    0.02,
+    0.03,
+    0.05,
+    0.1,
+    0.2,
+    0.5,
+    1,
+    2,
+    5
+  ],
+  "L_min_deg": [
+    20,
+    30,
+    45
+  ],
+  "main_L_min_deg": 30,
+  "previous_diagnostics": {
+    "bundle": "results/isotropic_two_springs_rl_timoshenko/saturation_diagnostics/63655a083c6f5b8e",
+    "manifest_sha256": "75d1468340f3526743a11ffd0687f49ac1f4c0a73ef3f81a0f02af8fa2a8ced6"
+  },
+  "definition": "first integer beta with 100*R(beta)<=delta_percent and beta<=90-L_min",
+  "no_value_status": "NO_QUALIFYING_PLATEAU",
+  "event_grid": "Saved 100*R(beta) thresholds within [0.01,5], plus endpoints and requested tolerances; right-continuous steps, no frequency interpolation",
+  "comparison_pairs": [
+    [
+      "RR",
+      "HR"
+    ],
+    [
+      "RR",
+      "RH"
+    ],
+    [
+      "RR",
+      "HH"
+    ],
+    [
+      "HR",
+      "RH"
+    ],
+    [
+      "RH",
+      "HH"
+    ],
+    [
+      "HR",
+      "HH"
+    ],
+    [
+      "HR",
+      "J0.1_ER"
+    ],
+    [
+      "J0.1_ER",
+      "J1_ER"
+    ],
+    [
+      "J1_ER",
+      "J10_ER"
+    ],
+    [
+      "J10_ER",
+      "RR"
+    ],
+    [
+      "RH",
+      "JR_E0.1"
+    ],
+    [
+      "JR_E0.1",
+      "JR_E1"
+    ],
+    [
+      "JR_E1",
+      "JR_E10"
+    ],
+    [
+      "JR_E10",
+      "RR"
+    ],
+    [
+      "J1_ER",
+      "JR_E10"
+    ]
+  ],
+  "checks": "Exact monotonicity of saved positive-data tails and integer inverses; exact replay of prior R; normalization 2e-14 relative; no relaxed acceptance comparison",
+  "grid_interpretation": "Previous-node failure is a discrete crossing bracket, not a certified continuous plateau bound",
+  "choose_final_engineering_tolerance": false
+}

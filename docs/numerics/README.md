@@ -16,7 +16,24 @@ For other directions use the [research index](../research_index.md#current-entry
 - **Реализация:** [энергия и состояния](../../scripts/lib/weakly_nonlinear_spatial_rod.py),
   [пространственная динамика](../../scripts/lib/weakly_nonlinear_spatial_dynamics.py),
   [двухплечевая сборка](../../scripts/lib/weakly_nonlinear_coupled_spatial_dynamics.py).
-- **Последнее состояние:** [NLSP-D32](../memory/decisions.md#nlsp-d32) /
+- **Линейное сравнение:** [шесть и семь полей](nlsp_six_vs_seven_linear_comparison.md),
+  [NLSP-D33](../memory/decisions.md#nlsp-d33) / [NLSP-K34](../memory/knowledge.md#nlsp-k34).
+  Шесть полей с EA₀ и u первого порядка: PL2/PL4 сопоставлены при p12/p14
+  и обоснованном p16; изменение расстройки разрешено относительно
+  наблюдаемого индикатора, OUT-блоки одинаковы.
+- **Шестиполевая нелинейная база:** [действие и плоская орбита](nlsp_six_vs_seven_planar_orbit.md),
+  [NLSP-D34](../memory/decisions.md#nlsp-d34) / [NLSP-K35](../memory/knowledge.md#nlsp-k35).
+  Действие степени ≤4 и полный пространственный residual/tangents проверены;
+  p14/A=.005, HB11/HB13, Ψ=0 проходят заданные критерии. Реализация —
+  [внутренний модуль](../../scripts/lib/nlsp_six_vs_seven_planar_orbit.py).
+  Этот этап не включал устойчивость.
+- **Новый OUT-этап:** [устойчивость шестиполевой орбиты](nlsp_six_vs_seven_out_stability.md),
+  [NLSP-D35](../memory/decisions.md#nlsp-d35) / [NLSP-K36](../memory/knowledge.md#nlsp-k36).
+  При тех же p14/A=.005 четыре Hill-контроля квалифицировали положительный
+  рост соответствующего режима и отрицательный multiplier. Уменьшение σ
+  относительно семи полей различимо по наблюдаемым контролям. Нового
+  временного подтверждения и p-сходимости нет; физическая 3D-валидация открыта.
+- **Сохранённое семиполевое нелинейное состояние:** [NLSP-D32](../memory/decisions.md#nlsp-d32) /
   [NLSP-K33](../memory/knowledge.md#nlsp-k33),
   [завершающие проверки](nlsp_beta15_pre_supervisor_checks.md):
   OUT-рост типа II при β15/μ.1/A.005 подтверждён в p12 и воспроизведён в p14.
@@ -31,7 +48,9 @@ For other directions use the [research index](../research_index.md#current-entry
   Не закрыты DEFERRED_TWO_PARAMETER_ACTION_EXPANSION и физическая
   обоснованность идеального углового узла/c1=c2. Результат одной ветви
   не доказывает общей устойчивости, динамики типа I или насыщения.
-- **Остановка:** обсуждение с руководителем. Новые p/временные уточнения,
+- **Остановка:** шестиполевая орбита и её целевой OUT-рост проверены;
+  новое временное подтверждение и p-уточнение требуют отдельного задания. Для прежней
+  нелинейной линии сохраняется обсуждение с руководителем. Новые p/временные уточнения,
   ODE/FEM/Floquet, параметры и физическая валидация не разрешены автоматически.
 - **Воспроизведение:** параметры, команды и source hashes — в
   [техническом отчёте](nlsp_beta15_pre_supervisor_checks.md);

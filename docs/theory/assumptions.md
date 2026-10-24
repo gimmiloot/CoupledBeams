@@ -579,3 +579,63 @@ their declared accuracy. Lines through calculated points do not establish
 modal branch identity, crossing or veering. Modal P/G are elastic quantities,
 with exact eta=-1 zeros distinguished from numerical residues; no positive
 viscosity or forced response is computed in this stage.
+
+## NLSP: separate six-field linear candidate (2026-10-21)
+
+The explicit user-defined [six/seven-field comparison](../numerics/nlsp_six_vs_seven_linear_comparison.md)
+uses q₆=(u,w,v,Φ,ψ,θ), all at ordinary first amplitude order. Its axial
+stiffness is EA₀, with physical ν=.3 retained in G,S,C_T. There is no
+independent c field, its inertia or gradient energy, and no static/dynamic
+condensation of the seven-field model. This is a separate linear idealization,
+not the c=0 restriction with axial coefficient C=EA₀/(1−ν²).
+
+The fixed isotropic rectangular arms, section-rotation clamps, coordinate
+orientation and ideal rigid massless joint for common global translations
+and rotations remain those of NLSP. Removing c also removes its external
+and joint conditions; it adds no condition on u_s. Only J(0) is used.
+No nonlinear law or nonlinear-stability transfer is assumed. The preserved
+seven-field model remains a comparison model, not a three-dimensional exact
+reference. This assumption is local to NLSP and changes no baseline,
+LONG, NSL/RLB, anisotropic or viscoelastic-joint contract.
+
+## NLSP: six-field quartic action and planar orbit (2026-10-21)
+
+The subsequent explicit user contract extends the separate six-field candidate
+through the [quartic action](../numerics/nlsp_six_vs_seven_planar_orbit.md).
+Use the same exponential coordinates, Gamma and body curvature/angular
+velocity as NLSP, with D6=diag(EA0,S,S) and fixed
+J0=diag(j_parallel+j_perp,j_perp,j_parallel). All six fields, including u,
+remain first amplitude order. Integrate and vary the action truncated at total
+amplitude degree four; the production equations have degree at most three.
+Geometry, section properties, rigid joint and clamps remain those of the
+linear six-field contract above. No deformed-section stiffness law is added.
+
+This action equals the seven-field restriction c=0, with the complete
+(C-EA0)*Gamma_1^2/2 correction through degrees two, three and four. Only six
+fields are varied. Physical nu=.3 is retained in G,S and torsion. This is a
+new prescribed idealization, not exact elimination of the seventh equation.
+At nu=0 only the restricted common-field actions coincide. Planar mass is
+constant and planar nonlinear inertia vanishes; full spatial geometric
+inertia remains even with fixed J0. These facts were checked independently.
+
+The bounded p14/A=.005 calculation establishes a reversible Psi=0 orbit
+with PL2 fundamental and PL4 third-harmonic participation. Its relation to
+the historical Type-II orbit is supported locally by the physical seed,
+phase and composition; no global branch continuation is asserted. Passing
+HB11/HB13 tolerances neither proves nonlinear spatial convergence nor
+transfers the historical seven-field OUT instability to the new model.
+
+## 2026-10-22: isolated full Rayleigh–Love/Timoshenko two-spring verification
+
+The separately authorized [two-spring diagnostic](isotropic_two_springs_rl_timoshenko.md)
+uses homogeneous isotropic rectangles, small planar motion, fixed unstressed
+geometry at each beta, common material/section, no damping, eccentricity,
+prestress or joint mass. Both local coordinates run from outer supports to joint.
+RL_FULL has J=rho*nu²*Ip, Ip=17I for b/h=4; the old planar J=rho*nu²*I
+and Elementary J=0 are explicitly labelled comparison variants, with identical
+Timoshenko bending. They do not replace the selected MH production model.
+An external rotation spring is attached specifically to arm 2; finite-support
+arm interchange requires moving the support types as well as the geometry.
+RIGID is an exact constraint. Frequency Lambda is sqrt(omega*t_ref), with
+l=(L1+L2)/2. The accepted range is the bounded low-frequency verification;
+no 3D validation, plateau-angle rule or two-stiffness map follows automatically.

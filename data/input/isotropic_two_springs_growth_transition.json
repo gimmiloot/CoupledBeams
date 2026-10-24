@@ -1,0 +1,190 @@
+{
+  "source_bundle": "results/isotropic_two_springs_rl_timoshenko/plateau_grid_step_B/aecdfc99a8864e8f",
+  "source_manifest_sha256": "40c1b65a7fbe852ef88c90868240773535ffe1b785acd5a6cafaed1a90de2a62",
+  "material": {
+    "E": 1.0,
+    "rho": 1.0,
+    "nu": 0.3,
+    "epsilon": 0.005,
+    "aspect": 4.0,
+    "l": 1.0,
+    "ks": 0.8333333333333334
+  },
+  "mu": 0.01,
+  "variant": "RL_FULL",
+  "cases": {
+    "A1": [
+      0.1,
+      0.1
+    ],
+    "A2": [
+      0.1,
+      1.0
+    ],
+    "A3": [
+      0.1,
+      10.0
+    ],
+    "B1": [
+      1.0,
+      0.1
+    ],
+    "B2": [
+      1.0,
+      1.0
+    ],
+    "B3": [
+      1.0,
+      10.0
+    ],
+    "C1": [
+      10.0,
+      0.1
+    ],
+    "C2": [
+      10.0,
+      1.0
+    ],
+    "C3": [
+      10.0,
+      10.0
+    ]
+  },
+  "beta_deg": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90
+  ],
+  "frequency_map_policy": "frequency-map-v1",
+  "calculation_mode": "saved_data_postprocessing",
+  "source_calculation_mode": "fast_plot",
+  "spectrum_semantics": "sorted_positions",
+  "schema": "two-springs-normalized-growth-transition-v1",
+  "defined_before_analysis": true,
+  "q_levels": [
+    0.2,
+    0.15,
+    0.1
+  ],
+  "reference_intervals_end_deg": [
+    4,
+    5,
+    6
+  ],
+  "primary_reference_end_deg": 5,
+  "derivative_halfwidth_deg": [
+    1,
+    2
+  ],
+  "primary_halfwidth_deg": 1,
+  "derivative_scheme": "centered where i-h and i+h exist; otherwise second-order three-point one-sided with spacing h, at every remaining boundary-layer node",
+  "minimum_length_deg": 30,
+  "q_criterion": "first integer beta <=60 with maximum q on all saved nodes beta..90 <= q_star; no slack",
+  "reference_definition": "(log omega(r)-log omega(0))/r > 0",
+  "normalization": "Omega=200*omega=Lambda**2; beta in degrees",
+  "numerical_checks": {
+    "normalization_relative": 2e-14,
+    "q_identity_absolute": 2e-12,
+    "derivative_identity_absolute": 2e-13
+  },
+  "scheme_sensitivity_flag": "SCHEME_SENSITIVE if h2 vs h1 changes the angle by more than one degree or existence; otherwise WITHIN_ONE_GRID_STEP (not a continuous error bound)",
+  "example_ids": [
+    "A1",
+    "A3",
+    "C3"
+  ],
+  "example_selection": "fixed before analysis; same corners as early-growth note",
+  "geometry_source_bundle": "results/isotropic_two_springs_rl_timoshenko/saturation_diagnostics/63655a083c6f5b8e",
+  "geometry_manifest_sha256": "75d1468340f3526743a11ffd0687f49ac1f4c0a73ef3f81a0f02af8fa2a8ced6",
+  "geometry_comparison": "exact stiffness-pair intersection only; do not recompute geometric fits or substitute RIGID by 10",
+  "new_eigenvalue_solves": 0,
+  "final_q_level_selected": false
+}

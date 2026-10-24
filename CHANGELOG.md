@@ -1,5 +1,109 @@
 # CHANGELOG
 
+## 2026-10-23 — local growth-transition refinement
+
+- Added the existing CLI's `growth-refinement` preset: 243 new fractional-angle
+  prefixes, 90 reused nodes, unchanged RL_FULL/Timoshenko physics and acceptance gates.
+- Saved three discrete threshold maps, stencil/reference sensitivity, six figures,
+  guarded plot-only reproduction, two focused tests and LONG-D14/K13.
+  Working q*=.15 gives 5.00–6.50°; diagnostic normalizations retain qualified reversals.
+
+
+## 2026-10-23
+
+- Added `growth-transition` to the two-spring CLI: persistent normalized-slope
+  thresholds, derivative/reference sensitivity and six saved-data PNG/PDF figures.
+  Added three arithmetic tests and LONG-D13/K12. No eigenvalue solves, physical
+  changes or final criterion selection; prior residual-range results preserved.
+
+- Added fixed `early-saturation` postprocessing to the existing two-spring CLI:
+  signed interval sensitivities, remaining ranges and four PNG/PDF figures from
+  saved Step B frequencies. Added two arithmetic tests, guarded replay checks
+  and LONG-D12/K11. Zero spectral solves; no assigned beta_sat or final tolerance.
+
+- Added the fixed `plateau-grid` preset to the two-spring CLI: nine finite-pair
+  angle maps, unchanged physics/gates, independent Ritz controls, two-axis
+  stiffness ordering and three discrete plateau-criterion maps. Added a guard-root
+  ordering test, saved-data plots and LONG-D11/K10. No grid expansion or optimization.
+
+- Added `plateau-criterion` to the existing two-spring CLI: saved-spectrum
+  tolerance/length sensitivity, explicit missing-plateau statuses, frequency
+  levels and three step plots. Added three focused tests and LONG-D10/K09.
+  No new eigenvalue solves, physical changes or final engineering tolerance.
+
+## 2026-10-22
+
+- Added `saturation-analysis` to the existing two-spring CLI: saved-spectrum
+  F/range/sensitivity diagnostics, chord and continuous segmented-fit
+  transitions, fixed window comparisons and seven PNG/PDF figures. Added
+  three focused arithmetic tests and LONG-D09/K08. No spectral calls,
+  source-data changes or engineering plateau criterion.
+
+- Added the fixed `finite-angle-maps` preset to the existing two-spring CLI:
+  six one-spring angle maps, unchanged physical solver/gates, checkpoint reuse,
+  stiffness-order checks and ten saved-data PNG/PDF figures. Recorded the
+  bounded results in LONG-D08/K07; no plateau-angle or modal-identity claim.
+  Added `--plot-set lambda12-ru` for Russian physical restraint names in a
+  separate visualization folder, preserving earlier figures and spectra.
+
+- Added `--plot-set lambda12` to the existing two-spring plot-only path:
+  four RR/HR/RH/HH frequency-pair figures, a second-frequency comparison and
+  small-angle panels, with checked saved-data provenance and PNG/PDF output.
+  Source spectra, earlier figures, research memory and statuses are unchanged;
+  rendering was verified with numerical solver/assembly/SVD calls blocked.
+
+- Added a `limit-angles` preset to the existing two-spring RL/Timoshenko CLI:
+  RR/HR/RH/HH comparison, near-zero count preflight, discrete physical-frequency
+  tail ranges, min–max checks and saved-data figures. Reused all RR points and
+  the frozen physical module; documented the bounded RH extremum check and
+  reproducible cache. No finite-stiffness sweep or plateau-angle criterion.
+
+- Added an isolated full-polar Rayleigh–Love/Timoshenko two-spring model and
+  bounded verification CLI, with exact RIGID constraints, trace-space inertia
+  counts, physical shape recovery and independent Ritz checks. Reproduced the
+  240-point rigid reference and local modal exchange; verified Elementary,
+  planar RL and finite internal-spring regressions. Added checked cache replay,
+  deterministic plot-only figures, tests and a Git-visible scientific report.
+  Historical models, result bundles and existing NLSP working changes remain.
+
+## 2026-10-21
+
+- Added `--six-vs-seven-out-stability` with saved-orbit variational/canonical
+  OUT assembly, signed Hill spectra, physical mode matching and checked replay.
+  Reused the frozen six-field operator and existing second-variation,
+  modal-map, Hill-assembly, convolution and alias helpers.
+- Completed [four bounded OUT decompositions](docs/numerics/nlsp_six_vs_seven_out_stability.md):
+  positive matched growth is resolved at p14/A=.005, with sigma reduced by
+  0.2961% relative to the saved seven-field result. The negative multiplier
+  persists. Nine targeted tests pass; no new HB, linear spectrum, PL spectrum,
+  ODE, FEM or initial-state adjoint projection. Recorded the 72-mode full-space
+  residual separately from its projected check; final qualification uses all81.
+  Updated NLSP context and commands; historical physical models/statuses remain.
+
+- Added `--six-vs-seven-planar-orbit` to the existing NLSP CLI: six-field
+  quartic action, full spatial mass-form residual/tangents, and a full 81-DOF
+  adapter to the unchanged `FullPlanarHB`. The EA correction covers all
+  retained energy degrees; planar mass is constant, spatial inertia is retained.
+- Completed the [six-field planar orbit](docs/numerics/nlsp_six_vs_seven_planar_orbit.md)
+  at p14/A=.005: HB11 and HB13 pass all prescribed criteria after three and
+  one Newton updates. Reused saved linear bases and the seven-field orbit;
+  no new eigenproblem, ODE, Hill/Floquet or FEM run. Ten targeted tests pass.
+  Added checked recovery/manifest, comparison tables and two figures; updated
+  model assumptions, NLSP memory and run instructions. Spatial stability is
+  NOT_EVALUATED; historical seven-field kernels, bundles and statuses remain.
+
+- Added `--six-vs-seven-linear` to the existing NLSP CLI, with a separate
+  quadratic six-field EA assembly, full-space symmetric eigensolver reuse,
+  physical-field MAC, modal recovery arrays and checked bundle replay.
+  Reused saved seven-field p12/p14 eigenpairs; computed six-field p12/p14/p16
+  and seven-field p16 after the documented detuning-resolution trigger.
+- Completed the [linear comparison](docs/numerics/nlsp_six_vs_seven_linear_comparison.md):
+  PL2/PL4 correspondence is unambiguous, the detuning increases by about
+  4.2e-6, and complete linear OUT blocks agree. Eight targeted tests pass,
+  including energy identities, nu=0 and no-solve cache/report paths.
+  Preserved physical kernels and historical bundles/statuses. No nonlinear
+  orbit, growth, ODE, HB/Hill/Floquet or FEM was computed.
+
 ## 2026-10-20
 
 - Simplified research-memory navigation: compact current context, model
