@@ -1,5 +1,97 @@
 # Generated Results Index
 
+[Primary levels 90% and 95%](theory/isotropic_two_springs_high_frequency_angle_ranges_90_95.md):
+[high_frequency_angle_ranges_90_95/b7c2787461cb3cda](../results/isotropic_two_springs_rl_timoshenko/high_frequency_angle_ranges_90_95/b7c2787461cb3cda/README.md).
+PASS: 1940 reused plus 11 boundary-refinement points, twenty terminal ranges
+for each level, one zero-angle 90% start. Old maxima and 2%/5% boundaries
+unchanged; two updated and two reused PDF/PNG figures. All claims are discrete.
+
+[High-frequency angle ranges](theory/isotropic_two_springs_high_frequency_angle_ranges.md):
+[high_frequency_angle_ranges/18570e576270e0b4](../results/isotropic_two_springs_rl_timoshenko/high_frequency_angle_ranges/18570e576270e0b4/README.md).
+PASS: twenty constructions, 1940 checked nodes (1138 reused, 802 new),
+95%/98% ranges through 90 degrees, maxima/gains and four PDF/PNG figures.
+All 40 boundaries have 0.25-degree brackets; all claims remain discrete.
+Historical archives and reports are unchanged; no leading solves.
+
+[Free outer rotation](theory/isotropic_two_springs_external_rotational_replacement.md):
+[external_rotational_spring_replacement/60435e6e80629e48](../results/isotropic_two_springs_rl_timoshenko/external_rotational_spring_replacement/60435e6e80629e48/README.md).
+PASS: 510 new full map points plus a hinge control, 377 leading solutions,
+A/B/C/D comparisons, all ten C values and four PDF/PNG figures. Old archives
+are read-only references. Commands and numerical evidence are in the bundle README.
+
+[Transverse leading validation](theory/isotropic_two_springs_external_transverse_leading_validation.md):
+[external_transverse_leading_resume/dc0f91afbc14843c](../results/isotropic_two_springs_rl_timoshenko/external_transverse_leading_resume/dc0f91afbc14843c/README.md).
+**PASS.** Ten constructions, 290 comparisons on actual archive nodes through
+xi=29.670597, all ten C coefficients. 379 accepted leading solutions plus one
+intentional old-failure reproduction; no new full-model spectrum. p20/24,
+strong/trace checks, two missing vector PDF / 320 dpi PNG figures and a separate
+report. Original full-study and diagnostic archives remain unchanged.
+
+[Transverse leading strong-residual diagnostic](theory/isotropic_two_springs_transverse_leading_diagnostic.md):
+[external_transverse_leading_diagnostic/bcc1660d87bd57a3](../results/isotropic_two_springs_rl_timoshenko/external_transverse_leading_diagnostic/bcc1660d87bd57a3/README.md).
+**DIAGNOSTIC_PASS** for one construction, six orders, xi=0 and xi=10 control.
+Saved-pair derivative/quad diagnostics, matrix-roundoff isolation, opt-in
+analytic curvature assembly, CSV/JSON and a 320 dpi diagnostic PNG.
+No full-model solves or full leading map; old archive remains unchanged.
+
+[External transverse support](theory/isotropic_two_springs_external_transverse_spring.md):
+[external_transverse_spring/ea337fc30ad0ee03](../results/isotropic_two_springs_rl_timoshenko/external_transverse_spring/ea337fc30ad0ee03/README.md).
+**PARTIAL_FULL_PASS_LEADING_STOP**. Ten constructions, 510 accepted full-map
+nodes, 466 new full prefixes including regression and slope controls. Two vector
+PDF / 320 dpi PNG figures. Leading calculation stopped at p24, kappa_w=1,
+xi=0, pair (.1,10): strong residual 1.024892875e-9 > 1e-9. Ten leading probes
+retained with individual statuses; complete C and full/leading error maps absent.
+No tolerance relaxation, tail, rotational-spring removal or old-archive edits.
+
+[External axial support compliance](theory/isotropic_two_springs_external_axial_spring.md):
+[external_axial_spring/64b26f99cb3c7aba](../results/isotropic_two_springs_rl_timoshenko/external_axial_spring/64b26f99cb3c7aba/README.md).
+Ten constructions, 510 main points through 20 degrees (102 reused), ten rigid
+regressions, independent Ritz and full physical/count checks. Signed comparisons
+at 138 actual joint-archive nodes; 48 leading solutions and a common compliance
+derivation. Four vector PDF / 320 dpi PNG pairs. No tail, characteristic angle,
+branch tracking or changes to previous reports and archives.
+
+[Unequal-thickness leading-model comparison](theory/isotropic_two_springs_thickness_asymmetry_leading_comparison.md):
+[thickness_asymmetry_leading_comparison/87cd1ba35fa1b99e](../results/isotropic_two_springs_rl_timoshenko/thickness_asymmetry_leading_comparison/87cd1ba35fa1b99e/README.md).
+232 archived full points of eight constructions, xi=0..29.670597; 321 new leading
+problems including controls, zero full solves. Frequency and signed thickness
+effects, finite-grid statistics, physical Ritz checks and three PDF/PNG pairs.
+No interpolation, new epsilon, angle criterion or changes to prior archives.
+
+[Thickness redistribution at fixed volume](theory/isotropic_two_springs_thickness_asymmetry.md):
+[thickness_asymmetry/12ff3907cf7cd6da](../results/isotropic_two_springs_rl_timoshenko/thickness_asymmetry/12ff3907cf7cd6da/README.md).
+18 constructions, 918 main and 630 conditional tail points: 1032 new / 516 reused.
+Individual-section RL_FULL/Timoshenko assembly, fixed reference springs and
+frequency scale; equal-section regression and independent Ritz checks passed.
+Signed comparisons, 18 qualified discrete angles, weighted leading C and local
+stiffness/mass sensitivity checks. Five PDF/320 dpi PNG pairs; old archives and
+reports unchanged. Small sorted gaps do not establish branch identity or veering.
+
+[Length-asymmetry research](theory/isotropic_two_springs_length_asymmetry.md):
+[length_asymmetry/ddf22cb06e8563e2](../results/isotropic_two_springs_rl_timoshenko/length_asymmetry/ddf22cb06e8563e2/README.md).
+Five signed mu values, two finite rotational pairs, unchanged RL_FULL/Timoshenko
+model. 510 main and 350 conditionally authorized tail points; 688 new / 172 reused.
+Three sorted positions, physical/count checks, signed comparisons, ten qualified
+discrete angles, mass-normalized reaction work and leading C(mu). Five PDF/PNG
+pairs. Low-order Ritz probes and the triggered derivative check remain explicit;
+no branch-identity claim, changed criterion, old report edits or wider parameter grid.
+
+[Four report illustrations](../results/isotropic_two_springs_rl_timoshenko/report_illustrations/README.md)
+for the original isotropic RL_FULL/Timoshenko model, two finite rotational
+springs, pair (0.1,10): thickness and q, longitudinal compliance, leading-model
+comparison, and joint displacement versus variational sensitivity.
+Four vector PDF / 360 dpi PNG pairs, five CSVs, Russian captions and checked
+provenance. Six existing archives; zero full/leading spectral solves. Original
+report and archives unchanged. Reproduce with
+`python scripts/analysis/prepare_two_springs_report_illustrations.py`.
+
+Archive-only [delayed-growth diagnostic](theory/archived_delayed_frequency_growth.md):
+[delayed_growth_archive/e4a814757ba3940f](../results/isotropic_two_springs_rl_timoshenko/delayed_growth_archive/e4a814757ba3940f/README.md).
+Twelve source CSVs, 342 separately labelled spectral curves, signed interval slopes,
+normalization and gap diagnostics, three PNG/PDF figures. No new eigenvalues,
+forms, MAC or angle surfaces. Legacy-quality and thick-rod limitations retained;
+current first-frequency maps pass the positive, representative-S0 check.
+
 Reduced evidence package for the [scientific synthesis](theory/isotropic_two_springs_scientific_synthesis.md):
 [scientific_synthesis/8687f7eed5c3cc93](../results/isotropic_two_springs_rl_timoshenko/scientific_synthesis/8687f7eed5c3cc93/README.md).
 Seventeen report/source-manifest hashes, 12 814 verified unique source artifacts,

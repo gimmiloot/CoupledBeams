@@ -1,0 +1,136 @@
+{
+  "material": {
+    "E": 1.0,
+    "rho": 1.0,
+    "nu": 0.3,
+    "epsilon": 0.005,
+    "aspect": 4.0,
+    "l": 1.0,
+    "ks": 0.8333333333333334
+  },
+  "mu": 0.01,
+  "variant": "RL_FULL",
+  "policy": {
+    "defined_before_computation": true,
+    "Lambda_lower": 0.025,
+    "Lambda_upper": 7.3,
+    "root_xtol": 2e-14,
+    "root_rtol": 2e-14,
+    "pole_exclusion": 1e-07,
+    "schur_tol": 1e-10,
+    "inertia_margin": 4e-14,
+    "condition_max": 10000000000.0,
+    "max_count_queries": 160,
+    "max_depth": 30,
+    "boundary_tol": 1e-09,
+    "ode_tol": 1e-09,
+    "singular_tol": 1e-09,
+    "energy_tol": 5e-08,
+    "mass_gram_tol": 5e-07,
+    "nonzero_condition_max": 100000000.0,
+    "same_physics_frequency_tol": 1e-08,
+    "reference_frequency_tol": 1e-08,
+    "ritz_frequency_tol": 1e-07,
+    "ritz_orders": [
+      16,
+      20
+    ],
+    "quadrature_order": 120,
+    "mac_min": 0.95,
+    "assignment_margin_min": 0.1,
+    "independent_scan_Lambda_step": 0.01,
+    "neighbour_relative_jump": 0.2,
+    "pole_scan_intervals": 240
+  },
+  "k_w_values": [
+    "RIGID",
+    10.0,
+    1.0,
+    0.1,
+    0.0
+  ],
+  "schema": "high-frequency-angle-ranges-90-95-v1",
+  "date": "2026-10-26",
+  "defined_before_computation": true,
+  "cases": {
+    "I_J01": [
+      0.1,
+      10.0
+    ],
+    "I_J10": [
+      10.0,
+      0.1
+    ],
+    "II_J01": [
+      0.1,
+      0.0
+    ],
+    "II_J10": [
+      10.0,
+      0.0
+    ]
+  },
+  "levels_percent": [
+    10.0,
+    5.0
+  ],
+  "sources": {
+    "prior": {
+      "folder": "results/isotropic_two_springs_rl_timoshenko/high_frequency_angle_ranges/18570e576270e0b4",
+      "manifest_sha256": "adc9ec877f6bc631c09fffb81d2192a3b1292e85dea07cbd8b6ac9a9714b00b6"
+    },
+    "length": {
+      "folder": "results/isotropic_two_springs_rl_timoshenko/length_asymmetry/ddf22cb06e8563e2",
+      "manifest_sha256": "0a84dd9e85977687809e917e8ec39986ce746ff1b7139bfb9ac40a139ccf1a28"
+    }
+  },
+  "frozen_files": {
+    "scripts/lib/isotropic_two_springs_rl_timoshenko.py": "c1a8f8eb97115a049c0c98d18c211e91a838c24012bfbd31dd7c8cbbac7ae1b4",
+    "scripts/lib/isotropic_two_springs_external_transverse_spring.py": "4a408f6e9e708c485a5a7c85790eab3c7dae8c4ca86ad4e463eafa483c287792",
+    "scripts/lib/two_springs_external_transverse_spring.py": "37a67c1e62a29154bf27571064d88f41e36acb17fd7b479484b3a0868a076325",
+    "scripts/lib/two_springs_external_rotational_replacement.py": "6da7f465fe6a21774efc6fdfc4da71fee984864373ab4d0ea8706cc73a7ab977",
+    "scripts/lib/two_springs_external_axial_spring.py": "b4be845bc0e8a55db739c8c05efe2e2101134251fd4959d4298b314ce75280bd",
+    "scripts/lib/two_springs_length_asymmetry.py": "8330d8a6c063eb86fdaac1281cacaedcfe16fdee4e71b740a18c38584ac05577",
+    "scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py": "52bcd6ef039491aa9d56629a90625f3a67eff8d226ed32cb5acdf728ee779719",
+    "docs/theory/isotropic_two_springs_rl_timoshenko.md": "67092f8f0525e467c9f967a0f093e88c58edf71492e8d6525ecb80b2cde0b598",
+    "docs/theory/isotropic_two_springs_external_transverse_spring.md": "3a1730fd1858a3520bd901c4b42acf5db8a6c79082d93ee6ada99844de47e34b",
+    "docs/theory/isotropic_two_springs_external_transverse_leading_validation.md": "eb4bf6881f2f7870cad600b0f06ec2def23f662cfbb59ab157f2a288bbbe5744",
+    "docs/theory/isotropic_two_springs_external_rotational_replacement.md": "685e120ed191b5c17cfad24aa0084d805341f451d6cfa60c634046456670985e",
+    "docs/theory/isotropic_two_springs_high_frequency_angle_ranges.md": "dbb233a8949049e32247aa8c00546b8c95b3501f61f88fbd52afb1975ecd040e",
+    "docs/theory/isotropic_two_springs_length_asymmetry.md": "c6bf8020ad40458b3edba9374d8d69fa0945bd1169adac47156754dbbe29c68d"
+  },
+  "map": {
+    "frequency_map_policy": "frequency-map-v1",
+    "calculation_mode": "fast_plot",
+    "spectrum_semantics": "sorted_positions",
+    "sweep_parameter": "beta",
+    "parameter_grid": [],
+    "K_plot": 2,
+    "K_guard": 3,
+    "guard_root_role": "completeness_only",
+    "neighbour_audit": "enabled",
+    "local_repair_policy": "triggered_only; new roots restricted to ten-percent boundary brackets",
+    "strict_audit_default": false,
+    "archive_extra_nodes": "all accepted matching source nodes are included",
+    "parameter_grid_source": "prior/spectrum.csv, actual per-construction nodes; add only recorded 10-percent crossing refinements"
+  },
+  "refinement": {
+    "crossing_step_deg": 0.25,
+    "small_gap12": 0.05,
+    "max_rounds": 4,
+    "levels_percent": [
+      10.0
+    ]
+  },
+  "leading_solves_allowed": false,
+  "historical_levels_percent": [
+    2.0,
+    5.0
+  ],
+  "expected_source_points": 1940,
+  "reuse_figures_if_maxima_unchanged": [
+    1,
+    4
+  ],
+  "historical_derivative_source": "length/transitions.csv; mu=0.01; RIGID; saved only"
+}

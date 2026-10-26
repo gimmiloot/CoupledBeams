@@ -1,6 +1,64 @@
 # Internal helpers
 
+- `two_springs_high_frequency_angle_ranges.py` implements the bounded
+  `--high-frequency-ranges` workflow: verifies source archives, reuses existing
+  full-model/count/physical gates, adds missing or reasoned refinement points,
+  and determines all discrete 95%/98% ranges including terminal status.
+  It also renders four figures from saved CSV. It is not a spectral solver;
+  the existing transverse-support physics is unchanged.
+  The `--high-frequency-ranges-90-95` preset reuses that completed archive,
+  reproduces old maxima/thresholds, permits only 10%-boundary refinement,
+  and handles zero-angle starts without treating them as missing values.
+- `isotropic_two_springs_external_rotational_replacement.py` creates the
+  existing analytic-curvature leading space and assembles K0 without Ke,
+  retaining a free outer rotation. Full physics remains in the transverse library.
+- `two_springs_external_rotational_replacement.py` reuses full/leading point
+  validation, spectrum counting, I/O and saved-data guards for the bounded
+  `--rotational-replacement` CLI mode; A/B/C/D comparisons and four figures.
+
 This directory contains reusable helper modules that are not meant to be run directly.
+
+- `two_springs_external_transverse_leading_resume.py` orchestrates the completed
+  leading-only transverse continuation through the existing study CLI. It
+  reuses `Leading` with analytic curvature, old archive validators and the
+  frequency normalization helper; adds per-position trace/strong evidence and
+  finite-Ritz-prefix inertia checks. Full-model spectral calls are explicitly
+  forbidden. Rendering and finalization use saved results only.
+
+- `isotropic_two_springs_external_transverse_spring.py` adds only the local
+  transverse outer row, trace and spring energy to the full model, plus one
+  constant w2 basis function in direct/leading Ritz spaces with consistent mass.
+  `two_springs_external_transverse_spring.py` preserves the accepted full map
+  and explicit leading strong-residual STOP; it forbids automatic resumption
+  and renders only qualified full-model figures from saved data.
+
+- `isotropic_two_springs_external_axial_spring.py` specializes only the outer
+  local axial row, trace degree of freedom and spring energy. Private hooks reuse
+  unchanged arm/count/root code; direct-energy Ritz adds one constant u2 function.
+  `two_springs_external_axial_spring.py` provides the bounded experiment, archive
+  comparisons, verified existing leading solutions and guarded saved-data plots.
+
+- `two_springs_thickness_leading_comparison.py` compares eight archived full
+  spectra with the unchanged individual-section leading Ritz model on matching
+  xi nodes. It guards against full solves, reuses archive validation/writers,
+  and records signed errors, thickness effects and addressed convergence checks.
+  It contains no physical assembly or new spectral solver.
+
+- `isotropic_two_springs_thickness_asymmetry.py` specializes the canonical
+  RL_FULL/Timoshenko equations for individual rectangular sections at fixed
+  volume. It reuses arm fundamentals and prefix isolation, while assembling
+  individual energies, pole counts and weighted leading Ritz forms. Reference
+  spring/frequency scales and original module globals remain unchanged.
+- `two_springs_thickness_asymmetry.py` orchestrates the frozen 18-case study:
+  algebraic and physical gates, archive reuse, conditional tails, local leading
+  derivatives and saved-data figures. It reuses established stencils and checks;
+  it is not a general spectral runner. See the dedicated CLI in `scripts/README.md`.
+
+- `two_springs_length_asymmetry.py` is the bounded orchestration and plotting
+  helper for the existing two-spring CLI's `length-asymmetry` preset. It reuses
+  the canonical spectral/field checks and leading Ritz implementation, freezes
+  the signed-length contract, and separates conditional tail/derivative checks
+  from zero-solve rendering. It contains no new physical equations or solver.
 
 - `nonsymmetric_laminated_kelvin_voigt.py` is the bounded NSL-3A complex
   adapter: unchanged coupled NSL H, centered propagation, analytic Frechet
@@ -368,3 +426,10 @@ Some historical helpers remain at root-level paths, especially `scripts/sweep_gr
 
 Lightweight tests can be run with `python -m unittest discover -s tests`.
 `pytest` is optional when it is available in the active interpreter.
+- `two_springs_transverse_leading_diagnostic.py` evaluates saved transverse
+  leading Ritz pairs with independent analytic derivatives and high precision,
+  isolates assembly roundoff and checks a six-order single-case correction.
+  Rational polynomial integrals evaluate the existing space; no new physical
+  solver or frequency-map runner. The opt-in `analytic_curvature` flag in
+  `isotropic_two_springs_external_transverse_spring.Leading` changes only the
+  numerical evaluation of the curvature Gram matrix, preserving the old default.

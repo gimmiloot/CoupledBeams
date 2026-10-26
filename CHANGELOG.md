@@ -1,5 +1,152 @@
 # CHANGELOG
 
+## 2026-10-26 — primary high-frequency levels revised to 90% and 95%
+
+- Added a bounded `--high-frequency-ranges-90-95` preset to the existing
+  study CLI and processing helper. Reused all 1940 accepted points; added
+  only 11 quarter-degree bracket points for the new 10% deficit threshold.
+- Reproduced every old maximum and 2%/5% boundary before refinement; all
+  remain unchanged afterward. All new physical/count gates pass, including
+  a genuine zero-angle start for one 90% range; 14 focused tests pass.
+- Added a separate report/archive, updated figures 2/3, reused figures 1/4
+  byte-for-byte, and recorded LONG-D34/K33. Historical archives/reports and
+  physics are unchanged. Root README intentionally unchanged.
+
+## 2026-10-26 — high-frequency angle ranges on 0–90 degrees
+
+- Added `--high-frequency-ranges` to the existing transverse-support CLI;
+  reused physical solvers and 1138 accepted points, calculated 630 missing
+  tail points and 172 explicitly triggered refinement points for 20 constructions.
+- Added discrete 95%/98% terminal ranges, all qualifying intervals, sampled
+  maxima, signed support comparisons, count/physical checks and focused tests.
+  All gates pass; every entry boundary is bracketed at 0.25 degrees.
+- Added a separate report and four vector PDF/320-dpi PNG figures. Updated
+  affected indexes, commands and LONG-D33/K32. Historical reports, archives
+  and the derivative criterion are unchanged; root README remains current.
+
+## 2026-10-25 — external rotational spring replaced by transverse support
+
+- Added `--rotational-replacement` to the existing study CLI and a thin
+  leading assembly that omits the external rotational energy before solving.
+  Existing physical solvers, coordinates, mass and archived studies are unchanged.
+- Accepted ten free-rotation constructions: 510 full map points, a canonical
+  hinge regression, 28 independent Ritz checks and 377 leading solutions.
+  All residual gates pass; maximum normalized model discrepancy is 0.025609%.
+- Added a separate scientific report, four vector PDF/320-dpi PNG figures,
+  signed A/B/C/D comparisons, input contract and focused tests. Updated
+  LONG-D32/K31 and affected indexes; root README intentionally unchanged.
+
+## 2026-10-25 — transverse leading verification resumed and completed
+
+- Added a leading-only mode to the existing transverse-study CLI, with explicit
+  full-solver guards, analytic curvature assembly and a separate input/archive.
+- Accepted ten constructions on 290 actual full-model archive nodes, all ten C
+  coefficients, p20/24 controls, strong/boundary residuals and prefix checks.
+  Maximum normalized frequency discrepancy is 0.049804% on the checked grid.
+- Prepared the two missing PDF/PNG figures and a separate scientific report.
+  No full-model recalculation; historical full-study STOP and DIAGNOSTIC_PASS
+  archives remain unchanged. Updated LONG-D31/K30 and affected navigation;
+  root README intentionally unchanged.
+
+## 2026-10-25 — single-case transverse leading residual diagnosis
+
+- Identified quadrature roundoff in the integrated-Legendre curvature matrix
+  as the source of the p24 strong residual; independent 50/80-digit derivatives
+  reproduce the saved failure. No mathematical or derivative-scale error found.
+- Added opt-in analytic curvature integrals in the same Ritz space; preserved
+  the old default, mass, constraints, spring energies and 1e-9 strong tolerance.
+  Six orders and xi=10 control pass; the full leading map was not resumed.
+- Added a bounded diagnostic CLI, immutable evidence, focused tests and a
+  separate report; updated LONG-D30/K29 and affected navigation. No full-model
+  spectral calculations, previous-report edits or changes to root README.
+
+## 2026-10-25 — transverse outer support, full map accepted / leading STOP
+
+- Added a specialized local transverse end-spring adapter with exact axial
+  support, exact joint translations and both rotational springs retained.
+  Derived full/leading natural conditions and the unchanged xi-squared/2 term.
+- Accepted 510 full-map nodes, rigid regressions, independent Ritz and addressed
+  variational slopes; 466 new full prefixes in total, 102 reused map points.
+- Stopped leading calculations on the tenth solve: p24, J0E4, kappa_w=1,
+  xi=0 has strong residual 1.024892875e-9 above the frozen 1e-9 tolerance.
+  No tolerance relaxation or subsequent solves. Full C/error maps remain absent.
+- Added a qualified report, two full-model PDF/PNG figures, preserved diagnostics,
+  guarded saved-data modes and focused tests. Updated LONG-D29/K28 and navigation;
+  old reports/archives and unrelated changes preserved, root README unchanged.
+
+## 2026-10-25 — external axial support compliance
+
+- Added an isolated local axial end-spring adapter and bounded diagnostic CLI;
+  unchanged arm equations, exact joint translations and both rotational springs.
+  Derived and independently checked the force sign and common leading compliance.
+- Accepted 510 map points (102 archived), ten fresh rigid regressions, 20 direct
+  Ritz checks and 48 leading solutions; compared 138 actual joint-archive nodes.
+  Physical, count, mass, energy and stiffness-monotonicity checks passed.
+- Added a separate Russian report, four vector PDF / 320 dpi PNG figures,
+  source-labelled data and focused tests; updated LONG-D28/K27, assumptions and
+  navigation. Prior reports/archives and physical modules preserved. No tails,
+  characteristic angles or subsequent support study. Root README remains current.
+
+## 2026-10-25 — leading-model validation for unequal thicknesses
+
+- Added an archive-only full-spectrum / existing leading-solver comparison
+  contract and entry point, preserving all prior physical modules and workflows.
+- Compared 232 actual nodes of eight constructions; completed 321 leading
+  problems including regression, order and quadrature controls, with zero full
+  solves. Quantified frequency discrepancies and signed thickness effects.
+- Added a separate Russian report, three vector PDF / 320 dpi PNG figures,
+  source-labelled CSVs, guarded saved-data modes and six addressed tests.
+  Updated LONG-D27/K26 and scoped navigation; root README intentionally unchanged.
+
+## 2026-10-25 — thickness redistribution at fixed total volume
+
+- Added an isolated individual-section RL_FULL/Timoshenko adapter, weighted
+  leading Ritz assembly and a bounded study entry point. Reference spring and
+  frequency scales remain fixed; previous physical modules and CLI are unchanged.
+- Verified volume/compliance identities, equal-section regression, individual
+  pole catalogs, physical residuals and independent Ritz controls before the
+  18-construction map. Reused 516 archive points; computed 1032 map points and
+  30 regression points. Confirmed all growth angles through 90 degrees.
+- Added the Russian scientific report, five vector PDF / 320 dpi PNG figures,
+  signed comparisons, leading curvature and checked stiffness/mass derivatives.
+  Added addressed tests and zero-solve saved-data modes, LONG-D26/K25 and scoped
+  assumptions/navigation. Root README intentionally unchanged.
+
+## 2026-10-25 — length asymmetry of the exact two-spring construction
+
+- Added a bounded `length-asymmetry` preset to the existing CLI and an internal
+  workflow helper; preserved both physical solvers, old archives and reports.
+- Completed five signed length variants and two spring pairs, with negative-mu
+  preflight, three-root counts, conditional tails to 90 degrees, mass-normalized
+  reaction work and leading curvature. Recorded low-order leading residual
+  failures as diagnostic probes and one triggered derivative refinement.
+- Added a separate Russian scientific report, five PDF/320 dpi PNG figures,
+  source-labelled data, guarded zero-solve plot/cache modes and six addressed tests.
+  Added LONG-D25/K24 and scoped navigation; root README intentionally unchanged.
+
+## 2026-10-25 — four archive-based two-spring report illustrations
+
+- Added a dedicated plot-only report workflow reusing the existing derivative,
+  threshold, energy and output helpers; no physical solver or report edits.
+- Prepared four vector PDF / 360 dpi PNG pairs, five numerical CSVs, Russian
+  captions and source provenance from six frozen RL_FULL/Timoshenko archives.
+- Reproduced characteristic angles, slip gains, leading-model discrepancies and
+  mass-normalized joint/slope ratios; checked all q tails through 90 degrees,
+  overlapping spectra and zero-solve rendering with three addressed tests.
+- Added usage and result links. Root README intentionally unchanged: main project
+  structure and baseline commands are unchanged. No new scientific D/K claim.
+
+## 2026-10-24 — archive check of delayed angular frequency growth
+
+- Added a separate cross-model diagnostic note, signed interval slopes and three
+  PNG/PDF figures from 12 existing CSV files; no eigenvalue solves, forms or MAC.
+- Found delayed growth of sorted higher positions and later first-frequency
+  sensitivity peaks in thicker rigid-joint examples. Distinguished modal evidence,
+  legacy root-quality limits, insufficient angular resolution and invalid S0.
+- Checked all 50 existing first-frequency stiffness curves without changing their
+  angle maps or criterion. Added LONG-D24/K23 and scoped navigation; preserved the
+  synthesis, supervisor TeX, physical code and archived data. Root README unchanged.
+
 ## 2026-10-24 — scientific synthesis of two-spring angular sensitivity
 
 - Added a unified Russian scientific report, claim-to-evidence table and critical

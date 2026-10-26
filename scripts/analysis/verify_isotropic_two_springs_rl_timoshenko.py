@@ -4371,12 +4371,16 @@ def leading_main(args):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--stage', choices=['all', 'gates', 'reference', 'map', 'regression', 'preflight'], default='all')
-    parser.add_argument('--preset', choices=['verification', 'limit-angles', 'finite-angle-maps', 'saturation-analysis', 'plateau-criterion', 'plateau-grid', 'early-saturation', 'growth-transition', 'growth-refinement', 'growth-stiffness-grid', 'mechanical-interpretation', 'angle-variation', 'epsilon-scaling', 'longitudinal-slip', 'thickness-grid', 'angle-limit'], default='verification')
+    parser.add_argument('--preset', choices=['verification', 'limit-angles', 'finite-angle-maps', 'saturation-analysis', 'plateau-criterion', 'plateau-grid', 'early-saturation', 'growth-transition', 'growth-refinement', 'growth-stiffness-grid', 'mechanical-interpretation', 'angle-variation', 'epsilon-scaling', 'longitudinal-slip', 'thickness-grid', 'angle-limit', 'length-asymmetry'], default='verification')
     parser.add_argument('--plot-only', type=Path)
     parser.add_argument('--plot-set', choices=['original', 'lambda12', 'lambda12-ru'], default='original')
     parser.add_argument('--verify-cache', type=Path)
     parser.add_argument('--reuse-points-from', type=Path)
     args = parser.parse_args()
+    if args.preset == 'length-asymmetry':
+        from scripts.lib.two_springs_length_asymmetry import main as length_main
+        length_main(args)
+        return
     if args.plot_set in ('lambda12', 'lambda12-ru') and (not args.plot_only or args.preset != 'limit-angles'):
         parser.error('lambda12 is available only with --preset limit-angles --plot-only PATH')
     if args.plot_only:

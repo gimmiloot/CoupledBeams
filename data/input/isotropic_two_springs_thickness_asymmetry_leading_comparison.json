@@ -1,0 +1,130 @@
+{
+  "schema": "two-springs-thickness-leading-comparison-v1",
+  "defined_before_computation": true,
+  "date": "2026-10-25",
+  "material": {
+    "E": 1.0,
+    "rho": 1.0,
+    "nu": 0.3,
+    "epsilon": 0.005,
+    "aspect": 4.0,
+    "l": 1.0,
+    "ks": 0.8333333333333334
+  },
+  "cases": {
+    "J0E4": [
+      0.1,
+      10.0
+    ],
+    "J4E0": [
+      10.0,
+      0.1
+    ]
+  },
+  "mu_values": [
+    -0.1,
+    0.1
+  ],
+  "tau_values": [
+    -0.1,
+    0.1
+  ],
+  "xi_max": 30.0,
+  "full_model_solves_allowed": false,
+  "full_field_reconstruction_allowed": false,
+  "sources": {
+    "thickness": {
+      "folder": "results/isotropic_two_springs_rl_timoshenko/thickness_asymmetry/12ff3907cf7cd6da",
+      "manifest_sha256": "386c51a5bca14b8ac9f387700b7d52ec9d654facb398be58473d4824741682f9"
+    },
+    "length": {
+      "folder": "results/isotropic_two_springs_rl_timoshenko/length_asymmetry/ddf22cb06e8563e2",
+      "manifest_sha256": "0a84dd9e85977687809e917e8ec39986ce746ff1b7139bfb9ac40a139ccf1a28"
+    },
+    "equal": {
+      "folder": "results/isotropic_two_springs_rl_timoshenko/leading_validation/f1c670fe62102196",
+      "manifest_sha256": "1a7d3d89f11c877194a27f8384c4cd9a7557cded2acbfc7211e58272b5c36fa4"
+    }
+  },
+  "frozen_files": {
+    "scripts/lib/isotropic_two_springs_thickness_asymmetry.py": "86a21c2d80c98252079d037bda6d4cf4f37927297d5d21415ef35526b6834e89",
+    "scripts/lib/isotropic_two_springs_leading.py": "04f9e1910887d98da22fa90c0a21fc697c88094f4e33a30cfd146bd37b418282",
+    "scripts/lib/isotropic_two_springs_rl_timoshenko.py": "c1a8f8eb97115a049c0c98d18c211e91a838c24012bfbd31dd7c8cbbac7ae1b4",
+    "scripts/lib/two_springs_thickness_asymmetry.py": "a09d691375f69fae3bf4921285604ae540b690d62198567142b390213782ea67",
+    "scripts/lib/two_springs_length_asymmetry.py": "8330d8a6c063eb86fdaac1281cacaedcfe16fdee4e71b740a18c38584ac05577",
+    "scripts/analysis/study_two_springs_thickness_asymmetry.py": "9e1be8c347f99948d0f00edf68f83bcc1a385a9f4b58746c3dac9fbf27029f08",
+    "docs/theory/isotropic_two_springs_thickness_asymmetry.md": "b5bc49ee6797a03abb02c2f0c28193882ebfa09f897e2ef91ef4d3de3f2bf400",
+    "docs/theory/isotropic_two_springs_angle_asymptotics.md": "dc9f6703cacbf82a5d41ad8bf3df8fd898c76587a37ed8d7862b2f4c3acb61cb",
+    "docs/theory/isotropic_two_springs_leading_validation.md": "be4bc60cfecaf3a43e4ef654da9daca1ecc0abbcb4d8c54233054b61b4efcfa1",
+    "docs/theory/isotropic_two_springs_length_asymmetry.md": "c6bf8020ad40458b3edba9374d8d69fa0945bd1169adac47156754dbbe29c68d"
+  },
+  "map": {
+    "frequency_map_policy": "frequency-map-v1",
+    "calculation_mode": "fast_plot",
+    "spectrum_semantics": "sorted_positions",
+    "sweep_parameter": "xi",
+    "parameter_grid": "All actual source beta nodes with beta*pi/180/epsilon0 <= 30",
+    "K_plot": 2,
+    "K_guard": 3,
+    "guard_root_role": "Ritz-prefix completeness control; only first position illustrated",
+    "neighbour_audit": "monotonicity and relative frequency jump",
+    "local_repair_policy": "addressed 20-to-24 order and 64-to-96 quadrature checks; no full solves; stop on failed physical gate",
+    "strict_audit_default": false
+  },
+  "leading": {
+    "primary_order": 24,
+    "comparison_order": 20,
+    "quadrature": 64,
+    "quadrature_check": 96,
+    "quality": {
+      "symmetry_tol": 1e-13,
+      "eigen_residual_tol": 1e-09,
+      "energy_tol": 5e-08,
+      "mass_gram_tol": 5e-07,
+      "constraint_tol": 1e-09,
+      "natural_boundary_tol": 1e-09,
+      "strong_ode_tol": 1e-09,
+      "essential_tol": 1e-09,
+      "frequency_convergence_rtol": 1e-08,
+      "C_convergence_rtol": 1e-07,
+      "monotonicity_rtol": 1e-10
+    },
+    "fixed_control_beta_deg": [
+      0,
+      3,
+      6,
+      8.5
+    ],
+    "small_gap_trigger": 0.05,
+    "residual_control_fraction": 0.5,
+    "neighbour_jump": 0.2,
+    "characteristic_beta_deg": [
+      0,
+      0.5,
+      3,
+      6,
+      8.5
+    ],
+    "homogeneous_regression_mu": [
+      -0.1,
+      0.1
+    ],
+    "legacy_regression_mu": 0.01,
+    "legacy_regression_xi": [
+      0.0,
+      10.0
+    ],
+    "local_C_xi": [
+      0.01,
+      0.02
+    ]
+  },
+  "interpretation": {
+    "error": "F_full/F_lim-1",
+    "delta_percent": "100*abs(error)",
+    "signed_D": "F(+tau)/F(-tau)-1",
+    "Delta_D": "D_lim-D_full",
+    "D_zero_sign_resolution": 1e-08,
+    "physical_discrepancy_acceptance_threshold": null
+  }
+}

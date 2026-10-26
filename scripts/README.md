@@ -1,8 +1,208 @@
 # Scripts guide
 
+## High-frequency angle ranges
+
+The current engineering comparison uses the separate
+[90%/95% preset](../docs/theory/isotropic_two_springs_high_frequency_angle_ranges_90_95.md):
+
+```powershell
+python -X utf8 scripts/analysis/study_two_springs_external_transverse_spring.py --high-frequency-ranges-90-95 --stage run
+```
+
+It reads the completed twenty-construction archive and solves only missing
+10%-deficit boundary points. The original 2%/5% mode below is preserved.
+[Full commands, CSV dictionary and figure provenance](../results/isotropic_two_springs_rl_timoshenko/high_frequency_angle_ranges_90_95/b7c2787461cb3cda/README.md).
+Both presets use the same focused test file; plot_only performs no solves.
+
+The [angle-range study](../docs/theory/isotropic_two_springs_high_frequency_angle_ranges.md)
+uses `--high-frequency-ranges` in the existing transverse-support CLI.
+It reuses accepted spectra and adds only missing tail/refinement points for
+twenty fixed constructions. The 95%/98% results concern checked nodes, with
+sampled absolute maxima and gains reported separately.
+
+```powershell
+python -X utf8 scripts/analysis/study_two_springs_external_transverse_spring.py --high-frequency-ranges --stage preflight
+python -X utf8 scripts/analysis/study_two_springs_external_transverse_spring.py --high-frequency-ranges --stage run
+python -X utf8 -m pytest -q tests/test_two_springs_high_frequency_angle_ranges.py
+python -X utf8 scripts/analysis/study_two_springs_external_transverse_spring.py --high-frequency-ranges --stage plot_only --folder results/isotropic_two_springs_rl_timoshenko/high_frequency_angle_ranges/18570e576270e0b4
+python -X utf8 scripts/analysis/study_two_springs_external_transverse_spring.py --high-frequency-ranges --stage finalize --folder results/isotropic_two_springs_rl_timoshenko/high_frequency_angle_ranges/18570e576270e0b4
+```
+
+[Bundle and data dictionary](../results/isotropic_two_springs_rl_timoshenko/high_frequency_angle_ranges/18570e576270e0b4/README.md).
+Cached runs do not recompute accepted points; plot_only blocks spectral calls.
+No physical solver changes, leading solves, tracking or old-archive writes.
+
+## Free outer rotation with transverse support
+
+The [replacement study](../docs/theory/isotropic_two_springs_external_rotational_replacement.md)
+uses the existing CLI with `--rotational-replacement`: full RL/Timoshenko
+at k_end=0, the verified transverse support, and a thin leading specialization
+that omits Ke while preserving analytic curvature, mass and admissible fields.
+
+```powershell
+python -X utf8 scripts/analysis/study_two_springs_external_transverse_spring.py --rotational-replacement --stage preflight
+python -X utf8 scripts/analysis/study_two_springs_external_transverse_spring.py --rotational-replacement --stage run
+python -X utf8 scripts/analysis/study_two_springs_external_transverse_spring.py --rotational-replacement --stage plot_only --folder results/isotropic_two_springs_rl_timoshenko/external_rotational_spring_replacement/60435e6e80629e48
+python -X utf8 -m pytest -q tests/test_two_springs_external_rotational_replacement.py
+```
+
+[Bundle commands and evidence](../results/isotropic_two_springs_rl_timoshenko/external_rotational_spring_replacement/60435e6e80629e48/README.md).
+Fixed ten-construction scope, sorted first three positions; cached points are
+reused. No new universal runner, tracking, old-archive mutation or angle tails.
+
+## Completed transverse leading continuation
+
+The [leading validation](../docs/theory/isotropic_two_springs_external_transverse_leading_validation.md)
+uses `study_two_springs_external_transverse_spring.py --leading-resume`.
+It reads the accepted full spectra and writes a separate leading archive;
+no full-model solver is called. The former study and diagnostic archives keep
+their historical statuses. Production uses `analytic_curvature=True`, p24,
+with p20 controls and the unchanged strong-residual tolerance.
+
+```powershell
+python -X utf8 scripts/analysis/study_two_springs_external_transverse_spring.py --leading-resume --stage preflight
+python -X utf8 scripts/analysis/study_two_springs_external_transverse_spring.py --leading-resume --stage run
+python -X utf8 scripts/analysis/study_two_springs_external_transverse_spring.py --leading-resume --stage plot_only --folder results/isotropic_two_springs_rl_timoshenko/external_transverse_leading_resume/dc0f91afbc14843c
+python -X utf8 -m pytest -q tests/test_two_springs_external_transverse_leading_resume.py
+```
+
+The [bundle README](../results/isotropic_two_springs_rl_timoshenko/external_transverse_leading_resume/dc0f91afbc14843c/README.md)
+documents source hashes, cached execution, finalization, all ten C values and
+the two new vector PDF / 320 dpi PNG figures. The separate helper changes the
+I/O contract to read-only full spectra; it reuses the canonical solver,
+archive validators, normalization and writers. No new runnable CLI was added.
+
+## External local transverse spring
+
+The [transverse-support study](../docs/theory/isotropic_two_springs_external_transverse_spring.md)
+retains exact axial support and both rotational springs. The new transverse
+trace and augmented leading space constitute a separate physical/input contract;
+a diagnostic entry point reuses canonical arm/count functions, `Run`, archive
+validators and the existing leading eigensolve without modifying archived CLIs.
+
+**Current status: full model PASS, leading STOP.** The saved p24 strong-residual
+failure remains above its frozen tolerance. `run` refuses an automatic restart.
+The remaining leading map and complete C family are not accepted or plotted.
+
+```powershell
+python scripts/analysis/study_two_springs_external_transverse_spring.py --stage diagnose
+python scripts/analysis/study_two_springs_external_transverse_spring.py --stage plot_only --folder results/isotropic_two_springs_rl_timoshenko/external_transverse_spring/ea337fc30ad0ee03
+python -m pytest tests/test_two_springs_external_transverse_spring.py -q
+python scripts/analysis/study_two_springs_external_transverse_spring.py --stage finalize --folder results/isotropic_two_springs_rl_timoshenko/external_transverse_spring/ea337fc30ad0ee03
+```
+
+These commands use saved solutions; `diagnose` and `plot_only` prohibit spectral
+calls. [Bundle README](../results/isotropic_two_springs_rl_timoshenko/external_transverse_spring/ea337fc30ad0ee03/README.md)
+records the original preflight/run sequence, units, two accepted figures and
+the exact stopping point. No 90-degree tail or removal of the rotational spring.
+
+## External local axial spring
+
+The [separate support study](../docs/theory/isotropic_two_springs_external_axial_spring.md)
+adds the outer axial degree of freedom while preserving both exact joint
+translations. This new physical/input contract justifies a dedicated stable
+diagnostic entry point: it reuses the existing `Run`, arm functions, spectral
+count, root isolation and leading Ritz, without changing archived CLI fingerprints.
+
+```powershell
+python scripts/analysis/study_two_springs_external_axial_spring.py --stage preflight
+python scripts/analysis/study_two_springs_external_axial_spring.py --stage run
+python scripts/analysis/study_two_springs_external_axial_spring.py --stage plot_only --folder results/isotropic_two_springs_rl_timoshenko/external_axial_spring/64b26f99cb3c7aba
+python -m pytest tests/test_two_springs_external_axial_spring.py -q
+python scripts/analysis/study_two_springs_external_axial_spring.py --stage finalize --folder results/isotropic_two_springs_rl_timoshenko/external_axial_spring/64b26f99cb3c7aba
+```
+
+The [bundle README](../results/isotropic_two_springs_rl_timoshenko/external_axial_spring/64b26f99cb3c7aba/README.md)
+defines sources, columns, units and captions. `plot_only` blocks spectral calls.
+The 0–20-degree grid has ten constructions; there is no tail or angle criterion.
+The joint-spring archive is read only at actual matching nodes.
+
+## Leading-model comparison for unequal thicknesses
+
+The [addressed comparison](../docs/theory/isotropic_two_springs_thickness_asymmetry_leading_comparison.md)
+reads the completed thickness spectra and solves only the existing leading
+problem. Its separate read-full/solve-leading contract preserves immutable
+prior CLI fingerprints. No new physical solver or general runner is introduced.
+
+```powershell
+python scripts/analysis/compare_two_springs_thickness_leading.py --stage sources
+python scripts/analysis/compare_two_springs_thickness_leading.py --stage regression
+python scripts/analysis/compare_two_springs_thickness_leading.py
+python scripts/analysis/compare_two_springs_thickness_leading.py --plot-only results/isotropic_two_springs_rl_timoshenko/thickness_asymmetry_leading_comparison/87cd1ba35fa1b99e
+python scripts/analysis/compare_two_springs_thickness_leading.py --verify-cache results/isotropic_two_springs_rl_timoshenko/thickness_asymmetry_leading_comparison/87cd1ba35fa1b99e
+python -m pytest tests/test_two_springs_thickness_leading_comparison.py -q
+```
+
+[Bundle and column definitions](../results/isotropic_two_springs_rl_timoshenko/thickness_asymmetry_leading_comparison/87cd1ba35fa1b99e/README.md).
+Saved-data modes perform no matrix assembly or spectral solves. Missing full
+points are not regenerated; input or physical-gate failures stop the comparison.
+
+## Two rotational springs: different sections at fixed volume
+
+The separate [thickness study](../docs/theory/isotropic_two_springs_thickness_asymmetry.md)
+uses individual RL_FULL/Timoshenko arm coefficients and weighted leading Ritz
+forms. A new physical/input contract requires section-specific pole catalogs and
+field checks. A dedicated entry point preserves the existing CLI and fingerprints
+of completed equal-section studies (Script Proliferation Control).
+
+```powershell
+python scripts/analysis/study_two_springs_thickness_asymmetry.py --stage gates
+python scripts/analysis/study_two_springs_thickness_asymmetry.py --stage preflight
+python scripts/analysis/study_two_springs_thickness_asymmetry.py
+python scripts/analysis/study_two_springs_thickness_asymmetry.py --verify-cache results/isotropic_two_springs_rl_timoshenko/thickness_asymmetry/12ff3907cf7cd6da
+python scripts/analysis/study_two_springs_thickness_asymmetry.py --plot-only results/isotropic_two_springs_rl_timoshenko/thickness_asymmetry/12ff3907cf7cd6da
+python -m pytest tests/test_two_springs_thickness_asymmetry.py -q
+```
+
+The frozen 18-construction contract reuses tau=0 archives. Preliminary checks
+gate the map, which gates conditional tails through 90 degrees. `--plot-only`
+and `--verify-cache` verify saved artifacts and sources without constructing a
+spectral experiment. The [bundle README](../results/isotropic_two_springs_rl_timoshenko/thickness_asymmetry/12ff3907cf7cd6da/README.md)
+defines CSV columns, units, normalization and Russian figure captions.
+
+## Two-spring report illustrations from completed archives
+
+```powershell
+python scripts/analysis/prepare_two_springs_report_illustrations.py
+python scripts/analysis/prepare_two_springs_report_illustrations.py --check-only
+python -m pytest tests/test_two_springs_report_illustrations.py -q
+```
+
+The dedicated report-facing workflow joins six frozen archives; this new
+multi-source output contract is separate from the calculation CLI. It reuses
+that CLI's derivative stencils, persistent-threshold selector, saved-field
+energy integration, hashes and writers. Every mode is `plot_only`: no root
+search, matrix assembly or field reconstruction. Missing data cause an error.
+Four vector PDF / 360 dpi PNG pairs, five source-labelled CSVs and Russian
+captions are written to the [illustration bundle](../results/isotropic_two_springs_rl_timoshenko/report_illustrations/README.md).
+`--output PATH` selects another workspace directory, with source-archive guards.
+The report is not edited or rebuilt; the original archives remain unchanged.
+
 ## Isotropic full Rayleigh–Love/Timoshenko: two rotational springs
 
-Latest preset: `angle-limit`, the separate leading beta/epsilon problem derived from
+Latest preset: `length-asymmetry`, fixed sections and total length, five signed mu
+values and two finite spring pairs. [Scientific report](../docs/theory/isotropic_two_springs_length_asymmetry.md).
+The end spring remains on arm 2. Negative-mu preflight precedes 51-point angle
+series; tails to 90 degrees require a qualifying provisional transition.
+Three sorted frequencies, variational work and C(mu) reuse the unchanged physical
+libraries. The helper is not a new runnable script or spectral solver.
+
+```powershell
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset length-asymmetry --stage preflight
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset length-asymmetry
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset length-asymmetry --verify-cache results/isotropic_two_springs_rl_timoshenko/length_asymmetry/ddf22cb06e8563e2
+python scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py --preset length-asymmetry --plot-only results/isotropic_two_springs_rl_timoshenko/length_asymmetry/ddf22cb06e8563e2
+python -m pytest tests/test_two_springs_length_asymmetry.py -q
+```
+
+The completed cache reuses all points; `--plot-only` and `--verify-cache` never
+initialize the experiment or call a solver. Five vector PDF / 320 dpi PNG pairs
+and Russian captions are in the [new bundle](../results/isotropic_two_springs_rl_timoshenko/length_asymmetry/ddf22cb06e8563e2/README.md).
+Fresh reproduction requires the four pinned source archives. Leading order 16
+is only a convergence probe with unaccepted strong residuals; order 20 passes.
+No automatic continuation into different sections, FEM, MAC or optimization.
+
+Previous preset: `angle-limit`, the separate leading beta/epsilon problem derived from
 the canonical exact joint. [Quantitative check and curvature qualifications](../docs/theory/isotropic_two_springs_leading_validation.md).
 Only two finite rotational pairs are solved, with integrated-Legendre Ritz orders
 12/16/20. All full-model spectra at epsilon .0025/.005/.01 are archive reads.
@@ -2272,3 +2472,22 @@ its unchanged resolution gate. No p12 recomputation, new ODE, FEM or p16.
 Completed compute and `--report-only <copy>` / `--plot-only <copy>` read cache;
 rendering tests use temporary copies. No new runnable script is introduced.
 [Report](../docs/numerics/nlsp_beta15_out_growth_p14_convergence.md).
+## Single-case transverse leading residual diagnostic
+
+The [diagnostic report](../docs/theory/isotropic_two_springs_transverse_leading_diagnostic.md)
+documents quadrature roundoff and the opt-in `Leading(..., analytic_curvature=True)`
+fix. The old study runner/default is unchanged; do not resume its full map as
+part of this diagnostic. The separate CLI has a new contract: one failed saved
+pair, six orders, derivative/assembly precision checks, one nonzero xi control.
+It reuses the existing leading solver, `fields` and archive writers. Combining
+this with the old runner would risk rewriting its stopped archive.
+
+```powershell
+python -X utf8 scripts/analysis/diagnose_two_springs_transverse_leading.py --verify results/isotropic_two_springs_rl_timoshenko/external_transverse_leading_diagnostic/bcc1660d87bd57a3
+python -X utf8 scripts/analysis/diagnose_two_springs_transverse_leading.py --replica check_01
+python -X utf8 -m pytest -q tests/test_two_springs_transverse_leading_diagnostic.py
+```
+
+The first command only checks hashes. The second performs the bounded diagnostic
+in a new labelled folder; it never solves the full RL/Timoshenko model.
+Python dependencies: NumPy, SciPy, Matplotlib, mpmath; pytest for tests.

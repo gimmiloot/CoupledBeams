@@ -1,0 +1,102 @@
+{
+  "study": "external_transverse_leading_resume",
+  "material": {
+    "E": 1.0,
+    "rho": 1.0,
+    "nu": 0.3,
+    "epsilon": 0.005,
+    "aspect": 4.0,
+    "l": 1.0,
+    "ks": 0.8333333333333334
+  },
+  "mu": 0.01,
+  "cases": {
+    "J0E4": [
+      0.1,
+      10.0
+    ],
+    "J4E0": [
+      10.0,
+      0.1
+    ]
+  },
+  "k_w_values": [
+    "RIGID",
+    10.0,
+    1.0,
+    0.1,
+    0.0
+  ],
+  "analytic_curvature": true,
+  "order": 24,
+  "check_order": 20,
+  "quadrature": 64,
+  "xi_max": 30.0,
+  "positions": 3,
+  "quality": {
+    "symmetry_tol": 1e-13,
+    "eigen_residual_tol": 1e-09,
+    "energy_tol": 5e-08,
+    "mass_gram_tol": 5e-07,
+    "constraint_tol": 1e-09,
+    "natural_boundary_tol": 1e-09,
+    "strong_ode_tol": 1e-09,
+    "essential_tol": 1e-09,
+    "frequency_convergence_rtol": 1e-08,
+    "C_convergence_rtol": 1e-07,
+    "monotonicity_rtol": 1e-10
+  },
+  "preflight_k_w": [
+    "RIGID",
+    1.0,
+    0.0
+  ],
+  "preflight_xi": [
+    10.0,
+    30.0
+  ],
+  "convergence_beta_deg": [
+    0.0,
+    3.0,
+    6.0,
+    8.5
+  ],
+  "local_C_xi": [
+    0.002,
+    0.004
+  ],
+  "local_C_rtol": 0.0001,
+  "sources": {
+    "full": {
+      "folder": "results/isotropic_two_springs_rl_timoshenko/external_transverse_spring/ea337fc30ad0ee03",
+      "manifest_sha256": "b10c816bcd59897314d3c31160a2325aa0906a0a4fba4020aa4fb2c2ea336cdf"
+    },
+    "diagnostic": {
+      "folder": "results/isotropic_two_springs_rl_timoshenko/external_transverse_leading_diagnostic/bcc1660d87bd57a3",
+      "manifest_sha256": "f6ef5a6a2b70ee282188f401043ac3b94838b278ac1b73848cd6ec2edc94777f"
+    }
+  },
+  "frequency_map_policy": "frequency-map-v1",
+  "calculation_mode": "fast_plot",
+  "spectrum_semantics": "sorted_positions",
+  "sweep_parameter": "xi",
+  "parameter_grid": "actual full-model beta nodes with radians(beta)/epsilon <= 30",
+  "K_plot": 2,
+  "K_guard": 3,
+  "guard_root_role": "completeness_only",
+  "neighbour_audit": true,
+  "local_repair_policy": "triggered only; stop acceptance on failure",
+  "strict_audit_default": false,
+  "full_model_solves_allowed": false,
+  "frozen_files": {
+    "scripts/lib/isotropic_two_springs_rl_timoshenko.py": "c1a8f8eb97115a049c0c98d18c211e91a838c24012bfbd31dd7c8cbbac7ae1b4",
+    "scripts/lib/isotropic_two_springs_leading.py": "04f9e1910887d98da22fa90c0a21fc697c88094f4e33a30cfd146bd37b418282",
+    "scripts/lib/isotropic_two_springs_external_transverse_spring.py": "4a408f6e9e708c485a5a7c85790eab3c7dae8c4ca86ad4e463eafa483c287792",
+    "scripts/lib/isotropic_two_springs_thickness_asymmetry.py": "86a21c2d80c98252079d037bda6d4cf4f37927297d5d21415ef35526b6834e89",
+    "docs/theory/isotropic_two_springs_rl_timoshenko.md": "67092f8f0525e467c9f967a0f093e88c58edf71492e8d6525ecb80b2cde0b598",
+    "docs/theory/isotropic_two_springs_angle_asymptotics.md": "dc9f6703cacbf82a5d41ad8bf3df8fd898c76587a37ed8d7862b2f4c3acb61cb",
+    "docs/theory/isotropic_two_springs_leading_validation.md": "be4bc60cfecaf3a43e4ef654da9daca1ecc0abbcb4d8c54233054b61b4efcfa1",
+    "docs/theory/isotropic_two_springs_external_transverse_spring.md": "3a1730fd1858a3520bd901c4b42acf5db8a6c79082d93ee6ada99844de47e34b",
+    "docs/theory/isotropic_two_springs_transverse_leading_diagnostic.md": "736ff16330340ae52d63d6fc5cb51f8c8e611281f7800ec51d1970f54f4fe018"
+  }
+}

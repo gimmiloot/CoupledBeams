@@ -1,0 +1,239 @@
+{
+  "schema": "external-axial-spring-v1",
+  "defined_before_computation": true,
+  "date": "2026-10-25",
+  "material": {
+    "E": 1.0,
+    "rho": 1.0,
+    "nu": 0.3,
+    "epsilon": 0.005,
+    "aspect": 4.0,
+    "l": 1.0,
+    "ks": 0.8333333333333334
+  },
+  "mu": 0.01,
+  "variant": "RL_FULL",
+  "cases": {
+    "J0E4": [
+      0.1,
+      10.0
+    ],
+    "J4E0": [
+      10.0,
+      0.1
+    ]
+  },
+  "chi_values": [
+    "RIGID",
+    1.0,
+    0.1,
+    0.01,
+    0.0
+  ],
+  "policy": {
+    "defined_before_computation": true,
+    "Lambda_lower": 0.05,
+    "Lambda_upper": 7.3,
+    "root_xtol": 2e-14,
+    "root_rtol": 2e-14,
+    "pole_exclusion": 1e-07,
+    "schur_tol": 1e-10,
+    "inertia_margin": 4e-14,
+    "condition_max": 10000000000.0,
+    "max_count_queries": 160,
+    "max_depth": 30,
+    "boundary_tol": 1e-09,
+    "ode_tol": 1e-09,
+    "singular_tol": 1e-09,
+    "energy_tol": 5e-08,
+    "mass_gram_tol": 5e-07,
+    "nonzero_condition_max": 100000000.0,
+    "same_physics_frequency_tol": 1e-08,
+    "reference_frequency_tol": 1e-08,
+    "ritz_frequency_tol": 1e-07,
+    "ritz_orders": [
+      16,
+      20
+    ],
+    "quadrature_order": 120,
+    "mac_min": 0.95,
+    "assignment_margin_min": 0.1,
+    "independent_scan_Lambda_step": 0.01,
+    "neighbour_relative_jump": 0.2,
+    "pole_scan_intervals": 240
+  },
+  "map": {
+    "frequency_map_policy": "frequency-map-v1",
+    "calculation_mode": "fast_plot",
+    "spectrum_semantics": "sorted_positions",
+    "sweep_parameter": "beta",
+    "parameter_grid": [
+      0.0,
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      3.25,
+      3.5,
+      3.75,
+      4.0,
+      4.25,
+      4.5,
+      4.75,
+      5.0,
+      5.25,
+      5.5,
+      5.75,
+      6.0,
+      6.25,
+      6.5,
+      6.75,
+      7.0,
+      7.25,
+      7.5,
+      7.75,
+      8.0,
+      8.25,
+      8.5,
+      8.75,
+      9.0,
+      9.25,
+      9.5,
+      9.75,
+      10.0,
+      10.25,
+      10.5,
+      10.75,
+      11.0,
+      11.25,
+      11.5,
+      11.75,
+      12.0,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "K_plot": 2,
+    "K_guard": 3,
+    "guard_root_role": "completeness_only",
+    "neighbour_audit": "enabled",
+    "local_repair_policy": "triggered_only",
+    "strict_audit_default": false
+  },
+  "sources": {
+    "rigid": {
+      "folder": "results/isotropic_two_springs_rl_timoshenko/length_asymmetry/ddf22cb06e8563e2",
+      "manifest_sha256": "0a84dd9e85977687809e917e8ec39986ce746ff1b7139bfb9ac40a139ccf1a28"
+    },
+    "joint": {
+      "folder": "results/isotropic_two_springs_rl_timoshenko/longitudinal_slip/253c9655120041e1",
+      "manifest_sha256": "a18235a073ee2736d2a7469cc50c94e18b896db43074a0a25ab78106a10a7f51"
+    },
+    "leading": {
+      "folder": "results/isotropic_two_springs_rl_timoshenko/leading_validation/f1c670fe62102196",
+      "manifest_sha256": "1a7d3d89f11c877194a27f8384c4cd9a7557cded2acbfc7211e58272b5c36fa4"
+    }
+  },
+  "frozen_files": {
+    "scripts/lib/isotropic_two_springs_rl_timoshenko.py": "c1a8f8eb97115a049c0c98d18c211e91a838c24012bfbd31dd7c8cbbac7ae1b4",
+    "scripts/lib/isotropic_two_springs_longitudinal_slip.py": "92671b5e11504e90c41ae26eac828b0a61659791660025994602e7518aa96b7c",
+    "scripts/lib/isotropic_two_springs_leading.py": "04f9e1910887d98da22fa90c0a21fc697c88094f4e33a30cfd146bd37b418282",
+    "scripts/lib/two_springs_length_asymmetry.py": "8330d8a6c063eb86fdaac1281cacaedcfe16fdee4e71b740a18c38584ac05577",
+    "scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py": "52bcd6ef039491aa9d56629a90625f3a67eff8d226ed32cb5acdf728ee779719",
+    "docs/theory/isotropic_two_springs_rl_timoshenko.md": "67092f8f0525e467c9f967a0f093e88c58edf71492e8d6525ecb80b2cde0b598",
+    "docs/theory/isotropic_two_springs_longitudinal_slip.md": "16cdf5594a4e167e2cd5dd19debaf3e94f8823285815dfd505436cdd47d72182",
+    "docs/theory/isotropic_two_springs_angle_variation.md": "a25c046ebb916aca88e5bc460d06d83e5a5d02bde1d0516bebf8612d0df89b69",
+    "docs/theory/isotropic_two_springs_angle_asymptotics.md": "dc9f6703cacbf82a5d41ad8bf3df8fd898c76587a37ed8d7862b2f4c3acb61cb",
+    "docs/theory/isotropic_two_springs_leading_validation.md": "be4bc60cfecaf3a43e4ef654da9daca1ecc0abbcb4d8c54233054b61b4efcfa1"
+  },
+  "preflight_angles": [
+    0.0,
+    3.0,
+    6.0,
+    10.0,
+    20.0
+  ],
+  "ritz_cases": [
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      6.0
+    ],
+    [
+      0.01,
+      0.0
+    ],
+    [
+      0.01,
+      6.0
+    ],
+    [
+      1.0,
+      3.0
+    ]
+  ],
+  "leading": {
+    "chi_values": [
+      "RIGID",
+      0.01,
+      0.0
+    ],
+    "beta_deg": [
+      0.0,
+      0.5,
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0,
+      8.0,
+      8.5
+    ],
+    "order": 20,
+    "check_order": 24,
+    "check_beta_deg": [
+      0.0,
+      3.0,
+      8.5
+    ],
+    "quadrature": 64,
+    "quality": {
+      "symmetry_tol": 1e-13,
+      "eigen_residual_tol": 1e-09,
+      "energy_tol": 5e-08,
+      "mass_gram_tol": 5e-07,
+      "constraint_tol": 1e-09,
+      "natural_boundary_tol": 1e-09,
+      "strong_ode_tol": 1e-09,
+      "essential_tol": 1e-09,
+      "frequency_convergence_rtol": 1e-08,
+      "C_convergence_rtol": 1e-07,
+      "monotonicity_rtol": 1e-10
+    }
+  },
+  "mechanics_angles": [
+    0.0,
+    3.0,
+    6.0,
+    10.0,
+    20.0
+  ],
+  "tail_allowed": false,
+  "characteristic_angle": "Not established on this first-stage 0-20 grid",
+  "hypotheses": [
+    "Same leading compliance for end and joint axial springs after independent energy minimization",
+    "No assumed equality of full spectra",
+    "No assumed monotonicity of separately normalized F"
+  ]
+}

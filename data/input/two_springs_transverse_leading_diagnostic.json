@@ -1,0 +1,21 @@
+{
+  "study": "external_transverse_leading_diagnostic",
+  "source": "results/isotropic_two_springs_rl_timoshenko/external_transverse_spring/ea337fc30ad0ee03",
+  "failed_point": "leading_points/143a7f06ec070213.json",
+  "k_joint": 0.1,
+  "k_end": 10.0,
+  "k_w": 1.0,
+  "mu": 0.01,
+  "xi": 0.0,
+  "orders": [16,20,22,24,26,28],
+  "quadrature": 64,
+  "residual_quadratures": [32,64,96,128],
+  "decimal_precision": [50,80],
+  "control_xi": 10.0,
+  "strong_tolerance": 1e-9,
+  "policy_override_reason": "User-requested single-case diagnostic after a strong-form gate failure; not a frequency map.",
+  "spectrum_semantics": "sorted_positions",
+  "positions": 3,
+  "full_model_solves_allowed": false,
+  "leading_map_allowed": false
+}

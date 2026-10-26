@@ -1,0 +1,293 @@
+{
+  "schema": "two-springs-thickness-asymmetry-v1",
+  "defined_before_computation": true,
+  "date": "2026-10-25",
+  "material": {
+    "E": 1.0,
+    "rho": 1.0,
+    "nu": 0.3,
+    "epsilon": 0.005,
+    "aspect": 4.0,
+    "l": 1.0,
+    "ks": 0.8333333333333334
+  },
+  "variant": "RL_FULL",
+  "mu_values": [
+    -0.1,
+    0.0,
+    0.1
+  ],
+  "tau_values": [
+    -0.1,
+    0.0,
+    0.1
+  ],
+  "cases": {
+    "J0E4": [
+      0.1,
+      10.0
+    ],
+    "J4E0": [
+      10.0,
+      0.1
+    ]
+  },
+  "geometry_contract": "Volume preserved; b_i=4h_i; end spring remains on arm 2; all frequencies and springs use A0,I0,l.",
+  "policy": {
+    "defined_before_computation": true,
+    "Lambda_lower": 0.05,
+    "Lambda_upper": 7.3,
+    "root_xtol": 2e-14,
+    "root_rtol": 2e-14,
+    "pole_exclusion": 1e-07,
+    "schur_tol": 1e-10,
+    "inertia_margin": 4e-14,
+    "condition_max": 10000000000.0,
+    "max_count_queries": 160,
+    "max_depth": 30,
+    "boundary_tol": 1e-09,
+    "ode_tol": 1e-09,
+    "singular_tol": 1e-09,
+    "energy_tol": 5e-08,
+    "mass_gram_tol": 5e-07,
+    "nonzero_condition_max": 100000000.0,
+    "same_physics_frequency_tol": 1e-08,
+    "reference_frequency_tol": 1e-08,
+    "ritz_frequency_tol": 1e-07,
+    "ritz_orders": [
+      16,
+      20
+    ],
+    "quadrature_order": 120,
+    "mac_min": 0.95,
+    "assignment_margin_min": 0.1,
+    "independent_scan_Lambda_step": 0.01,
+    "neighbour_relative_jump": 0.2,
+    "pole_scan_intervals": 240
+  },
+  "map": {
+    "frequency_map_policy": "frequency-map-v1",
+    "calculation_mode": "fast_plot",
+    "spectrum_semantics": "sorted_positions",
+    "sweep_parameter": "beta",
+    "parameter_grid": [
+      0.0,
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      3.25,
+      3.5,
+      3.75,
+      4.0,
+      4.25,
+      4.5,
+      4.75,
+      5.0,
+      5.25,
+      5.5,
+      5.75,
+      6.0,
+      6.25,
+      6.5,
+      6.75,
+      7.0,
+      7.25,
+      7.5,
+      7.75,
+      8.0,
+      8.25,
+      8.5,
+      8.75,
+      9.0,
+      9.25,
+      9.5,
+      9.75,
+      10.0,
+      10.25,
+      10.5,
+      10.75,
+      11.0,
+      11.25,
+      11.5,
+      11.75,
+      12.0,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "K_plot": 2,
+    "K_guard": 3,
+    "guard_root_role": "completeness_only",
+    "neighbour_audit": "enabled",
+    "local_repair_policy": "triggered_only",
+    "strict_audit_default": false
+  },
+  "tail_grid": [
+    22,
+    24,
+    26,
+    28,
+    30,
+    32,
+    34,
+    36,
+    38,
+    40,
+    42,
+    44,
+    46,
+    48,
+    50,
+    52,
+    54,
+    56,
+    58,
+    60,
+    62,
+    64,
+    66,
+    68,
+    70,
+    72,
+    74,
+    76,
+    78,
+    80,
+    82,
+    84,
+    86,
+    88,
+    90
+  ],
+  "reference_end_deg": 5,
+  "q_star": 0.15,
+  "minimum_tail_deg": 30,
+  "minimum_reference_log_gain": 1e-06,
+  "derivative_contract": "0 exact reflection symmetry; 0<beta<3 centered h=.5; 3<beta<12 centered h=.25; beta3,12 and integer beta13..19 centered h=1; short-grid20 backward h1; full-grid20 nonuniform19,20,22; tail centered h2 and backward h2 at90. Reuse stiffness_slopes for archived base nodes.",
+  "preflight_angles": [
+    0.0,
+    3.0,
+    6.0,
+    10.0,
+    20.0
+  ],
+  "preflight_geometries": [
+    [
+      -0.1,
+      -0.1
+    ],
+    [
+      0.0,
+      0.1
+    ],
+    [
+      0.1,
+      -0.1
+    ],
+    [
+      0.1,
+      0.1
+    ]
+  ],
+  "regression_mu": [
+    -0.1,
+    0.0,
+    0.1
+  ],
+  "regression_angles": [
+    0.0,
+    3.0,
+    6.0,
+    10.0,
+    20.0
+  ],
+  "ritz_controls": [
+    [
+      -0.1,
+      -0.1,
+      6.0
+    ],
+    [
+      0.0,
+      0.1,
+      3.0
+    ],
+    [
+      0.1,
+      -0.1,
+      10.0
+    ],
+    [
+      0.1,
+      0.1,
+      20.0
+    ]
+  ],
+  "mechanics_angles": [
+    0.0,
+    3.0,
+    6.0,
+    10.0,
+    20.0
+  ],
+  "leading": {
+    "orders": [
+      20,
+      24
+    ],
+    "quadrature": 64,
+    "quadrature_check": 96,
+    "xi": [
+      0.0,
+      0.01,
+      0.02
+    ],
+    "quality": {
+      "symmetry_tol": 1e-13,
+      "eigen_residual_tol": 1e-09,
+      "energy_tol": 5e-08,
+      "mass_gram_tol": 5e-07,
+      "constraint_tol": 1e-09,
+      "natural_boundary_tol": 1e-09,
+      "strong_ode_tol": 1e-09,
+      "essential_tol": 1e-09,
+      "frequency_convergence_rtol": 1e-08,
+      "C_convergence_rtol": 1e-07,
+      "monotonicity_rtol": 1e-10
+    },
+    "tau_sensitivity_xi": [
+      0.0,
+      10.0
+    ],
+    "tau_fd_steps": [
+      0.001,
+      0.0005
+    ],
+    "tau_fd_relative_tolerance": 0.0001
+  },
+  "source": {
+    "folder": "results/isotropic_two_springs_rl_timoshenko/length_asymmetry/ddf22cb06e8563e2",
+    "manifest_sha256": "0a84dd9e85977687809e917e8ec39986ce746ff1b7139bfb9ac40a139ccf1a28"
+  },
+  "frozen_files": {
+    "scripts/lib/isotropic_two_springs_rl_timoshenko.py": "c1a8f8eb97115a049c0c98d18c211e91a838c24012bfbd31dd7c8cbbac7ae1b4",
+    "scripts/lib/isotropic_two_springs_leading.py": "04f9e1910887d98da22fa90c0a21fc697c88094f4e33a30cfd146bd37b418282",
+    "scripts/lib/two_springs_length_asymmetry.py": "8330d8a6c063eb86fdaac1281cacaedcfe16fdee4e71b740a18c38584ac05577",
+    "docs/theory/isotropic_two_springs_length_asymmetry.md": "c6bf8020ad40458b3edba9374d8d69fa0945bd1169adac47156754dbbe29c68d"
+  },
+  "stopping_rule": "No main sweep before geometry, tau=0, heterogeneous physical and Ritz gates. Preserve tolerances. Stop affected series on violations. No tau=.2, new support, FEM, MAC or high spectrum.",
+  "questions": [
+    "Signed thickness redistribution at fixed volume and dimensional springs",
+    "Even axial compliance versus unequal spectra and forms",
+    "Leading first tau derivative contains bending and mass terms but no direct axial term",
+    "Applicability of the unchanged tail-qualified growth-angle criterion"
+  ]
+}

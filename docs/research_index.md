@@ -25,6 +25,91 @@ Git-visible context and immutable history.
 
 ## LONG
 
+Latest completed processing: [primary levels 90% and 95%](theory/isotropic_two_springs_high_frequency_angle_ranges_90_95.md),
+[LONG-D34](memory/decisions.md#long-d34) / [LONG-K33](memory/knowledge.md#long-k33).
+**PASS:** 1940 reused points plus 11 targeted boundary points; all sampled
+maxima and historical 2%/5% boundaries remain unchanged. One 90% range
+starts at zero. Historical levels and the derivative criterion are preserved;
+no new physical model or complete map was computed.
+
+Previous completed study: [high-frequency angle ranges](theory/isotropic_two_springs_high_frequency_angle_ranges.md),
+[LONG-D33](memory/decisions.md#long-d33) / [LONG-K32](memory/knowledge.md#long-k32).
+**PASS:** twenty existing constructions, sampled 0–90-degree maxima and
+95%/98% terminal ranges; 1138 reused and 802 new full spectral points.
+Boundaries resolve to 0.25 degrees, with no assertion between checked nodes.
+Absolute maxima and relative gains accompany the ranges; the old derivative
+criterion and physical models are unchanged. No automatic next study.
+
+Previous completed study: [free outer rotation and transverse spring](theory/isotropic_two_springs_external_rotational_replacement.md),
+[LONG-D32](memory/decisions.md#long-d32) / [LONG-K31](memory/knowledge.md#long-k31).
+**PASS:** ten constructions with kappa_e=0, checked full and leading spectra,
+all ten C coefficients and four figures. Removing the rotational spring lowers
+absolute frequencies but can increase or decrease normalized growth. Prior
+archives and reports remain unchanged; further parameter studies require a new task.
+
+Previous completed continuation: [transverse leading validation](theory/isotropic_two_springs_external_transverse_leading_validation.md),
+[LONG-D31](memory/decisions.md#long-d31) / [LONG-K30](memory/knowledge.md#long-k30).
+**PASS** for ten constructions, 290 actual archive nodes and all ten initial
+growth coefficients. Analytic curvature assembly passes the unchanged gates;
+the leading task reproduces nonmonotone normalized growth. No full-model
+recalculation; the earlier STOP and diagnostic statuses retain their history.
+
+Previous diagnostic: [transverse leading strong residual](theory/isotropic_two_springs_transverse_leading_diagnostic.md),
+[LONG-D30](memory/decisions.md#long-d30) / [LONG-K29](memory/knowledge.md#long-k29).
+**DIAGNOSTIC_PASS.** Same-space analytic curvature integrals remove the
+roundoff-driven p24 violation; independent derivatives and xi=10 control pass.
+Historical transverse-study STOP remains; the separate continuation above
+subsequently completed the requested leading map.
+
+Previous bounded study: [external transverse support](theory/isotropic_two_springs_external_transverse_spring.md),
+[LONG-D29](memory/decisions.md#long-d29) / [LONG-K28](memory/knowledge.md#long-k28).
+**Full model PASS / leading STOP.** Absolute frequencies fall with transverse
+release, but normalized initial growth is nonmonotone in support stiffness and
+persists at a free transverse end. Exact axial support preserves the derived
+xi-squared/2 coefficient. A p24 strong-residual violation stopped the leading
+map; complete C/error curves remain unavailable. Two full-model figures and
+diagnostics are saved. No continuation to removal of the rotational spring.
+
+Previous bounded study: [external axial support compliance](theory/isotropic_two_springs_external_axial_spring.md),
+[LONG-D28](memory/decisions.md#long-d28) / [LONG-K27](memory/knowledge.md#long-k27).
+Same leading axial-compliance task as the joint spring, derived independently;
+full normalized frequencies differ at finite angle. Ten constructions through
+20 degrees, three sorted positions, verified limits and monotonicity. The free
+axial end has no zero mechanism and a decreasing first frequency on this grid.
+Four figures and a separate report; STOP before transverse compliance, replacement
+of the rotational spring, further geometry or a 90-degree tail.
+
+Previous bounded study: [leading-model comparison for unequal thicknesses](theory/isotropic_two_springs_thickness_asymmetry_leading_comparison.md),
+[LONG-D27](memory/decisions.md#long-d27) / [LONG-K26](memory/knowledge.md#long-k26).
+Eight constructions at epsilon0=.005, actual xi nodes through 29.670597.
+The leading task reproduces normalized frequencies and the sign/magnitude of
+opposite-tau differences at common axial compliance. Zero new full solves;
+finite-grid comparison does not establish convergence of eigenpairs as epsilon
+tends to zero. That stage stopped after its report and three figures.
+
+Previous bounded study: [thickness redistribution at fixed volume](theory/isotropic_two_springs_thickness_asymmetry.md),
+[LONG-D26](memory/decisions.md#long-d26) / [LONG-K25](memory/knowledge.md#long-k25).
+18 constructions, individual RL_FULL/Timoshenko coefficients, fixed reference
+springs and total mass. Axial compliance is even in thickness asymmetry, whereas
+frequency and leading growth differ with its sign. Weighted leading Ritz and
+local stiffness/mass derivatives pass checks; all 18 discrete angles confirmed
+through 90 degrees. STOP after the report and five figures; no new support model.
+
+Previous bounded study: [signed length asymmetry](theory/isotropic_two_springs_length_asymmetry.md),
+[LONG-D25](memory/decisions.md#long-d25) / [LONG-K24](memory/knowledge.md#long-k24).
+Five mu values, two pairs, fixed sections and total length; the end spring remains
+on arm 2. Frequency ordering between opposite signs reverses with angle; leading
+C changes despite constant summed axial compliance. Ten discrete growth angles
+confirmed through 90 degrees. A small sorted gap is observed without a veering
+claim. Its separate report, five figures and archives remain unchanged.
+
+Previous archive diagnostic: [delayed frequency growth](theory/archived_delayed_frequency_growth.md),
+[LONG-D24](memory/decisions.md#long-d24) / [LONG-K23](memory/knowledge.md#long-k23).
+Separate RL_FULL, M–H and circular EB/Timoshenko contracts; delayed higher-position
+growth and later first-frequency peaks are present. Fixed 0–5-degree normalization
+does not generalize automatically; all 50 current first-frequency curves retain
+a representative positive reference. No new spectra, tracking, map or report revision.
+
 Current scientific synthesis: [angular sensitivity report](theory/isotropic_two_springs_scientific_synthesis.md)
 and [critical open-question audit](theory/isotropic_two_springs_open_questions.md),
 [LONG-D23](memory/decisions.md#long-d23) / [LONG-K22](memory/knowledge.md#long-k22).
