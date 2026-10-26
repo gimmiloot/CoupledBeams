@@ -1,5 +1,48 @@
 # CHANGELOG
 
+## 2026-10-26 — angular-transition mechanism at small axial stiffness
+
+- Added bounded `--transition-mechanism` mode to the existing axial CLI.
+  Reused 638 accepted points; 711 new prefixes cover three primary stiffnesses,
+  two triggered diagnostic stiffnesses, and fixed-angle sign brackets.
+- All physical/count gates, 24 independent Ritz solutions and 47 tests pass.
+  Sampled curves support emergence/movement of one interior maximum;
+  no competing separated maxima were detected. Fixed-angle thresholds differ.
+- Full-model curvature is resolved in eight constructions and explicitly
+  UNRESOLVED in two weak-peak diagnostics. No tolerances were relaxed.
+- Added a separate report/archive, four vector PDF/320-dpi PNG figures and
+  LONG-D37/K36. Old reports, archives and physics remain unchanged;
+  root README is current and intentionally unchanged.
+
+## 2026-10-26 — free-to-weak axial support transition
+
+- Added `--small-stiffness-transition` to the existing axial CLI; inherited
+  the physical solver, count/field gates and sampled-range processing.
+  Reused 426 endpoint nodes and computed 820 map nodes for four new stiffnesses.
+- Added 30 bounded fixed-angle checks: logarithmic sign brackets and chi=1e-6
+  free-limit contraction. No additional full maps or leading solves.
+- All gates, eight independent Ritz comparisons and 35 tests pass. Small
+  positive stiffnesses through 1e-4 still give decreasing angle curves;
+  1e-3 gives positive growth and delayed terminal ranges. The fixed-angle
+  sign bracket is 2.3714e-4 to 3.1623e-4, not a universal critical value.
+- Added a separate report/archive, four vector PDF/320-dpi PNG figures,
+  and LONG-D36/K35. Historical sources and physics are unchanged;
+  root README remains current and is intentionally unchanged.
+
+## 2026-10-26 — axial-support high-frequency ranges on 0–90 degrees
+
+- Added a bounded `--high-frequency-ranges` preset to the existing axial
+  support CLI, reusing physical/count solvers and the sampled-range algorithm.
+  Reused 608 accepted points; added 280 tail and 150 refinement points.
+- All physical/count gates and eight independent Ritz checks pass; 27 tests
+  pass. Six redundant preflight prefixes from integer/float zero cache keys
+  are retained and checked; numeric support keys are now canonicalized.
+- Positive axial compliance delays 95% attainment up to 53.25 degrees;
+  both free axial ends instead lose frequency and have no terminal range.
+  Added a separate report/archive, four PDF/320-dpi PNG figures and LONG-D35/K34.
+  Historical archives, reports, physics and leading models are unchanged.
+  Root README remains current and is intentionally unchanged.
+
 ## 2026-10-26 — primary high-frequency levels revised to 90% and 95%
 
 - Added a bounded `--high-frequency-ranges-90-95` preset to the existing

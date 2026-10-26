@@ -1,5 +1,29 @@
 # Generated Results Index
 
+[Angular-transition mechanism](theory/isotropic_two_springs_external_axial_transition_mechanism.md):
+[external_axial_transition_mechanism/45c7729f346df3c2](../results/isotropic_two_springs_rl_timoshenko/external_axial_transition_mechanism/45c7729f346df3c2/README.md).
+PASS for 711 new prefixes and 638 reused points; six primary and four
+triggered diagnostic curves. Separate fixed-angle sign brackets, full-model
+curvature uncertainty, sampled extrema and 90%/95% ranges are retained.
+Two curvature signs remain UNRESOLVED. Four PDF/PNG figures, 24 independent
+Ritz solutions and 47 tests; historical archives unchanged.
+
+[Free-to-weak axial support transition](theory/isotropic_two_springs_external_axial_small_stiffness_transition.md):
+[external_axial_small_stiffness_transition/2b5e8e8520c386b7](../results/isotropic_two_springs_rl_timoshenko/external_axial_small_stiffness_transition/2b5e8e8520c386b7/README.md).
+PASS: 1246 main nodes (426 reused, 820 new), 30 addressed prefixes and eight
+Ritz checks. Four terminal and eight nonterminal cases at each threshold;
+all crossing brackets resolve to 0.25 degrees. Four PDF/PNG figures and
+35 tests. Fixed-angle sign brackets and free-limit checks are separately
+scoped; no maxima or full ranges are claimed for the extra stiffnesses.
+
+[Axial-support high-frequency ranges](theory/isotropic_two_springs_external_axial_high_frequency_ranges.md):
+[external_axial_high_frequency_ranges/242dfa8318f411c5](../results/isotropic_two_springs_rl_timoshenko/external_axial_high_frequency_ranges/242dfa8318f411c5/README.md).
+PASS: ten constructions, 1038 unique nodes (608 reused, 430 new), sampled
+90%/95% ranges and maxima. Eight positive/rigid supports have terminal ranges;
+two free axial supports retain only initial qualifying intervals. Six redundant
+preflight prefixes are separately preserved in the accounting. Four PDF/PNG
+figures, physical/count gates and 27 tests; no leading or transverse solves.
+
 [Primary levels 90% and 95%](theory/isotropic_two_springs_high_frequency_angle_ranges_90_95.md):
 [high_frequency_angle_ranges_90_95/b7c2787461cb3cda](../results/isotropic_two_springs_rl_timoshenko/high_frequency_angle_ranges_90_95/b7c2787461cb3cda/README.md).
 PASS: 1940 reused plus 11 boundary-refinement points, twenty terminal ranges

@@ -25,7 +25,31 @@ Git-visible context and immutable history.
 
 ## LONG
 
-Latest completed processing: [primary levels 90% and 95%](theory/isotropic_two_springs_high_frequency_angle_ranges_90_95.md),
+Latest completed study: [angular-transition mechanism](theory/isotropic_two_springs_external_axial_transition_mechanism.md),
+[LONG-D37](memory/decisions.md#long-d37) / [LONG-K36](memory/knowledge.md#long-k36).
+**PASS for accepted spectra and sampled extrema:** one interior maximum
+emerges and moves across the checked stiffnesses; no competing separated
+maxima detected. Fixed-angle thresholds differ. Two weak-peak initial
+curvatures remain UNRESOLVED; continuous maximum trajectories are not proved.
+Historical physics/results unchanged; no new leading model; STOP.
+
+Previous completed study: [free-to-weak axial support](theory/isotropic_two_springs_external_axial_small_stiffness_transition.md),
+[LONG-D36](memory/decisions.md#long-d36) / [LONG-K35](memory/knowledge.md#long-k35).
+**PASS:** twelve main curves, 426 reused and 820 new nodes, plus 30 bounded
+fixed-angle checks. Decreasing curves persist through chi=1e-4; chi=1e-3
+gives positive growth and 95% terminal ranges from 57.75/62.75 degrees.
+The free limit is continuous; the resolved sign brackets do not establish
+a universal critical stiffness. No new physics or leading model; STOP.
+
+Previous completed study: [axial-support 90%/95% ranges](theory/isotropic_two_springs_external_axial_high_frequency_ranges.md),
+[LONG-D35](memory/decisions.md#long-d35) / [LONG-K34](memory/knowledge.md#long-k34).
+**PASS:** ten constructions, 608 reused and 430 new unique points. Positive
+axial compliance delays 95% attainment to 47.25–53.25 degrees at chi_u=.01;
+both free axial ends have no terminal high range. Physical/count checks and
+Ritz comparisons pass. Boundaries are discrete with 0.25-degree brackets;
+no new leading model, transverse calculations or automatic next study.
+
+Previous completed processing: [primary levels 90% and 95%](theory/isotropic_two_springs_high_frequency_angle_ranges_90_95.md),
 [LONG-D34](memory/decisions.md#long-d34) / [LONG-K33](memory/knowledge.md#long-k33).
 **PASS:** 1940 reused points plus 11 targeted boundary points; all sampled
 maxima and historical 2%/5% boundaries remain unchanged. One 90% range

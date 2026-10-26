@@ -1,5 +1,49 @@
 # Scripts guide
 
+## Angular-transition mechanism
+
+```powershell
+python scripts/analysis/study_two_springs_external_axial_spring.py --transition-mechanism --stage preflight
+python scripts/analysis/study_two_springs_external_axial_spring.py --transition-mechanism --stage run
+```
+
+Three primary small axial stiffnesses, with two additional values triggered
+by unresolved maximum movement; separate fixed-angle bisection and full-model
+curvature diagnostics. Existing physics and acceptance gates are reused.
+[Report](../docs/theory/isotropic_two_springs_external_axial_transition_mechanism.md)
+and [reproduction/plot-only commands](../results/isotropic_two_springs_rl_timoshenko/external_axial_transition_mechanism/45c7729f346df3c2/README.md)
+retain the two unresolved curvature signs and all historical evidence.
+
+## Small axial stiffness transition
+
+```powershell
+python scripts/analysis/study_two_springs_external_axial_spring.py --small-stiffness-transition --stage preflight
+python scripts/analysis/study_two_springs_external_axial_spring.py --small-stiffness-transition --stage run
+```
+
+This bounded preset reuses chi=0/.01 archives and computes four small positive
+stiffnesses only after the nine-angle preflight. Logarithmic sign checks and
+chi=1e-6 free-limit checks are addressed points, not extra full maps.
+[Report](../docs/theory/isotropic_two_springs_external_axial_small_stiffness_transition.md)
+and [complete reproduction commands](../results/isotropic_two_springs_rl_timoshenko/external_axial_small_stiffness_transition/2b5e8e8520c386b7/README.md)
+include `plot_only`, tests and finalization. Existing CLI modes remain available.
+
+## Axial-support high-frequency ranges
+
+The existing axial CLI has a separate bounded preset for ten constructions:
+
+```powershell
+python scripts/analysis/study_two_springs_external_axial_spring.py --high-frequency-ranges --stage preflight
+python scripts/analysis/study_two_springs_external_axial_spring.py --high-frequency-ranges --stage run
+```
+
+It reuses accepted axial 0–20-degree data and exact-support 0–90-degree maps,
+then computes only missing tails and triggered quarter-degree refinements.
+[Report](../docs/theory/isotropic_two_springs_external_axial_high_frequency_ranges.md)
+and [complete commands/data dictionary](../results/isotropic_two_springs_rl_timoshenko/external_axial_high_frequency_ranges/242dfa8318f411c5/README.md)
+include `plot_only`, tests and finalization. No new physical solver or leading
+calculation is introduced; the original CLI mode is unchanged.
+
 ## High-frequency angle ranges
 
 The current engineering comparison uses the separate

@@ -1,5 +1,26 @@
 # Internal helpers
 
+- `two_springs_external_axial_mechanism.py` implements the bounded
+  `--transition-mechanism` preset. It inherits the physical/count solver,
+  source validation, sweep and range refinement; adds fixed-angle brackets,
+  reflection checks, full-model curvature uncertainty and extrema evidence.
+  Additional stiffnesses require the saved scientific trigger. No new
+  physical assembly or universal spectral infrastructure is introduced.
+
+- `two_springs_external_axial_transition.py` is the bounded small-stiffness
+  preset of the axial CLI. It inherits source/physical/count validation,
+  map traversal and angle-range refinement, adds the nine-angle preflight,
+  signed growth, fixed-angle sign brackets and free-limit checks, and renders
+  accepted data. No physical, leading or universal spectral solver is added.
+
+- `two_springs_external_axial_high_ranges.py` implements the bounded
+  `--high-frequency-ranges` preset of the existing axial CLI. It validates
+  archive identity, reuses the axial solver/field gates and `high_ranges`,
+  extends only missing tails and triggered brackets, retains nonterminal
+  qualifying intervals, and renders four figures from accepted data.
+  A temporary legacy column view reuses refinement logic without treating
+  axial chi_u as transverse k_w. No physical or universal spectral solver.
+
 - `two_springs_high_frequency_angle_ranges.py` implements the bounded
   `--high-frequency-ranges` workflow: verifies source archives, reuses existing
   full-model/count/physical gates, adds missing or reasoned refinement points,
