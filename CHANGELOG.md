@@ -1,5 +1,94 @@
 # CHANGELOG
 
+## 2026-10-27 — HS-LA4: joint stiffness in the horizontal leading model
+
+- Added the bounded six-case workflow with exact zero-kernel deflation and
+  exact rigid joint/endpoint constraints, reusing unchanged HS-L1 fields.
+- Computed limit reactions, no-fit saturation coefficients and 90%/95%
+  thresholds at p20/24. Analytic threshold sensitivities are positive at the
+  five finite primary stiffnesses; targeted differences confirm the formulas.
+- Independent leading-ODE inertia counts verify all p24 prefixes; 71 positive
+  primary roots agree within 6.58e-13 in frequency. Eight new tests pass.
+- Preserved 8 archived prefixes; computed 73 leading prefixes including
+  derivative checks. No full RL/Timoshenko solutions or broad angle maps.
+- Appended section 12 to the canonical report, LONG-D43/K42 and relevant
+  navigation. Root README remains current; old models and archives unchanged.
+
+
+## 2026-10-27 — HS-LA3: independent second saturation coefficient
+
+- Computed b=-0.639617945455777 from two symmetric indefinite linear systems
+  per Ritz order and checked against all authoritative 80-digit HS-LA2 modes.
+  No fitting, new leading eigensolves or full-model computations.
+- Two-term leading threshold errors are 0.1700%/0.1129% in tau and
+  0.0850%/0.0565% in the H5/H6 angles at 90%/95%.
+- Appended one section to the existing canonical report and six tests to its
+  existing regression file; all 15 tests pass. Added a small archived-matrix
+  helper, contract and reproducible bundle while preserving HS-LA2 source hashes.
+- Added LONG-D42/K41 and scoped navigation. Root README remains current;
+  historical reports/archives retain their prior content. No commit/push.
+
+## 2026-10-27 — HS-LA2: rank-one spectral audit and saturation reaction
+
+- Verified interlacing, all-N secular identities, energy sensitivities and
+  the exact-constraint reaction for the unchanged HS-L1 model at p20/24.
+  No full RL/Timoshenko solves or new threshold searches.
+- Preserved an all-basis binary64 failure; 80-digit diagonalization of the
+  same matrices resolves the algebraic audit without relaxing tolerances.
+  Rounded high-mode coefficient exports retain their diagnostic qualification.
+- The no-fit coefficient is r_infty²=1.649206441273272. First-tail threshold
+  errors at 90%/95% are 15.53%/6.86% (zeta) or 9.75%/4.19% (omega).
+- Added a canonical spectral note, bounded workflow/contract, 9 regression
+  tests, hashed bundle and one PDF/320-dpi PNG figure. Nine new and five
+  selected existing tests pass without additional eigensolves.
+  Added LONG-D41/K40; root README remains current and unchanged. No commit/push.
+
+## 2026-10-27 — HS-L1: leading horizontal-spring model and local thresholds
+
+- Derived a separate rank-one leading form from the full horizontal-spring
+  energy and implemented the exact saturation constraint. Canonical full and
+  historical leading libraries remain unchanged.
+- Leading p20/24, independent eight-condition ODE and all physical gates pass.
+  Used 18 HS-P1 points and 44 new local full-model points for four thresholds;
+  11 new tests and 50 existing horizontal-model tests pass.
+- The local frequency error is below 0.01339% on the checked sample, while
+  a priori 90%/95% angle forecasts are low by about 7.14%/14.8%, primarily
+  because the leading saturation level is 1.364% below the full 90-degree value.
+- Preserved two workflow-output failures and recovered accepted spectra without
+  recomputation. Added report, reproducible archive, two PDF/320-dpi PNG figures,
+  scoped assumptions and LONG-D40/K39. No global maps or optimization.
+  Root README remains current and unchanged; no commit or push.
+
+## 2026-10-26 — HS-P1: bounded horizontal-spring pilot
+
+- Added a model-specific pilot module and contract for exactly seven constructions
+  and 15 angles. Reused 19 accepted points and computed 86 new three-position
+  prefixes, including the exact zero in H1 at zero angle. No extra angles.
+- All physical/count gates, stiffness monotonicity and 12 triggered independent
+  Ritz comparisons pass. The original 41 tests and nine pilot tests pass.
+  The old historical CLI hash regression and frozen physical sources are unchanged.
+- Added a separate report/archive, four vector PDF/320-dpi PNG figures, local
+  analytical comparisons and nine saved-form energy analyses. Sampled first
+  frequencies increase; all sampled maxima occur at 90 degrees. No continuous
+  extrema or high-frequency ranges are claimed.
+- Updated relevant indexes, script guidance and LONG-D39/K38. Root README and
+  physical assumptions remain current and unchanged; no commit or push.
+
+## 2026-10-26 — one horizontal spring: zero-inclusive bounded verification
+
+- Added a separate RL_FULL/Timoshenko horizontal-support module, one diagnostic
+  CLI, explicit input contract and 41 focused tests. No guide or outer rotational
+  spring is present; exact zero mechanisms and exact RIGID constraints are retained.
+- New-model gates 1–4 PASS: 47 accepted spectral points, 52 Ritz p16/20 solutions,
+  physical residuals and two independently derived local angle coefficients.
+  Static equilibration and a low-frequency fundamental basis resolve documented
+  numerical failures without changing equations, mass, springs or tolerances.
+- Overall PARTIAL_PASS: combined regressions give 129 passed / 1 failed.
+  The failure is an old archive hash contract already inconsistent with HEAD;
+  the affected historical CLI, contract and data are unchanged.
+- Added the canonical report, reproducible archive and LONG-D38/K37. No maps,
+  maxima/ranges or optimization. Root README remains current and unchanged.
+
 ## 2026-10-26 — angular-transition mechanism at small axial stiffness
 
 - Added bounded `--transition-mechanism` mode to the existing axial CLI.

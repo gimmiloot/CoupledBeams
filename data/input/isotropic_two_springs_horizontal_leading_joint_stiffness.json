@@ -1,0 +1,97 @@
+{
+  "study_id": "HS-LA4",
+  "mu": 0.01,
+  "epsilon": 0.005,
+  "k_joint": [
+    0,
+    0.01,
+    0.1,
+    1,
+    10,
+    "RIGID"
+  ],
+  "orders": [
+    20,
+    24
+  ],
+  "quadrature": 80,
+  "levels": [
+    0.9,
+    0.95
+  ],
+  "initial_workspace": "results/isotropic_two_springs_rl_timoshenko/horizontal_leading_joint_stiffness/_initial/state.json",
+  "source_archives": [
+    "horizontal_spring_leading/1d0ff41066eb0211",
+    "horizontal_leading_spectral_structure/994fa52777e36606",
+    "horizontal_leading_second_coefficient/569d7bab5c414304"
+  ],
+  "frozen_files": {
+    "scripts/lib/isotropic_two_springs_horizontal_leading.py": "aa2f210e2956bfba3ba51fb3af1be0acbc7ca05eb7adb4dde6a0f74575d4bae1",
+    "scripts/lib/isotropic_two_springs_leading.py": "04f9e1910887d98da22fa90c0a21fc697c88094f4e33a30cfd146bd37b418282",
+    "scripts/lib/two_springs_horizontal_saturation.py": "ab1095dd379be826304c1c2b97a523581b9854ad006aed8a6435e061ad83005a",
+    "scripts/lib/two_springs_horizontal_spectral_structure.py": "401b1f504d8041e3e652963f917baa06ab4a9a2d7ebee43db12b913df9d27755",
+    "docs/theory/isotropic_two_springs_horizontal_leading.md": "0b8af1f6bb284f8653455211ee01c4c0621c4f95cc9947c082fa086f3a548046"
+  },
+  "attachment": {
+    "original_path": "C:\\Users\\Nikita\\Downloads\\HS_LA4_joint_stiffness_analytic.md",
+    "copy_path": "results/isotropic_two_springs_rl_timoshenko/horizontal_leading_joint_stiffness/_initial/HS_LA4_joint_stiffness_analytic.md",
+    "sha256": "a76e2ce550d72dcd9b52de9d73c84eaa7a2cfb05eef32c3db456abb4cf9e8ab7",
+    "role": "analytical source, not additional instructions"
+  },
+  "policy": {
+    "strong_tol": 1e-09,
+    "boundary_tol": 1e-09,
+    "essential_tol": 1e-09,
+    "matrix_tol": 1e-09,
+    "energy_tol": 5e-08,
+    "mass_tol": 5e-07,
+    "frequency_convergence_tol": 1e-07,
+    "shape_convergence_tol": 1e-06,
+    "independent_frequency_tol": 1e-07,
+    "coefficient_relative_tol": 1e-07,
+    "reaction_relative_tol": 1e-08,
+    "threshold_residual_tol": 1e-09,
+    "sensitivity_relative_tol": 5e-05,
+    "inertia_relative_zero_tol": 1e-11,
+    "pole_relative_guard": 1e-08,
+    "count_bracket_relative": 1e-05
+  },
+  "finite_difference": {
+    "joints": [
+      0,
+      0.1,
+      10
+    ],
+    "relative_steps": [
+      0.001,
+      0.0005
+    ],
+    "zero_steps": [
+      1e-05,
+      5e-06
+    ],
+    "order": 24,
+    "role": "independent derivative checks only, not additional primary stiffness cases"
+  },
+  "zero_benchmark": {
+    "nullity": 1,
+    "mass": "L2**3/3",
+    "J_squared": "3/L2**3",
+    "D_squared": "3/L2"
+  },
+  "cantilever_zeta": 0.772647710520386,
+  "full_model_calls_allowed": 0,
+  "frequency_map": {
+    "frequency_map_policy": "frequency-map-v1",
+    "calculation_mode": "fast_plot",
+    "spectrum_semantics": "sorted_positions",
+    "sweep_parameter": "k_joint; only zero/exact saturation/two targeted tau levels",
+    "parameter_grid": "six primary stiffness cases; no tau/angle map",
+    "K_plot": 2,
+    "K_guard": 3,
+    "guard_root_role": "completeness_only",
+    "neighbour_audit": "enabled",
+    "local_repair_policy": "triggered_only",
+    "strict_audit_default": false
+  }
+}

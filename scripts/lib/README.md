@@ -1,5 +1,48 @@
 # Internal helpers
 
+- `two_springs_horizontal_joint_stiffness.py` extends the unchanged HS-L1
+  fields for the bounded HS-LA4 contract: exact zero-kernel deflation, exact
+  J/D constraints, reaction coefficients and threshold sensitivities. Its
+  independent EB endpoint-inertia count checks the lowest three positions.
+  This is a reusable diagnostic entry point, not a full-model or universal
+  solver. A separate module preserves old source hashes and avoids applying
+  the positive-definite HS-LA2 contract to the zero mechanism. See section 12
+  of the canonical spectral-structure report and `../README.md` for commands.
+
+
+- `two_springs_horizontal_saturation.py` postprocesses HS-LA2 matrices and
+  authoritative modes for the HS-LA3 second saturation coefficient. It has
+  no eigensolver or fit; its small linear-response contract preserves the
+  existing source-hashed HS-LA2 runner. See section 11 of the same report.
+- `two_springs_horizontal_spectral_structure.py` is the bounded HS-LA2
+  all-N secular/energy/reaction audit of the frozen HS-L1 matrices. It preserves
+  high-mode arithmetic diagnostics, uses exact saturation and has no full-model
+  spectral calls. See `docs/theory/isotropic_two_springs_horizontal_leading_spectral_structure.md`.
+- `isotropic_two_springs_horizontal_leading.py` is the specialized HS-L1
+  variational leading model with free external translation/rotation, analytic
+  curvature integration, rank-one difference of endpoint displacements and
+  exact saturation. An independent eight-condition EB ODE checks selected roots.
+  `two_springs_horizontal_leading_validation.py` manages its bounded p20/24
+  checks, four full-model threshold searches, archive reuse and CSV-only plots.
+  See `docs/theory/isotropic_two_springs_horizontal_leading.md`.
+
+- `two_springs_horizontal_pilot.py` implements HS-P1: the fixed seven-case
+  input contract, verified archive reuse, three-position prefixes, triggered
+  neighbour checks and analysis of saved first forms. It reuses the physical
+  module and the frozen diagnostic `Run`, with no new spectral infrastructure.
+  Its `plot_only` helper `two_springs_horizontal_pilot_figures.py` reads checked
+  CSV and creates four PDF/PNG figures without solving eigenvalue problems.
+  See `docs/theory/isotropic_two_springs_horizontal_pilot.md`.
+
+- `isotropic_two_springs_horizontal_spring.py` is the separate physical
+  one-horizontal-spring model with no outer guide or rotation spring.
+  Reuses canonical RL_FULL/Timoshenko equations and node; adds the seven/six/five
+  dimensional admissible trace spaces, exact zero kernel, low-frequency
+  fundamental basis and independent semidefinite Ritz energy verification.
+  Physical positions include zeros. Canonical verification is documented in
+  `docs/theory/isotropic_two_springs_horizontal_spring.md`; the separate HS-P1
+  workflow above uses this unchanged physical implementation.
+
 - `two_springs_external_axial_mechanism.py` implements the bounded
   `--transition-mechanism` preset. It inherits the physical/count solver,
   source validation, sweep and range refinement; adds fixed-angle brackets,

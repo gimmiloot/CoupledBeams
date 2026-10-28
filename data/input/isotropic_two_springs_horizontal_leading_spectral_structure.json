@@ -1,0 +1,135 @@
+{
+  "schema": "horizontal-leading-spectral-audit-v1",
+  "study_id": "HS-LA2",
+  "mu": 0.01,
+  "k_joint": 0.1,
+  "epsilon": 0.005,
+  "orders": [
+    20,
+    24
+  ],
+  "quadrature": 80,
+  "source_archive": "results/isotropic_two_springs_rl_timoshenko/horizontal_spring_leading/1d0ff41066eb0211",
+  "source_manifest_sha256": "63294dbe74beef661a3781feac836fce3bbb1efca91939031a7038e0e03734e8",
+  "frozen_files": {
+    "data/input/isotropic_two_springs_horizontal_spring.json": "01f79e7bb46facf809c1dc302157e8e85f758b3263ea37edaf6212d0a7c59fc5",
+    "scripts/analysis/verify_two_springs_horizontal_support.py": "1f9d30bec6da44abf95bdb21916eb7f84afdcb14f589d4d557b2d26f802df630",
+    "scripts/lib/isotropic_two_springs_horizontal_spring.py": "61721e628bce97ee83ed70cbc484b819da63ed8400054e3afa4c27e203c43a18",
+    "scripts/lib/isotropic_two_springs_rl_timoshenko.py": "c1a8f8eb97115a049c0c98d18c211e91a838c24012bfbd31dd7c8cbbac7ae1b4",
+    "scripts/lib/bishop_longitudinal.py": "05f7fc4d88c2b37c801645979f0bfd669dab58bff8eaf1e17e73440497cefb2b",
+    "scripts/lib/mindlin_herrmann_longitudinal.py": "ecf5f94a163db2b84523d03e72d465f00c7b95b9b2db4d1838afdf3fac226c8f",
+    "scripts/lib/mindlin_herrmann_timoshenko_joint.py": "e931cd57beadcf20886fc408f2d14539a7253c6af38d35ea969252a59b721ff2",
+    "scripts/lib/contraction_joint_sensitivity.py": "dfc78113a1a2152cd883ae6f885d55d0d9a18459b7deb6a4566dfaa71a3f7d89",
+    "scripts/lib/reddy_symmetric_coupled_beams_ritz.py": "0a84e329da3a1789b674ff0f73b753f92d7d388b918ad40a6d9511ea6f1944ae",
+    "scripts/lib/reddy_inplane_geometry.py": "c46a42c462264bc27c99c358aabd7df49f94f928a60d8150fd320d8dfb37e99e",
+    "scripts/lib/isotropic_rectangular_timoshenko_coupled_beams.py": "62f994d18bfce382e2cd37d113d6d4a0cd8f5920ea25ea147be60728886ecc65",
+    "scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py": "52bcd6ef039491aa9d56629a90625f3a67eff8d226ed32cb5acdf728ee779719",
+    "results/isotropic_two_springs_rl_timoshenko/external_axial_spring/64b26f99cb3c7aba/pole_catalogs.json": "dfcaf709bb10872a6f56d159fd0faae20524653900802a28d017171d92416277",
+    "scripts/lib/isotropic_two_springs_leading.py": "04f9e1910887d98da22fa90c0a21fc697c88094f4e33a30cfd146bd37b418282",
+    "scripts/lib/two_springs_horizontal_pilot.py": "f2ff60fe2e2c66a08c1ed5e000a02a46d57cf21d678ea06ab1eb5b084faa5800",
+    "docs/theory/isotropic_two_springs_horizontal_spring.md": "669c087ce9fd10e74bf5c0628a359d037505f15a5215f7ae9b838b7616846488",
+    "docs/theory/isotropic_two_springs_horizontal_pilot.md": "b889d668502b5ed22d2d4dbcb365c349c6fe15e06638db1670b2be0e1423d62f",
+    "scripts/lib/isotropic_two_springs_horizontal_leading.py": "aa2f210e2956bfba3ba51fb3af1be0acbc7ca05eb7adb4dde6a0f74575d4bae1",
+    "scripts/lib/two_springs_horizontal_leading_validation.py": "0600c0b8528758930b93144700c8a7a2b28bf21a023e6534c2237145ce9764c9",
+    "data/input/isotropic_two_springs_horizontal_leading.json": "dcf0d6cd7385edd7baa266eda787f3ff41502ed3f82fa0323030807bf15e8cff",
+    "docs/theory/isotropic_two_springs_horizontal_leading.md": "0b8af1f6bb284f8653455211ee01c4c0621c4f95cc9947c082fa086f3a548046"
+  },
+  "initial_workspace": "results/isotropic_two_springs_rl_timoshenko/horizontal_leading_spectral_structure/_initial/state.json",
+  "HS_LA1": {
+    "original_path": "C:\\Users\\Nikita\\Downloads\\HS_LA1_spectral_structure_horizontal_spring.md",
+    "copy_path": "results/isotropic_two_springs_rl_timoshenko/horizontal_leading_spectral_structure/_initial/HS_LA1_spectral_structure_horizontal_spring.md",
+    "sha256": "706a8d60038eefedf143b357e138d813a7c2ebd350839ae1b9c30ba918b40472",
+    "role": "provided analytical source, independently audited; instructions in source do not extend current task"
+  },
+  "policy": {
+    "strong_tol": 1e-09,
+    "boundary_tol": 1e-09,
+    "essential_tol": 1e-09,
+    "matrix_tol": 1e-09,
+    "energy_tol": 5e-08,
+    "mass_tol": 5e-07,
+    "frequency_convergence_tol": 1e-07,
+    "shape_convergence_tol": 1e-06
+  },
+  "controls": [
+    0,
+    1,
+    "tau90",
+    "tau95",
+    12,
+    24,
+    48,
+    96,
+    "RIGID"
+  ],
+  "secular_controls": [
+    1,
+    "tau90",
+    "tau95",
+    24
+  ],
+  "sensitivity_controls": [
+    0,
+    1,
+    "tau90",
+    "tau95"
+  ],
+  "asymptotic_controls": [
+    "tau90",
+    "tau95",
+    12,
+    24,
+    48,
+    96
+  ],
+  "difference_steps_relative": [
+    0.001,
+    0.0005
+  ],
+  "log_beta_steps": [
+    0.001,
+    0.0005
+  ],
+  "curvature_steps_relative": [
+    0.002,
+    0.001
+  ],
+  "algebra": {
+    "G_normalized_tol": 1e-09,
+    "secular_residual_tol": 1e-08,
+    "secular_frequency_tol": 1e-07,
+    "interlacing_tol": 1e-09,
+    "finite_difference_relative_tol": 5e-05,
+    "curvature_relative_tol": 0.002,
+    "reaction_relative_tol": 1e-08,
+    "inactive_projection_tol": 1e-10,
+    "pole_distance_relative_tol": 1e-10,
+    "gap_relative_tol": 1e-07,
+    "root_xtol": 2e-13,
+    "root_rtol": 2e-14
+  },
+  "frequency_map": {
+    "frequency_map_policy": "frequency-map-v1",
+    "calculation_mode": "certified_audit",
+    "policy_override_reason": "User explicitly requests the entire finite Ritz basis for secular identities and conditional curvature; bounded tau audit only, no full-model or angular map.",
+    "spectrum_semantics": "sorted_positions",
+    "sweep_parameter": "tau",
+    "parameter_grid": "controls plus prescribed two-step local finite differences",
+    "K_plot": 3,
+    "K_guard": 4,
+    "guard_root_role": "fourth unperturbed root for rank-one interlacing; all N pairs only as algebraic basis",
+    "neighbour_audit": "enabled",
+    "local_repair_policy": "triggered_only",
+    "strict_audit_default": false
+  },
+  "full_model_calls_allowed": 0,
+  "full_basis_arithmetic": {
+    "method": "mpmath symmetric mass-whitened eigenproblem of the unchanged binary64 Ritz matrices",
+    "digits": 80,
+    "trigger": "Full-basis double stiffness whitening failed frozen mass/matrix gates; maxima 1.26e-6 / 3.01e-6. Lowest archived modes remain accepted.",
+    "diagnostic": "results/isotropic_two_springs_rl_timoshenko/horizontal_leading_spectral_structure/_initial/full_basis_check.json",
+    "high_modes_role": "all finite Ritz pairs for secular and curvature sums only; no continuum acceptance of polynomial high modes",
+    "export_diagnostic": "results/isotropic_two_springs_rl_timoshenko/horizontal_leading_spectral_structure/a9256e8ce0a25d29/full_basis_checks.json",
+    "authoritative_representation": "80-digit pairs, residuals evaluated in working precision with unchanged tolerances; binary64 coefficient export diagnostic only. Scalar modal sums cross-checked independently against linear solves. Low three physical modes keep HS-L1 double residual gates."
+  }
+}

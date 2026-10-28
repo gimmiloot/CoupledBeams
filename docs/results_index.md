@@ -1,5 +1,43 @@
 # Generated Results Index
 
+[HS-LA4: joint stiffness, section 12](theory/isotropic_two_springs_horizontal_leading_spectral_structure.md):
+[horizontal_leading_joint_stiffness/b0ec94478d0561d3](../results/isotropic_two_springs_rl_timoshenko/horizontal_leading_joint_stiffness/b0ec94478d0561d3/README.md).
+PASS: six primary cases at p20/24, exact zero/rigid constraints, reactions,
+coefficients and leading thresholds; 73 new / 8 reused low prefixes including
+targeted derivative checks. Independent ODE counts, normalized forms and
+energy sensitivities saved. No full-model solutions or angular maps.
+
+
+[HS-LA3: second saturation coefficient, section 11](theory/isotropic_two_springs_horizontal_leading_spectral_structure.md):
+[horizontal_leading_second_coefficient/569d7bab5c414304](../results/isotropic_two_springs_rl_timoshenko/horizontal_leading_second_coefficient/569d7bab5c414304/README.md).
+PASS: four indefinite linear solves, all-N high-precision modal verification,
+one/two-term errors and leading H5/H6 angle predictions. No new eigensolves.
+
+[HS-LA2: spectral structure and saturation](theory/isotropic_two_springs_horizontal_leading_spectral_structure.md):
+[horizontal_leading_spectral_structure/994fa52777e36606](../results/isotropic_two_springs_rl_timoshenko/horizontal_leading_spectral_structure/994fa52777e36606/README.md).
+PASS: 80 new / 10 reused low-prefix solutions, eight all-N diagonalizations,
+exact reaction, two-step derivatives and no-fit tail errors. No full-model
+solves. Preserved arithmetic diagnostics, authoritative 80-digit finite pairs,
+one figure; all-N matrix completeness is distinct from continuum accuracy.
+
+[HS-L1: horizontal leading model](theory/isotropic_two_springs_horizontal_leading.md):
+[horizontal_spring_leading/1d0ff41066eb0211](../results/isotropic_two_springs_rl_timoshenko/horizontal_spring_leading/1d0ff41066eb0211/README.md).
+PASS: 108 leading parameters at p20/24, 18 reused and 44 new local full points,
+four threshold brackets, exact saturation, two figures. A priori and
+full-level-normalized diagnostic thresholds are kept distinct.
+
+[HS-P1: horizontal-spring pilot](theory/isotropic_two_springs_horizontal_pilot.md):
+[horizontal_spring_pilot/9d8be26f4be1694e](../results/isotropic_two_springs_rl_timoshenko/horizontal_spring_pilot/9d8be26f4be1694e/README.md).
+PASS: 105 points (86 new / 19 reused), three physical positions including the
+exact H1 zero, 12 triggered Ritz comparisons. Four figures, nine first-form
+energy analyses, local asymptotic comparison; no added angles or final ranges.
+
+[One horizontal support](theory/isotropic_two_springs_horizontal_spring.md):
+[horizontal_spring_verification/2b59bb0f5389b83b](../results/isotropic_two_springs_rl_timoshenko/horizontal_spring_verification/2b59bb0f5389b83b/README.md).
+Bounded gates 1–4 PASS: 47 points, 141 physical positions including four zeros,
+52 Ritz solutions, local analytical coefficients. Overall PARTIAL_PASS due
+to one pre-existing historical archive hash regression; failures preserved.
+
 [Angular-transition mechanism](theory/isotropic_two_springs_external_axial_transition_mechanism.md):
 [external_axial_transition_mechanism/45c7729f346df3c2](../results/isotropic_two_springs_rl_timoshenko/external_axial_transition_mechanism/45c7729f346df3c2/README.md).
 PASS for 711 new prefixes and 638 reused points; six primary and four

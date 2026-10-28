@@ -1,0 +1,65 @@
+{
+  "study_id": "HS-LA3",
+  "schema": "horizontal-leading-second-coefficient-v1",
+  "mu": 0.01,
+  "k_joint": 0.1,
+  "epsilon": 0.005,
+  "orders": [
+    20,
+    24
+  ],
+  "source_archive": "results/isotropic_two_springs_rl_timoshenko/horizontal_leading_spectral_structure/994fa52777e36606",
+  "source_manifest_sha256": "e1ec0ee1906268ca2fc02840e124c30a1062316bfaf8c7f4153e2f19be7efac9",
+  "HS_L1_archive": "results/isotropic_two_springs_rl_timoshenko/horizontal_spring_leading/1d0ff41066eb0211",
+  "initial_workspace": "results/isotropic_two_springs_rl_timoshenko/horizontal_leading_second_coefficient/_initial/state.json",
+  "attachment": {
+    "original_path": "C:\\Users\\Nikita\\Downloads\\HS_LA3_second_saturation_coefficient_analytic.md",
+    "copy_path": "results/isotropic_two_springs_rl_timoshenko/horizontal_leading_second_coefficient/_initial/HS_LA3_second_saturation_coefficient_analytic.md",
+    "sha256": "ff88f332e97a7fe8a4df6898df35a94a174773967ee705561897210e10c78f1c",
+    "role": "analytical source independently checked; not an additional task"
+  },
+  "frozen_files": {
+    "scripts/lib/two_springs_horizontal_spectral_structure.py": "401b1f504d8041e3e652963f917baa06ab4a9a2d7ebee43db12b913df9d27755",
+    "scripts/lib/isotropic_two_springs_horizontal_leading.py": "aa2f210e2956bfba3ba51fb3af1be0acbc7ca05eb7adb4dde6a0f74575d4bae1",
+    "scripts/lib/two_springs_horizontal_leading_validation.py": "0600c0b8528758930b93144700c8a7a2b28bf21a023e6534c2237145ce9764c9",
+    "data/input/isotropic_two_springs_horizontal_leading_spectral_structure.json": "4b280fa3468c182f8a1b0b41f0ef9df5a17de89cd9f4420fd8ad05d0573d6f92",
+    "data/input/isotropic_two_springs_horizontal_leading.json": "dcf0d6cd7385edd7baa266eda787f3ff41502ed3f82fa0323030807bf15e8cff",
+    "docs/theory/isotropic_two_springs_horizontal_leading.md": "0b8af1f6bb284f8653455211ee01c4c0621c4f95cc9947c082fa086f3a548046"
+  },
+  "arithmetic": {
+    "linear": "scipy symmetric indefinite solve, two right hand sides per order",
+    "modal": "80-digit sum of all authoritative unperturbed pairs from HS-LA2",
+    "digits": 80
+  },
+  "tolerances": {
+    "linear_residual": 1e-09,
+    "G_absolute": 1e-09,
+    "reaction_identity_relative": 1e-08,
+    "coefficient_methods_relative": 1e-10,
+    "order_convergence_relative": 1e-07
+  },
+  "bounds": {
+    "requested_lower": -0.643974,
+    "requested_upper": -0.638619
+  },
+  "comparison_taus": [
+    "tau90",
+    "tau95",
+    12,
+    24
+  ],
+  "levels": [
+    0.9,
+    0.95
+  ],
+  "count": {
+    "new_full_model_solves_allowed": 0,
+    "new_leading_eigensolves_allowed": 0
+  },
+  "workflow": {
+    "mode": "archived_spectrum_postprocess",
+    "spectrum_semantics": "sorted_positions",
+    "frequency_map": "none",
+    "fit": false
+  }
+}

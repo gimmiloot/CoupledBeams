@@ -1,5 +1,102 @@
 # Scripts guide
 
+## HS-LA4: bounded joint-stiffness study of the leading model
+
+```powershell
+python -c "from scripts.lib.two_springs_horizontal_joint_stiffness import run; run()"
+python -m pytest -q tests/test_two_springs_horizontal_joint_stiffness.py
+```
+
+The frozen [contract](../data/input/isotropic_two_springs_horizontal_leading_joint_stiffness.json)
+selects six primary stiffnesses, exact zero/rigid constraints, p20/24 and
+targeted derivative checks. Existing bundles are hash-verified without
+recomputation. See the [bundle README](../results/isotropic_two_springs_rl_timoshenko/horizontal_leading_joint_stiffness/b0ec94478d0561d3/README.md)
+for evidence and supplemental postprocessing. No full-model solver is called.
+
+
+## HS-LA3: second saturation coefficient from archived matrices
+
+```powershell
+python -c "from scripts.lib.two_springs_horizontal_saturation import run; run()"
+python -m pytest -q tests/test_two_springs_horizontal_spectral_structure.py
+```
+
+Small postprocessing helper; two indefinite linear systems per order and
+all-N authoritative HS-LA2 modal data. No new eigensolves or fitting.
+Keeping the helper separate preserves the HS-LA2 source-hashed workflow.
+[Report, section 11](../docs/theory/isotropic_two_springs_horizontal_leading_spectral_structure.md),
+[source prerequisites and commands](../results/isotropic_two_springs_rl_timoshenko/horizontal_leading_second_coefficient/569d7bab5c414304/README.md).
+
+## HS-LA2: finite-space spectral structure and saturation audit
+
+```powershell
+python -m scripts.lib.two_springs_horizontal_spectral_structure --stage verify
+python -m scripts.lib.two_springs_horizontal_spectral_structure --stage run
+python -m scripts.lib.two_springs_horizontal_spectral_structure --stage plot_only
+python -m pytest -q tests/test_two_springs_horizontal_spectral_structure.py
+```
+
+Reuses the frozen HS-L1 assembly and source bundle; no full-model calls.
+The new diagnostic contract requests all finite Ritz pairs for secular/KKT
+identities, with triggered 80-digit arithmetic and preserved binary64 failures.
+This is a stable model-specific audit, not a new universal solver or angle map.
+[Report](../docs/theory/isotropic_two_springs_horizontal_leading_spectral_structure.md),
+[archive prerequisites and reproduction](../results/isotropic_two_springs_rl_timoshenko/horizontal_leading_spectral_structure/994fa52777e36606/README.md).
+
+## HS-L1: horizontal leading model and bounded threshold validation
+
+```powershell
+python -m scripts.lib.two_springs_horizontal_leading_validation --stage verify
+python -m scripts.lib.two_springs_horizontal_leading_validation --stage run
+python -m scripts.lib.two_springs_horizontal_leading_validation --stage plot_only
+python -m pytest -q tests/test_two_springs_horizontal_leading.py
+```
+
+Contract: `data/input/isotropic_two_springs_horizontal_leading.json`.
+This stable diagnostic module has a new leading-space and root-isolation
+contract. It reuses the old integrated basis and full-model `Run`; it cannot
+be a parameter-only preset of the guided leading models. No universal solver
+or additional `scripts/analysis/` executable is introduced. `run` verifies a
+completed archive; `plot_only` reads saved CSV without eigenvalue calculations.
+[Report](../docs/theory/isotropic_two_springs_horizontal_leading.md) and
+[archive prerequisites, recovery provenance and commands](../results/isotropic_two_springs_rl_timoshenko/horizontal_spring_leading/1d0ff41066eb0211/README.md).
+
+## HS-P1: bounded horizontal-spring pilot
+
+```powershell
+python -m scripts.lib.two_springs_horizontal_pilot --stage verify
+python -m scripts.lib.two_springs_horizontal_pilot --stage run
+python -m scripts.lib.two_springs_horizontal_pilot --stage analyze
+python -m scripts.lib.two_springs_horizontal_pilot --stage plot_only
+python -m pytest -q tests/test_two_springs_horizontal_pilot.py tests/test_two_springs_horizontal_support.py
+```
+
+The contract is `data/input/isotropic_two_springs_horizontal_pilot.json`.
+This bounded map/cache/analysis interface reuses the verified physical module
+and diagnostic `Run`; it does not add an eigensolver. It is separate from the
+frozen four-gate CLI to preserve that archive's source identity and workflow.
+`run` reuses a complete verified archive without new solves; `analyze` and
+`plot_only` use saved fields and CSV only. Exactly seven constructions and 15
+angles are authorized. Three physical positions include zeros; no tracking.
+[Report](../docs/theory/isotropic_two_springs_horizontal_pilot.md) and
+[archive prerequisites and commands](../results/isotropic_two_springs_rl_timoshenko/horizontal_spring_pilot/9d8be26f4be1694e/README.md).
+
+## One horizontal external spring: bounded verification
+
+```powershell
+python scripts/analysis/verify_two_springs_horizontal_support.py --verify-cache results/isotropic_two_springs_rl_timoshenko/horizontal_spring_verification/2b59bb0f5389b83b
+python -m pytest -q tests/test_two_springs_horizontal_support.py
+```
+
+In a fresh checkout without the completed archive, omit `--verify-cache` to
+run four sequential gates. This stable diagnostic entry point is separate
+because the new physical trace space and zero-inclusive spectrum are incompatible
+with the historical positive-only runners. It reuses canonical arm bases,
+joint equations, pole catalogues and polynomial energies; no universal solver.
+[Report](../docs/theory/isotropic_two_springs_horizontal_spring.md) and
+[archive commands/status](../results/isotropic_two_springs_rl_timoshenko/horizontal_spring_verification/2b59bb0f5389b83b/README.md).
+No angular maps, high-frequency ranges or stiffness optimization are performed.
+
 ## Angular-transition mechanism
 
 ```powershell

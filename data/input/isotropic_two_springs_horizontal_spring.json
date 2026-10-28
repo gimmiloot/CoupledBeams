@@ -1,0 +1,37 @@
+{
+  "schema": "horizontal-spring-bounded-verification-v1",
+  "material": {"E":1.0,"rho":1.0,"nu":0.3,"epsilon":0.005,"aspect":4.0,"l":1.0,"ks":0.8333333333333334},
+  "mu":0.01,
+  "scope":"bounded verification only; no frequency map",
+  "spectrum_semantics":"sorted_positions_including_exact_zeros",
+  "low_frequency_basis_Lambda":0.25,
+  "low_frequency_evaluation":"positively scaled fundamental matrix of unchanged canonical ODE; original bounded waves above threshold",
+  "initial_head":"93e8726bd4191cebfffd40173cfcff5f985c5648",
+  "initial_git_status":"",
+  "controls": [
+    [0,0,0],[90,0,0],
+    [0,0,1],[1,0,1],[5,0,1],[90,0,1],
+    [0,0,"RIGID"],[1,0,"RIGID"],[90,0,"RIGID"],
+    [0,0.1,0],[0,0.1,1],[0,0.1,20000],[0,0.1,"RIGID"],
+    [5,0.1,0],[5,0.1,1],[5,0.1,20000],[5,0.1,"RIGID"],[90,0.1,1],
+    [0,"RIGID",0],[5,"RIGID",0],[5,"RIGID",1],[5,"RIGID","RIGID"]
+  ],
+  "control_columns":["beta_deg","kappa_joint","kappa_horizontal"],
+  "policy": {
+    "defined_before_computation":true,
+    "Lambda_upper":7.3,"root_xtol":2e-14,"root_rtol":2e-14,
+    "pole_exclusion":1e-7,"schur_tol":1e-10,"inertia_margin":4e-14,
+    "condition_max":1e10,"max_count_queries":200,"max_depth":40,
+    "boundary_tol":1e-9,"ode_tol":1e-9,"singular_tol":1e-9,
+    "energy_tol":5e-8,"mass_gram_tol":5e-7,"nonzero_condition_max":1e8,
+    "ritz_frequency_tol":1e-7,"ritz_orders":[16,20],"quadrature_order":120,
+    "kernel_rank_relative_tol":1e-11,"kernel_residual_tol":1e-10,
+    "zero_mass_tol":1e-12,"shape_overlap_tol":1e-6,"pole_scan_intervals":240,
+    "asymptotic_relative_tol":0.005
+  },
+  "soft_local_checks":[{"kappa_horizontal":1,"angles":[0.5,0.25,0.125,0.0625]},
+    {"kappa_horizontal":20000,"angles":[0.1,0.05,0.025,0.0125]},
+    {"kappa_horizontal":"RIGID","angles":[0.1,0.05,0.025,0.0125]}],
+  "finite_joint_local_checks":{"kappa_joint":0.1,"kappa_horizontal":[0,1,20000,"RIGID"],"angles":[0.1,0.05,0.025]},
+  "pole_source":"results/isotropic_two_springs_rl_timoshenko/external_axial_spring/64b26f99cb3c7aba/pole_catalogs.json"
+}

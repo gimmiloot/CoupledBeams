@@ -7,6 +7,23 @@ diagnostic workflow, and model-extension checks, see `../project_rules.md`.
 
 ## Working Notes
 
+## LONG: one horizontal external spring, 2026-10-26
+
+- [Canonical construction and verification](isotropic_two_springs_horizontal_spring.md):
+  unchanged isotropic RL_FULL/Timoshenko rods and two exact nodal translations;
+  first outer clamp, internal rotational spring, one global horizontal spring
+  at the second outer end. No outer guide or rotational spring.
+- Each angle has its own unstressed equilibrium and a horizontal spring at
+  natural length. The linearized spring Hessian is rank one; no transverse
+  geometric stiffness, spring inertia, damping or preload is included.
+- Exact horizontal RIGID constrains only `cos(beta)*u2+sin(beta)*w2`.
+  Physical sorted positions include exact zero mechanisms. Static nullity
+  is checked before positive roots; no artificial regularization is allowed.
+- Local beta-radian asymptotics require an isolated simple eigenvalue and
+  a nonresonant axial problem. The finite-joint coefficient uses the TOTAL
+  angular derivative of outer horizontal displacement, including axial response.
+  Bounded verification does not authorize parameter maps or geometry optimization.
+
 ## NSL-3A-ANGLE-C: two complex targets and modal envelopes, 2026-10-20
 
 - [The targeted confirmation](../nonsymmetric_laminated_beams/nsl3a_angle_complex_confirmation.md)
@@ -762,3 +779,18 @@ b/h=4. Обе поворотные пружины и две точные пос�
 и ненапряжённость конфигураций сохранены. Суммарная продольная податливость
 остаётся 2l/(EA), ведущая добавка — ξ²P/2. Это самостоятельное исследование,
 не замена условий прежних моделей и не изменение исторических статусов.
+
+## HS-L1: отдельный ведущий предел горизонтальной опоры, 2026-10-27
+
+Для [HS-L1](isotropic_two_springs_horizontal_leading.md) фиксируются κ_j>0,
+μ и χ_s=kl/(EA)=O(1) при ε→0, β_rad=εξ и ограниченной ξ. В H5 χ_s=0.5,
+поэтому κ_s=χ_s/ε²; в H6 горизонтальная связь точная. Предполагаются низшие
+изгибные значения ζ=O(1), поля u=aεU, w=aW, ψ=(a/l)Ψ. Ведущая сдвиговая
+связь Ψ=W' не заменяет полную модель Тимошенко в сохранённых расчётах.
+После продольной минимизации добавка к жёсткостной форме равна
+χ_s ξ²[W₂(0)−W₂(λ₂)]²/(1+2χ_s). Второй внешний поворот и поперечное
+перемещение свободны. Точный предел насыщения задаётся равенством двух
+перемещений W₂(0)=W₂(λ₂), с реакцией, исключаемой из силовых условий.
+Вывод формальный на ограниченных ξ; равномерная теорема спектральной
+сходимости и перенос насыщения на полную геометрию 90° не утверждаются.
+Это допущения новой приведённой задачи, не изменение исторических моделей.

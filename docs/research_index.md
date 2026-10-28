@@ -25,7 +25,47 @@ Git-visible context and immutable history.
 
 ## LONG
 
-Latest completed study: [angular-transition mechanism](theory/isotropic_two_springs_external_axial_transition_mechanism.md),
+Latest extension: [HS-LA4, section 12](theory/isotropic_two_springs_horizontal_leading_spectral_structure.md),
+[LONG-D43](memory/decisions.md#long-d43) / [LONG-K42](memory/knowledge.md#long-k42).
+PASS for six joint stiffnesses, exact zero/rigid limits, saturation coefficients
+and leading thresholds. Threshold derivatives are positive at all five finite
+primary values; this is not a universal monotonicity theorem. No full-model
+solves or broad angle maps. STOP.
+
+Previous extension: [HS-LA3, section 11](theory/isotropic_two_springs_horizontal_leading_spectral_structure.md),
+[LONG-D42](memory/decisions.md#long-d42) / [LONG-K41](memory/knowledge.md#long-k41).
+PASS: second saturation coefficient obtained independently from indefinite
+linear systems and the authoritative modal sum; no fit or new eigensolves.
+Two-term predictions improve the two leading thresholds, not the full-model
+saturation level. STOP.
+
+Previous spectral audit: [HS-LA2](theory/isotropic_two_springs_horizontal_leading_spectral_structure.md),
+[LONG-D41](memory/decisions.md#long-d41) / [LONG-K40](memory/knowledge.md#long-k40).
+PASS for bounded rank-one, all-N secular, sensitivity and saturation checks.
+The coefficient comes from one exact constrained form; first-tail estimates
+remain approximate at 90%/95%. No new full-model spectra or thresholds. STOP.
+
+Previous leading validation: [HS-L1](theory/isotropic_two_springs_horizontal_leading.md),
+[LONG-D40](memory/decisions.md#long-d40) / [LONG-K39](memory/knowledge.md#long-k39).
+PASS for H5/H6, exact saturation and four local thresholds. Small-angle
+frequencies agree closely, but the a priori threshold angles are lower by
+7–15% because the leading limit differs from the full 90-degree level.
+No global angle ranges or HS-P2. STOP after the bounded validation.
+
+Previous bounded pilot: [HS-P1](theory/isotropic_two_springs_horizontal_pilot.md),
+[LONG-D39](memory/decisions.md#long-d39) / [LONG-K38](memory/knowledge.md#long-k38).
+PASS: seven constructions, 105 points (86 new / 19 reused), 12 triggered Ritz
+comparisons, exact zero retained. All sampled maxima occur at 90 degrees;
+finite horizontal stiffness can still differ substantially from RIGID near zero.
+No continuous maximum, final angle ranges or optimization. STOP after this pilot.
+
+Previous bounded verification: [one horizontal external spring](theory/isotropic_two_springs_horizontal_spring.md),
+[LONG-D38](memory/decisions.md#long-d38) / [LONG-K37](memory/knowledge.md#long-k37).
+New physical model, exact zeros included: gates 1–4 PASS, 47 spectral points,
+52 independent Ritz solutions. Overall PARTIAL_PASS records one pre-existing
+historical hash-contract regression failure. No angular maps or range study.
+
+Previous completed study: [angular-transition mechanism](theory/isotropic_two_springs_external_axial_transition_mechanism.md),
 [LONG-D37](memory/decisions.md#long-d37) / [LONG-K36](memory/knowledge.md#long-k36).
 **PASS for accepted spectra and sampled extrema:** one interior maximum
 emerges and moves across the checked stiffnesses; no competing separated
