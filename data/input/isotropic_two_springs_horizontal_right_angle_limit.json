@@ -1,0 +1,74 @@
+{
+  "study_id": "HS-LA5",
+  "mu": 0.01,
+  "epsilon": 0.005,
+  "k_joint": [
+    0,
+    0.1,
+    10
+  ],
+  "orders": [
+    20,
+    24
+  ],
+  "quadrature": 80,
+  "spectral_positions": 3,
+  "initial_workspace": "results/isotropic_two_springs_rl_timoshenko/horizontal_right_angle_limit/_initial/state.json",
+  "source_archives": {
+    "full": "horizontal_spring_pilot/9d8be26f4be1694e",
+    "inner": "horizontal_leading_joint_stiffness/b0ec94478d0561d3"
+  },
+  "full_ids": {
+    "0": "H1",
+    "0.1": "H5",
+    "10": "H7"
+  },
+  "secondary_archived_exact_support": "H6",
+  "limit_regime": "fixed beta=pi/2, fixed chi_s>0 or exact horizontal constraint, epsilon->0; not fixed kappa_s",
+  "frozen_files": {
+    "scripts/lib/isotropic_two_springs_horizontal_leading.py": "aa2f210e2956bfba3ba51fb3af1be0acbc7ca05eb7adb4dde6a0f74575d4bae1",
+    "scripts/lib/isotropic_two_springs_leading.py": "04f9e1910887d98da22fa90c0a21fc697c88094f4e33a30cfd146bd37b418282",
+    "scripts/lib/two_springs_horizontal_joint_stiffness.py": "e3c7598554e235a353a73f59b0efd924adb3e237e8a1d0948ba28364d27a0305",
+    "scripts/lib/two_springs_horizontal_spectral_structure.py": "401b1f504d8041e3e652963f917baa06ab4a9a2d7ebee43db12b913df9d27755",
+    "scripts/lib/isotropic_two_springs_horizontal_spring.py": "61721e628bce97ee83ed70cbc484b819da63ed8400054e3afa4c27e203c43a18",
+    "data/input/isotropic_two_springs_horizontal_pilot.json": "7ff8f44eb0b218b0b4fb0a46ef567c84c45f2503adb6fbdcbc5ed90324c8fb22",
+    "data/input/isotropic_two_springs_horizontal_leading_joint_stiffness.json": "857a1e294dd1f4cb081cd0177aaf386a65c39bb46999ae7dad6846e56a1ad165"
+  },
+  "policy": {
+    "defined_before_computation": true,
+    "strong_tol": 1e-09,
+    "boundary_tol": 1e-09,
+    "essential_tol": 1e-09,
+    "matrix_tol": 1e-09,
+    "energy_tol": 5e-08,
+    "mass_tol": 5e-07,
+    "frequency_convergence_tol": 1e-07,
+    "shape_convergence_tol": 1e-06,
+    "independent_frequency_tol": 1e-07,
+    "form_identity_tol": 1e-11,
+    "inertia_relative_zero_tol": 1e-11,
+    "pole_relative_guard": 1e-08,
+    "count_bracket_relative": 1e-05,
+    "analytic_frequency_tol": 1e-10
+  },
+  "interpretation": {
+    "significant_residual_percent": 0.1,
+    "role": "predeclared scientific stop/report trigger; not a numerical solver tolerance"
+  },
+  "full_model_calls_allowed": 0,
+  "extra_angles_allowed": false,
+  "extra_stiffness_allowed": false,
+  "frequency_map": {
+    "applicable": false,
+    "reason": "three fixed-angle limit problems, no frequency map",
+    "spectrum_semantics": "sorted_positions",
+    "K_plot": 2,
+    "K_guard": 3,
+    "guard_root_role": "completeness_only",
+    "local_repair_policy": "stop_on_unresolved_failure"
+  },
+  "benchmark": {
+    "omega_outer_90": 0.0078805648576462,
+    "zeta_outer_90": 2.4841320990227396
+  }
+}

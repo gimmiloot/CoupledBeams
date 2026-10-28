@@ -1,5 +1,21 @@
 # Internal helpers
 
+- `two_springs_horizontal_combined_thresholds.py` closes HS-L1–HS-LA6:
+  archived right-angle level and saturation coefficients produce two direct
+  leading roots and independent two-term forecasts before full references
+  are parsed. Its staged archival contract differs from the old full-threshold
+  runner; frozen physics and source hashes remain unchanged. It reuses HS-L1
+  Ritz and HS-LA4 prefix checks, with no full-model runner or new solver.
+
+
+- `two_springs_horizontal_right_angle.py` is the bounded HS-LA5 right-angle
+  limit workflow. It reuses HS-L1 integrated fields with the independently
+  derived trace space and endpoint mass, verifies the congruence to the
+  saturated inner stiffness, and checks exact leading-ODE roots and counts.
+  Its different mass/boundary contract is kept separate to preserve source
+  hashes of accepted HS-L1–HS-LA4 workflows. No full-model solver is called.
+
+
 - `two_springs_horizontal_joint_stiffness.py` extends the unchanged HS-L1
   fields for the bounded HS-LA4 contract: exact zero-kernel deflation, exact
   J/D constraints, reaction coefficients and threshold sensitivities. Its

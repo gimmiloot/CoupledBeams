@@ -1,0 +1,88 @@
+{
+  "study_id": "HS-LA6",
+  "mu": 0.01,
+  "epsilon": 0.005,
+  "k_joint": 0.1,
+  "orders": [
+    20,
+    24
+  ],
+  "quadrature": 80,
+  "levels": [
+    0.9,
+    0.95
+  ],
+  "constructions": [
+    {
+      "id": "H5",
+      "kappa_horizontal": 20000,
+      "chi_s": 0.5,
+      "g": 0.25
+    },
+    {
+      "id": "H6",
+      "kappa_horizontal": "RIGID",
+      "chi_s": "RIGID",
+      "g": 0.5
+    }
+  ],
+  "initial_workspace": "results/isotropic_two_springs_rl_timoshenko/horizontal_combined_threshold_prediction/_initial/state.json",
+  "archives": {
+    "outer": "horizontal_right_angle_limit/38f9f8c7ca0dea95",
+    "coefficients": "horizontal_leading_second_coefficient/569d7bab5c414304",
+    "leading_cache": "horizontal_leading_spectral_structure/994fa52777e36606",
+    "full_thresholds": "horizontal_spring_leading/1d0ff41066eb0211",
+    "pilot": "horizontal_spring_pilot/9d8be26f4be1694e"
+  },
+  "frozen_files": {
+    "scripts/lib/isotropic_two_springs_horizontal_leading.py": "aa2f210e2956bfba3ba51fb3af1be0acbc7ca05eb7adb4dde6a0f74575d4bae1",
+    "scripts/lib/isotropic_two_springs_leading.py": "04f9e1910887d98da22fa90c0a21fc697c88094f4e33a30cfd146bd37b418282",
+    "scripts/lib/two_springs_horizontal_joint_stiffness.py": "e3c7598554e235a353a73f59b0efd924adb3e237e8a1d0948ba28364d27a0305",
+    "scripts/lib/two_springs_horizontal_spectral_structure.py": "401b1f504d8041e3e652963f917baa06ab4a9a2d7ebee43db12b913df9d27755",
+    "scripts/lib/two_springs_horizontal_saturation.py": "ab1095dd379be826304c1c2b97a523581b9854ad006aed8a6435e061ad83005a",
+    "scripts/lib/two_springs_horizontal_right_angle.py": "89a40c6edd585927eb8abf3bddbfcaed2111bef927f0943331666d4af1bec748",
+    "data/input/isotropic_two_springs_horizontal_leading.json": "dcf0d6cd7385edd7baa266eda787f3ff41502ed3f82fa0323030807bf15e8cff",
+    "data/input/isotropic_two_springs_horizontal_right_angle_limit.json": "9fd66bfccd557f3cab36d87a7b97cedce9ea3025b4ab10d7b2825152681e5573"
+  },
+  "policy": {
+    "strong_tol": 1e-09,
+    "boundary_tol": 1e-09,
+    "essential_tol": 1e-09,
+    "matrix_tol": 1e-09,
+    "energy_tol": 5e-08,
+    "mass_tol": 5e-07,
+    "frequency_convergence_tol": 1e-07,
+    "shape_convergence_tol": 1e-06,
+    "independent_frequency_tol": 1e-07,
+    "inertia_relative_zero_tol": 1e-11,
+    "pole_relative_guard": 1e-08,
+    "count_bracket_relative": 1e-05,
+    "tau_root_xtol": 1e-09,
+    "tau_root_rtol": 1e-11,
+    "tau_bracket_halfwidth": 1e-07,
+    "threshold_equation_tol": 1e-09,
+    "bracket_sign_min": 1e-11,
+    "max_root_iterations": 50
+  },
+  "bracket": [
+    0,
+    12
+  ],
+  "bracket_origin": "leading HS-LA2 control tau only; independent of full thresholds",
+  "calculation": "two Brent equations evaluated by direct leading Ritz solve; p20/24; separate closed two-term inversion",
+  "reference_access": "full thresholds parsed only after apriori_predictions.json is sealed; old numbers in conversation not used for tuning",
+  "prediction_inputs": [
+    "outer p24 first zeta",
+    "HS-LA3 reaction a and authoritative modal b",
+    "unchanged HS-L1 leading matrices"
+  ],
+  "full_model_calls_allowed": 0,
+  "new_outer_eigensolves_allowed": 0,
+  "new_stiffness_allowed": false,
+  "new_angular_map_allowed": false,
+  "spectrum_semantics": "sorted_positions",
+  "K_plot": 2,
+  "K_guard": 3,
+  "guard_root_role": "completeness_only",
+  "error_decomposition": "additive angle differences divided by the same archived full angle; diagnostic full-level leading angle reused after sealing"
+}

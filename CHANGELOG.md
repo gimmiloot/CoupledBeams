@@ -1,5 +1,36 @@
 # CHANGELOG
 
+## 2026-10-28 — HS-LA6: final combined a priori threshold prediction
+
+- Sealed H5/H6 90%/95% forecasts from HS-LA5 and HS-LA3 before parsing full
+  threshold references. Direct HS-L1 Ritz roots and two-term inversion are
+  independent; no coefficient or target was fitted to the full solution.
+- Direct angle errors are +0.02133% to +0.05183%; two-term errors are
+  +0.06860% to +0.12347%. Archived full-level diagnostics separate negative
+  curve errors, positive level errors and positive asymptotic errors.
+- Seven targeted tests pass. Local root work used 50 new / 4 archived leading
+  prefixes; no new full-model or right-angle solves, maps or stiffnesses.
+- Appended the concluding canonical section and LONG-D45/K44, preserving
+  HS-LA5 uncommitted work and 988 historical archive files. Root README
+  remains current. Research line closed; no commit/push.
+
+
+## 2026-10-28 — HS-LA5: right-angle limit and inertial comparison
+
+- Derived and verified the fixed-right-angle thin-beam limit at joint
+  stiffnesses 0, 0.1 and 10, with exact horizontal constraint and the second
+  arm's translational inertia retained as an endpoint mass.
+- Confirmed identical stiffness/trace spaces and the exact mixed mass term
+  relative to saturated HS-L1. Errors against archived HS-P1 frequencies
+  decrease to +0.01485%, +0.01581% and +0.03370%.
+- Six Ritz prefixes at p20/24, nine independent leading-ODE roots, hinge
+  characteristic benchmark and seven tests pass. No new full-model spectra,
+  angles, stiffnesses or thresholds. Old sources and 962 archive files preserved.
+- Appended section 13 to the canonical report and the fixed-angle regime to
+  assumptions; added a bounded workflow, contract, data and LONG-D44/K43.
+  Root README remains current and unchanged. No commit/push.
+
+
 ## 2026-10-27 — HS-LA4: joint stiffness in the horizontal leading model
 
 - Added the bounded six-case workflow with exact zero-kernel deflation and

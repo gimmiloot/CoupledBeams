@@ -25,7 +25,21 @@ Git-visible context and immutable history.
 
 ## LONG
 
-Latest extension: [HS-LA4, section 12](theory/isotropic_two_springs_horizontal_leading_spectral_structure.md),
+Concluding stage: [HS-LA6, section 14](theory/isotropic_two_springs_horizontal_leading_spectral_structure.md),
+[LONG-D45](memory/decisions.md#long-d45) / [LONG-K44](memory/knowledge.md#long-k44).
+PASS for the four H5/H6 thresholds: combined direct predictions err by
+0.021–0.052%, two-term predictions by 0.069–0.123%. Accuracy partly results
+from opposite curve/limit errors; it is not a uniform guarantee. No new full
+solutions. HS-L1–HS-LA6 line complete; STOP.
+
+Previous extension: [HS-LA5, section 13](theory/isotropic_two_springs_horizontal_leading_spectral_structure.md),
+[LONG-D44](memory/decisions.md#long-d44) / [LONG-K43](memory/knowledge.md#long-k43).
+PASS: three fixed-right-angle limits explain most of the saturation/full
+frequency discrepancy through the mixed kinetic term. Residuals are
++0.01485% to +0.03370%; individual finite-thickness corrections remain
+unseparated. No new full-model solutions or threshold searches. STOP.
+
+Previous extension: [HS-LA4, section 12](theory/isotropic_two_springs_horizontal_leading_spectral_structure.md),
 [LONG-D43](memory/decisions.md#long-d43) / [LONG-K42](memory/knowledge.md#long-k42).
 PASS for six joint stiffnesses, exact zero/rigid limits, saturation coefficients
 and leading thresholds. Threshold derivatives are positive at all five finite

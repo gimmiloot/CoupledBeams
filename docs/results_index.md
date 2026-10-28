@@ -1,5 +1,19 @@
 # Generated Results Index
 
+[HS-LA6: combined thresholds and closure, section 14](theory/isotropic_two_springs_horizontal_leading_spectral_structure.md):
+[horizontal_combined_threshold_prediction/a40b6787d5beb9f5](../results/isotropic_two_springs_rl_timoshenko/horizontal_combined_threshold_prediction/a40b6787d5beb9f5/README.md).
+PASS: sealed direct/two-term forecasts for four H5/H6 angles, three-component
+signed error decomposition, p20/24 and independent leading-ODE checks.
+50 new / 4 reused leading prefixes; no new full or right-angle solutions.
+
+
+[HS-LA5: right-angle limit, section 13](theory/isotropic_two_springs_horizontal_leading_spectral_structure.md):
+[horizontal_right_angle_limit/38f9f8c7ca0dea95](../results/isotropic_two_springs_rl_timoshenko/horizontal_right_angle_limit/38f9f8c7ca0dea95/README.md).
+PASS: three cases at p20/24, exact form identities, hinge benchmark, independent
+leading-ODE prefix counts and comparison with saved HS-P1/HS-LA4 data.
+Six new limit prefixes; no new full spectra, angles or thresholds.
+
+
 [HS-LA4: joint stiffness, section 12](theory/isotropic_two_springs_horizontal_leading_spectral_structure.md):
 [horizontal_leading_joint_stiffness/b0ec94478d0561d3](../results/isotropic_two_springs_rl_timoshenko/horizontal_leading_joint_stiffness/b0ec94478d0561d3/README.md).
 PASS: six primary cases at p20/24, exact zero/rigid constraints, reactions,

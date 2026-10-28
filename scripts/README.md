@@ -1,5 +1,32 @@
 # Scripts guide
 
+## HS-LA6: final combined threshold prediction
+
+```powershell
+python -X utf8 -c "from scripts.lib.two_springs_horizontal_combined_thresholds import run; run()"
+python -X utf8 -m pytest -q tests/test_two_springs_horizontal_combined_thresholds.py
+```
+
+The [contract](../data/input/isotropic_two_springs_horizontal_combined_thresholds.json)
+allows only two leading scalar equations for H5/H6 90%/95% forecasts.
+Predictions are sealed before full reference values are parsed. A completed
+bundle is verified without new spectra. [Data and commands](../results/isotropic_two_springs_rl_timoshenko/horizontal_combined_threshold_prediction/a40b6787d5beb9f5/README.md).
+
+
+## HS-LA5: right-angle limit and mass-form comparison
+
+```powershell
+python -X utf8 -c "from scripts.lib.two_springs_horizontal_right_angle import run; run()"
+python -X utf8 -m pytest -q tests/test_two_springs_horizontal_right_angle.py
+```
+
+The [fixed contract](../data/input/isotropic_two_springs_horizontal_right_angle_limit.json)
+selects three right-angle limit problems at p20/24, not an angular map.
+Saved HS-P1 frequencies and HS-LA4 saturated forms are read without solving
+either historical model. A completed bundle is hash-verified only.
+[Data and commands](../results/isotropic_two_springs_rl_timoshenko/horizontal_right_angle_limit/38f9f8c7ca0dea95/README.md).
+
+
 ## HS-LA4: bounded joint-stiffness study of the leading model
 
 ```powershell
