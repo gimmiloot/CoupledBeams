@@ -1,5 +1,47 @@
 # Scripts guide
 
+## HS-B: bounded horizontal-spring geometry study
+
+```powershell
+python -X utf8 -m scripts.lib.two_springs_horizontal_geometry_map prepare
+python -X utf8 -m scripts.lib.two_springs_horizontal_geometry_map preflight
+python -X utf8 -m scripts.lib.two_springs_horizontal_geometry_map map
+python -X utf8 -m scripts.lib.two_springs_horizontal_geometry_map compare
+python -X utf8 -m scripts.lib.two_springs_horizontal_geometry_map contrasts
+python -X utf8 -m scripts.lib.two_springs_horizontal_geometry_map finalize
+python -X utf8 -m scripts.lib.two_springs_horizontal_geometry_map plot_only
+python -X utf8 -m scripts.lib.two_springs_horizontal_geometry_map verify
+python -X utf8 -m pytest -q tests/test_two_springs_horizontal_geometry_map.py
+```
+
+The [HS-B contract](../data/input/isotropic_two_springs_horizontal_geometry_map.json)
+selects 30 new geometries and four HS-A references. The coordinator reuses HS-A
+point transactions and the unchanged physical solver; it adds exact arm catalog
+identity, geometry-specific stopping/resume and existing-limit comparisons.
+`map` is missing-only; `compare` makes no full-model calls; `plot_only` reads CSV.
+[Report](../docs/theory/isotropic_two_springs_horizontal_geometry_map.md),
+[bundle](../results/isotropic_two_springs_rl_timoshenko/horizontal_spring_geometry_map/7b2b5ba8c33abe48/README.md).
+
+## HS-A: full horizontal-spring angular map
+
+```powershell
+python -X utf8 -m scripts.lib.two_springs_horizontal_angle_map prepare
+python -X utf8 -m scripts.lib.two_springs_horizontal_angle_map preflight
+python -X utf8 -m scripts.lib.two_springs_horizontal_angle_map map
+python -X utf8 -m scripts.lib.two_springs_horizontal_angle_map analyze
+python -X utf8 -m scripts.lib.two_springs_horizontal_angle_map verify
+python -X utf8 -m scripts.lib.two_springs_horizontal_angle_map plot_only --folder results/isotropic_two_springs_rl_timoshenko/horizontal_spring_angle_map/2857f883fb745757
+python -X utf8 -m pytest -q tests/test_two_springs_horizontal_angle_map.py
+```
+
+The [frozen contract](../data/input/isotropic_two_springs_horizontal_angle_map.json)
+declares 18 constructions and the composite grid. The physical solver is
+unchanged. Accepted points resume after checksum/gate verification; completed
+analysis performs no spectral solve. All threshold crossings and separate
+omega90/grid-maximum normalizations are retained. See the
+[report](../docs/theory/isotropic_two_springs_horizontal_angle_map.md) and
+[bundle](../results/isotropic_two_springs_rl_timoshenko/horizontal_spring_angle_map/2857f883fb745757/README.md).
+
 ## HS-LA6: final combined threshold prediction
 
 ```powershell

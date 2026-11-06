@@ -1,5 +1,16 @@
 # Internal helpers
 
+- `two_springs_horizontal_geometry_map.py` adds the HS-B geometry identity,
+  exact arm-pole signatures, per-variant stops and existing-limit comparison
+  contract around HS-A transactions. It does not copy the physics or counter.
+  `two_springs_horizontal_geometry_figures.py` only renders accepted CSV.
+- `two_springs_horizontal_angle_map.py` is the HS-A composite-grid and
+  all-crossings workflow. It reuses frozen HS-P1 validation, physical prefix
+  counting and `Run.solve`; no physical equations or solver are copied.
+  A separate module preserves the fixed 105-point pilot and its source-hashed
+  archival contract. Transactions publish NPZ before accepted JSON and resume
+  missing points. `two_springs_horizontal_angle_figures.py` reads CSV only.
+
 - `two_springs_horizontal_combined_thresholds.py` closes HS-L1–HS-LA6:
   archived right-angle level and saturation coefficients produce two direct
   leading roots and independent two-term forecasts before full references

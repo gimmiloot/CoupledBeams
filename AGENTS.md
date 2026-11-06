@@ -218,6 +218,10 @@ Never claim "works" without stating what was actually checked.
 
 ## External article writing
 
+For work under `private/`, read applicable local `AGENTS.md` files before
+drafting or editing, including when launched from the repository root.
+Apply their writing-skill routing only within its declared scope.
+
 For external-facing texts, do not use internal project-note style.
 
 For article work in `paper_dorofeev_style/`, follow:

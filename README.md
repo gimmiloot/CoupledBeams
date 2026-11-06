@@ -477,6 +477,46 @@ separate authorization; no automatic study follows this block.
   the project preset belongs to the separate finite command.
   Bishop stays a standalone reference and retains its closed kinematics gate.
 - [Scoped research memory](docs/memory/README.md) -- NSL, RLB/EB-KV, NLSP, LONG, and separate circular EB diagnostics; current state, sources, and decisions.
+- [RL_FULL / Timoshenko rigid-limit prefix verification](docs/numerics/rl_full_rr_prefix_verification.md)
+  -- PASS: four archived 2+guard3 regressions and six fixed-angle 8+guard9
+  checks with full fields, energetic counts, Ritz and a straight-rod control.
+  Run `python scripts/analysis/verify_rl_full_rr_prefix.py --stage AB`;
+  `--verify-cache` and `--tables-only` read a completed bundle without solving.
+  Historical sources/archives remain unchanged; no geometry sweep or 3D validation.
+  Saved-field diagnostics: `python scripts/analysis/postprocess_rl_full_rr_modes.py`.
+  This separate read-only entry point checks the accepted archive hashes and
+  exports energy/mass components, global mass MAC, nodal brackets and gradient
+  indicators under `results/rl_full_rr_modal_audit/`, without roots or bases.
+  Figures use `plot_only` and sorted positions; they do not establish branch IDs.
+- [RL_FULL / Timoshenko individual-section K8](docs/numerics/rl_full_rr_geometry_verification.md)
+  -- C0 regression/reflection gate and bounded C1 mu pilot, exact RIGID/RIGID.
+  Run `python scripts/analysis/verify_rl_full_rr_geometry.py --stage C0` or
+  `--stage C`; `--verify-cache` and `--tables-only` read the sealed result bundle.
+  C1 reuses accepted A-B points explicitly; no automatic angle refinement or
+  epsilon/tau sweep. Saved-field analysis commands are in the numerical report.
+  Saved-field diagnostics: `python scripts/analysis/postprocess_rl_full_rr_modes.py`.
+  This separate read-only entry point checks the accepted archive hashes and
+  exports energy/mass components, global mass MAC, nodal brackets and gradient
+  indicators under `results/rl_full_rr_modal_audit/`, without roots or bases.
+  Figures use `plot_only` and sorted positions; they do not establish branch IDs.
+- [Configurable RL_FULL/RR Lambda maps](docs/numerics/rl_full_rr_frequency_maps.md)
+  -- `python scripts/analysis/map_rl_full_rr.py --mode ALL` uses editable
+  `data/input/rl_full_rr_maps.json` for BETA, MU and TAU, with 8 sorted positions
+  and guard9. Accepted points are reused; new points use fast_plot.
+  `--plot-only <bundle>` and `--tables-only <bundle>` perform zero root searches.
+  Five demonstration maps and all/split PNG/PDF views are linked in the report.
+- [Square-section RL_FULL/RR maps](docs/numerics/rl_full_rr_square_maps.md)
+  -- same CLI with `--config data/input/rl_full_rr_square_maps.json --mode ALL`.
+  Aspect a=1, epsilon=.005; beta 0–90 by 1 degree, mu 0–.8 and tau −.8–.8
+  by .05. All 191 grid entries passed; `--check-aspect` runs the bounded
+  regression/straight/reflection/Ritz gate without maps. Per-map CSV, full/split
+  PNG/PDF, aspect-four comparison and geometric slenderness flags are available.
+  `--plot-only` and `--tables-only` retain zero-solve operation.
+- [Dense square-section maps](docs/numerics/rl_full_rr_square_maps_dense.md)
+  -- same CLI with `--config data/input/rl_full_rr_square_maps_dense.json`:
+  mu step .005 and tau step .01, 161 points per map; the 91-point beta map
+  is reused. All 735 entries passed (544 new, 191 reused); PNG/PDF and CSV
+  links are in the report. No solver or physical-model changes.
 - [M-H–Timoshenko reduced-joint beta0 gate](docs/theory/mindlin_herrmann_timoshenko_rigid_joint.md)
   -- qualified published common-DOF closure, three artificial splits reproduce
   one direct fixed--fixed rod including c/R and modal forms. Run

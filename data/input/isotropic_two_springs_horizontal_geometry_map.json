@@ -1,0 +1,242 @@
+{
+  "material": {
+    "E": 1.0,
+    "rho": 1.0,
+    "nu": 0.3,
+    "epsilon": 0.005,
+    "aspect": 4.0,
+    "l": 1.0,
+    "ks": 0.8333333333333334
+  },
+  "policy": {
+    "defined_before_computation": true,
+    "Lambda_upper": 7.3,
+    "root_xtol": 2e-14,
+    "root_rtol": 2e-14,
+    "pole_exclusion": 1e-07,
+    "schur_tol": 1e-10,
+    "inertia_margin": 4e-14,
+    "condition_max": 10000000000.0,
+    "max_count_queries": 200,
+    "max_depth": 40,
+    "boundary_tol": 1e-09,
+    "ode_tol": 1e-09,
+    "singular_tol": 1e-09,
+    "energy_tol": 5e-08,
+    "mass_gram_tol": 5e-07,
+    "nonzero_condition_max": 100000000.0,
+    "ritz_frequency_tol": 1e-07,
+    "ritz_orders": [
+      16,
+      20
+    ],
+    "quadrature_order": 120,
+    "kernel_rank_relative_tol": 1e-11,
+    "kernel_residual_tol": 1e-10,
+    "zero_mass_tol": 1e-12,
+    "shape_overlap_tol": 1e-06,
+    "pole_scan_intervals": 240,
+    "asymptotic_relative_tol": 0.005
+  },
+  "frequency_map": {
+    "frequency_map_policy": "frequency-map-v1",
+    "calculation_mode": "fast_plot",
+    "spectrum_semantics": "sorted_positions",
+    "physical_positions_include_exact_zeros": true,
+    "sweep_parameter": "beta_deg",
+    "parameter_grid": "grid.json: base + scaled + endpoint + accepted archive nodes; frozen before preflight/production",
+    "K_plot": 2,
+    "K_guard": 3,
+    "guard_root_role": "completeness_only",
+    "neighbour_audit": "enabled",
+    "local_repair_policy": "triggered_only",
+    "strict_audit_default": false,
+    "neighbour_jump_relative": 0.35,
+    "neighbour_jump_denominator": "max(abs(left),abs(right)); exact-zero onset checked separately",
+    "jump_recovery": "independent Ritz p20 at right endpoint; no automatic new angle",
+    "guard_predictor_factor": 1.3,
+    "upper_bound_cap_Lambda": 7.3
+  },
+  "grid": {
+    "base_step_deg": 2,
+    "end_interval_deg": [
+      80,
+      90
+    ],
+    "end_step_deg": 0.5,
+    "tau": [
+      0.01,
+      0.04,
+      0.16,
+      0.5,
+      1,
+      2,
+      4,
+      8,
+      16
+    ],
+    "duplicate_absolute_deg": 1e-12,
+    "archive_extra_nodes": "include all matching accepted archived points with provenance"
+  },
+  "analysis": {
+    "q": [
+      0.9,
+      0.95
+    ],
+    "targets": [
+      "omega90",
+      "grid_max"
+    ],
+    "root_xtol_deg": 1e-09,
+    "root_rtol": 1e-12,
+    "bracket_width_deg": 2e-06,
+    "threshold_residual_tol": 1e-08,
+    "sign_resolution_relative": 1e-10,
+    "extremum_step_deg": 0.25,
+    "change_trigger_relative": 1e-10,
+    "close_gap_relative": 0.02,
+    "max_refinement_rounds": 4
+  },
+  "schema": "horizontal-geometry-map-v1",
+  "study_id": "HS-B",
+  "initial_workspace": "results/isotropic_two_springs_rl_timoshenko/horizontal_spring_geometry_map/_initial/state.json",
+  "baseline_archive": "results/isotropic_two_springs_rl_timoshenko/horizontal_spring_angle_map/2857f883fb745757",
+  "geometry_limiter": 0.1,
+  "regimes": [
+    {
+      "id": "A1",
+      "k_joint": 0.1,
+      "chi_s": 0.5
+    },
+    {
+      "id": "A2",
+      "k_joint": 0.1,
+      "chi_s": 0.0001
+    },
+    {
+      "id": "A3",
+      "k_joint": 1,
+      "chi_s": 0.01
+    },
+    {
+      "id": "A4",
+      "k_joint": 10,
+      "chi_s": "RIGID"
+    }
+  ],
+  "variations": {
+    "B1_epsilon": [
+      0.0025,
+      0.006
+    ],
+    "B2_mu": [
+      -0.1,
+      -0.01,
+      0,
+      0.1
+    ],
+    "B3_aspect": [
+      2
+    ],
+    "B4": {
+      "regimes": [
+        "A2",
+        "A4"
+      ],
+      "epsilon": 0.006,
+      "mu": -0.1,
+      "aspect": 2
+    }
+  },
+  "baseline_mu": 0.01,
+  "stop_on": [
+    "interior_maximum",
+    "multiple_crossings",
+    "unresolved_numerical_failure"
+  ],
+  "preflight": [
+    [
+      "B1_A1_e0.0025",
+      "scale_0.16"
+    ],
+    [
+      "B1_A4_e0.006",
+      90
+    ],
+    [
+      "B2_A2_m-0.1",
+      30
+    ],
+    [
+      "B2_A4_m0.1",
+      90
+    ],
+    [
+      "B2_A3_m0",
+      2
+    ],
+    [
+      "B3_A2_a2",
+      90
+    ],
+    [
+      "B4_A4",
+      90
+    ],
+    [
+      "B2_A1_m-0.01",
+      0
+    ]
+  ],
+  "sources": {
+    "data/input/isotropic_two_springs_horizontal_spring.json": "01f79e7bb46facf809c1dc302157e8e85f758b3263ea37edaf6212d0a7c59fc5",
+    "scripts/analysis/verify_two_springs_horizontal_support.py": "1f9d30bec6da44abf95bdb21916eb7f84afdcb14f589d4d557b2d26f802df630",
+    "scripts/lib/isotropic_two_springs_horizontal_spring.py": "61721e628bce97ee83ed70cbc484b819da63ed8400054e3afa4c27e203c43a18",
+    "scripts/lib/isotropic_two_springs_rl_timoshenko.py": "c1a8f8eb97115a049c0c98d18c211e91a838c24012bfbd31dd7c8cbbac7ae1b4",
+    "scripts/lib/bishop_longitudinal.py": "05f7fc4d88c2b37c801645979f0bfd669dab58bff8eaf1e17e73440497cefb2b",
+    "scripts/lib/mindlin_herrmann_longitudinal.py": "ecf5f94a163db2b84523d03e72d465f00c7b95b9b2db4d1838afdf3fac226c8f",
+    "scripts/lib/mindlin_herrmann_timoshenko_joint.py": "e931cd57beadcf20886fc408f2d14539a7253c6af38d35ea969252a59b721ff2",
+    "scripts/lib/contraction_joint_sensitivity.py": "dfc78113a1a2152cd883ae6f885d55d0d9a18459b7deb6a4566dfaa71a3f7d89",
+    "scripts/lib/reddy_symmetric_coupled_beams_ritz.py": "0a84e329da3a1789b674ff0f73b753f92d7d388b918ad40a6d9511ea6f1944ae",
+    "scripts/lib/reddy_inplane_geometry.py": "c46a42c462264bc27c99c358aabd7df49f94f928a60d8150fd320d8dfb37e99e",
+    "scripts/lib/isotropic_rectangular_timoshenko_coupled_beams.py": "62f994d18bfce382e2cd37d113d6d4a0cd8f5920ea25ea147be60728886ecc65",
+    "scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py": "52bcd6ef039491aa9d56629a90625f3a67eff8d226ed32cb5acdf728ee779719",
+    "results/isotropic_two_springs_rl_timoshenko/external_axial_spring/64b26f99cb3c7aba/pole_catalogs.json": "dfcaf709bb10872a6f56d159fd0faae20524653900802a28d017171d92416277",
+    "scripts/lib/two_springs_horizontal_pilot.py": "f2ff60fe2e2c66a08c1ed5e000a02a46d57cf21d678ea06ab1eb5b084faa5800",
+    "data/input/isotropic_two_springs_horizontal_pilot.json": "7ff8f44eb0b218b0b4fb0a46ef567c84c45f2503adb6fbdcbc5ed90324c8fb22",
+    "scripts/lib/two_springs_horizontal_angle_map.py": "68def90124eb98c2dc3d2e2da3d15d0e947a0cb1f184fa4873ec33b8905836bc",
+    "data/input/isotropic_two_springs_horizontal_angle_map.json": "d21351c1fd76ac7a2c7911d03f31b32e15a6f56d4bfa40d63131e2c21c80b119",
+    "scripts/lib/isotropic_two_springs_horizontal_leading.py": "aa2f210e2956bfba3ba51fb3af1be0acbc7ca05eb7adb4dde6a0f74575d4bae1",
+    "scripts/lib/two_springs_horizontal_right_angle.py": "89a40c6edd585927eb8abf3bddbfcaed2111bef927f0943331666d4af1bec748",
+    "scripts/analysis/screen_coupled_longitudinal_theory_hierarchy.py": "ef3e5108380d681f1f65639b8cae77b776aa7f88356ea119f35d0eeb327c4699",
+    "data/input/isotropic_two_springs_horizontal_right_angle_limit.json": "9fd66bfccd557f3cab36d87a7b97cedce9ea3025b4ab10d7b2825152681e5573"
+  },
+  "baseline_manifest_sha256": "6291057903e0a06b22ddbf9fca6e0ff3302e6a034c0f03e6a5cb2e6ac80937a0",
+  "leading_policy": {
+    "defined_before_computation": true,
+    "strong_tol": 1e-09,
+    "boundary_tol": 1e-09,
+    "essential_tol": 1e-09,
+    "matrix_tol": 1e-09,
+    "energy_tol": 5e-08,
+    "mass_tol": 5e-07,
+    "frequency_convergence_tol": 1e-07,
+    "shape_convergence_tol": 1e-06,
+    "independent_frequency_tol": 1e-07,
+    "form_identity_tol": 1e-11,
+    "inertia_relative_zero_tol": 1e-11,
+    "pole_relative_guard": 1e-08,
+    "count_bracket_relative": 1e-05,
+    "analytic_frequency_tol": 1e-10
+  },
+  "leading_root": {
+    "xtol": 1e-11,
+    "rtol": 2e-13,
+    "relative_equation_tol": 1e-09,
+    "maximum_tau": 1000000.0,
+    "orders": [
+      20,
+      24
+    ]
+  }
+}

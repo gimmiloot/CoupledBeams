@@ -25,7 +25,16 @@ Git-visible context and immutable history.
 
 ## LONG
 
-Concluding stage: [HS-LA6, section 14](theory/isotropic_two_springs_horizontal_leading_spectral_structure.md),
+Current full-model stage: [HS-B geometry map](theory/isotropic_two_springs_horizontal_geometry_map.md),
+PASS for 30 new variants and four reused [HS-A](theory/isotropic_two_springs_horizontal_angle_map.md)
+references. All sampled maxima remain at 90 degrees; both threshold levels
+coincide. Thickness and signed length asymmetry matter; aspect effects on the
+first frequency are tiny in this sample. The combined approximation remains
+accurate for A1, but fails quantitatively or has no finite target for other
+regimes. No continuous monotonicity or universal validity boundary is claimed.
+HS-B complete; [LONG-D47](memory/decisions.md#long-d47) / [LONG-K46](memory/knowledge.md#long-k46).
+
+Concluding leading-model stage: [HS-LA6, section 14](theory/isotropic_two_springs_horizontal_leading_spectral_structure.md),
 [LONG-D45](memory/decisions.md#long-d45) / [LONG-K44](memory/knowledge.md#long-k44).
 PASS for the four H5/H6 thresholds: combined direct predictions err by
 0.021–0.052%, two-term predictions by 0.069–0.123%. Accuracy partly results

@@ -1,0 +1,123 @@
+{
+  "schema": "rl-full-rr-map-config-v1",
+  "material": {
+    "E": 1.0,
+    "rho": 1.0,
+    "nu": 0.3,
+    "epsilon": 0.005,
+    "aspect": 4.0,
+    "l": 1.0,
+    "ks": 0.8333333333333334
+  },
+  "numerical_policy": "data/input/rl_full_rr_geometry_c.json",
+  "initial_upper_omega": 1.6,
+  "references": [
+    "results/rl_full_rr_prefix/ec9e338a2985a308",
+    "results/rl_full_rr_geometry/a79da9b64ef44143"
+  ],
+  "maps": [
+    {
+      "name": "beta_mu001_tau0",
+      "mode": "BETA",
+      "fixed": {
+        "mu": 0.01,
+        "tau": 0.0
+      },
+      "grid": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        6.1194,
+        7,
+        8,
+        10,
+        12,
+        15,
+        20,
+        25,
+        30,
+        40,
+        50,
+        60,
+        70,
+        80,
+        90
+      ]
+    },
+    {
+      "name": "mu_beta5_tau0",
+      "mode": "MU",
+      "fixed": {
+        "beta_deg": 5,
+        "tau": 0.0
+      },
+      "grid": [
+        0,
+        0.02,
+        0.04,
+        0.06,
+        0.08,
+        0.1
+      ]
+    },
+    {
+      "name": "mu_beta30_tau0",
+      "mode": "MU",
+      "fixed": {
+        "beta_deg": 30,
+        "tau": 0.0
+      },
+      "grid": [
+        0,
+        0.02,
+        0.04,
+        0.06,
+        0.08,
+        0.1
+      ]
+    },
+    {
+      "name": "tau_beta5_mu01",
+      "mode": "TAU",
+      "fixed": {
+        "beta_deg": 5,
+        "mu": 0.1
+      },
+      "grid": [
+        -0.1,
+        -0.05,
+        0,
+        0.05,
+        0.1
+      ]
+    },
+    {
+      "name": "tau_beta30_mu01",
+      "mode": "TAU",
+      "fixed": {
+        "beta_deg": 30,
+        "mu": 0.1
+      },
+      "grid": [
+        -0.1,
+        -0.05,
+        0,
+        0.05,
+        0.1
+      ]
+    }
+  ],
+  "plot": {
+    "layout": "both",
+    "dpi": 220,
+    "font_size": 11,
+    "legend_loc": [
+      0.2,
+      1.02
+    ]
+  }
+}

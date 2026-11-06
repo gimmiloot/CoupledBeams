@@ -1,5 +1,129 @@
 # CHANGELOG
 
+## 2026-11-06 — HS-B horizontal-spring geometry study
+
+- Added the sparse 34-variant geometry contract and a coordinator reusing the
+  unchanged HS-A transactions and full physical solver. Pole reuse requires
+  identical arm lengths and all seven physical coefficients.
+- PASS: 2522 new / 358 reused full prefixes, 68 physical 90%/95% crossings
+  recorded for two normalizations, 32 independent Ritz controls. All sampled
+  maxima remain at 90 degrees; no extra stiffness or geometry cases were added.
+- Compared existing inner/outer limits at p20/24: A1 combined errors stay below
+  0.111%; A2 errors reach 74%; all A4 95% targets exceed inner saturation.
+  Tiny aspect effects include an explicitly unresolved A2 finite difference.
+- Added one report, six PDF/320-dpi PNG figures, nine tests and scoped LONG
+  memory/navigation. Preserved old archives and physics; root README unchanged.
+
+## 2026-11-06 — HS-A horizontal-spring angular map
+
+- Added a bounded full-model workflow for 18 joint/horizontal stiffness pairs,
+  frozen composite grids, atomic missing-only checkpoints and all-crossing
+  threshold analysis. Reused the unchanged HS-P1 physical solver and gates.
+- PASS: 1571 unique prefixes (1465 new, 106 reused), 36 physical 90%/95%
+  thresholds with two reference normalizations, six independent Ritz controls.
+  No interior grid maximum or decline to 90 degrees was found in this sample.
+- Added a scientific report, source-hashed data, three PDF/320-dpi PNG figures,
+  nine targeted tests and affected LONG navigation/memory. Old archives and
+  unrelated working-tree changes preserved; root README intentionally unchanged.
+
+## 2026-11-03 - Local writing configuration
+
+- Added a Git exclusion for a private local skill and a short routing rule
+  for nested private instructions. Scientific sources and article skills unchanged.
+
+## 2026-11-03 — Dense square-section RL_FULL/RR maps
+
+- Added a separate configuration: mu step .005 and tau step .01, with the
+  existing beta grid unchanged. Used the unmodified map CLI and numerical policy.
+- All 735 grid entries passed: 544 new solutions and 191 reused entries;
+  two existing beta repair certificates reused, no new repair or Ritz solves.
+- Added per-map CSV/manifests, 10 PNG and 10 vector PDF figures, a technical
+  report and navigation. Verified zero-solve finalization and old-file hashes;
+  historical sources, archives, D/K and private dissertation files preserved.
+
+## 2026-11-03 — Square-section RL_FULL/RR maps
+
+- Extended the existing map CLI through a small aspect-selectable constructor,
+  preserving historical physical kernels and the original aspect-four class.
+- Passed the 13-case section gate: a4 regressions, square straight limit,
+  reflected fields, four Ritz controls and full nine-mode quality checks.
+- Completed all 191 requested grid entries (187 geometries) for a1: 182 new
+  map points, nine gate references and eight confirmed local reruns. Added
+  geometric slenderness flags, full-inertia comparisons and PNG/vector PDF views.
+- Fixed saved-shape coefficient loading and NumPy metadata serialization;
+  preserved interrupted diagnostics and resumed without repeating root searches.
+- Added 11 focused checks (50 with existing suites), per-map CSV/manifests,
+  usage report and navigation. Old a4 data, reports, D/K and private files intact.
+
+## 2026-11-02 — Configurable RL_FULL/RR Lambda maps
+
+- Added one BETA/MU/TAU fast_plot CLI and editable JSON grids, reusing the
+  accepted individual-section K8 engine and unchanged quality tolerances.
+- Five demonstration maps passed: 44 grid entries, 31 new points, 13 accepted
+  archive references; three triggered count-only reruns reproduced neighbour
+  jumps. No per-point Ritz, MAC or modal-branch tracking.
+- Added separate CSV/manifest/PNG/vector-PDF output, zero-solve plot-only and
+  tables-only modes, focused tests and usage report. Updated README, results
+  navigation and current technical status; old sources/archives/D/K preserved.
+- Fixed redundant repetition of already verified neighbour repairs when
+  selecting a subset of maps; all three modes now reuse those diagnostics
+  with zero solves. Kept the first version, its data and explicit migration checks.
+
+## 2026-11-02 — Individual-section RL_FULL/RR K8, C0 and C1
+
+- Added a narrow individual-section adapter and gated C0/C1 CLI, reusing the
+  existing physics, pole catalogues, counted prefix and heterogeneous Ritz.
+- C0 passed six K8 regressions (plus four A subprefix comparisons), four
+  reflection cases and the equal-arm straight control. C1 passed 15 points:
+  nine new, five accepted A-B references and one reused C0 point.
+- Added eight tests (29 with the existing prefix suite), separate saved-field
+  diagnostics and the numerical report. Preserved historical sources/archives.
+- Updated README, result navigation and current technical status. No epsilon
+  stage, tau sweep, FEM, commit or push.
+
+## 2026-11-02 — Saved-field RL_FULL/RR modal postprocessing
+
+- Added a read-only NPZ postprocessor using the existing energy integrator,
+  coordinate frames and full-mass inner product, with six dedicated tests.
+- Added separately fingerprinted local tables and four diagnostic figures;
+  declared plot_only/sorted-position semantics and prohibited solver/basis calls.
+- Updated root README and result navigation. Original K8 data, source hashes,
+  historical reports, D/K and solver tests remain unchanged; no new spectra.
+
+## 2026-11-02 — Saved-field RL_FULL/RR modal postprocessing
+
+- Added a read-only NPZ postprocessor using the existing energy integrator,
+  coordinate frames and full-mass inner product, with six dedicated tests.
+- Added separately fingerprinted local tables and four diagnostic figures;
+  declared plot_only/sorted-position semantics and prohibited solver/basis calls.
+- Updated root README and result navigation. Original K8 data, source hashes,
+  historical reports, D/K and solver tests remain unchanged; no new spectra.
+
+## 2026-11-02 — Bounded RL_FULL/RR spectral prefix verification
+
+- Added an isolated count-guided prefix adapter, A/B CLI, configuration and
+  21 tests without changing the historical three-root workflow or physics.
+- Passed four 2+guard3 archive regressions and six fixed-angle 8+guard9
+  cases, including full fields, mass Gram, Ritz16/20 and beta0 split control.
+- Added the numerical report and result navigation; 51 targeted tests pass.
+  Basis extensions, geometry/thickness sweeps and FEM were not needed or run.
+  Root README updated with the new entry point; no commit/push.
+
+## 2026-11-02 — Research context navigation
+
+- Condensed current memory from 432 to 184 lines, replacing repeated LONG
+  stage history with canonical report routes and current limitations.
+- Preserved model boundaries, partial results, unresolved checks and stopping
+  points; historical D/K, scientific sources and result data remain unchanged.
+- Root README remains current. No scientific computations were run.
+
+## 2026-11-01 — Local preparatory research inventory
+
+- Verified the existing private-directory Git exclusion and created local
+  preparatory navigation plus an unexecuted versioning/backup proposal.
+- Scientific sources, models, historical memory, manuscripts and result data
+  remain unchanged. Root README remains current; no computations or publication.
+
 ## 2026-10-28 — HS-LA6: final combined a priori threshold prediction
 
 - Sealed H5/H6 90%/95% forecasts from HS-LA5 and HS-LA3 before parsing full

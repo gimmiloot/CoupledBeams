@@ -1,5 +1,18 @@
 # Generated Results Index
 
+[HS-B: geometry dependence](theory/isotropic_two_springs_horizontal_geometry_map.md):
+[horizontal_spring_geometry_map/7b2b5ba8c33abe48](../results/isotropic_two_springs_rl_timoshenko/horizontal_spring_geometry_map/7b2b5ba8c33abe48/README.md).
+PASS: 34 variants, 2449 frozen nodes and 431 threshold additions;
+2522 new / 358 reused full prefixes, 32 independent Ritz controls.
+Includes geometry/pole identity, both threshold normalizations, existing-limit
+prediction errors, missing-target statuses and six reproducible figures.
+
+[HS-A: horizontal-spring angular map](theory/isotropic_two_springs_horizontal_angle_map.md):
+[horizontal_spring_angle_map/2857f883fb745757](../results/isotropic_two_springs_rl_timoshenko/horizontal_spring_angle_map/2857f883fb745757/README.md).
+PASS: 18 constructions, 1335 frozen nodes plus 236 threshold points;
+1465 new / 106 reused prefixes. Both 90%/95% normalizations, all detected
+crossings, exact physical checks, three PDF/PNG figures and pure plot_only.
+
 [HS-LA6: combined thresholds and closure, section 14](theory/isotropic_two_springs_horizontal_leading_spectral_structure.md):
 [horizontal_combined_threshold_prediction/a40b6787d5beb9f5](../results/isotropic_two_springs_rl_timoshenko/horizontal_combined_threshold_prediction/a40b6787d5beb9f5/README.md).
 PASS: sealed direct/two-term forecasts for four H5/H6 angles, three-component
@@ -287,6 +300,68 @@ Russian labels for the six earlier pair visualizations are saved separately in
 ranges with extrema, three PNG/PDF figures and checked fields/counts. PASS;
 95 predecessor points reused, 269 new grid points and 3 targeted RH checks,
 816 new roots total. No plateau-angle definition or finite-stiffness sweep.
+
+`results/rl_full_rr_prefix/ec9e338a2985a308/`:
+[bounded RL_FULL/RR 8+guard9 verification](numerics/rl_full_rr_prefix_verification.md).
+PASS: A has four 2+guard3 archive regressions; B has six fixed-angle prefixes
+at mu=.01, tau=0, epsilon=.005, exact RIGID/RIGID. Full fields, energetic
+counts, mass Gram, Ritz16/20 and straight-rod checks; JSON/NPZ, CSV and hashes.
+Read with `verify_rl_full_rr_prefix.py --tables-only <bundle>` or
+`--verify-cache <bundle>`. No parameter sweep or 3D applicability claim.
+
+`results/rl_full_rr_modal_audit/5623a423ffe66a08/`:
+[saved-field postprocessor](../scripts/analysis/postprocess_rl_full_rr_modes.py),
+run with `python scripts/analysis/postprocess_rl_full_rr_modes.py`.
+Reads only the accepted `rl_full_rr_prefix/ec9e338a2985a308` JSON/NPZ.
+Exports energy/mass components, arm shares, global full-mass MAC, component-node
+brackets and gradient indicators; four diagnostic figures, six tests.
+Separate local manifest and source hashes; `plot_only`, sorted positions,
+no root/basis evaluations or assigned branch identities. Arrays remain ignored.
+
+`results/rl_full_rr_geometry/a79da9b64ef44143/`:
+[individual-section K8 verification C0/C1](numerics/rl_full_rr_geometry_verification.md).
+C0 PASS: six B regressions plus four A subprefix comparisons, four reflected
+unequal-section cases and one equal-arm straight control. C1 PASS: 15 points,
+nine newly computed plus five A-B and one C0 references. Individual catalogues,
+full mass/energy/fields, count through guard9, heterogeneous Ritz and interfaces.
+Read with `verify_rl_full_rr_geometry.py --verify-cache <bundle>` or `--tables-only`.
+Derived tables: `results/rl_full_rr_geometry_analysis/aea03e7ba7d24398/`;
+saved-field analysis only, with explicit unresolved match events and no new angles.
+
+`results/rl_full_rr_maps/c100976d27f5c949/` (source calculation: `58bfb20de7bbd76e`):
+[configurable BETA/MU/TAU Lambda maps](numerics/rl_full_rr_frequency_maps.md),
+five fast_plot grids, 44 entries (31 new points / 13 accepted references),
+8 sorted positions plus guard9. Three triggered reruns reproduced jumps.
+CSV and full provenance are immutable; all/split PNG and vector PDF views:
+`results/rl_full_rr_maps/figures/c100976d27f5c949_dc68c828b9d5/`.
+Use `map_rl_full_rr.py --plot-only <bundle>` or `--tables-only <bundle>` without
+solving. No tracked branches or interpretation of the new maps.
+
+`results/rl_full_rr_maps/7b99bfdcc7975b2d/`:
+[dense square-section maps](numerics/rl_full_rr_square_maps_dense.md), 735 entries
+(731 geometries), all PASS: 544 new and 191 reused points. MU step .005,
+TAU step .01; BETA unchanged. Two old repair certificates reused, no new
+repair/Ritz solves. Per-map CSV/manifests and 10 PNG/10 PDF files are linked
+in the report; old square bundles remain unchanged.
+
+`results/rl_full_rr_maps/b6baad7fa48d81c8/`:
+[square-section expanded maps](numerics/rl_full_rr_square_maps.md), 191 entries
+(187 geometries), aspect 1, epsilon .005; all five requested grids PASS.
+Source points: `results/rl_full_rr_maps/2e7550af65bc68ed/`; section gate and
+aspect comparison: `results/rl_full_rr_square/8c3fc90e3fb0fbfd/`.
+Full/split PNG and vector PDF gallery:
+`results/rl_full_rr_maps/figures/b6baad7fa48d81c8_2d50c5d55391/`.
+Per-map CSV/manifests and zero-solve commands are linked from the report.
+Slenderness flags describe geometry only; no modal tracking or 3D comparison.
+
+`results/rl_full_rr_modal_audit/5623a423ffe66a08/`:
+[saved-field postprocessor](../scripts/analysis/postprocess_rl_full_rr_modes.py),
+run with `python scripts/analysis/postprocess_rl_full_rr_modes.py`.
+Reads only the accepted `rl_full_rr_prefix/ec9e338a2985a308` JSON/NPZ.
+Exports energy/mass components, arm shares, global full-mass MAC, component-node
+brackets and gradient indicators; four diagnostic figures, six tests.
+Separate local manifest and source hashes; `plot_only`, sorted positions,
+no root/basis evaluations or assigned branch identities. Arrays remain ignored.
 
 `results/isotropic_two_springs_rl_timoshenko/51af749660af1df5/`:
 [two-spring full RL/Timoshenko verification](theory/isotropic_two_springs_rl_timoshenko.md).
