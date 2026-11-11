@@ -1,5 +1,69 @@
 # Scripts guide
 
+## HS-D2: geometry validation using archived full spectra
+
+Use the same CLI with `--study HS-D2`; omitting it retains HS-D1.
+
+```powershell
+python -X utf8 -m scripts.lib.two_springs_horizontal_composite preflight --study HS-D2
+python -X utf8 -m scripts.lib.two_springs_horizontal_composite run --study HS-D2
+python -X utf8 -m scripts.lib.two_springs_horizontal_composite diagnose --study HS-D2
+python -X utf8 -m scripts.lib.two_springs_horizontal_composite analyze --study HS-D2
+python -X utf8 -m scripts.lib.two_springs_horizontal_composite plot_only --study HS-D2
+python -X utf8 -m scripts.lib.two_springs_horizontal_composite finalize --study HS-D2
+python -X utf8 -m scripts.lib.two_springs_horizontal_composite verify --study HS-D2
+```
+
+The [contract](../data/input/isotropic_two_springs_horizontal_composite_geometry_validation.json)
+fixes 34 HS-B geometries and unchanged leading tolerances. `run` is missing-only
+and verifies a completed bundle without new solutions. `diagnose` handles only
+the recorded adjacent-decrease trigger; `analyze` and `plot_only` read saved data.
+No full RL/Timoshenko solutions are made. See the
+[report](../docs/theory/isotropic_two_springs_horizontal_composite_geometry_validation.md)
+and [bundle](../results/isotropic_two_springs_rl_timoshenko/horizontal_composite_geometry_validation/d45b5f6b567f8106/README.md).
+
+## HS-D1: bounded inner/outer eigenvalue composition
+
+```powershell
+python -X utf8 -m scripts.lib.two_springs_horizontal_composite preflight
+python -X utf8 -m scripts.lib.two_springs_horizontal_composite run
+python -X utf8 -m scripts.lib.two_springs_horizontal_composite analyze
+python -X utf8 -m scripts.lib.two_springs_horizontal_composite plot_only
+python -X utf8 -m scripts.lib.two_springs_horizontal_composite finalize
+python -X utf8 -m scripts.lib.two_springs_horizontal_composite verify
+python -X utf8 -m pytest -q tests/test_two_springs_horizontal_composite.py
+```
+
+The [contract](../data/input/isotropic_two_springs_horizontal_composite_approximation.json)
+selects five compositions and finite-support A2 control, using accepted full
+HS-B data only. The coordinator reuses frozen HS-L1/HS-C and coefficient/count
+functions; no new physical assembly or full spectrum. `run` resumes accepted
+points; `analyze` postprocesses saved values; `plot_only` does not assemble or
+solve; `finalize` seals source revisions and saved-data analysis.
+[Report](../docs/theory/isotropic_two_springs_horizontal_composite_approximation.md),
+[bundle](../results/isotropic_two_springs_rl_timoshenko/horizontal_composite_approximation/60fc0dd404dcf167/README.md).
+
+## HS-C: finite-angle thin-beam limit
+
+```powershell
+python -X utf8 -m scripts.lib.two_springs_horizontal_finite_angle limits
+python -X utf8 -m scripts.lib.two_springs_horizontal_finite_angle run
+python -X utf8 -m scripts.lib.two_springs_horizontal_finite_angle plot_only
+python -X utf8 -m scripts.lib.two_springs_horizontal_finite_angle finalize
+python -X utf8 -m scripts.lib.two_springs_horizontal_finite_angle verify
+python -X utf8 -m pytest -q tests/test_two_springs_horizontal_finite_angle.py
+```
+
+The [contract](../data/input/isotropic_two_springs_horizontal_finite_angle_limit.json)
+freezes the analytic gate, nine archived comparisons and numerical tolerances.
+The specialized limit reuses HS-L1/HS-LA5 fields and symmetric Ritz solution,
+with a separate ODE boundary matrix/count. It never solves the full model.
+`run` resumes accepted points and reuses a completed bundle; `plot_only` reads
+CSV; `finalize` seals new coordinator source snapshots without changing data.
+The source HS-A/HS-B bundles must already be available locally.
+[Report](../docs/theory/isotropic_two_springs_horizontal_finite_angle_limit.md),
+[bundle](../results/isotropic_two_springs_rl_timoshenko/horizontal_finite_angle_limit/6b15c780c138c0ed/README.md).
+
 ## HS-B: bounded horizontal-spring geometry study
 
 ```powershell

@@ -1,5 +1,24 @@
 # Internal helpers
 
+- `two_springs_horizontal_composite_geometry.py` adds the HS-D2 geometry and
+  exact reuse identities, archived comparisons, diagnostics and saved-data
+  figures to the existing composite CLI (`--study HS-D2`). It subclasses the
+  existing study without copying any physical assembly. HS-D1 remains the
+  default; A2 uses finite HS-C I and is never composed. Sealed bundles support
+  missing-only/resume and hash verification.
+
+- `two_springs_horizontal_composite.py` owns HS-D1 eigenvalue composition,
+  frozen archive comparisons, coefficients and threshold/slope diagnostics.
+  It calls unchanged HS-L1/HS-C solvers and endpoint counters, never combines
+  physical matrices or solves the full model. A2 remains a separate HS-C I
+  control. The new scalar-prediction contract preserves old source identities.
+
+- `two_springs_horizontal_finite_angle.py` implements the separately derived
+  HS-C fixed-angle limit using HS-L1/HS-LA5 fields, with finite or exact
+  horizontal support, coupled translational mass and an independent ODE/count.
+  It also owns the bounded archived comparison, threshold and plotting workflow.
+  No historical model is changed; no full RL/Timoshenko spectrum is computed.
+
 - `two_springs_horizontal_geometry_map.py` adds the HS-B geometry identity,
   exact arm-pole signatures, per-variant stops and existing-limit comparison
   contract around HS-A transactions. It does not copy the physics or counter.
@@ -140,6 +159,13 @@ This directory contains reusable helper modules that are not meant to be run dir
   volume. It reuses arm fundamentals and prefix isolation, while assembling
   individual energies, pole counts and weighted leading Ritz forms. Reference
   spring/frequency scales and original module globals remain unchanged.
+- `frequency_geometry_style.py` applies the author-approved L_i/h_i >= 10
+  line-style criterion to saved RL/Timoshenko frequency curves. It reads arm
+  lengths and section thicknesses from the canonical model, locates geometric
+  boundaries, splits display segments without new observations, preserves
+  colors and writes separate node diagnostics. Supports beta, mu, tau and
+  epsilon in either direction, including multiple transitions. No spectral
+  or tracking calls; see `tests/test_frequency_geometry_style.py`.
 - `two_springs_thickness_asymmetry.py` orchestrates the frozen 18-case study:
   algebraic and physical gates, archive reuse, conditional tails, local leading
   derivatives and saved-data figures. It reuses established stencils and checks;
@@ -524,3 +550,15 @@ Lightweight tests can be run with `python -m unittest discover -s tests`.
   solver or frequency-map runner. The opt-in `analytic_curvature` flag in
   `isotropic_two_springs_external_transverse_spring.Leading` changes only the
   numerical evaluation of the curvature Gram matrix, preserving the old default.
+- `timoshenko_partial_spectra.py` adapts the accepted finite Timoshenko basis,
+  root locator and modal recovery to CS end conditions in a private module copy;
+  the original CC implementation and coupled solvers are unchanged. It reuses
+  certified CC catalogs, verifies supplied roots by state-matrix expm/QR, and
+  checks CS completeness through the existing SS min-max count.
+  The new data contract (immutable CC inputs, missing CS lengths, full partial
+  checks and saved-only plots) is exposed by
+  [`map_timoshenko_partial_frequencies.py`](../analysis/map_timoshenko_partial_frequencies.py)
+  with [`timoshenko_partial_m15_0.json`](../../data/input/timoshenko_partial_m15_0.json).
+  Use `--output <bundle>` for missing-only production and `--plot-only
+  --figure-output <new-folder>` for rendering. The interface does not solve
+  coupled spectra, run FEM/Ritz or assign global modal identities.

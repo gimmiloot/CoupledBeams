@@ -2,7 +2,7 @@
 
 Separate from immutable A-B/C0-C1 certification CLIs: fast_plot, resumable
 point transactions and read-only CSV rendering are a different I/O contract.
-The only scientific engine is the accepted individual-section K8 adapter.
+The scientific engine is the unchanged individual-section counted prefix.
 """
 from __future__ import annotations
 import argparse
@@ -22,6 +22,9 @@ sys.path.insert(0, str(ROOT))
 OUTPUT = ROOT / "results/rl_full_rr_maps"
 CONFIG = ROOT / "data/input/rl_full_rr_maps.json"
 AXES = {"BETA": "beta_deg", "MU": "mu", "TAU": "tau"}
+# Reviewed interface-only migration; a future unreviewed wrapper edit cannot
+# silently reuse these older source snapshots. Physical dependencies stay exact.
+PREFIX_INTERFACE_AST_SHA256 = "7687bfb9dc930cfa1ffbe9851fe07ba44315ad4dd2851d0cfda3df0c2732fc5c"
 
 
 def sha(path):
@@ -52,10 +55,12 @@ def publish(path, obj):
 def configuration(path):
     c = read(path)
     reference = read(ROOT / "data/input/rl_full_rr_geometry_c.json")
-    fixed = dict(c["material"], aspect=4.)
+    fixed = dict(c["material"], aspect=4., epsilon=.005)
     if (fixed != reference["material"] or not math.isfinite(c["material"]["aspect"])
-        or c["material"]["aspect"] <= 0 or c["numerical_policy"] != "data/input/rl_full_rr_geometry_c.json"):
-        raise ValueError("Positive aspect, epsilon=.005 and the accepted material/numerical policy required")
+        or c["material"]["aspect"] <= 0 or c["material"]["epsilon"] not in (.005, .01)
+        or c["numerical_policy"] != "data/input/rl_full_rr_geometry_c.json"):
+        raise ValueError("Positive aspect, epsilon=.005/.01 and the accepted material/numerical policy required")
+    prefix_ranks(c)
     names = set()
     for spec in c["maps"]:
         if spec["name"] in names or not spec["name"].replace("_", "").isalnum():
@@ -76,11 +81,19 @@ def configuration(path):
     return c, reference["policy"]
 
 
-def local_policy(spec):
+def prefix_ranks(config):
+    pair = config.get("K_plot", 8), config.get("K_guard", 9)
+    if any(type(k) is not int for k in pair) or pair not in ((6, 7), (8, 9)):
+        raise ValueError("Supported prefixes: K6/guard7 and K8/guard9")
+    return pair
+
+
+def local_policy(spec, k_plot=8, k_guard=9):
+    prefix_ranks(dict(K_plot=k_plot, K_guard=k_guard))
     return dict(frequency_map_policy="frequency-map-v1", calculation_mode="fast_plot",
         spectrum_semantics="sorted_positions", sweep_parameter=AXES[spec["mode"]],
-        parameter_grid=spec["grid"], K_plot=8, K_guard=9, guard_root_role="completeness_only",
-        neighbour_audit="max |omega_next/omega_previous-1| over ranks 1..8 > 0.2",
+        parameter_grid=spec["grid"], K_plot=k_plot, K_guard=k_guard, guard_root_role="completeness_only",
+        neighbour_audit=f"max |omega_next/omega_previous-1| over ranks 1..{k_plot} > 0.2",
         local_repair_policy="one count-only rerun of affected point without predictor; no added parameter nodes",
         strict_audit_default=False,
         shape_policy="recover full guard prefix solely for required BC/ODE/energy/mass gates; no MAC",
@@ -103,6 +116,127 @@ def physical_key(contract):
         K_guard=contract["K_guard"], policy=contract["policy"],
         time_reference=contract["time_reference"], state_order=contract["state_order"],
         coordinates=contract["coordinates"], semantics=contract["spectrum_semantics"])))
+
+
+def reusable_prefix(source, target):
+    """A certified higher prefix can supply a lower one, never conversely."""
+    sk, sg = prefix_ranks(source)
+    tk, tg = prefix_ranks(target)
+    if sk < tk or sg < tg or physical_key(dict(source, K_plot=tk, K_guard=tg)) != physical_key(target):
+        return False
+    normalizations = {"Omega=omega*t_ref=Lambda**2", "Omega=omega*t_ref=Lambda**2; common reference section"}
+    if source.get("normalization") not in normalizations or target.get("normalization") not in normalizations:
+        return False
+    # Same model parameters imply the same canonical coefficients. Also reject
+    # internally inconsistent stored derived coefficients, not just parameter tags.
+    from scripts.lib import rl_full_rr_sections_prefix as e
+    from scripts.lib.rl_full_rr_aspect import make_model
+    for contract in (source, target):
+        model = make_model(**dict(contract["model"], mu=contract["case"]["mu"], tau=contract["tau"]))
+        case = e.p.Case(**dict(contract["case"], tau=contract["tau"]))
+        expected = e.point_contract(model, case, contract["K_plot"], contract["K_guard"], contract["policy"])
+        for field in ("arms", "reference_section"):
+            if field in contract and contract[field] != expected[field]:
+                return False
+        if "lengths" in contract and contract["lengths"] != list(case.lengths(model)):
+            return False
+        if "section" in contract and contract["section"] != {k:expected["arms"][0][k] for k in contract["section"]}:
+            return False
+    return True
+
+
+def find_reusable(contract, known):
+    for kp, kg in (prefix_ranks(contract), (8, 9)):
+        found = known.get(physical_key(dict(contract, K_plot=kp, K_guard=kg)))
+        if found and reusable_prefix(found[1]["contract"], contract):
+            return found
+    return None
+
+
+def prefix_view(source_path, target, folder, source_id):
+    """Immutable derived record/NPZ, certified by a saved larger prefix.
+
+    No matrix, basis, pole catalogue, count or eigenvalue call. Complete a
+    cluster through the guard using the already certified source interval.
+    """
+    import copy
+    import numpy as np
+    from scripts.lib import rl_full_rr_sections_prefix as e
+    from scripts.lib.rl_full_rr_aspect import make_model
+    from scripts.analysis import verify_rl_full_rr_prefix as ab
+    source = verify_record(source_path)
+    if source["status"] != "PASS" or not reusable_prefix(source["contract"], target):
+        raise ValueError("Source does not certify the requested physical prefix")
+    kp, kg = prefix_ranks(target)
+    search = source["search"]
+    if search["status"] != "PASS" or search["lower_count"] != 0 or search["unresolved_intervals"]:
+        raise ValueError("Source completeness is unresolved")
+    if len(source["roots"]) < source["contract"]["K_guard"] or source["quality"]["status"] != "PASS":
+        raise ValueError("Incomplete certified source")
+    retained = kg
+    while True:
+        last = source["roots"][retained-1]
+        right = last["omega"] + target["policy"]["cluster_probe_relative"]*max(1., abs(last["omega"]))
+        if retained < len(source["roots"]) and source["roots"][retained]["omega"] <= right:
+            retained += 1
+        else:
+            break
+    if retained-kg > target["policy"]["max_cluster_extra_ranks"] or right > search["guard_right_omega"]:
+        raise ValueError("Source does not cover the complete requested guard cluster")
+    if search["guard_right_count"] != len(source["roots"]):
+        raise ValueError("Source right count and saved positions disagree")
+    proof = dict(source_record=source_path.relative_to(ROOT).as_posix(), source_record_sha256=sha(source_path),
+                 source_npz=(source_path.parent.parent/source["shape_file"]).relative_to(ROOT).as_posix(),
+                 source_npz_sha256=source["shape_sha256"], source_K_plot=source["contract"]["K_plot"],
+                 source_K_guard=source["contract"]["K_guard"], selected_positions=list(range(1,retained+1)),
+                 source_search=search, spectral_calls=0)
+    key = digest(dict(contract=target, source_id=source_id, reuse=proof))[:16]
+    path = folder/"points"/(key+".json")
+    if path.exists():
+        return path, verify_record(path)
+    modes = ab.load_modes(source_path.parent.parent,source)[:retained]
+    roots = copy.deepcopy(source["roots"][:retained])
+    for rank, (root, mode) in enumerate(zip(roots,modes), 1):
+        root["role"] = "plot" if rank<=kp else "guard" if rank==kg else "cluster_completion"
+        mode["diagnostics"] = root["diagnostics"]
+    model = make_model(**target["model"])
+    quality = e.mode_gates(model,modes,target["policy"])
+    if quality["status"] != "PASS":
+        raise ValueError("Saved prefix failed physical/mass gates")
+    shape = path.with_suffix(".npz"); shape.parent.mkdir(parents=True,exist_ok=True)
+    with shape.open("xb") as f:
+        np.savez_compressed(f, **{f"mode{i+1}_arm{j+1}_{field}":arm[field]
+            for i, mode in enumerate(modes) for j, arm in enumerate(mode["arms"])
+            for field in ("x","weights","y","dy","ends")})
+    record = dict(contract=target, source_id=source_id, calculation_mode="reuse_certified_prefix",
+        status="PASS", beta_deg=source["beta_deg"], mu=source["mu"], tau=source["tau"],
+        geometry=source.get("geometry"), roots=roots, quality=quality, reuse=proof,
+        search=dict(status="PASS", lower_count=0, requested_guard=kg, computed_ranks=retained,
+            guard_right_omega=right, guard_right_count=retained, unresolved_intervals=[],
+            proof_type="subprefix_of_certified_counted_interval", new_count_queries=0),
+        domain=dict(source.get("domain",{}),guard_omega=roots[kg-1]["omega"],right_omega=right),
+        shape_file=shape.relative_to(folder).as_posix(), shape_sha256=sha(shape), elapsed_seconds=0.)
+    record=ab.jsonable(record);record["record_digest"]=digest(record);publish(path,record)
+    return path,record
+
+
+def saved_control_reference(c, policy):
+    """Explicit archived square controls; never run new Ritz as a side effect."""
+    folder = ROOT/c["control_reference"]
+    if sha(folder/"manifest.json") != c["control_reference_sha256"]:
+        raise ValueError("Changed control reference")
+    saved = verify_manifest(folder)
+    material = saved["identity"]["material"]
+    if (saved["status"] != "PASS" or material["aspect"] != 1 or c["material"]["aspect"] != 1
+            or dict(material,epsilon=c["material"]["epsilon"]) != c["material"]
+            or saved["identity"]["policy"] != policy):
+        raise ValueError("Incompatible archived square controls")
+    for file,h in saved["identity"]["sources"].items():
+        if file in ("scripts/analysis/map_rl_full_rr.py", "scripts/lib/rl_full_rr_square_checks.py"):
+            continue
+        if sha(ROOT/file)!=h:raise ValueError("Changed physical control dependency: "+file)
+    return dict(saved,folder=folder.relative_to(ROOT).as_posix(),manifest_sha256=sha(folder/"manifest.json"),
+                coverage_epsilon=material["epsilon"],new_ritz_calls=0)
 
 
 def verify_record(path):
@@ -159,7 +293,9 @@ def geometry(model, case):
     error = abs(sum(a["A"]*a["L"] for a in arms)/(2*model.section.rhoA/model.rho*model.l)-1)
     if error > 1e-12:
         raise ValueError("Volume conservation failed")
+    from scripts.lib.frequency_geometry_style import classify
     return dict(arms=arms, volume_relative_error=error, reference_time=model.time,
+                **classify(*(a["L_over_h"] for a in arms)),
                 slenderness_geometric_pass=all(a["slenderness_geometric_pass"] for a in arms),
                 slenderness_rule="L_i/h_i >= 10; preliminary geometry only, not a frequency cutoff")
 
@@ -172,6 +308,7 @@ def solve(contract, folder, source_id, initial_upper, neighbour=None, repair=Fal
     from scripts.analysis import verify_rl_full_rr_prefix as ab
     p = e.p
     policy = contract["policy"]
+    k_plot, k_guard = prefix_ranks(contract)
     model, case = make_model(**contract["model"]), p.Case(**contract["case"])
     key = digest(dict(contract=contract, source_id=source_id, repair=repair))[:16]
     path = folder/"points"/(key+".json")
@@ -184,7 +321,7 @@ def solve(contract, folder, source_id, initial_upper, neighbour=None, repair=Fal
     try:
         rec["geometry"] = geometry(model, case)
         lo = float(model.omega(policy["Lambda_lower"]))
-        hi = initial_upper if neighbour is None else max(float(neighbour[8])*1.1, float(model.omega(policy["Lambda_upper"])))
+        hi = initial_upper if neighbour is None else max(float(neighbour[k_guard-1])*1.1, float(model.omega(policy["Lambda_upper"])))
         if repair:
             hi *= 1.125  # different partition and upper bound, unchanged physics/tolerances
         rec["bound_attempts"] = []
@@ -194,7 +331,7 @@ def solve(contract, folder, source_id, initial_upper, neighbour=None, repair=Fal
             counter = e.PhysicalCounter(model, case, cats, policy)
             try:
                 events, search = e.counted_prefix(lambda w:p.balance(p.boundary(model, case, w))[0],
-                    counter, lo, hi, 9, policy, neighbour)
+                    counter, lo, hi, k_guard, policy, neighbour)
                 break
             except e.PrefixFailure as ex:
                 rec["bound_attempts"].append(dict(lower=lo, upper=hi, code=ex.code, details=ex.details))
@@ -211,12 +348,12 @@ def solve(contract, folder, source_id, initial_upper, neighbour=None, repair=Fal
                 roots.append(dict(omega=event["omega"], Omega=event["omega"]*model.time,
                     Lambda=float(model.Lambda(event["omega"])), sorted_position=rank,
                     multiplicity=event["multiplicity"], event_id=event_id,
-                    role="plot" if rank<=8 else "guard" if rank==9 else "cluster_completion",
+                    role="plot" if rank<=k_plot else "guard" if rank==k_guard else "cluster_completion",
                     coefficients=mode["coefficients"], diagnostics=mode["diagnostics"]))
                 modes.append(mode)
         rec.update(roots=roots, quality=e.mode_gates(model, modes, policy),
             domain=dict(arms=counter.limits, catalog_limit=counter.domain,
-                        guard_omega=roots[8]["omega"], right_omega=search["guard_right_omega"]))
+                        guard_omega=roots[k_guard-1]["omega"], right_omega=search["guard_right_omega"]))
         # Unique shape transaction also permits resuming after an interrupted JSON publication.
         shape = path.with_name(key+"_"+uuid.uuid4().hex[:8]+".npz")
         shape.parent.mkdir(parents=True, exist_ok=True)
@@ -238,7 +375,8 @@ def solve(contract, folder, source_id, initial_upper, neighbour=None, repair=Fal
 
 
 def jump(a, b):
-    return max(abs(y["omega"]/x["omega"]-1) for x,y in zip(a["roots"][:8], b["roots"][:8]))
+    k = min(a.get("contract", {}).get("K_plot", 8), b.get("contract", {}).get("K_plot", 8))
+    return max(abs(y["omega"]/x["omega"]-1) for x,y in zip(a["roots"][:k], b["roots"][:k]))
 
 
 def agreement(a, b, tolerance):
@@ -260,6 +398,8 @@ def solver_sources_compatible(previous, current, legacy_a4=False):
     current = {k:v for k,v in current.items() if k!=helper}
     if previous == current:return True
     snapshots = {
+        "4e564b482def6708b26a6c16c3e46469aa3c62d829ca8663cd1e93a60fc18381":"private/dissertation/_history/20261108_slenderness_rule/scripts/analysis/map_rl_full_rr.py",
+        "240b1591abc2a948691ab4f1cedb362d97731a19c05c354d9c0c420d386ae120":"private/dissertation/_history/20261109_square_pilot/scripts/analysis/map_rl_full_rr.py",
         "9dbce4239c0748f9a0956157744779c8ddbf1c27c91ce0ee4c0cf1ea184f0605":"results/rl_full_rr_maps/_audit/map_rl_full_rr_v1.py",
         "edc4f24f75f3e7c670c98ff83af7cda386fa099aa0416611d6648487a8de5587":"results/rl_full_rr_maps/_audit/map_rl_full_rr_v2.py",
         "61371b890eba4c6f549f50d52190afcd9350c31ed8ed74b81255df03fbe4d794":"results/rl_full_rr_square/_audit/map_before_json_fix.py"}
@@ -275,6 +415,12 @@ def solver_sources_compatible(previous, current, legacy_a4=False):
     def functions(path):
         return {n.name:ast.dump(n, include_attributes=False) for n in ast.parse(path.read_text(encoding="utf-8")).body if isinstance(n, ast.FunctionDef)}
     before, after = functions(legacy), functions(Path(__file__))
+    reviewed = ("configuration", "prefix_ranks", "physical_key", "reusable_prefix", "find_reusable",
+                "prefix_view", "saved_control_reference", "local_policy", "digest", "verify_record",
+                "accepted_sources", "solve", "geometry", "jump", "agreement", "write_tables", "run", "cache_compatible")
+    if (current.get(name) == sha(__file__) and
+            digest({k:after[k] for k in reviewed}) == PREFIX_INTERFACE_AST_SHA256):
+        return True
     functions_to_check = ["physical_key", "local_policy", "digest", "verify_record"]
     if not legacy_a4 or legacy_sha.startswith("61371"):
         functions_to_check += ["solve", "geometry"]
@@ -282,27 +428,33 @@ def solver_sources_compatible(previous, current, legacy_a4=False):
 
 
 def cache_compatible(old, current):
-    if old.get("engine_id") == current["engine_id"]:return True
     if any(old.get(k) != current[k] for k in ("versions", "policy", "initial_upper_omega", "material")):return False
+    if old.get("engine_id") == current["engine_id"]:return True
     return solver_sources_compatible(old.get("sources",{}), current["sources"], legacy_a4=current["material"]["aspect"]==4)
 
 
 def write_tables(folder, entries):
     fields = ["map", "mode", "x", "beta_deg", "mu", "tau", "rank", "Lambda", "omega", "Omega",
               "multiplicity", "status", "origin", "record", "record_sha256", "aspect",
-              "L1_over_h1", "L2_over_h2", "L1_over_b1", "L2_over_b2", "slenderness_geometric_pass"]
+              "L1_over_h1", "L2_over_h2", "L1_over_b1", "L2_over_b2", "slenderness_geometric_pass",
+              "K_plot", "K_guard", "role", "epsilon", "chi", "slenderness_criterion_pass", "slenderness_threshold", "line_style"]
     with (folder/"spectrum.csv").open("x", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fields); writer.writeheader()
         for item in entries:
             rec = verify_record(ROOT/item["record"])
-            for rank in range(1, max(9, len(rec.get("roots", [])))+1):
+            kp, kg = prefix_ranks(rec["contract"])
+            for rank in range(1, max(kg, len(rec.get("roots", [])))+1):
                 row = {k:item[k] for k in fields if k in item}
                 row["rank"] = rank
+                row.update(K_plot=kp, K_guard=kg, epsilon=rec["contract"]["model"]["epsilon"],
+                           role="plot" if rank<=kp else "guard" if rank==kg else "cluster_completion")
                 geo = item["geometry"]
                 row.update(aspect=rec["contract"]["model"]["aspect"],
                     L1_over_h1=geo["arms"][0]["L_over_h"], L2_over_h2=geo["arms"][1]["L_over_h"],
                     L1_over_b1=geo["arms"][0]["L_over_b"], L2_over_b2=geo["arms"][1]["L_over_b"],
                     slenderness_geometric_pass=geo["slenderness_geometric_pass"])
+                from scripts.lib.frequency_geometry_style import classify
+                row.update({k:v for k,v in classify(row["L1_over_h1"],row["L2_over_h2"]).items() if k in fields})
                 if item["status"] == "PASS":
                     root = rec["roots"][rank-1]
                     row.update({k:root[k] for k in ("Lambda", "omega", "Omega", "multiplicity")})
@@ -314,21 +466,23 @@ def run(c, policy, specs):
     import scipy
     from scripts.lib import rl_full_rr_sections_prefix as e
     from scripts.lib.rl_full_rr_aspect import make_model
+    k_plot, k_guard = prefix_ranks(c)
     known, refs, sources = accepted_sources(c)
     sources[Path(__file__).relative_to(ROOT).as_posix()] = sha(__file__)
     sources["scripts/lib/rl_full_rr_aspect.py"] = sha(ROOT/"scripts/lib/rl_full_rr_aspect.py")
     gate = None
     if c["material"]["aspect"] != 4:
         from scripts.lib.rl_full_rr_square_checks import control_gate
-        gate = control_gate(c, policy)
+        gate = saved_control_reference(c, policy) if "control_reference" in c else control_gate(c, policy)
         if gate["status"] != "PASS":
             raise RuntimeError("Aspect control gate failed; maps not started: "+gate["folder"])
         sources["scripts/lib/rl_full_rr_square_checks.py"] = sha(ROOT/"scripts/lib/rl_full_rr_square_checks.py")
     versions = dict(python=platform.python_version(), numpy=np.__version__, scipy=scipy.__version__)
     engine_id = digest(dict(sources=sources, versions=versions, initial_upper=c["initial_upper_omega"],
-        policy=policy, mode="fast_plot", repair_policy=local_policy(specs[0])["local_repair_policy"]))
-    identity = dict(schema="rl-full-rr-map-aspect-v2", material=c["material"], maps=specs,
-        local_policies={s["name"]:local_policy(s) for s in specs}, policy=policy,
+        policy=policy, mode="fast_plot", repair_policy=local_policy(specs[0],k_plot,k_guard)["local_repair_policy"]))
+    identity = dict(schema="rl-full-rr-map-prefix-v3", material=c["material"], maps=specs,
+        K_plot=k_plot, K_guard=k_guard,
+        local_policies={s["name"]:local_policy(s,k_plot,k_guard) for s in specs}, policy=policy,
         initial_upper_omega=c["initial_upper_omega"], sources=sources, references=refs,
         engine_id=engine_id, versions=versions,
         head=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip())
@@ -373,11 +527,16 @@ def run(c, policy, specs):
             q = dict(spec["fixed"], **{axis:value})
             model = make_model(**c["material"], mu=q["mu"], tau=q["tau"])
             case = e.p.Case(q["beta_deg"], q["mu"], "RIGID", "RIGID", q["tau"])
-            contract = e.point_contract(model, case, 8, 9, policy)
+            contract = e.point_contract(model, case, k_plot, k_guard, policy)
             geometry_check = geometry(model, case)
             key = physical_key(contract)
-            if key in known:
-                path, rec, origin = known[key]
+            reusable = find_reusable(contract, known)
+            if reusable:
+                path, rec, origin = reusable
+                if prefix_ranks(rec["contract"]) != (k_plot,k_guard):
+                    path, rec = prefix_view(path,contract,folder,engine_id)
+                    origin = "higher_certified_prefix"
+                    known[key]=(path,rec,origin)
             else:
                 seed = [r["omega"] for r in previous["roots"]] if previous else None
                 path, rec, calculated = solve(contract, folder, engine_id, c["initial_upper_omega"], seed)
@@ -386,6 +545,8 @@ def run(c, policy, specs):
                 if rec["status"] == "PASS": known[key] = (path, rec, "same_run")
             item = dict(map=spec["name"], mode=spec["mode"], x=value, **q, status=rec["status"],
                 origin=origin, record=path.relative_to(ROOT).as_posix(), record_sha256=sha(path), geometry=geometry_check)
+            if "reuse" in rec:
+                item["reuse"] = {k:v for k,v in rec["reuse"].items() if k!="source_search"}
             if rec["status"] == "PASS":
                 if previous is not None:
                     item["neighbour_relative_jump"] = jump(previous, rec)
@@ -438,6 +599,7 @@ def saved_table(folder):
 
 
 def render(folder, style, tables_only=False):
+    from scripts.lib import frequency_geometry_style as line_geometry
     m, rows = saved_table(folder)
     if tables_only:
         result = dict(bundle=str(folder), csv=str(folder/"spectrum.csv"), rows=len(rows),
@@ -448,11 +610,19 @@ def render(folder, style, tables_only=False):
     import matplotlib.pyplot as plt
     start = time.perf_counter()
     spec = dict(calculation_mode="plot_only", source_manifest=sha(folder/"manifest.json"),
-        source_csv=sha(folder/"spectrum.csv"), style=style, renderer=sha(__file__), matplotlib=matplotlib.__version__)
+        source_csv=sha(folder/"spectrum.csv"), style=style, renderer=sha(__file__), matplotlib=matplotlib.__version__,
+        geometry_sources=line_geometry.provenance())
     out = OUTPUT/"figures"/(folder.name+"_"+digest(spec)[:12])
     if (out/"manifest.json").exists():
         verify_manifest(out); print(json.dumps(dict(figures=str(out), root_calculations=0, reused=True))); return out
     out.mkdir(parents=True, exist_ok=True)
+    material = m["identity"].get("material", dict(epsilon=.005, aspect=4.))
+    k_plot, _ = prefix_ranks(m["identity"])
+    geometries = {entry["name"]: line_geometry.FrequencyGeometry.from_spec(entry, material,
+                  entry.get("grid") or [float(r["x"]) for r in rows if r["map"] == entry["name"] and int(r["rank"]) == 1])
+                  for entry in m["identity"]["maps"]}
+    geometry_diagnostics = line_geometry.write_geometry_diagnostics(out, geometries)
+    captions = {}
     colors = ["#0072B2", "#D55E00", "#009E73", "#CC79A7", "#332288", "#AA4499", "#008899", "#886600"]
     markers = ["o", "s", "^", "D", "v", "P", "X", "h"]
     layouts = ["all", "split"] if style.get("layout", "both") == "both" else [style["layout"]]
@@ -463,17 +633,21 @@ def render(folder, style, tables_only=False):
             subset = [r for r in rows if r["map"]==entry["name"]]
             fixed = ", ".join((r"$\beta="+f"{v:g}"+r"^\circ$" if k=="beta_deg" else "$\\"+k+f"={v:g}$") for k,v in entry["fixed"].items())
             aspect = m["identity"].get("material", {}).get("aspect", 4)
-            title = style.get("title") or (fixed + fr", $\varepsilon=0.005$, $a={aspect:g}$; RL_FULL / Timoshenko, RR")
+            thickness = "" if entry["mode"] in ("EPS", "EPSILON") else fr", $\varepsilon={material.get('epsilon', .005):g}$"
+            title = style.get("title") or (fixed + thickness + fr", $a={aspect:g}$; RL_FULL / Timoshenko, RR")
             for layout in layouts:
-                groups = [range(1,9)] if layout=="all" else [range(1,5), range(5,9)]
+                half = k_plot//2
+                groups = [range(1,k_plot+1)] if layout=="all" else [range(1,half+1), range(half+1,k_plot+1)]
                 fig, axes = plt.subplots(len(groups), 1, figsize=style.get("figsize", [10,6] if layout=="all" else [10,8]), squeeze=False, sharex=True)
                 for ax, ranks in zip(axes[:,0], groups):
                     for rank in ranks:
                         data = [r for r in subset if int(r["rank"])==rank]
-                        ax.plot([float(r["x"]) for r in data],
+                        if [float(r["x"]) for r in data] != list(geometries[entry["name"]].x):
+                            raise ValueError("Saved frequency grid differs from the declared geometry grid")
+                        line_geometry.plot_frequency_curve(ax, geometries[entry["name"]],
                             [float(r["Lambda"]) if r["status"]=="PASS" else float("nan") for r in data],
                             color=colors[rank-1], marker=markers[rank-1], markersize=4,
-                            linewidth=1.3, linestyle="-" if rank%2 else "--", label=fr"$\Lambda_{rank}$")
+                            linewidth=1.3, label=fr"$\Lambda_{rank}$")
                     for x in sorted({float(r["x"]) for r in subset if r["status"]!="PASS"}):
                         ax.axvline(x, color="red", alpha=.4, linestyle=":")
                     ax.set_ylabel(style.get("ylabel", r"$\Lambda$")); ax.grid(alpha=.23)
@@ -481,16 +655,18 @@ def render(folder, style, tables_only=False):
                     if "ylim" in style: ax.set_ylim(style["ylim"])
                     if "xlim" in style: ax.set_xlim(style["xlim"])
                     ax.legend(ncol=4, loc=style.get("legend_loc", "best"), fontsize=style.get("legend_font_size",10))
-                axes[-1,0].set_xlabel(style.get("xlabel", {"BETA":r"$\beta$ (deg)","MU":r"$\mu$","TAU":r"$\tau$"}[entry["mode"]]))
+                axes[-1,0].set_xlabel(style.get("xlabel", {"BETA":r"$\beta$ (deg)","MU":r"$\mu$","TAU":r"$\tau$","EPS":r"$\varepsilon$","EPSILON":r"$\varepsilon$"}[entry["mode"]]))
                 fig.suptitle(title, fontsize=style.get("title_font_size",11))
-                fig.text(.5,.01,"Sorted positions 1–8; markers: computed nodes; segments: visual guides", ha="center", fontsize=9)
+                fig.text(.5,.01,f"Sorted positions 1–{k_plot}; markers: computed nodes; segments: visual guides", ha="center", fontsize=9)
                 fig.tight_layout(rect=(0,.025,1,.96))
                 stem = entry["name"]+"_"+layout
-                for ext in ("png", "pdf"): fig.savefig(out/(stem+"."+ext), dpi=style.get("dpi",220))
+                captions[stem] = line_geometry.add_geometry_caption(fig)
+                for ext in ("png", "pdf"): fig.savefig(out/(stem+"."+ext), dpi=style.get("dpi",220), bbox_inches="tight")
                 plt.close(fig)
                 gallery.extend([f"## {entry['name']} / {layout}", "", f"![{stem}]({stem}.png)", "", f"[Vector PDF]({stem}.pdf)", ""])
     (out/"README.md").write_text("\n".join(gallery), encoding="utf-8")
     publish(out/"manifest.json", dict(identity=spec, root_calculations=0,
+        geometry_diagnostics=geometry_diagnostics, geometry_captions=captions,
         rendering_seconds=time.perf_counter()-start,
         artifacts={p.name:sha(p) for p in sorted(out.iterdir()) if p.is_file()}))
     print(json.dumps(dict(figures=str(out), root_calculations=0)), flush=True)

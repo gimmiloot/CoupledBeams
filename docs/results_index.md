@@ -1,5 +1,105 @@
 # Generated Results Index
 
+[Square M15_0 mode illustrations, 2026-11-10](../private/dissertation/research/chapter1/chapter1_length_mode_illustration_selection.md):
+the author selected positions 2/3 at mu=.15/.35/.60.
+[Revised PDF/PNG, sampled-extremum checks and provenance](../results/rl_full_rr_maps/_section142_mode_parameters_20261110/manifest.json)
+preserve unit full inertia and the previous physical/display scale.
+[The two earlier candidates](../results/rl_full_rr_maps/_section142_mode_selection_20261110/manifest.json)
+remain unchanged. Labels denote sorted positions; no continuation or new
+spectrum was computed. Approved frequency figure B and manuscript are unchanged.
+
+[Square M15_0 spectral-bound audit, 2026-11-10](../private/dissertation/research/chapter1/chapter1_length_partial_spectral_bounds.md):
+[saved-data comparison](../results/rl_full_rr_maps/_section142_spectral_bounds_20261110/manifest.json).
+The merged CC spectrum bounds all six coupled ordered frequencies above at
+all 181 nodes, consistently with the variational proof. A merged CS lower
+bound fails; 74 sixth-CS differences lack exact values, but their negative
+signs follow from certified coverage. No new roots. Figure B with CS/CC is
+the author's selected composition and remains unchanged; individual forms
+near mu=.445 remain unresolved.
+
+[Square M15_0 spectral-bound audit, 2026-11-10](../private/dissertation/research/chapter1/chapter1_length_partial_spectral_bounds.md):
+[saved-data comparison](../results/rl_full_rr_maps/_section142_spectral_bounds_20261110/manifest.json).
+The merged CC spectrum bounds all six coupled ordered frequencies above at
+all 181 nodes, consistently with the variational proof. A merged CS lower
+bound fails; 74 sixth-CS differences lack exact values, but their negative
+signs follow from certified coverage. No new roots. Figure B with CS/CC is
+the author's selected composition and remains unchanged; individual forms
+near mu=.445 remain unresolved.
+
+[Square M15_0 spectral-bound audit, 2026-11-10](../private/dissertation/research/chapter1/chapter1_length_partial_spectral_bounds.md):
+[saved-data comparison](../results/rl_full_rr_maps/_section142_spectral_bounds_20261110/manifest.json).
+The merged CC spectrum bounds all six coupled ordered frequencies above at
+all 181 nodes, consistently with the variational proof. A merged CS lower
+bound fails; 74 sixth-CS differences lack exact values, but their negative
+signs follow from certified coverage. No new roots. Figure B with CS/CC is
+the author's selected composition and remains unchanged; individual forms
+near mu=.445 remain unresolved.
+
+[Square M15_0 partial Timoshenko spectra, 2026-11-10](../private/dissertation/research/chapter1/chapter1_length_partial_timoshenko.md):
+[bundle](../results/rl_full_rr_maps/_section142_partials_20261110/manifest.json),
+[preliminary figures](../results/rl_full_rr_maps/_section142_partials_20261110/figures/manifest.json).
+CS/CC tasks PASS for all 361 unique fixed-section lengths in Lambda<=11;
+CC frequencies reused, missing CS frequencies computed with count, boundary,
+energy and independent state-matrix checks. Two saved-data plots contain exactly
+six coupled frequencies; sorted positions do not assert modal descendants.
+No coupled recalculation, mu refinement or global tracking. The previously
+unresolved individual forms near mu=.445 remain unresolved.
+
+[Refined square P26 beta comparison, 2026-11-09](../private/dissertation/research/chapter1/chapter1_asymmetric_beta_publication_postprocess.md):
+[nine-point spectrum and merged map](../results/rl_full_rr_maps/73b65e9a33d121c7/manifest.json),
+[revised figures and continuation](../results/rl_full_rr_maps/_asymmetric_beta_refined_20261109/manifest.json).
+Nine new K6/guard7 spectra PASS, 63 full forms, 261 reused geometries.
+All six descendants are now confirmed over beta=0..90 for mu=.3,tau=.1,
+with matching independent reverse continuation. B2/B3 keep positions 2/3;
+the historical coarse candidate permutation was not confirmed. Minimum saved
+gap .0100574 at 10.30 degrees; no exact continuous-minimum claim. Seven revised
+PDF/PNG figures, monochrome mode axes, step comparisons and unchanged sources.
+STOP after the authorized refinement; no further spectra or manuscript edits.
+
+[Square P26 beta comparison, 2026-11-09](../private/dissertation/research/chapter1/chapter1_asymmetric_beta_publication_postprocess.md):
+[delivery manifest](../results/rl_full_rr_maps/_asymmetric_beta_publication_20261109_final/manifest.json).
+Saved-only postprocessing of 522 K6/guard7 geometries, plus reuse of accepted
+symmetric descendants; seven preliminary PDF/PNG figures, MAC, subspaces and
+full-inertia shares. COMPLETE_WITH_EXPLICIT_TRACKING_LIMITS: six descendants
+confirmed for mu=0,tau=.1; at mu=.3,tau=.1, B2/B3 unconfirmed after beta=10.
+Finite-window cross-character similarities do not close the individual
+assignment gap. No new spectra; original archives and approved figures unchanged.
+This initial qualification is retained in the original bundle; the subsequently
+authorized refinement above resolves it on the finer saved grid.
+
+[Square RL_FULL/RR main programme, 2026-11-09](../private/dissertation/research/chapter1/chapter1_square_main_calculations.md):
+[aggregate manifest](../results/rl_full_rr_maps/_main_20261109/manifest.json),
+block bundles `2edc45fece76e252`, `8579f53c3bddd220`, `89b5817c786906bd`,
+`4d6ff39b104823c8`, `ba51099034d6e7fe` under `results/rl_full_rr_maps/`.
+All four blocks PASS: 1686 new geometries plus eight accepted pilot points
+cover the approved 1694-point set exactly. K6/guard7, epsilon .005/.01,
+11858 new-set full modes; sorted positions, full-field/CSV/hash/reuse checks.
+178 geometries carry the L/h<10 styling flag, independently of numerical PASS.
+Initial archives unchanged. Local data; no final figures, partial-spectrum study,
+global tracking, FEM or new Ritz. STOP after the main programme.
+
+[HS-D2: composite geometry validation](theory/isotropic_two_springs_horizontal_composite_geometry_validation.md):
+[horizontal_composite_geometry_validation/d45b5f6b567f8106](../results/isotropic_two_springs_rl_timoshenko/horizontal_composite_geometry_validation/d45b5f6b567f8106/README.md).
+PASS: all 34 geometries, 4427 new / 1193 reused leading points at p20/24,
+2880 archived full nodes, 68 full thresholds, zero new full spectra.
+Contains exact reuse provenance, interval error statistics, direct threshold
+brackets/slopes, HS-D1 reproduction, one local decrement diagnosis and seven
+figures. Original working-state copies and hashes are in the sibling `_initial/`.
+
+[HS-D1: eigenvalue composition](theory/isotropic_two_springs_horizontal_composite_approximation.md):
+[horizontal_composite_approximation/60fc0dd404dcf167](../results/isotropic_two_springs_rl_timoshenko/horizontal_composite_approximation/60fc0dd404dcf167/README.md).
+PASS: 1209 new / 97 reused leading points at p20/24, 524 archived full nodes,
+12 full thresholds, zero new full spectra. Contains unfitted coefficients,
+conditional positivity bounds, three-model errors by angular interval,
+direct threshold brackets/slopes, cancellation diagnostics and four figures.
+
+[HS-C: finite-angle limit](theory/isotropic_two_springs_horizontal_finite_angle_limit.md):
+[horizontal_finite_angle_limit/6b15c780c138c0ed](../results/isotropic_two_springs_rl_timoshenko/horizontal_finite_angle_limit/6b15c780c138c0ed/README.md).
+PASS: 413 limit points at p20/24, independent three-root ODE/count controls,
+90 reused full nodes and 18 full thresholds; zero new full spectra.
+Includes the preimplementation analytic gate, exact limits, conditional
+threshold forecasts and their failures, two PDF/PNG figures and source hashes.
+
 [HS-B: geometry dependence](theory/isotropic_two_springs_horizontal_geometry_map.md):
 [horizontal_spring_geometry_map/7b2b5ba8c33abe48](../results/isotropic_two_springs_rl_timoshenko/horizontal_spring_geometry_map/7b2b5ba8c33abe48/README.md).
 PASS: 34 variants, 2449 frozen nodes and 431 threshold additions;

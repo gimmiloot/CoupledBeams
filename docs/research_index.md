@@ -25,6 +25,57 @@ Git-visible context and immutable history.
 
 ## LONG
 
+Authorized nine-angle refinement, 2026-11-09:
+[updated square report](../private/dissertation/research/chapter1/chapter1_asymmetric_beta_publication_postprocess.md),
+[LONG-D54](memory/decisions.md#long-d54) / [LONG-K53](memory/knowledge.md#long-k53).
+All nine spectra PASS. The .05-degree path confirms B2/B3 in positions 2/3,
+including the full 0..90 range and independent reverse assignments. The old
+coarse-step permutation remains an unconfirmed historical candidate. Endpoint
+character exchange is supported while the continuous minimum is not located.
+Revised preliminary figures complete; STOP for author selection.
+
+Subsequent authorized square beta postprocessing, 2026-11-09:
+[P26 comparison report](../private/dissertation/research/chapter1/chapter1_asymmetric_beta_publication_postprocess.md),
+[LONG-D53](memory/decisions.md#long-d53) / [LONG-K52](memory/knowledge.md#long-k52).
+Six descendants confirmed for mu=0,tau=.1; for mu=.3,tau=.1 four are confirmed
+over the full beta grid and B2/B3 only through 10 degrees. The next transition
+fails the unchanged individual-overlap criterion despite a stable pair subspace.
+Saved endpoint character comparisons are qualified separately. Seven preliminary
+figures; zero new spectra at that initial stage. Its refinement limitation is
+resolved by the separately authorized nine-angle result above.
+
+Separate square RL_FULL/RR chapter-1 programme, 2026-11-09:
+[main calculation report](../private/dissertation/research/chapter1/chapter1_square_main_calculations.md),
+[LONG-D52](memory/decisions.md#long-d52) / [LONG-K51](memory/knowledge.md#long-k51).
+All four blocks PASS, 1686 new geometries plus eight pilot points, K6/guard7,
+epsilon .005/.01. Approved grids are complete with full fields and unchanged
+source archives. Sorted positions only; 178 geometric L/h warnings are not
+numerical failures or a 3D validation. That stage stopped before partial spectra
+or tracking; the separately authorized beta postprocessing is described above.
+This rigid-joint square programme is separate from the horizontal-support work below.
+
+Current geometry validation: [HS-D2](theory/isotropic_two_springs_horizontal_composite_geometry_validation.md),
+[LONG-D50](memory/decisions.md#long-d50) / [LONG-K49](memory/knowledge.md#long-k49).
+PASS for all 34 HS-B geometries: 25 compositions and nine HS-C I controls,
+2880 archived full nodes and 68 thresholds, zero new full solves. Frequency
+errors stay below .0422%; 90%/95% angle errors below .712%/.512% on this sample.
+Small slopes amplify angle errors; A2 aspect differences remain unresolved.
+No uniform error theorem or continuous monotonicity claim. HS-D2 complete; STOP.
+
+Preceding composition check: [HS-D1](theory/isotropic_two_springs_horizontal_composite_approximation.md),
+[LONG-D49](memory/decisions.md#long-d49) / [LONG-K48](memory/knowledge.md#long-k48).
+PASS for five inner/outer eigenvalue compositions and finite-support A2 control;
+no new full solves. Archived-node frequency errors below .030% and composite
+threshold errors below .458% are sample-specific, with early local deterioration
+and level/curve cancellation retained. No uniform error theorem. HS-D1 complete; STOP.
+
+Current limit-model result: [HS-C finite-angle limit](theory/isotropic_two_springs_horizontal_finite_angle_limit.md),
+[LONG-D48](memory/decisions.md#long-d48) / [LONG-K47](memory/knowledge.md#long-k47).
+PASS for the derivation, Ritz/ODE/count checks and nine archived comparisons;
+zero new full solves. The limit explains late A2 and A4 thresholds, with
+explicit early-angle failures and separate fixed-kappa/fixed-chi regimes.
+No uniform approximation or global monotonicity is established. HS-C complete; STOP.
+
 Current full-model stage: [HS-B geometry map](theory/isotropic_two_springs_horizontal_geometry_map.md),
 PASS for 30 new variants and four reused [HS-A](theory/isotropic_two_springs_horizontal_angle_map.md)
 references. All sampled maxima remain at 90 degrees; both threshold levels

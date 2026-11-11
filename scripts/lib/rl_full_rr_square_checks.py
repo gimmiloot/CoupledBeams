@@ -26,7 +26,8 @@ def check_coefficients(model, case):
         checks.append(dict(expected=expected, actual=actual,
                            error=max(abs(actual[k]/v-1) for k,v in expected.items())))
     geometry = m.geometry(model,case)
-    ok = max(x["error"] for x in checks)<1e-13 and abs(model.time-200)<1e-12
+    expected_time = model.l/model.epsilon*np.sqrt(model.rho/model.E)
+    ok = max(x["error"] for x in checks)<1e-13 and abs(model.time-expected_time)<1e-12
     return dict(status="PASS" if ok else "SECTION_CONTRACT_FAILED", sections=checks, geometry=geometry)
 
 

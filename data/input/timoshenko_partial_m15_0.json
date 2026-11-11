@@ -1,0 +1,23 @@
+{
+  "schema": "timoshenko-partial-map-v1",
+  "material": {"epsilon": 0.005, "aspect": 1.0, "E": 1.0, "rho": 1.0, "l": 1.0, "nu": 0.3, "ks": 0.8333333333333334, "variant": "RL_FULL"},
+  "source_map": "results/rl_full_rr_maps/8579f53c3bddd220",
+  "source_series": "M15_0",
+  "catalog_inventory": "private/dissertation/_history/20261110_section142_dual_sources/postprocess/cc_catalog_inventory.json",
+  "source_hashes": "private/dissertation/_history/20261110_section142_dual_sources/postprocess/provenance.json",
+  "policy_source": "data/input/rl_full_rr_geometry_c.json",
+  "Lambda_top": 11.0,
+  "control_lengths": [0.1, 0.3, 0.65, 1.0, 1.35, 1.9],
+  "frequency_map_policy": "frequency-map-v1",
+  "calculation_mode": "certified_audit",
+  "policy_override_reason": "Explicit author request: complete partial CS/CC band, independent boundary/energy checks and representation refinement; no coupled solves",
+  "spectrum_semantics": "sorted_positions",
+  "sweep_parameter": "physical isolated length L with fixed square section",
+  "parameter_grid": "0.1:0.005:1.9; induced by mu=0:0.005:0.9",
+  "K_plot": "all partial roots in 0<Lambda<=11; six coupled frequencies",
+  "K_guard": "SS count saturation through a CC ceiling; at most one CS root above band",
+  "guard_root_role": "completeness_only",
+  "neighbour_audit": "each single-rod sorted frequency decreases with length; no modal descendants",
+  "local_repair_policy": "none automatic; retain diagnostics and stop on failure",
+  "strict_audit_default": false
+}

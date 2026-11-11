@@ -1,5 +1,443 @@
 # CHANGELOG
 
+## 2026-11-10 — Dissertation section 1.4.2
+
+- Added and connected the Russian LaTeX subsection on changing rod lengths,
+  using the author-approved CS/CC frequency diagram and saved mode sheet
+  at mu=.15/.35/.60 unchanged as figures 1.7 and 1.8.
+- Presented the CC merged-spectrum upper bound as equation (1.77), with
+  a variational argument, multiplicities and the low-spectrum Rayleigh–Love
+  qualification; distinguished it from the invalid general CS lower bound.
+- Checked quantitative and shape statements against the two original papers
+  and verified square results. Compiled and visually reviewed the full PDF;
+  preserved prior text, figures, numerical archives and document versions.
+- Updated dissertation navigation, plans and material records M005–M006.
+  No new scientific calculations, solver/skill edits, commits or pushes.
+
+## 2026-11-10 — Author-selected length-mode parameters
+
+- Rebuilt the selected positions 2/3 sheet at mu=.15/.35/.60 from saved
+  M15_0 fields, preserving full-inertia normalization and the previous
+  physical/displacement scales. Saved new PDF/PNG and provenance separately.
+- Verified the three selected parameter values against the sampled extrema
+  of ordered frequencies 2 and 3 using all 181 saved nodes and JSON/CSV pairs.
+  Recorded the modest visual change from mu=.1 without claiming continuation.
+- Updated the selection report and navigation; preserved previous versions.
+  No spectral evaluations, manuscript/skill changes or archive overwrites.
+
+## 2026-11-10 — Preliminary length-dependent mode illustrations
+
+- Prepared two PDF/PNG sheets from twelve saved M15_0 modes: positions 2/3
+  at mu=.1/.35/.6 and positions 3/4 at mu=.440/.445/.450. Both use unit full
+  inertia, one shared displacement multiplier and identical physical scaling.
+- Rechecked saved contracts, seven-position prefixes, field normalization,
+  energy, CSV/JSON consistency and source hashes. Saved plotted coordinates,
+  inertia distributions and a reproducible saved-only rendering command.
+- Compared visible changes and recommended the broad-length sheet for
+  section 1.4.2; the final choice remains with the author. Figure B with CS/CC
+  stays unchanged. No individual continuation is asserted for either sheet.
+- No spectral/basis evaluations, refinement, tracking, manuscript/skill edits,
+  changes to accepted figures or original archives, commits or pushes.
+
+## 2026-11-10 — Variational audit of square partial-frequency bounds
+
+- Proved CS<=CC for a single Timoshenko rod and the upper bound on the
+  coupled low ordered spectrum from the merged CC spectra, preserving
+  multiplicities and the full Rayleigh–Love/Timoshenko energy forms.
+- Checked all 181 M15_0 nodes from saved data: all 1086 CC upper comparisons
+  pass; a universal CS lower bound is false. Recorded 1012 exact CS differences
+  and 74 negative signs established from certified coverage, without inventing
+  missing sixth CS frequencies. Added an analytic straight-rod counterexample.
+- Saved a private report, comparison/provenance tables and a reproducible
+  read-only command. Recorded the author's choice of figure B (CS/CC), and
+  qualified the source papers' frequency-strip wording in the source index.
+- No spectral searches, model or tolerance changes, manuscript/figure/skill
+  edits, global continuation, commits or pushes. Existing archives preserved.
+
+## 2026-11-10 — Variational audit of square partial-frequency bounds
+
+- Proved CS<=CC for a single Timoshenko rod and the upper bound on the
+  coupled low ordered spectrum from the merged CC spectra, preserving
+  multiplicities and the full Rayleigh–Love/Timoshenko energy forms.
+- Checked all 181 M15_0 nodes from saved data: all 1086 CC upper comparisons
+  pass; a universal CS lower bound is false. Recorded 1012 exact CS differences
+  and 74 negative signs established from certified coverage, without inventing
+  missing sixth CS frequencies. Added an analytic straight-rod counterexample.
+- Saved a private report, comparison/provenance tables and a reproducible
+  read-only command. Recorded the author's choice of figure B (CS/CC), and
+  qualified the source papers' frequency-strip wording in the source index.
+- No spectral searches, model or tolerance changes, manuscript/figure/skill
+  edits, global continuation, commits or pushes. Existing archives preserved.
+
+## 2026-11-10 — Variational audit of square partial-frequency bounds
+
+- Proved CS<=CC for a single Timoshenko rod and the upper bound on the
+  coupled low ordered spectrum from the merged CC spectra, preserving
+  multiplicities and the full Rayleigh–Love/Timoshenko energy forms.
+- Checked all 181 M15_0 nodes from saved data: all 1086 CC upper comparisons
+  pass; a universal CS lower bound is false. Recorded 1012 exact CS differences
+  and 74 negative signs established from certified coverage, without inventing
+  missing sixth CS frequencies. Added an analytic straight-rod counterexample.
+- Saved a private report, comparison/provenance tables and a reproducible
+  read-only command. Recorded the author's choice of figure B (CS/CC), and
+  qualified the source papers' frequency-strip wording in the source index.
+- No spectral searches, model or tolerance changes, manuscript/figure/skill
+  edits, global continuation, commits or pushes. Existing archives preserved.
+
+## 2026-11-10 — Square M15_0 Timoshenko partial spectra
+
+- Added an isolated CS boundary adapter reusing the existing finite Timoshenko
+  basis, root locator, modal recovery and SS count; existing physical modules
+  and CC behavior remain unchanged. Added a bounded production/reuse/plot-only
+  interface and a fixed M15_0 configuration.
+- Completed partial tasks for 361 fixed-section lengths: 1003 CS frequencies
+  in Lambda<=11, 86 CS guards and 917 reused CC frequencies. Verified counts,
+  simple roots, boundaries, ODEs, energies, orthonormality, quadrature refinement
+  and independent expm/QR boundary residuals without new CC or coupled roots.
+- Saved two preliminary PDF/PNG diagrams, source hashes, complete partial
+  fields, crossing brackets and a private scientific report. Updated the
+  content plan and results navigation. All 48 relevant tests passed; reuse and
+  reproducible plotting were checked with spectral calls forbidden.
+- Preserved the initial JSON-serialization incident and its resolution.
+  No model/tolerance changes, manuscript or skill edits, coupled mu refinement,
+  global continuation, FEM/Ritz, commits or pushes.
+
+## 2026-11-10 — Two-source preparation for dissertation subsection 1.4.2
+
+- Added a private scientific analysis of the D26 length-ratio paper and P26
+  geometric-parameter paper after reading their original text and figures.
+  Distinguished the repeated equal-section result from the cross-section
+  generalization and delimited subsections 1.4.2 and 1.4.3.
+- Checked saved M15_0 spectra and fields without spectral calls; documented
+  reusable CC catalogs, the pending CS comparison and an unresolved local
+  individual-mode correspondence. Prepared partial Timoshenko problem statements
+  and a bounded plan for later work, without launching it.
+- Added both sources to current plans and the scientific source index; saved
+  previous documents and verification evidence. Manuscript, skill, solvers,
+  approved figures and numerical archives were left unchanged.
+
+## 2026-11-10 — LaTeX chapter 1 structural migration
+
+- Promoted the prepared symmetry subsection to section 1.3 and placed the
+  unchanged asymmetric-angle text in subsection 1.4.1 under the new section 1.4.
+  Added the requested chapter1_3, chapter1_4 and chapter1_4_1 source files;
+  old source names remain minimal forwarding inputs for historical links.
+- Moved sec:ch1-angle to 1.4.1 after checking references; retained meaningful
+  labels, all scientific prose, equations, captions and approved figures.
+  Two XeLaTeX passes produced 24 pages with unchanged equation/figure numbers.
+- Updated private navigation, outline/content-plan status and materials
+  M003-M004. Preserved prior files and verified the source text, references,
+  bibliography and rendered pages. No new subsection text, skill changes,
+  scientific computations, source-figure edits or numerical-data changes.
+
+## 2026-11-10 — Chapter 1 structure and writing guidance
+
+- Updated the private dissertation outline and chapter content plan to the
+  author's approved structure; recorded the old-to-new section mapping and
+  deferred LaTeX/reference migration. Kept path-dependent form continuation
+  as unfinished research reserve and distinguished computed spectra from
+  pending partial-frequency studies, shape analysis and final illustrations.
+- Added concise general skill guidance on section placement and the scientific
+  function of each paragraph, with one editing example. Preserved terminology
+  and publication/quantitative-check rules. Updated local navigation and saved
+  prior document versions; no manuscript, figure, model or numerical-data edits.
+
+## 2026-11-10 — Six local author edits to dissertation subsection 1.3.2
+
+- Replaced the subsection reference by the existing symmetric-figure reference,
+  clarified the comparison of the two specific asymmetric cases, removed the
+  three numerical frequency gaps, and simplified geometry references.
+- Replaced the final three paragraphs by a short visual comparison of the
+  second form at 11.5 degrees and the third at 9.5 degrees. Retained all three
+  configurations and both approved figures; kept the short paragraph after
+  figure 1.6 in the PDF. Saved the previous text/PDF and checked the full build.
+  No model, calculation, skill, preceding-section or source-figure changes.
+
+## 2026-11-10 — Final three-case revision of dissertation subsection 1.3.2
+
+- Reworked the subsection around the author's approved length-only,
+  section-only and combined asymmetry cases. Shortened the text and replaced
+  diagnostic history and inertia fractions with concrete descriptions of the
+  deformed axes at 9.5, 10.3 and 11.5 degrees.
+- Included the approved three-panel frequency PDF and six-shape PDF verbatim,
+  retaining figure numbers 1.5 and 1.6. Distinguished the simultaneous changes
+  in length and section parameters when comparing the first and third cases.
+- Rebuilt the complete 24-page manuscript, checked references and visually
+  reviewed pages 22–23. Earlier pages 1–21 remain pixel-identical. Preserved
+  the preceding subsection, approved source figures, skill and scientific data;
+  saved local history and updated manuscript navigation and material selection.
+  No new scientific computations, solver changes, commit or push.
+
+## 2026-11-10 — Preliminary three-case illustrations for subsection 1.3.2
+
+- Prepared six-frequency panels for mu=.1/tau=0, mu=0/tau=.1 and mu=.3/tau=.1
+  from verified saved continuations, using a common ordinate range.
+- Replaced the middle angle of the candidate shape sheet by 10.3 degrees;
+  retained a shared displacement scale, monochrome axes and ordinal row labels.
+  Visually compared the new and previous sheets and documented visible changes
+  with exact saved-field sources in a separate, preliminary result bundle.
+- Extended only the existing postprocessor's presentation interface to select
+  confirmed series across bundles, verify provenance and avoid unrequested
+  component figures. Passed 65 focused tests and reproduced PDF/PNG bytes.
+  Registered both new illustrations as candidates; preserved the manuscript,
+  approved figures, writing skill, physical solvers and spectral archives.
+
+## 2026-11-10 — Publication-led revision of dissertation subsection 1.3.2
+
+- Added the author's requested publication-use workflow to the private writing
+  skill, with focused terminology and examples for converting computational
+  reports into scientific prose. Preserved unrelated skill rules.
+- Reworked subsection 1.3.2 around symmetry, frequency approach, mode-shape
+  changes and localization after reading the original article's explanations
+  and conclusions. Checked quantitative statements against saved square data;
+  documented limits of transferring circular Euler–Bernoulli conclusions.
+- Preserved the approved figures and preceding manuscript, removed diagnostic
+  history, and rebuilt the complete current PDF. Saved earlier versions and
+  updated private manuscript navigation and material-selection notes.
+  No new scientific computations, program or physical-model changes.
+
+## 2026-11-09 — Dissertation subsection 1.3.2 from verified asymmetric branches
+
+- Added the asymmetric-construction subsection to the existing private LaTeX
+  manuscript, using the refined saved-field results and two selected figures.
+  Kept the approved preceding text and figures unchanged; qualified grid
+  minima and distinguished branch order from changes in modal character.
+- Reused the frequency PDF verbatim. Added optional presentation settings to
+  the existing postprocessor for selected figure exports and readable
+  descendant-only mode labels; preserved fields, phases and common scale.
+  Recorded the actual redraw configuration without repeating assignments.
+- Built the complete current manuscript, checked references and figure layout,
+  and passed 58 continuation/presentation regression tests. Updated private
+  material selection, the relevant content-plan item and build instructions;
+  saved previous versions. No new spectra, solver, tolerance or skill changes.
+
+## 2026-11-09 — Nine-angle refinement resolves the square B2/B3 ambiguity
+
+- Computed only the nine authorized beta nodes from 10.05 to 10.45 degrees
+  for mu=.3,tau=.1,epsilon=.005, K6/guard7; all PASS with 63 full modes.
+  Reused all 261 original nodes; no physical solver or tolerance changes.
+- Sequential .05-degree continuation and an independent reverse pass confirm
+  all six descendants through 90 degrees. B2/B3 retain sorted positions 2/3;
+  the old unconfirmed coarse-step permutation is not the refined assignment.
+- Saved step-size comparisons, every local MAC matrix and subspace angles;
+  the refined grid minimum gap is .0100574 at 10.30 degrees, not a certified
+  continuous minimum. Endpoint character exchange remains distinct from IDs.
+- Restored continuous branch colors and rendered both mode-axis sequences in
+  one dark color with descendant-based labels. Preserved previous versions,
+  reproduced all seven PDF/PNG figures and passed 80 regression tests.
+  No additional geometries, Ritz/FEM/partial studies or manuscript changes.
+
+## 2026-11-09 — Saved square beta branches for the P26 comparison
+
+- Extended the existing saved-field postprocessor to K6/guard7 beta maps with
+  unequal square sections, retaining canonical physical-contract and inertia
+  checks, K8 compatibility, and the existing assignment thresholds.
+- Reused the accepted symmetric classification; continued only the two
+  authorized asymmetric beta maps. All six descendants at mu=0 are confirmed;
+  B2/B3 at mu=.3 remain unconfirmed after the 10 to 10.5 degree transition.
+- Saved MAC, subspaces, full-inertia shares, component nodes, seven preliminary
+  PDF/PNG figures and a private report. Distinguished endpoint character
+  comparisons from confirmed continuation and proposed, but did not compute,
+  nine local refinement points.
+- Passed 55 focused tests, reproduced all figures byte for byte and verified
+  5435 protected files unchanged. No new spectra, physical solver/tolerance,
+  manuscript, skill or approved-figure changes; no commit or push.
+
+## 2026-11-09 — Main square K6 calculation programme complete
+
+- Completed the four authorized blocks with 1686 new unique RL_FULL/RR
+  K6/guard7 solutions and full modes; all blocks passed their saved-field gates.
+- Verified exact coverage of 1694 new geometries including eight pilot points,
+  without duplicate solutions, added grid points, repairs or unresolved roots.
+- Preserved 178 geometric slenderness warnings independently of numerical PASS;
+  saved block manifests, checksums, reuse logs and a private technical report.
+- Verified original archives and pilot files unchanged, and zero-solve replay.
+  No production code, tolerances, manuscript, skill or final figures changed;
+  no standalone partial spectra, FEM, Ritz or global tracking launched.
+
+## 2026-11-09 — Bounded square K6 and thickness pilot
+
+- Parameterized the existing map/presentation interface for 6/7 and 8/9;
+  accepted epsilon=.005/.01 without changing physical kernels or tolerances.
+- Added immutable higher-prefix reuse with full-contract checks and source
+  provenance, and explicit reuse of archived square controls without new Ritz.
+- Passed 108 targeted tests, archived K8/K6 regressions and one independent
+  recomputation of an existing K6 geometry. All eight authorized new pilot
+  geometries passed, including the geometrically non-slender epsilon=.01 case.
+- Saved full modes, completeness evidence and private pilot report; verified
+  saved fields, checksums, replay and plot-only. No main grid, standalone CS/CC,
+  FEM, new Ritz, global tracking, manuscript or skill changes.
+
+## 2026-11-08 — Geometric line styles for frequency figures
+
+- Added a shared geometry-only presenter: solid when both individual L/h
+  ratios are at least 10, dashed otherwise, with branch colors preserved.
+  Canonical lengths and section dimensions supply all classifications.
+- Connected map, publication, reflection and saved-continuation renderers;
+  added geometric boundary splitting, separate node diagnostics and manifest
+  provenance, conditional captions and distinct dotted partial-frequency curves.
+- Updated the private calculation plan and the author-approved dissertation
+  skill/examples; retained previous versions in local edit history.
+  Geometry and synthetic-presentation tests pass without spectral calls.
+  Existing spectra, physical solvers, approved figures and manuscript are unchanged.
+
+## 2026-11-08 — Square publication calculation programme
+
+- Added a private dissertation calculation plan checked against the original
+  publication figures and archived square RL/Timoshenko manifests.
+- Deduplicated proposed grids, identified reusable modes and single-beam CC
+  catalogues, and documented prefix, thickness and unresolved panel requirements.
+  No spectral calculations, solver changes or manuscript edits were performed.
+- Recorded the author's provisional mode-panel values mu=0.1, 0.35 and 0.6
+  for the three length-study shape sequences. All belong to the planned grid;
+  the unique-point totals are unchanged, and publication provenance remains qualified.
+
+## 2026-11-08 — Saved-field continuation diagnostic
+
+- Added a separate postprocessor for archived square RL/Timoshenko modes with
+  full-inertia comparison on normalized arm coordinates, endpoint-metric
+  sensitivity and explicit unresolved individual/subspace assignments.
+- Reused the existing assignment helper; added focused tests, provenance checks
+  and redraw from derived tables. No production model, solver, source spectrum
+  or manuscript changes; numerical results remain in ignored local storage.
+
+## 2026-11-08 — Reflection-class branch figure correction
+
+- Replaced the private manuscript's sorted-frequency illustration with eight
+  branches continued from the base configuration using saved physical modes.
+- Reused the existing tracking assignment helpers within reflection classes,
+  with the full inertia metric, provenance checks and a saved-data regression.
+  Updated the caption and discussion; retained the mode figure, numerical
+  archives, analytical reports and writing skill. No spectral solves were run.
+
+## 2026-11-08 — Private dissertation figure correction
+
+- Replaced the two-class frequency illustration with a single saved-data plot
+  of the first eight sorted positions; aligned the two mode-panel descriptions
+  and the author's exact captions in the existing manuscript.
+- Extended the existing publication renderer with a sorted-spectrum option,
+  point/guard provenance checks and focused tests. Preserved earlier figures,
+  source archives, mathematical derivations and the writing skill.
+
+## 2026-11-08 — Private dissertation final saved-data figures
+
+- Completed the agreed local matrix exposition and replaced two illustration
+  placeholders with vector publication figures from verified saved results.
+- Added a read-only renderer for reflection-class tables and crossing fields,
+  with provenance checks, a shared mode displacement scale and six focused tests.
+  Preserved the previous manuscript; source archives, physical code, scientific
+  reports, earlier sections and the writing skill are unchanged.
+
+## 2026-11-08 — Private dissertation planar-reflection exposition
+
+- Applied the author's final notation and derivation corrections in the
+  existing subsection, preserving the earlier text and PDF in private history.
+- Updated the agreed writing rules and examples; retained the vector geometry
+  diagram and removed a redundant illustration placeholder. Scientific models,
+  reports, numerical sources and preceding sections are unchanged.
+
+## 2026-11-08 — Private dissertation clarity revision
+
+- Clarified the approved subsection's notation and shortened its matrix
+  derivation while retaining the assumptions and equivalence argument.
+- Added a native vector geometry diagram and the agreed writing-skill rules.
+  Preserved the previous manuscript and preview in private editing history;
+  earlier sections, scientific reports and numerical archives are unchanged.
+
+## 2026-11-07 — Private dissertation editorial revision
+
+- Applied the approved local manuscript corrections, preserving the preceding
+  source and preview in private editing history; earlier sections are unchanged.
+- Added the agreed numerical-precision rule and examples to the private writing
+  skill. Checked saved-table statistics, native LaTeX references and PDF layout;
+  no spectral calculations or source-archive changes.
+
+## 2026-11-07 — Private dissertation subsection draft
+
+- Integrated the symmetric-configuration subsection into the existing LaTeX
+  preview, using verified analytical and numerical sources and three figure
+  placeholders. Earlier sections and scientific sources remain unchanged.
+- Checked native formula typesetting, cross-references and PDF layout;
+  no spectral calculations were run. Manuscript content remains private.
+
+## 2026-11-07 — Local reflection-class intersection diagnostic
+
+- Added an independent saved-table audit and a local diagnostic using the
+  previously derived 3x3 class blocks, unchanged physical basis and mass metric.
+- Added two-method intersection checks, finite inertia queries from saved
+  catalogues, mode restoration, archive comparisons and vector figures.
+- Added 12 targeted tests; production solvers, physical kernels, existing
+  archives and manuscript remain unchanged. Research details remain private.
+
+## 2026-11-07 — Saved-field reflection classification
+
+- Added a standalone postprocessor reusing the existing reflection and full
+  physical mass metric, with projector, ODE, trace and energy diagnostics.
+- Added empirical threshold sensitivity, class-prefix tables and local vector
+  figures, plus 14 targeted tests. Spectral/basis entry points are blocked;
+  physical kernels, accepted archives and manuscript remain unchanged.
+
+## 2026-11-07 — Local analytical symmetry audit
+
+- Documented a local audit of physical coordinates, state transformations and
+  boundary-matrix equivalence, with fixed-parameter algebra checks and archive
+  integrity checks. No models, solvers or existing results were changed;
+  no spectral searches were performed. Research details remain private.
+
+## 2026-11-07 — Read-only spectral figure presentation
+
+- Added one reusable publication renderer for saved RL/RR sorted BETA tables:
+  full spectra, first-pair windows and overview, with PNG/PDF export and hashes.
+- Reused the existing verified CSV reader; added checks for altered tables,
+  incomplete records and exact plotted nodes. Calculation sources, numerical
+  policy, cache identities and diagnostic renderer remain unchanged.
+
+## 2026-11-07 — HS-D2 composite geometry validation
+
+- Extended the existing composite CLI with a frozen HS-D2 contract: all 34
+  HS-B geometries, 25 compositions and nine finite-support HS-C I controls.
+  Reused 2880 full nodes and 68 full thresholds; zero new full spectra.
+- Accepted 4427 new and 1193 reused leading points with unchanged p20/24,
+  residual and count checks. Reproduced HS-D1 exactly. Preserved one tiny
+  adjacent decrement and its triggered independent boundary diagnosis.
+- Maximum frequency error is .042184%; maximum 90%/95% angle errors are
+  .711756%/.511386% on this sample. Retained early local advantages of HS-L1,
+  threshold sensitivity/cancellation and unresolved A2 aspect differences.
+- Added one report, seven PDF/320-dpi PNG figures, nine targeted tests and
+  scoped LONG/navigation updates. Historical archives and earlier work are
+  preserved. Root README unchanged; no commit/push.
+
+## 2026-11-06 — HS-D1 inner/outer eigenvalue composition
+
+- Verified the common HS-L1 saturation / HS-C zero-plus limit, derived the
+  finite-angle quadratic coefficient and conditional positivity/order bound.
+  Added only an eigenvalue-composition workflow; no physical model changed.
+- PASS on five prescribed composite cases and separate finite-support A2:
+  524 archived full nodes, 12 full thresholds, zero new full solves. Reused
+  97 leading points and accepted 1209 new p20/24 points with frozen checks.
+- Composite frequency errors stay below .030% on this sample; all ten
+  composite threshold errors stay below .458%. Preserved small-angle
+  deterioration versus HS-L1 and the A3 mu=.1 threshold advantage of HS-C I.
+  No uniform accuracy or full-model error order is claimed.
+- Added one report, four PDF/320-dpi PNG figures, 11 targeted tests and scoped
+  LONG records/navigation. Preserved previous uncommitted HS-C work and
+  historical archives. Root README unchanged; no commit/push.
+
+## 2026-11-06 — HS-C finite-angle thin-beam limit
+
+- Derived the finite-angle kinematics, coupled mass form and eight boundary
+  conditions before implementation. Separated fixed kappa_s, fixed positive
+  chi_s and exact horizontal support; preserved all full-model sources.
+- Added a bounded Ritz p20/24 workflow with an independent ODE boundary matrix
+  and endpoint inertia count. PASS: 413 limit points, 10 targeted tests;
+  reused 90 full nodes and 18 full thresholds, with zero new full solves.
+- Compared nine prescribed cases. The finite-support model explains A2 late
+  thresholds; rigid A4 late thresholds are recovered, but its mu=-.1 early
+  95% forecast fails. No uniform approximation or error order is claimed.
+- Added one report, contract, two PDF/320-dpi PNG figures and scoped LONG
+  memory/navigation. All 42086 protected archive files unchanged; root README
+  intentionally unchanged. No commit or push.
+
 ## 2026-11-06 — HS-B horizontal-spring geometry study
 
 - Added the sparse 34-variant geometry contract and a coordinator reusing the

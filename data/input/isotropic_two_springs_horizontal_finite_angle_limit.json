@@ -1,0 +1,233 @@
+{
+  "study_id": "HS-C",
+  "schema": "horizontal-finite-angle-v1",
+  "cases": [
+    {
+      "id": "B0_A1",
+      "k_joint": 0.1,
+      "chi_s": 0.5,
+      "epsilon": 0.005,
+      "mu": 0.01,
+      "aspect": 4.0,
+      "kappa_s": 20000.0
+    },
+    {
+      "id": "B0_A2",
+      "k_joint": 0.1,
+      "chi_s": 0.0001,
+      "epsilon": 0.005,
+      "mu": 0.01,
+      "aspect": 4.0,
+      "kappa_s": 4.0
+    },
+    {
+      "id": "B0_A3",
+      "k_joint": 1.0,
+      "chi_s": 0.01,
+      "epsilon": 0.005,
+      "mu": 0.01,
+      "aspect": 4.0,
+      "kappa_s": 400.0
+    },
+    {
+      "id": "B0_A4",
+      "k_joint": 10.0,
+      "chi_s": "RIGID",
+      "epsilon": 0.005,
+      "mu": 0.01,
+      "aspect": 4.0,
+      "kappa_s": "RIGID"
+    },
+    {
+      "id": "B1_A2_e0.0025",
+      "k_joint": 0.1,
+      "chi_s": 0.0001,
+      "epsilon": 0.0025,
+      "mu": 0.01,
+      "aspect": 4.0,
+      "kappa_s": 16.0
+    },
+    {
+      "id": "B1_A2_e0.006",
+      "k_joint": 0.1,
+      "chi_s": 0.0001,
+      "epsilon": 0.006,
+      "mu": 0.01,
+      "aspect": 4.0,
+      "kappa_s": 2.7777777777777777
+    },
+    {
+      "id": "B2_A3_m0.1",
+      "k_joint": 1.0,
+      "chi_s": 0.01,
+      "epsilon": 0.005,
+      "mu": 0.1,
+      "aspect": 4.0,
+      "kappa_s": 400.0
+    },
+    {
+      "id": "B2_A4_m-0.1",
+      "k_joint": 10.0,
+      "chi_s": "RIGID",
+      "epsilon": 0.005,
+      "mu": -0.1,
+      "aspect": 4.0,
+      "kappa_s": "RIGID"
+    },
+    {
+      "id": "B2_A4_m0.1",
+      "k_joint": 10.0,
+      "chi_s": "RIGID",
+      "epsilon": 0.005,
+      "mu": 0.1,
+      "aspect": 4.0,
+      "kappa_s": "RIGID"
+    }
+  ],
+  "orders": [
+    20,
+    24
+  ],
+  "quadrature": 80,
+  "spectral_positions": 3,
+  "angles_deg": [
+    0,
+    2,
+    10,
+    20,
+    30,
+    40,
+    50,
+    60,
+    70,
+    80,
+    90
+  ],
+  "full_comparison_angles_deg": [
+    2,
+    10,
+    20,
+    30,
+    40,
+    50,
+    60,
+    70,
+    80,
+    90
+  ],
+  "policy": {
+    "defined_before_computation": true,
+    "strong_tol": 1e-09,
+    "boundary_tol": 1e-09,
+    "essential_tol": 1e-09,
+    "matrix_tol": 1e-09,
+    "energy_tol": 5e-08,
+    "mass_tol": 5e-07,
+    "frequency_convergence_tol": 1e-07,
+    "shape_convergence_tol": 1e-06,
+    "independent_frequency_tol": 1e-07,
+    "form_identity_tol": 1e-11,
+    "inertia_relative_zero_tol": 1e-11,
+    "pole_relative_guard": 1e-08,
+    "count_bracket_relative": 1e-05,
+    "analytic_frequency_tol": 1e-10
+  },
+  "initial_workspace": "results/isotropic_two_springs_rl_timoshenko/horizontal_finite_angle_limit/_initial/state.json",
+  "analytical_gate": "results/isotropic_two_springs_rl_timoshenko/horizontal_finite_angle_limit/_initial/analytical_gate.json",
+  "sources": {
+    "data/input/isotropic_two_springs_horizontal_spring.json": "01f79e7bb46facf809c1dc302157e8e85f758b3263ea37edaf6212d0a7c59fc5",
+    "scripts/analysis/verify_two_springs_horizontal_support.py": "1f9d30bec6da44abf95bdb21916eb7f84afdcb14f589d4d557b2d26f802df630",
+    "scripts/lib/isotropic_two_springs_horizontal_spring.py": "61721e628bce97ee83ed70cbc484b819da63ed8400054e3afa4c27e203c43a18",
+    "scripts/lib/isotropic_two_springs_rl_timoshenko.py": "c1a8f8eb97115a049c0c98d18c211e91a838c24012bfbd31dd7c8cbbac7ae1b4",
+    "scripts/lib/bishop_longitudinal.py": "05f7fc4d88c2b37c801645979f0bfd669dab58bff8eaf1e17e73440497cefb2b",
+    "scripts/lib/mindlin_herrmann_longitudinal.py": "ecf5f94a163db2b84523d03e72d465f00c7b95b9b2db4d1838afdf3fac226c8f",
+    "scripts/lib/mindlin_herrmann_timoshenko_joint.py": "e931cd57beadcf20886fc408f2d14539a7253c6af38d35ea969252a59b721ff2",
+    "scripts/lib/contraction_joint_sensitivity.py": "dfc78113a1a2152cd883ae6f885d55d0d9a18459b7deb6a4566dfaa71a3f7d89",
+    "scripts/lib/reddy_symmetric_coupled_beams_ritz.py": "0a84e329da3a1789b674ff0f73b753f92d7d388b918ad40a6d9511ea6f1944ae",
+    "scripts/lib/reddy_inplane_geometry.py": "c46a42c462264bc27c99c358aabd7df49f94f928a60d8150fd320d8dfb37e99e",
+    "scripts/lib/isotropic_rectangular_timoshenko_coupled_beams.py": "62f994d18bfce382e2cd37d113d6d4a0cd8f5920ea25ea147be60728886ecc65",
+    "scripts/analysis/verify_isotropic_two_springs_rl_timoshenko.py": "52bcd6ef039491aa9d56629a90625f3a67eff8d226ed32cb5acdf728ee779719",
+    "results/isotropic_two_springs_rl_timoshenko/external_axial_spring/64b26f99cb3c7aba/pole_catalogs.json": "dfcaf709bb10872a6f56d159fd0faae20524653900802a28d017171d92416277",
+    "scripts/lib/two_springs_horizontal_pilot.py": "f2ff60fe2e2c66a08c1ed5e000a02a46d57cf21d678ea06ab1eb5b084faa5800",
+    "data/input/isotropic_two_springs_horizontal_pilot.json": "7ff8f44eb0b218b0b4fb0a46ef567c84c45f2503adb6fbdcbc5ed90324c8fb22",
+    "scripts/lib/two_springs_horizontal_angle_map.py": "68def90124eb98c2dc3d2e2da3d15d0e947a0cb1f184fa4873ec33b8905836bc",
+    "data/input/isotropic_two_springs_horizontal_angle_map.json": "d21351c1fd76ac7a2c7911d03f31b32e15a6f56d4bfa40d63131e2c21c80b119",
+    "scripts/lib/isotropic_two_springs_horizontal_leading.py": "aa2f210e2956bfba3ba51fb3af1be0acbc7ca05eb7adb4dde6a0f74575d4bae1",
+    "scripts/lib/two_springs_horizontal_right_angle.py": "89a40c6edd585927eb8abf3bddbfcaed2111bef927f0943331666d4af1bec748",
+    "scripts/analysis/screen_coupled_longitudinal_theory_hierarchy.py": "ef3e5108380d681f1f65639b8cae77b776aa7f88356ea119f35d0eeb327c4699",
+    "data/input/isotropic_two_springs_horizontal_right_angle_limit.json": "9fd66bfccd557f3cab36d87a7b97cedce9ea3025b4ab10d7b2825152681e5573",
+    "scripts/lib/two_springs_horizontal_geometry_map.py": "edf6c2c60d030c09ee1594cdc60da3d525c0ac624e155f97e4510350bb1f9986",
+    "scripts/lib/two_springs_horizontal_joint_stiffness.py": "e3c7598554e235a353a73f59b0efd924adb3e237e8a1d0948ba28364d27a0305"
+  },
+  "archives": {
+    "results/isotropic_two_springs_rl_timoshenko/horizontal_spring_angle_map/2857f883fb745757": "6291057903e0a06b22ddbf9fca6e0ff3302e6a034c0f03e6a5cb2e6ac80937a0",
+    "results/isotropic_two_springs_rl_timoshenko/horizontal_spring_geometry_map/7b2b5ba8c33abe48": "feafd2fdb61407c00060c83924c96b63bb980ad2373e8bec73859a4a1bc2fd21"
+  },
+  "full_source": "results/isotropic_two_springs_rl_timoshenko/horizontal_spring_geometry_map/7b2b5ba8c33abe48",
+  "full_model_calls_allowed": 0,
+  "threshold": {
+    "q": [
+      0.9,
+      0.95
+    ],
+    "targets": [
+      "own90",
+      "HS_LA5"
+    ],
+    "late_angles_deg": [
+      30,
+      40,
+      50,
+      60,
+      70,
+      80,
+      90
+    ],
+    "late_frequency_acceptance_percent": 0.5,
+    "acceptance_role": "scientific eligibility for optional threshold substage, not a numerical solver tolerance",
+    "root_xtol_deg": 1e-09,
+    "root_rtol": 1e-12,
+    "bracket_width_deg": 2e-06,
+    "relative_equation_tol": 1e-09,
+    "preexisting_knowledge": "HS-B thresholds known from prior stage; predictions not calibrated and saved before this workflow reads the threshold table"
+  },
+  "limits": {
+    "mu": [
+      -0.1,
+      0,
+      0.01,
+      0.1
+    ],
+    "k_joint": [
+      0.1,
+      1,
+      10
+    ],
+    "finite_kappa": [
+      4,
+      400,
+      20000
+    ],
+    "stiffness_to_rigid": [
+      400,
+      20000,
+      1000000
+    ],
+    "test_beta_deg": 45
+  },
+  "frequency_map": {
+    "frequency_map_policy": "frequency-map-v1",
+    "calculation_mode": "fast_plot",
+    "spectrum_semantics": "sorted_positions",
+    "sweep_parameter": "beta_deg",
+    "parameter_grid": "angles_deg plus directly solved limit-model thresholds; no new full model points",
+    "K_plot": 2,
+    "K_guard": 3,
+    "guard_root_role": "completeness_only",
+    "neighbour_audit": "enabled",
+    "local_repair_policy": "triggered_only",
+    "strict_audit_default": false,
+    "neighbour_jump_relative": 0.35,
+    "policy_override_reason": "p20/24 and independent ODE/count explicitly required for the new limit model; no full spectrum tail"
+  }
+}

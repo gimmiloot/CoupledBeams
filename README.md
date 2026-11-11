@@ -503,7 +503,12 @@ separate authorization; no automatic study follows this block.
   -- `python scripts/analysis/map_rl_full_rr.py --mode ALL` uses editable
   `data/input/rl_full_rr_maps.json` for BETA, MU and TAU, with 8 sorted positions
   and guard9. Accepted points are reused; new points use fast_plot.
-  `--plot-only <bundle>` and `--tables-only <bundle>` perform zero root searches.
+  `--plot-only <bundle>` and `--tables-only <bundle>` perform zero spectral root searches.
+  The configuration now also accepts `K_plot=6, K_guard=7` and epsilon=.01
+  (defaults remain 8/9 and .005). A certified 8/9 prefix can supply 6/7
+  through a separate derived record; reverse reuse is rejected. The bounded
+  square pilot passed eight cases; no main publication grid was started.
+  See [prefix and pilot usage](scripts/analysis/README.md#square-prefix-pilot).
   Five demonstration maps and all/split PNG/PDF views are linked in the report.
 - [Square-section RL_FULL/RR maps](docs/numerics/rl_full_rr_square_maps.md)
   -- same CLI with `--config data/input/rl_full_rr_square_maps.json --mode ALL`.
@@ -512,6 +517,10 @@ separate authorization; no automatic study follows this block.
   regression/straight/reflection/Ritz gate without maps. Per-map CSV, full/split
   PNG/PDF, aspect-four comparison and geometric slenderness flags are available.
   `--plot-only` and `--tables-only` retain zero-solve operation.
+  Future frequency renders use solid lines when both individual L/h ratios
+  are at least 10 and dashed lines otherwise, with separate geometry CSV/JSON
+  diagnostics. This is a preliminary geometric indicator; archived figures
+  and spectra are preserved. See [presentation rules](scripts/analysis/README.md#geometric-line-styles).
 - [Dense square-section maps](docs/numerics/rl_full_rr_square_maps_dense.md)
   -- same CLI with `--config data/input/rl_full_rr_square_maps_dense.json`:
   mu step .005 and tau step .01, 161 points per map; the 91-point beta map
